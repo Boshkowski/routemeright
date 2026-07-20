@@ -8,7 +8,8 @@
   #map{position:absolute;inset:0}
   .maplibregl-ctrl-attrib{display:none}
   .veil{position:absolute;inset:0;pointer-events:none;
-    background:linear-gradient(180deg,rgba(15,23,42,.5) 0%,rgba(15,23,42,0) 20%,rgba(15,23,42,0) 62%,rgba(15,23,42,.7) 100%)}
+    background:linear-gradient(180deg,rgba(15,23,42,.32) 0%,rgba(15,23,42,0) 16%,rgba(15,23,42,0) 70%,rgba(15,23,42,.42) 100%)}
+  .veil.off{display:none}
 
   /* jedna kompaktna kartica: 2/3 navigacija + donja traka za obavestenja */
   .nav{position:absolute;top:12px;left:12px;right:12px;z-index:5;background:#166534;border-radius:18px;
@@ -37,7 +38,8 @@
   .fab.zin{bottom:244px;font-size:24px;font-weight:700}
   .fab.compass{bottom:300px}
   .fab.compass svg{transition:transform .2s linear}
-  .fab.mute{bottom:356px}
+  .fab.theme{bottom:356px}
+  .fab.mute{bottom:412px}
   .fab.recenter.on{background:#f97316;border-color:#f97316;color:#fff;
     box-shadow:0 0 0 6px rgba(249,115,22,.25);animation:pulse 1.4s infinite}
   @keyframes pulse{50%{box-shadow:0 0 0 12px rgba(249,115,22,.08)}}
@@ -143,6 +145,7 @@
 </div>
 
 <div class="fab mute">🔇</div>
+<div class="fab theme" id="themeBtn" title="Svetla / tamna mapa">☀️</div>
 <div class="fab compass" id="compass" title="Sever gore / kurs gore">
   <svg id="compassNeedle" width="24" height="24" viewBox="0 0 24 24">
     <polygon points="12,2.5 15.2,12 8.8,12" fill="#ef4444"/>
@@ -492,6 +495,44 @@ function loop(t) {
   requestAnimationFrame(loop);
 }
 
+/* ================= SLOJEVI (prezive i promenu stila mape) ================= */
+const STYLES = { dark: "https://tiles.openfreemap.org/styles/dark", light: "https://tiles.openfreemap.org/styles/liberty" };
+let theme = "dark";
+function addBaseLayers() {
+  const L = theme === "light";
+  if (!map.getSource("dem")) map.addSource("dem", { type:"raster-dem",
+    tiles:["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+    encoding:"terrarium", tileSize:256, maxzoom:13 });
+  map.setTerrain({ source:"dem", exaggeration:1.25 });
+  if (!map.getLayer("hillshade")) map.addLayer({ id:"hillshade", type:"hillshade", source:"dem",
+    paint: L
+      ? { "hillshade-exaggeration":0.3, "hillshade-shadow-color":"#6b7a99", "hillshade-highlight-color":"#ffffff", "hillshade-accent-color":"#c8d2e0" }
+      : { "hillshade-exaggeration":0.38, "hillshade-shadow-color":"#0b1424", "hillshade-highlight-color":"#3a4d74", "hillshade-accent-color":"#233250" } });
+  try {
+    const srcs = map.getStyle().sources;
+    const vecName = Object.keys(srcs).find(k => srcs[k].type === "vector");
+    if (vecName && !map.getLayer("bld3d")) map.addLayer({ id:"bld3d", type:"fill-extrusion", source:vecName, "source-layer":"building",
+      paint:{ "fill-extrusion-color": L ? "#d7dde8" : "#2a3650", "fill-extrusion-height":["coalesce",["get","render_height"],8], "fill-extrusion-opacity": L ? 0.6 : 0.75 } });
+  } catch (e) { /* zgrade opcione */ }
+}
+function addRouteLayers() {
+  if (!P.length) return;
+  const routeGeo = { type:"Feature", properties:{}, geometry:{ type:"LineString", coordinates:P } };
+  const i = Math.max(0, Math.min(P.length-2, Math.floor(s/STEP)));
+  const riddenGeo = { type:"Feature", properties:{}, geometry:{ type:"LineString", coordinates: P.slice(0, i+1).concat([posAt(Math.min(s, D))]) } };
+  if (map.getSource("route")) {
+    map.getSource("route").setData(routeGeo);
+    map.getSource("ridden").setData(riddenGeo);
+  } else {
+    // tolerance:0 = bez uproscavanja linije po zumu (inace ruta deluje cik-cak na dugim deonicama)
+    map.addSource("route", { type:"geojson", tolerance: 0, data: routeGeo });
+    map.addSource("ridden", { type:"geojson", tolerance: 0, data: riddenGeo });
+    map.addLayer({ id:"route-casing", type:"line", source:"route", layout:{ "line-cap":"round","line-join":"round" }, paint:{ "line-color":"#f97316","line-width":22,"line-opacity":0.3 } });
+    map.addLayer({ id:"route", type:"line", source:"route", layout:{ "line-cap":"round","line-join":"round" }, paint:{ "line-color":"#f97316","line-width":11 } });
+    map.addLayer({ id:"ridden", type:"line", source:"ridden", layout:{ "line-cap":"round","line-join":"round" }, paint:{ "line-color":"#38bdf8","line-width":5,"line-opacity":0.95 } });
+  }
+}
+
 /* ================= UCITAVANJE RUTE ================= */
 async function loadRoute(idx) {
   cur = ROUTES[idx];
@@ -499,19 +540,8 @@ async function loadRoute(idx) {
   const r = await (await fetch("https://router.project-osrm.org/route/v1/driving/" +
     cur.pts.map(p => p[0]+","+p[1]).join(";") + "?geometries=geojson&overview=full")).json();
   prepRoute(r.routes[0].geometry.coordinates);
-  const routeGeo = { type:"Feature", properties:{}, geometry:{ type:"LineString", coordinates:P } };
-  const emptyGeo = { type:"Feature", properties:{}, geometry:{ type:"LineString", coordinates:[P[0]] } };
-  if (map.getSource("route")) {
-    map.getSource("route").setData(routeGeo);
-    map.getSource("ridden").setData(emptyGeo);
-  } else {
-    // tolerance:0 = bez uproscavanja linije po zumu (inace ruta deluje cik-cak na dugim deonicama)
-    map.addSource("route", { type:"geojson", tolerance: 0, data: routeGeo });
-    map.addSource("ridden", { type:"geojson", tolerance: 0, data: emptyGeo });
-    map.addLayer({ id:"route-casing", type:"line", source:"route", layout:{ "line-cap":"round","line-join":"round" }, paint:{ "line-color":"#f97316","line-width":22,"line-opacity":0.3 } });
-    map.addLayer({ id:"route", type:"line", source:"route", layout:{ "line-cap":"round","line-join":"round" }, paint:{ "line-color":"#f97316","line-width":11 } });
-    map.addLayer({ id:"ridden", type:"line", source:"ridden", layout:{ "line-cap":"round","line-join":"round" }, paint:{ "line-color":"#38bdf8","line-width":5,"line-opacity":0.95 } });
-  }
+  s = 0;
+  addRouteLayers();
   if (!rider) {
     const el = document.createElement("div"); el.className = "halo"; el.innerHTML = '<div class="chev"></div>';
     rider = new maplibregl.Marker({ element: el, rotationAlignment: "map", pitchAlignment: "map" }).setLngLat(P[0]).addTo(map);
@@ -533,19 +563,7 @@ async function loadRoute(idx) {
 
 map.on("load", async () => {
   try {
-    map.addSource("dem", { type:"raster-dem",
-      tiles:["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
-      encoding:"terrarium", tileSize:256, maxzoom:13 });
-    map.setTerrain({ source:"dem", exaggeration:1.25 });
-    map.addLayer({ id:"hillshade", type:"hillshade", source:"dem",
-      paint:{ "hillshade-exaggeration":0.45, "hillshade-shadow-color":"#060a14",
-              "hillshade-highlight-color":"#25304a", "hillshade-accent-color":"#1a2338" } });
-    try {
-      const srcs = map.getStyle().sources;
-      const vecName = Object.keys(srcs).find(k => srcs[k].type === "vector");
-      if (vecName) map.addLayer({ id:"bld3d", type:"fill-extrusion", source:vecName, "source-layer":"building",
-        paint:{ "fill-extrusion-color":"#2a3650", "fill-extrusion-height":["coalesce",["get","render_height"],8], "fill-extrusion-opacity":0.75 } });
-    } catch (e) { /* zgrade opcione */ }
+    addBaseLayers();
 
     // kartice za izbor rute
     const rcBox = document.getElementById("routeCards");
@@ -590,6 +608,15 @@ map.on("load", async () => {
     tsr.oninput = () => { TS = +tsr.value; document.getElementById("tsVal").textContent = TS + "×"; };
     const pb = document.getElementById("pauseBtn");
     pb.onclick = () => { paused = !paused; pb.textContent = paused ? "▶" : "⏸"; pb.title = paused ? "Nastavi demo" : "Pauziraj demo"; };
+    // dnevna/nocna mapa
+    const tb = document.getElementById("themeBtn");
+    tb.onclick = () => {
+      theme = theme === "dark" ? "light" : "dark";
+      tb.textContent = theme === "dark" ? "☀️" : "🌙";
+      document.querySelector(".veil").classList.toggle("off", theme === "light");
+      map.setStyle(STYLES[theme]);
+      map.once("style.load", () => { addBaseLayers(); addRouteLayers(); });
+    };
     document.getElementById("replayBtn").onclick = replay;
     document.getElementById("closeSum").onclick = () => document.getElementById("sum").classList.remove("show");
     const repSheet = document.getElementById("repSheet");
