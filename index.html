@@ -35,7 +35,12 @@
   ul.feat li::before{content:"·";color:var(--orange);font-weight:800;position:absolute;left:8px}
   .foot{margin-top:36px;text-align:center;color:var(--mut);font-size:12.5px;line-height:1.7}
   .foot a{color:var(--teal);text-decoration:none}
+  .langs{position:fixed;top:14px;right:14px;z-index:9;display:flex;gap:6px}
+  .langs button{background:var(--card);border:1px solid rgba(148,163,184,.3);color:var(--mut);
+    border-radius:10px;padding:7px 12px;font-size:13px;font-weight:800;cursor:pointer}
+  .langs button.on{background:var(--orange);border-color:var(--orange);color:#fff}
 </style></head><body>
+<div class="langs"><button data-l="sr" class="on">SR</button><button data-l="en">EN</button></div>
 <div class="wrap">
 
   <div class="hero">
@@ -53,33 +58,33 @@
       <rect x="333" y="423" width="7" height="7" fill="#111"/><rect x="340" y="430" width="7" height="7" fill="#111"/>
     </svg>
     <h1>Route<b>Me</b>Right</h1>
-    <div class="tag">Pametna ruta za motor</div>
-    <p class="pitch">Planer ruta za motocikliste koji zna <b>vreme na svakom kilometru</b> tvoje vožnje - u satu kad ćeš baš tuda proći. Kaže ti <b>kad da kreneš</b>, gde da sačekaš da kiša prođe uz kafu, i da li da ideš autoputem ili putem za uživanje.</p>
-    <div class="kada">Calimoto i Kurviger ti kažu <b>KUDA</b> da voziš.<br>RouteMeRight ti kaže <b>KADA</b> - razlika između „pokisnuo sam" i „stigao sam suv".</div>
+    <div class="tag" data-i="tag">Pametna ruta za motor</div>
+    <p class="pitch" data-i="pitch">Planer ruta za motocikliste koji zna <b>vreme na svakom kilometru</b> tvoje vožnje - u satu kad ćeš baš tuda proći. Kaže ti <b>kad da kreneš</b>, gde da sačekaš da kiša prođe uz kafu, i da li da ideš autoputem ili putem za uživanje.</p>
+    <div class="kada" data-i="kada">Calimoto i Kurviger ti kažu <b>KUDA</b> da voziš.<br>RouteMeRight ti kaže <b>KADA</b> - razlika između „pokisnuo sam" i „stigao sam suv".</div>
   </div>
 
   <div class="cta">
-    <a class="btn p" href="app.html">🗺 Otvori planer</a>
-    <a class="btn s" href="tools/tbt3d-koncept.html">🧭 Probaj demo navigacije (3D)</a>
+    <a class="btn p" href="app.html" data-i="cta1">🗺 Otvori planer</a>
+    <a class="btn s" href="tools/tbt3d-koncept.html" data-i="cta2">🧭 Probaj demo navigacije (3D)</a>
   </div>
 
   <div class="sec">
-    <h2>Šta dobijaš</h2>
+    <h2 data-i="sec">Šta dobijaš</h2>
     <div class="card">
-      <div class="t">🌦 Vreme po kilometru, ne po gradu</div>
-      <p>Prognoza za <b>sat prolaska</b> kroz svaki deo rute + presuda 3 vremenska modela. „Kad krenuti" komparator, predlog kišne pauze u kafani uz rutu, radar uživo, bočni vetar, sun-glare, prva kiša posle suše.</p>
+      <div class="t" data-i="c1t">🌦 Vreme po kilometru, ne po gradu</div>
+      <p data-i="c1p">Prognoza za <b>sat prolaska</b> kroz svaki deo rute + presuda 3 vremenska modela. „Kad krenuti" komparator, predlog kišne pauze u kafani uz rutu, radar uživo, bočni vetar, sun-glare, prva kiša posle suše.</p>
     </div>
     <div class="card">
-      <div class="t">⛽ Trošak za baš TVOJ motor</div>
-      <p>Baza od <b>691 modela motocikala</b> (rezervoar + realna potrošnja po generaciji) - gorivo, predlog točenja, putarine i vinjete po zemljama, sve u dinarima/evrima sa izvorom i datumom.</p>
+      <div class="t" data-i="c2t">⛽ Trošak za baš TVOJ motor</div>
+      <p data-i="c2p">Baza od <b>691 modela motocikala</b> (rezervoar + realna potrošnja po generaciji) - gorivo, predlog točenja, putarine i vinjete po zemljama, sve u dinarima/evrima sa izvorom i datumom.</p>
     </div>
     <div class="card">
-      <div class="t">🏔 Balkansko znanje koje nema niko</div>
-      <p>19 legendarnih ruta (Jadranska magistrala, Đerdap, Durmitor, Transfagaraš...), kafane i okupljališta iz zajednice, kamere, radovi, upozorenja - <b>živo znanje o putu</b>, ne samo linija na mapi.</p>
+      <div class="t" data-i="c3t">🏔 Balkansko znanje koje nema niko</div>
+      <p data-i="c3p">19 legendarnih ruta (Jadranska magistrala, Đerdap, Durmitor, Transfagaraš...), kafane i okupljališta iz zajednice, kamere, radovi, upozorenja - <b>živo znanje o putu</b>, ne samo linija na mapi.</p>
     </div>
     <div class="card">
-      <div class="t">🧭 Stiže: prava moto navigacija</div>
-      <ul class="feat">
+      <div class="t" data-i="c4t">🧭 Stiže: prava moto navigacija</div>
+      <ul class="feat" data-i="c4l">
         <li>3D turn-by-turn preko terena (probaj demo gore!)</li>
         <li>Ride summary: lean angle, krivine, uspon, rekordi</li>
         <li>Prijave opasnosti - vozač iza tebe odmah vidi</li>
@@ -88,10 +93,43 @@
     </div>
   </div>
 
-  <div class="foot">
+  <div class="foot" data-i="foot">
     Aplikacija je <b>besplatna</b> i u aktivnom razvoju.<br>
     Pravi je motociklista sa Balkana za motocikliste. 🏍
   </div>
 
 </div>
+<script>
+const EN = {
+  tag: "Smart route for your bike",
+  pitch: "A route planner for motorcyclists that knows the <b>weather on every kilometre</b> of your ride - at the hour you'll actually be there. It tells you <b>when to leave</b>, where to wait out the rain over a coffee, and whether to take the highway or the fun road.",
+  kada: "Calimoto and Kurviger tell you <b>WHERE</b> to ride.<br>RouteMeRight tells you <b>WHEN</b> - the difference between \u201eI got soaked\u201c and \u201eI arrived dry\u201c.",
+  cta1: "\ud83d\uddfa Open the planner",
+  cta2: "\ud83e\udded Try the 3D navigation demo",
+  sec: "What you get",
+  c1t: "\ud83c\udf26 Weather per kilometre, not per city",
+  c1p: "Forecast for the <b>hour of passage</b> through every part of the route + a 3-model verdict. \u201eWhen to leave\u201c comparator, rain-pause suggestion at a caf\u00e9 along the way, live radar, crosswind, sun-glare and first-rain warnings.",
+  c2t: "\u26fd Costs for YOUR exact bike",
+  c2p: "A database of <b>691 motorcycle models</b> (tank + real consumption per generation) - fuel, refuel stops, tolls and vignettes per country, every figure with a source and date.",
+  c3t: "\ud83c\udfd4 Balkan knowledge nobody else has",
+  c3p: "19 legendary routes (Adriatic Highway, Djerdap Gorge, Durmitor, Transfagarasan...), caf\u00e9s and meeting spots from the riding community, speed cameras, roadworks, hazard warnings - <b>living road knowledge</b>, not just a line on a map.",
+  c4t: "\ud83e\udded Coming: real moto navigation",
+  c4l: "<li>3D turn-by-turn over real terrain (try the demo!)</li><li>Ride summary: lean angle, curves, climb, records</li><li>Hazard reports - the rider behind you sees them instantly</li><li>Points, badges and quests for legendary routes</li>",
+  foot: "The app is <b>free</b> and in active development.<br>Built by a Balkan motorcyclist, for motorcyclists. \ud83c\udfcd"
+};
+const SR = {};
+document.querySelectorAll("[data-i]").forEach(el => SR[el.dataset.i] = el.innerHTML);
+function setLang(l) {
+  const d = l === "en" ? EN : SR;
+  document.querySelectorAll("[data-i]").forEach(el => { if (d[el.dataset.i]) el.innerHTML = d[el.dataset.i]; });
+  document.documentElement.lang = l === "en" ? "en" : "sr-Latn";
+  document.querySelectorAll(".langs button").forEach(b => b.classList.toggle("on", b.dataset.l === l));
+  try { localStorage.setItem("rmr_lang", l); } catch (e) {}
+}
+document.querySelectorAll(".langs button").forEach(b => b.onclick = () => setLang(b.dataset.l));
+const q = new URLSearchParams(location.search).get("lang");
+let saved = null; try { saved = localStorage.getItem("rmr_lang"); } catch (e) {}
+const want = q || saved || ((navigator.language || "").startsWith("sr") || (navigator.language || "").startsWith("hr") || (navigator.language || "").startsWith("bs") ? "sr" : "sr");
+if (want === "en") setLang("en");
+</script>
 </body></html>

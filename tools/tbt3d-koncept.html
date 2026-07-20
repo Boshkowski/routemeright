@@ -10,21 +10,19 @@
   .veil{position:absolute;inset:0;pointer-events:none;
     background:linear-gradient(180deg,rgba(15,23,42,.5) 0%,rgba(15,23,42,0) 20%,rgba(15,23,42,0) 62%,rgba(15,23,42,.7) 100%)}
 
-  .topstack{position:absolute;top:14px;left:12px;right:12px;z-index:5;display:flex;flex-direction:column;
-    gap:8px;align-items:stretch;pointer-events:none}
-  .topstack>*{pointer-events:auto}
-  .nav{background:#166534;border-radius:18px;
-    box-shadow:0 10px 30px rgba(0,0,0,.5);padding:14px 16px;display:flex;align-items:center;gap:14px;color:#fff}
-  .nav .arr{font-size:44px;line-height:1;font-weight:700}
-  .nav .dist{font-size:30px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
-  .nav .street{font-size:16px;font-weight:600;opacity:.94;margin-top:2px}
-  .nav .lane{font-size:13.5px;font-weight:600;opacity:.82;margin-top:4px;display:flex;align-items:center;gap:6px}
-  .then{align-self:flex-start;background:rgba(15,23,42,.88);backdrop-filter:blur(6px);
-    color:#cbd5e1;border-radius:12px;padding:7px 13px;font-size:14px;font-weight:600}
+  /* jedna kompaktna kartica: 2/3 navigacija + donja traka za obavestenja */
+  .nav{position:absolute;top:12px;left:12px;right:12px;z-index:5;background:#166534;border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);color:#fff;overflow:hidden}
+  .nav-main{padding:11px 14px 9px;display:flex;align-items:center;gap:12px}
+  .nav .arr{font-size:38px;line-height:1;font-weight:700}
+  .nav .dist{font-size:26px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums;line-height:1.1}
+  .nav .street{font-size:15px;font-weight:600;opacity:.94;margin-top:1px}
+  .nav .lane{font-size:12.5px;font-weight:600;opacity:.8;margin-top:2px;display:flex;align-items:center;gap:6px}
+  .then{margin-left:auto;align-self:flex-start;background:rgba(0,0,0,.28);
+    color:#d9fbe5;border-radius:9px;padding:4px 9px;font-size:12px;font-weight:700;white-space:nowrap}
   .then b{color:#fff}
-  .wx{background:rgba(120,53,15,.92);backdrop-filter:blur(6px);
-    border:1px solid rgba(249,115,22,.4);color:#fed7aa;border-radius:14px;padding:10px 14px;
-    font-size:14.5px;font-weight:600;line-height:1.35}
+  .wx{background:rgba(69,26,3,.55);color:#fed7aa;padding:7px 14px calc(7px + 0px);
+    font-size:13px;font-weight:600;line-height:1.35;border-top:1px solid rgba(249,115,22,.35)}
 
   .chev{width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;
     border-bottom:28px solid #38bdf8;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))}
@@ -131,13 +129,16 @@
 <div id="map"></div>
 <div class="veil"></div>
 
-<div class="topstack">
-  <div class="nav"><div class="arr" id="arr">⬆</div><div>
-    <div class="dist" id="mDist">-</div>
-    <div class="street" id="mStreet">-</div>
-    <div class="lane" id="mLane">🛣</div>
-  </div></div>
-  <div class="then" id="thenChip">zatim</div>
+<div class="nav">
+  <div class="nav-main">
+    <div class="arr" id="arr">⬆</div>
+    <div>
+      <div class="dist" id="mDist">-</div>
+      <div class="street" id="mStreet">-</div>
+      <div class="lane" id="mLane">🛣</div>
+    </div>
+    <div class="then" id="thenChip">zatim</div>
+  </div>
   <div class="wx" id="wx"></div>
 </div>
 
@@ -219,12 +220,15 @@ const SHOT = Q.get("shot"); // "ride" | "sum" za headless screenshotove
 const ROUTES = [
   { ico: "🏞", t: "Jablanica → Konjic", sub: "M-17 · kanjon Neretve", road: "M-17", dest: "Konjic",
     pts: [[17.787,43.585],[17.735,43.735]], cafe: "Caffe Behar, Jablanica",
+    wind: "💨 Udari vetra u kanjonu ~50 km/h kod mosta - pazi na bočni vetar",
     names: ["M-17 ka Konjicu","preko mosta na Neretvi","M-17 · Džajića Buk","centar · Konjic"] },
   { ico: "🦅", t: "Golubac → D. Milanovac", sub: "Đerdapska klisura · Dunav", road: "Đerdapska magistrala", dest: "D. Milanovac",
     pts: [[21.6316,44.6536],[22.1469,44.4653]], cafe: "vidikovac Lepenski Vir",
+    wind: "💨 KOŠAVA: udari do 70 km/h kroz klisuru - drži gas, bez naglog preticanja",
     names: ["ka Golubačkoj tvrđavi","kroz klisuru · uz Dunav","kod Lepenskog Vira","centar · D. Milanovac"] },
   { ico: "⛰", t: "Kotor → Cetinje", sub: "25 serpentina · Lovćen", road: "P-1", dest: "Cetinje",
     pts: [[18.7712,42.4247],[18.8203,42.4425],[18.9214,42.3906]], cafe: "Njeguši · pršut pauza",
+    wind: "💨 Bura ~60 km/h na serpentinama - oprez na izlazima iz krivina",
     names: ["P-1 serpentine","ukosnica br. 12","kroz Njeguše","centar · Cetinje"] },
 ];
 let cur = ROUTES[0];
@@ -321,7 +325,7 @@ let MAN = [];
 let s = 0, v = 0;
 let simT = 0, movT = 0, stopT = 0, maxV = 0;
 let leanMax = 0, leanSum = 0, leanN = 0;
-let pauseLeft = 0, pauseState = 0, pauseDone = false;
+let pauseLeft = 0, pauseState = 0, pauseDone = false, windState = 0;
 let follow = true, running = false, courseUp = true, paused = false;
 let TS = 5;
 let zoomOff = 0, userZooming = false;
@@ -334,6 +338,12 @@ const zoomForSpeed = (kmh) => lerp(17.4, 15.9, (kmh-25)/(100-25));
 function step(dt) {
   const i = Math.max(0, Math.min(P.length-1, Math.round(s/STEP)));
   let vt = VT[i];
+  // deonica sa jakim vetrom (28-45% rute): upozorenje + blago smanjena ciljna brzina
+  if (windState === 0 && s > 0.28*D) { windState = 1; document.getElementById("wx").textContent = cur.wind; }
+  if (windState === 1) {
+    vt = Math.min(vt, 78);
+    if (s > 0.45*D) { windState = 2; document.getElementById("wx").textContent = "🌧 Kiša na delu rute - pauza: ☕ "+cur.cafe+" i front prolazi"; }
+  }
   if (!pauseDone && s > 0.55*D) {
     if (pauseState === 0) { pauseState = 1; pauseLeft = 90; document.getElementById("wx").textContent = "☕ Pauza: "+cur.cafe+" - front prolazi za ~15 min"; }
     if (pauseLeft > 0) { vt = 0; pauseLeft -= dt; if (v < 1) stopT += dt; }
@@ -514,7 +524,7 @@ async function loadRoute(idx) {
   // reset stanja voznje
   s = 0; v = 0; simT = 0; movT = 0; stopT = 0; maxV = 0;
   leanMax = 0; leanSum = 0; leanN = 0;
-  pauseLeft = 0; pauseState = 0; pauseDone = false;
+  pauseLeft = 0; pauseState = 0; pauseDone = false; windState = 0;
   follow = true; zoomOff = 0;
   document.getElementById("wx").textContent = "🌧 Kiša na delu rute - pauza: ☕ "+cur.cafe+" i front prolazi";
   brgS = BRG[0]; cam(0.05, true); hud();
