@@ -1,0 +1,602 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+  html,body{margin:0;padding:0;width:390px;height:844px;overflow:hidden;background:#0f172a;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  #map{position:absolute;inset:0}
+  .maplibregl-ctrl-attrib{display:none}
+  .veil{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(15,23,42,.5) 0%,rgba(15,23,42,0) 20%,rgba(15,23,42,0) 62%,rgba(15,23,42,.7) 100%)}
+
+  .topstack{position:absolute;top:14px;left:12px;right:12px;z-index:5;display:flex;flex-direction:column;
+    gap:8px;align-items:stretch;pointer-events:none}
+  .topstack>*{pointer-events:auto}
+  .nav{background:#166534;border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);padding:14px 16px;display:flex;align-items:center;gap:14px;color:#fff}
+  .nav .arr{font-size:44px;line-height:1;font-weight:700}
+  .nav .dist{font-size:30px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .nav .street{font-size:16px;font-weight:600;opacity:.94;margin-top:2px}
+  .nav .lane{font-size:13.5px;font-weight:600;opacity:.82;margin-top:4px;display:flex;align-items:center;gap:6px}
+  .then{align-self:flex-start;background:rgba(15,23,42,.88);backdrop-filter:blur(6px);
+    color:#cbd5e1;border-radius:12px;padding:7px 13px;font-size:14px;font-weight:600}
+  .then b{color:#fff}
+  .wx{background:rgba(120,53,15,.92);backdrop-filter:blur(6px);
+    border:1px solid rgba(249,115,22,.4);color:#fed7aa;border-radius:14px;padding:10px 14px;
+    font-size:14.5px;font-weight:600;line-height:1.35}
+
+  .chev{width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;
+    border-bottom:28px solid #38bdf8;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))}
+  .halo{width:64px;height:64px;border-radius:50%;background:rgba(56,189,248,.16);
+    display:flex;align-items:center;justify-content:center}
+
+  .fab{position:absolute;right:14px;width:44px;height:44px;border-radius:50%;background:rgba(15,23,42,.85);
+    border:1px solid rgba(148,163,184,.25);color:#e2e8f0;display:flex;align-items:center;justify-content:center;
+    font-size:19px;z-index:5;cursor:pointer;transition:all .2s}
+  .fab.recenter{bottom:132px}
+  .fab.zout{bottom:188px;font-size:24px;font-weight:700}
+  .fab.zin{bottom:244px;font-size:24px;font-weight:700}
+  .fab.mute{bottom:300px}
+  .fab.recenter.on{background:#f97316;border-color:#f97316;color:#fff;
+    box-shadow:0 0 0 6px rgba(249,115,22,.25);animation:pulse 1.4s infinite}
+  @keyframes pulse{50%{box-shadow:0 0 0 12px rgba(249,115,22,.08)}}
+
+  .tspill{position:absolute;right:70px;bottom:138px;background:rgba(15,23,42,.88);backdrop-filter:blur(8px);
+    border:1px solid rgba(148,163,184,.25);border-radius:14px;padding:9px 12px;display:flex;align-items:center;gap:9px;z-index:5}
+  .tspill .lbl{font-size:10px;color:#94a3b8;font-weight:700;letter-spacing:.06em}
+  #tsVal{color:#f97316;font-weight:800;font-size:13.5px;min-width:32px;text-align:center;font-variant-numeric:tabular-nums}
+  #tsRange{width:104px;accent-color:#f97316}
+
+  .bar{position:absolute;left:0;right:0;bottom:0;padding:12px 14px 26px;display:flex;align-items:center;gap:10px;z-index:5}
+  .pill{background:rgba(15,23,42,.92);backdrop-filter:blur(8px);border:1px solid rgba(148,163,184,.22);
+    border-radius:16px;color:#e2e8f0;padding:10px 12px;text-align:center}
+  .speed{display:flex;align-items:center;gap:11px;padding:9px 13px}
+  .speed .v{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+  .speed .u{font-size:11px;color:#94a3b8;margin-top:2px}
+  .limit{width:38px;height:38px;border-radius:50%;background:#fff;flex:0 0 38px;
+    border:5px solid #dc2626;color:#111;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .report{flex:1;background:linear-gradient(135deg,#f97316,#ea580c);border:none;border-radius:18px;color:#fff;
+    padding:15px 10px;font-size:19px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:9px;
+    box-shadow:0 8px 26px rgba(249,115,22,.35)}
+  .eta{min-width:96px}
+  .eta .t{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+  .eta .d{font-size:12px;color:#94a3b8;margin-top:2px}
+
+  /* ===== RIDE SUMMARY ===== */
+  #sum{position:absolute;left:0;right:0;bottom:0;z-index:8;
+    background:linear-gradient(180deg,rgba(30,41,59,.97),rgba(15,23,42,.98));backdrop-filter:blur(16px);
+    border-radius:28px 28px 0 0;border-top:2px solid rgba(249,115,22,.55);padding:18px 18px 24px;
+    transform:translateY(110%);transition:transform .5s cubic-bezier(.23,1,.32,1)}
+  #sum.show{transform:translateY(0)}
+  .sum-head{display:flex;align-items:flex-start;justify-content:space-between}
+  .sum-kicker{font-size:10.5px;letter-spacing:.16em;color:#f97316;font-weight:800}
+  #sum h2{margin:3px 0 2px;color:#fff;font-size:21px;letter-spacing:-.01em}
+  #sum .sub{color:#94a3b8;font-size:12.5px}
+  .sum-close{width:32px;height:32px;border-radius:50%;background:rgba(148,163,184,.14);color:#cbd5e1;
+    display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex:0 0 32px}
+  .hero3{display:grid;grid-template-columns:1fr 1fr 1fr;background:rgba(249,115,22,.09);
+    border:1px solid rgba(249,115,22,.28);border-radius:16px;padding:13px 0 11px;margin:13px 0 9px}
+  .hero3 .h{text-align:center;border-left:1px solid rgba(249,115,22,.16)}
+  .hero3 .h:first-child{border-left:none}
+  .hero3 .v{font-size:27px;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
+  .hero3 .v small{font-size:13px;font-weight:700;color:#94a3b8}
+  .hero3 .h:first-child .v{color:#f97316}
+  .hero3 .l{font-size:9.5px;color:#94a3b8;letter-spacing:.1em;font-weight:700;margin-top:4px}
+  .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+  .st{background:rgba(15,23,42,.6);border:1px solid rgba(148,163,184,.14);border-radius:13px;padding:8px 10px}
+  .st .v{color:#fff;font-size:16.5px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15}
+  .st .v small{font-size:11px;font-weight:600;color:#94a3b8}
+  .st .l{color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 0}
+  .bdg{font-size:11.5px;color:#e2e8f0;background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.22);
+    border-radius:999px;padding:5px 11px;font-weight:600}
+  .bdg.gold{background:rgba(249,115,22,.14);border-color:rgba(249,115,22,.4);color:#fdba74}
+  #elesvg{width:100%;height:50px;margin-top:10px;display:block}
+  .sbtns{display:flex;gap:10px;margin-top:12px}
+  #replayBtn{flex:1;border:none;border-radius:14px;padding:13px;font-size:15.5px;font-weight:800;cursor:pointer;
+    background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;box-shadow:0 6px 20px rgba(249,115,22,.3)}
+
+  /* ===== PRIJAVA ===== */
+  .repsheet{position:absolute;left:12px;right:12px;bottom:104px;z-index:7;background:rgba(15,23,42,.96);
+    backdrop-filter:blur(14px);border:1px solid rgba(148,163,184,.25);border-radius:20px;padding:14px}
+  .repsheet .rs-title{color:#fff;font-size:15px;font-weight:800;margin-bottom:10px}
+  .rs-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .rs-grid button{background:rgba(30,41,59,.9);border:1px solid rgba(148,163,184,.22);border-radius:14px;
+    color:#e2e8f0;font-size:15px;font-weight:700;padding:14px 8px;cursor:pointer}
+  .rs-grid button:active{background:#f97316;border-color:#f97316}
+  .toast{position:absolute;top:230px;left:50%;transform:translateX(-50%);z-index:9;background:rgba(22,101,52,.96);
+    color:#fff;font-size:14.5px;font-weight:700;border-radius:14px;padding:12px 18px;max-width:340px;text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);transition:opacity .4s}
+
+  /* ===== START OVERLAY - izbor rute ===== */
+  #startOv{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+    padding-bottom:70px;background:linear-gradient(180deg,rgba(15,23,42,0) 30%,rgba(15,23,42,.82) 100%)}
+  #startOv .ttl{color:#fff;font-size:19px;font-weight:800;margin-bottom:12px}
+  .routecards{display:flex;flex-direction:column;gap:10px;width:84%}
+  .rc{background:rgba(15,23,42,.94);border:1px solid rgba(249,115,22,.45);border-radius:16px;color:#fff;
+    padding:13px 16px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px}
+  .rc:active{background:rgba(249,115,22,.2)}
+  .rc .ico{font-size:24px}
+  .rc .rt{font-size:16.5px;font-weight:800}
+  .rc .rs{font-size:12.5px;color:#94a3b8;margin-top:2px}
+  #startOv .hint{color:#cbd5e1;font-size:12.5px;margin-top:14px;text-align:center;line-height:1.5}
+  .hide{display:none!important}
+</style></head><body>
+<div id="map"></div>
+<div class="veil"></div>
+
+<div class="topstack">
+  <div class="nav"><div class="arr" id="arr">⬆</div><div>
+    <div class="dist" id="mDist">-</div>
+    <div class="street" id="mStreet">-</div>
+    <div class="lane" id="mLane">🛣</div>
+  </div></div>
+  <div class="then" id="thenChip">zatim</div>
+  <div class="wx" id="wx"></div>
+</div>
+
+<div class="fab mute">🔇</div>
+<div class="fab zin" id="zin" title="Zoom in">+</div>
+<div class="fab zout" id="zout" title="Zoom out">−</div>
+<div class="fab recenter" id="recenter" title="Prati vozaca">◎</div>
+<div class="tspill"><span class="lbl">DEMO</span><input id="tsRange" type="range" min="1" max="30" step="1" value="5"><span id="tsVal">5×</span></div>
+
+<div class="bar">
+  <div class="pill speed"><div><div class="v" id="spd">0</div><div class="u">km/h</div></div><div class="limit">60</div></div>
+  <button class="report" id="reportBtn">⚠ Prijavi</button>
+  <div class="pill eta"><div class="t" id="etaT">-</div><div class="d" id="etaD">-</div></div>
+</div>
+
+<div id="repSheet" class="repsheet hide">
+  <div class="rs-title">Šta prijavljuješ vozačima iza sebe?</div>
+  <div class="rs-grid">
+    <button data-t="Rupa na putu">🕳 Rupa na putu</button>
+    <button data-t="Šljunak u krivini">🪨 Šljunak u krivini</button>
+    <button data-t="Policijska kontrola">👮 Policija</button>
+    <button data-t="Nezgoda">💥 Nezgoda</button>
+  </div>
+</div>
+<div id="toast" class="toast hide"></div>
+
+<div id="sum">
+  <div class="sum-head">
+    <div>
+      <div class="sum-kicker">RIDE SUMMARY</div>
+      <h2 id="sumTitle">-</h2>
+      <div class="sub"><span id="sumSub">-</span> · <span id="sumDate"></span></div>
+    </div>
+    <div class="sum-close" id="closeSum">✕</div>
+  </div>
+  <div class="hero3">
+    <div class="h"><div class="v" id="leanMax">-</div><div class="l">MAX LEAN</div></div>
+    <div class="h"><div class="v" id="sMax">-</div><div class="l">MAX BRZINA</div></div>
+    <div class="h"><div class="v" id="sAvg">-</div><div class="l">PROSEK</div></div>
+  </div>
+  <div class="sgrid">
+    <div class="st"><div class="v" id="sKm">-</div><div class="l">Pređeno</div></div>
+    <div class="st"><div class="v" id="sTime">-</div><div class="l">Vožnja</div></div>
+    <div class="st"><div class="v" id="sStop">-</div><div class="l">Stajanje</div></div>
+    <div class="st"><div class="v" id="sCurves">-</div><div class="l">Krivine</div></div>
+    <div class="st"><div class="v" id="sGain">-</div><div class="l">Uspon</div></div>
+    <div class="st"><div class="v" id="sTop">-</div><div class="l">Najviša tačka</div></div>
+  </div>
+  <div class="badges">
+    <span class="bdg gold" id="bLean">🏆</span>
+    <span class="bdg" id="bCurves">🌀</span>
+    <span class="bdg">☔ Kišna pauza odrađena</span>
+  </div>
+  <svg id="elesvg" viewBox="0 0 354 50" preserveAspectRatio="none"></svg>
+  <div class="sbtns">
+    <button id="replayBtn">🔁 3D replay vožnje</button>
+  </div>
+</div>
+
+<div id="startOv">
+  <div class="ttl">Izaberi demo vožnju</div>
+  <div class="routecards" id="routeCards"></div>
+  <div class="hint">Kamera prati vozača i sama zumira po brzini.<br>Zumiraj slobodno - praćenje ostaje. Slajder menja tempo demo-a.</div>
+</div>
+
+<script>
+"use strict";
+window.READY = false; window.READY2 = false; window.STATUS = "init"; window.PHASE = "load";
+const Q = new URLSearchParams(location.search);
+const SHOT = Q.get("shot"); // "ride" | "sum" za headless screenshotove
+
+/* ===== 3 demo rute ===== */
+const ROUTES = [
+  { ico: "🏞", t: "Jablanica → Konjic", sub: "M-17 · kanjon Neretve", road: "M-17", dest: "Konjic",
+    pts: [[17.787,43.585],[17.735,43.735]], cafe: "Caffe Behar, Jablanica",
+    names: ["M-17 ka Konjicu","preko mosta na Neretvi","M-17 · Džajića Buk","centar · Konjic"] },
+  { ico: "🦅", t: "Golubac → D. Milanovac", sub: "Đerdapska klisura · Dunav", road: "Đerdapska magistrala", dest: "D. Milanovac",
+    pts: [[21.6316,44.6536],[22.1469,44.4653]], cafe: "vidikovac Lepenski Vir",
+    names: ["ka Golubačkoj tvrđavi","kroz klisuru · uz Dunav","kod Lepenskog Vira","centar · D. Milanovac"] },
+  { ico: "⛰", t: "Kotor → Cetinje", sub: "25 serpentina · Lovćen", road: "P-1", dest: "Cetinje",
+    pts: [[18.7712,42.4247],[18.8203,42.4425],[18.9214,42.3906]], cafe: "Njeguši · pršut pauza",
+    names: ["P-1 serpentine","ukosnica br. 12","kroz Njeguše","centar · Cetinje"] },
+];
+let cur = ROUTES[0];
+
+const map = new maplibregl.Map({
+  container: "map",
+  style: "https://tiles.openfreemap.org/styles/dark",
+  center: [17.7552, 43.665], zoom: 16.8, pitch: 60, bearing: 0,
+  attributionControl: false, fadeDuration: 0
+});
+map.on("error", () => { window.STATUS = "style-error"; });
+
+const toRad = Math.PI/180, toDeg = 180/Math.PI, G = 9.81;
+function bearingBetween(a, b) {
+  const dLon = (b[0]-a[0])*toRad;
+  const y = Math.sin(dLon)*Math.cos(b[1]*toRad);
+  const x = Math.cos(a[1]*toRad)*Math.sin(b[1]*toRad) - Math.sin(a[1]*toRad)*Math.cos(b[1]*toRad)*Math.cos(dLon);
+  return (Math.atan2(y,x)*toDeg+360)%360;
+}
+function destPoint(p, br, dM) {
+  const b = br*toRad, la = p[1]*toRad, lo = p[0]*toRad, dR = dM/6371000;
+  const la2 = Math.asin(Math.sin(la)*Math.cos(dR)+Math.cos(la)*Math.sin(dR)*Math.cos(b));
+  const lo2 = lo+Math.atan2(Math.sin(b)*Math.sin(dR)*Math.cos(la), Math.cos(dR)-Math.sin(la)*Math.sin(la2));
+  return [lo2*toDeg, la2*toDeg];
+}
+function distM(a, b) {
+  const x = (b[0]-a[0])*toRad*Math.cos((a[1]+b[1])/2*toRad), y = (b[1]-a[1])*toRad;
+  return Math.hypot(x,y)*6371000;
+}
+function angDiff(a, b) { let d = b-a; while (d>180) d-=360; while (d<-180) d+=360; return d; }
+const lerp = (a,b,t) => a+(b-a)*Math.max(0,Math.min(1,t));
+const fmtT = (s) => { const m = Math.round(s/60); return m >= 60 ? Math.floor(m/60)+" h "+(m%60)+" min" : m+" min"; };
+
+/* ================= RUTA I PROFIL BRZINE ================= */
+let P = [], BRG = [], VT = [], LEAN_R = [];
+const STEP = 20;
+let D = 0, CURVES = 0;
+
+function prepRoute(coords) {
+  P = [coords[0]];
+  let carry = 0;
+  for (let i = 1; i < coords.length; i++) {
+    let a = coords[i-1], b = coords[i], d = distM(a,b);
+    while (carry + d >= STEP) {
+      const t = (STEP-carry)/d;
+      a = [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t];
+      P.push(a); d = distM(a,b); carry = 0;
+    }
+    carry += d;
+  }
+  D = (P.length-1)*STEP;
+  BRG = []; VT = []; LEAN_R = [];
+  for (let i = 0; i < P.length; i++) {
+    BRG[i] = bearingBetween(P[Math.max(0,i-1)], P[Math.min(P.length-1,i+1)]);
+  }
+  for (let i = 0; i < P.length; i++) {
+    const j = Math.max(2, Math.min(P.length-3, i));
+    const dB = Math.abs(angDiff(bearingBetween(P[j-2],P[j]), bearingBetween(P[j],P[j+2])));
+    const r = dB < 1 ? 4000 : (2*STEP)/(dB*toRad);
+    LEAN_R[i] = Math.max(12, r);
+    VT[i] = Math.min(105, Math.max(30, Math.sqrt(6.5*LEAN_R[i])*3.6));
+  }
+  for (let i = P.length-2; i >= 0; i--) {
+    const vNext = VT[i+1]/3.6;
+    VT[i] = Math.min(VT[i], Math.sqrt(vNext*vNext + 2*3.5*STEP)*3.6);
+  }
+  let inC = false;
+  CURVES = 0;
+  for (let i = 0; i < P.length; i++) { const c = LEAN_R[i] < 100; if (c && !inC) CURVES++; inC = c; }
+  MAN = [];
+  const HINTS = ["Drži desnu traku · putokaz za "+cur.dest,"Više traka · drži levu","Posle mosta odmah desno","Isključenje · pratiti "+cur.road];
+  for (let i = 4; i < P.length-4; i++) {
+    const dB = angDiff(bearingBetween(P[i-3],P[i]), bearingBetween(P[i],P[i+3]));
+    if (Math.abs(dB) > 42 && (!MAN.length || i*STEP - MAN[MAN.length-1].s > 400)) {
+      MAN.push({ s: i*STEP, dir: dB > 0 ? "⮕" : "⬅", name: cur.names[MAN.length % cur.names.length], hint: HINTS[MAN.length % HINTS.length] });
+    }
+  }
+  MAN.push({ s: D, dir: "🏁", name: "Cilj · "+cur.dest, hint: "Cilj je na desnoj strani" });
+}
+
+function posAt(sm) {
+  const i = Math.max(0, Math.min(P.length-2, Math.floor(sm/STEP)));
+  const t = Math.max(0, Math.min(1, (sm - i*STEP)/STEP));
+  return [P[i][0]+(P[i+1][0]-P[i][0])*t, P[i][1]+(P[i+1][1]-P[i][1])*t];
+}
+function brgAt(sm) {
+  const i = Math.max(0, Math.min(P.length-2, Math.floor(sm/STEP)));
+  const t = Math.max(0, Math.min(1, (sm - i*STEP)/STEP));
+  return BRG[i] + angDiff(BRG[i], BRG[i+1])*t;
+}
+
+/* ================= STANJE VOZNJE ================= */
+let MAN = [];
+let s = 0, v = 0;
+let simT = 0, movT = 0, stopT = 0, maxV = 0;
+let leanMax = 0, leanSum = 0, leanN = 0;
+let pauseLeft = 0, pauseState = 0, pauseDone = false;
+let follow = true, running = false;
+let TS = 5;
+let zoomOff = 0, userZooming = false;
+let brgS = 0, zoomS = 16.8;
+let rider, startM, finM, lastRiddenPush = 0, lastHud = 0;
+let ELE = null;
+
+const zoomForSpeed = (kmh) => lerp(17.4, 15.9, (kmh-25)/(100-25));
+
+function step(dt) {
+  const i = Math.max(0, Math.min(P.length-1, Math.round(s/STEP)));
+  let vt = VT[i];
+  if (!pauseDone && s > 0.55*D) {
+    if (pauseState === 0) { pauseState = 1; pauseLeft = 90; document.getElementById("wx").textContent = "☕ Pauza: "+cur.cafe+" - front prolazi za ~15 min"; }
+    if (pauseLeft > 0) { vt = 0; pauseLeft -= dt; if (v < 1) stopT += dt; }
+    else { pauseDone = true; document.getElementById("wx").textContent = "✅ Kiša prošla - suvo do cilja. Vidimo se u mestu "+cur.dest+"!"; }
+  }
+  const a = (vt > v ? 2.2 : -3.8);
+  v = Math.max(0, Math.min(vt, v + a*3.6*dt));
+  if (v > 3) movT += dt; else if (pauseDone || pauseState === 0) stopT += dt;
+  s = Math.min(D, s + v/3.6*dt);
+  simT += dt; maxV = Math.max(maxV, v);
+  const lean = Math.min(58, Math.atan((v/3.6)**2/(G*LEAN_R[i]))*toDeg);
+  if (v > 20 && lean > 4) { leanMax = Math.max(leanMax, lean); leanSum += lean; leanN++; }
+}
+
+function hud() {
+  document.getElementById("spd").textContent = Math.round(v);
+  const nxt = MAN.find(m => m.s > s + 15) || MAN[MAN.length-1];
+  const dd = Math.max(0, nxt.s - s);
+  document.getElementById("arr").textContent = dd > 1800 ? "⬆" : nxt.dir;
+  document.getElementById("mDist").textContent = dd > 950 ? (dd/1000).toFixed(1).replace(".",",")+" km" : Math.round(dd/50)*50+" m";
+  document.getElementById("mStreet").textContent = dd > 1800 ? "Pravo · "+cur.road : (nxt.dir==="🏁" ? nxt.name : "Skreni · "+nxt.name);
+  document.getElementById("mLane").textContent = "🛣 " + (dd > 1800 ? "Prati "+cur.road+" · putokaz za "+cur.dest : (nxt.hint || ""));
+  const ni = MAN.indexOf(nxt), nxt2 = MAN[ni+1];
+  const tc = document.getElementById("thenChip");
+  if (nxt2 && nxt.dir !== "🏁") {
+    tc.classList.remove("hide");
+    tc.innerHTML = "zatim <b>" + nxt2.dir + "</b> za " + ((nxt2.s-nxt.s)/1000).toFixed(1).replace(".",",") + " km";
+  } else tc.classList.add("hide");
+  const rem = (D-s)/1000, avgSoFar = movT > 30 ? (s/1000)/(movT/3600) : 65;
+  const etaMin = 17*60+5 + Math.round((simT + rem/avgSoFar*3600)/60);
+  document.getElementById("etaT").textContent = String(Math.floor(etaMin/60)%24).padStart(2,"0")+":"+String(etaMin%60).padStart(2,"0");
+  document.getElementById("etaD").textContent = "još "+rem.toFixed(1).replace(".",",")+" km";
+}
+
+/* vozac na fiksnoj poziciji ekrana (~165px ispod centra) na svakom zoomu */
+function aheadFor(zoomUsed, lat) {
+  const mpp = Math.cos(lat*toRad) * 40075016.686 / (512 * Math.pow(2, zoomUsed));
+  return 165 * mpp;
+}
+function cam(dt, instant) {
+  const pos = posAt(s), tb = brgAt(s);
+  brgS += angDiff(brgS, tb) * (instant ? 1 : 1 - Math.exp(-3.5*dt));
+  const zt = zoomForSpeed(v) + zoomOff;
+  zoomS = instant ? zt : lerp(zoomS, zt, 1 - Math.exp(-1.8*dt));
+  rider.setLngLat(pos).setRotation(tb);
+  if (!follow) return;
+  const zu = userZooming ? map.getZoom() : zoomS;
+  const o = { center: destPoint(pos,(brgS+360)%360, aheadFor(zu, pos[1])), bearing: (brgS+360)%360, pitch: 60 };
+  if (!userZooming) o.zoom = zoomS;
+  map.jumpTo(o);
+}
+
+function setRiddenTo(sm) {
+  const i = Math.max(0, Math.min(P.length-2, Math.floor(sm/STEP)));
+  map.getSource("ridden").setData({ type:"Feature", properties:{}, geometry:{ type:"LineString", coordinates: P.slice(0, i+1).concat([posAt(sm)]) } });
+}
+function pushRidden(force) {
+  if (!force && performance.now() - lastRiddenPush < 400) return;
+  lastRiddenPush = performance.now();
+  setRiddenTo(s);
+}
+
+/* ================= SUMMARY ================= */
+function showSummary() {
+  running = false; window.PHASE = "summary";
+  setRiddenTo(D);
+  const lons = P.map(p=>p[0]), lats = P.map(p=>p[1]);
+  const cb = map.cameraForBounds([[Math.min(...lons),Math.min(...lats)],[Math.max(...lons),Math.max(...lats)]], { padding: {top:70,bottom:440,left:46,right:46} });
+  if (SHOT) map.jumpTo({ center: cb.center, zoom: cb.zoom, pitch: 48, bearing: 24 });
+  else map.easeTo({ center: cb.center, zoom: cb.zoom, pitch: 48, bearing: 24, duration: 2200 });
+  try { document.getElementById("sumDate").textContent = new Date().toLocaleDateString("sr-Latn-RS", { day: "numeric", month: "long" }); } catch (e) {}
+  document.getElementById("sumTitle").textContent = cur.t;
+  document.getElementById("sumSub").textContent = cur.sub;
+  document.getElementById("leanMax").innerHTML = Math.round(leanMax)+"<small>°</small>";
+  document.getElementById("sMax").innerHTML = Math.round(maxV)+"<small> km/h</small>";
+  document.getElementById("sAvg").innerHTML = Math.round((s/1000)/(movT/3600))+"<small> km/h</small>";
+  document.getElementById("sKm").textContent = (s/1000).toFixed(1).replace(".",",")+" km";
+  document.getElementById("sTime").textContent = fmtT(movT);
+  document.getElementById("sStop").textContent = fmtT(stopT);
+  document.getElementById("sCurves").textContent = CURVES;
+  document.getElementById("bLean").textContent = leanMax >= 30 ? "🏆 Serpentina majstor · "+Math.round(leanMax)+"°" : "🛡 Mirna i sigurna vožnja";
+  document.getElementById("bCurves").textContent = "🌀 "+CURVES+" krivina · prosek "+(leanN ? Math.round(leanSum/leanN) : 0)+"° lean";
+  if (ELE) fillEle();
+  document.getElementById("sum").classList.add("show");
+  document.querySelector(".nav").classList.add("hide");
+  document.getElementById("wx").classList.add("hide");
+  document.querySelector(".bar").classList.add("hide");
+  document.getElementById("thenChip").classList.add("hide");
+  document.getElementById("repSheet").classList.add("hide");
+}
+function fillEle() {
+  document.getElementById("sGain").innerHTML = "+"+ELE.gain+"<small> m</small>";
+  document.getElementById("sTop").innerHTML = ELE.maxA+"<small> m</small>";
+  const a = ELE.arr, mn = Math.min(...a), mx = Math.max(...a), sp = Math.max(1, mx-mn);
+  const pts = a.map((e,i) => (i/(a.length-1)*354).toFixed(1)+","+(46-(e-mn)/sp*38+2).toFixed(1)).join(" ");
+  document.getElementById("elesvg").innerHTML =
+    '<defs><linearGradient id="eg" x1="0" y1="0" x2="0" y2="1">' +
+    '<stop offset="0%" stop-color="rgba(249,115,22,.35)"/><stop offset="100%" stop-color="rgba(249,115,22,0)"/></linearGradient></defs>' +
+    '<polygon points="0,50 '+pts+' 354,50" fill="url(#eg)"/>' +
+    '<polyline points="'+pts+'" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linejoin="round"/>';
+}
+async function fetchEle() {
+  try {
+    ELE = null;
+    const n = Math.min(90, P.length), pick = [];
+    for (let i = 0; i < n; i++) pick.push(P[Math.round(i*(P.length-1)/(n-1))]);
+    const r = await (await fetch("https://api.open-meteo.com/v1/elevation?latitude="+pick.map(p=>p[1].toFixed(4)).join(",")+"&longitude="+pick.map(p=>p[0].toFixed(4)).join(","))).json();
+    const a = r.elevation; let gain = 0;
+    for (let i = 1; i < a.length; i++) { const d = a[i]-a[i-1]; if (d > 2) gain += d; }
+    ELE = { gain: Math.round(gain), maxA: Math.round(Math.max(...a)), arr: a };
+    if (window.PHASE === "summary") fillEle();
+  } catch (e) { /* elevacija opciona */ }
+}
+
+/* ================= 3D REPLAY - sluša slajder brzine ================= */
+function replay() {
+  document.getElementById("sum").classList.remove("show");
+  window.PHASE = "replay";
+  let rs = 0, last = performance.now();
+  brgS = brgAt(0);
+  map.jumpTo({ pitch: 62 });
+  function rf(t) {
+    const dt = Math.min(0.1, (t-last)/1000); last = t;
+    rs = Math.min(D, rs + 70*TS*dt);
+    const pos = posAt(rs), tb = brgAt(rs);
+    brgS += angDiff(brgS, tb) * (1 - Math.exp(-3.5*dt));
+    rider.setLngLat(pos).setRotation(tb);
+    map.jumpTo({ center: destPoint(pos,(brgS+360)%360, aheadFor(15.7, pos[1])), zoom: 15.7, bearing: (brgS+360)%360, pitch: 62 });
+    if (performance.now() - lastRiddenPush > 300) { lastRiddenPush = performance.now(); setRiddenTo(rs); }
+    if (rs < D) requestAnimationFrame(rf); else showSummary();
+  }
+  requestAnimationFrame(rf);
+}
+
+/* ================= GLAVNA PETLJA ================= */
+let lastT = 0;
+function loop(t) {
+  if (!running) return;
+  const dt = Math.min(0.1, (t-lastT)/1000); lastT = t;
+  step(dt*TS);
+  if (performance.now() - lastHud > 150) { lastHud = performance.now(); hud(); }
+  cam(dt, false); pushRidden(false);
+  if (s >= D) { showSummary(); return; }
+  requestAnimationFrame(loop);
+}
+
+/* ================= UCITAVANJE RUTE ================= */
+async function loadRoute(idx) {
+  cur = ROUTES[idx];
+  window.STATUS = "loading-route";
+  const r = await (await fetch("https://router.project-osrm.org/route/v1/driving/" +
+    cur.pts.map(p => p[0]+","+p[1]).join(";") + "?geometries=geojson&overview=full")).json();
+  prepRoute(r.routes[0].geometry.coordinates);
+  const routeGeo = { type:"Feature", properties:{}, geometry:{ type:"LineString", coordinates:P } };
+  const emptyGeo = { type:"Feature", properties:{}, geometry:{ type:"LineString", coordinates:[P[0]] } };
+  if (map.getSource("route")) {
+    map.getSource("route").setData(routeGeo);
+    map.getSource("ridden").setData(emptyGeo);
+  } else {
+    // tolerance:0 = bez uproscavanja linije po zumu (inace ruta deluje cik-cak na dugim deonicama)
+    map.addSource("route", { type:"geojson", tolerance: 0, data: routeGeo });
+    map.addSource("ridden", { type:"geojson", tolerance: 0, data: emptyGeo });
+    map.addLayer({ id:"route-casing", type:"line", source:"route", layout:{ "line-cap":"round","line-join":"round" }, paint:{ "line-color":"#f97316","line-width":22,"line-opacity":0.3 } });
+    map.addLayer({ id:"route", type:"line", source:"route", layout:{ "line-cap":"round","line-join":"round" }, paint:{ "line-color":"#f97316","line-width":11 } });
+    map.addLayer({ id:"ridden", type:"line", source:"ridden", layout:{ "line-cap":"round","line-join":"round" }, paint:{ "line-color":"#38bdf8","line-width":5,"line-opacity":0.95 } });
+  }
+  if (!rider) {
+    const el = document.createElement("div"); el.className = "halo"; el.innerHTML = '<div class="chev"></div>';
+    rider = new maplibregl.Marker({ element: el, rotationAlignment: "map", pitchAlignment: "map" }).setLngLat(P[0]).addTo(map);
+    startM = new maplibregl.Marker({ color: "#22c55e", scale: .8 }).setLngLat(P[0]).addTo(map);
+    const fin = document.createElement("div"); fin.textContent = "🏁"; fin.style.fontSize = "26px";
+    finM = new maplibregl.Marker({ element: fin, anchor: "bottom" }).setLngLat(P[P.length-1]).addTo(map);
+  } else {
+    startM.setLngLat(P[0]); finM.setLngLat(P[P.length-1]);
+  }
+  // reset stanja voznje
+  s = 0; v = 0; simT = 0; movT = 0; stopT = 0; maxV = 0;
+  leanMax = 0; leanSum = 0; leanN = 0;
+  pauseLeft = 0; pauseState = 0; pauseDone = false;
+  follow = true; zoomOff = 0;
+  document.getElementById("wx").textContent = "🌧 Kiša na delu rute - pauza: ☕ "+cur.cafe+" i front prolazi";
+  brgS = BRG[0]; cam(0.05, true); hud();
+  fetchEle();
+}
+
+map.on("load", async () => {
+  try {
+    map.addSource("dem", { type:"raster-dem",
+      tiles:["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+      encoding:"terrarium", tileSize:256, maxzoom:13 });
+    map.setTerrain({ source:"dem", exaggeration:1.25 });
+    map.addLayer({ id:"hillshade", type:"hillshade", source:"dem",
+      paint:{ "hillshade-exaggeration":0.45, "hillshade-shadow-color":"#060a14",
+              "hillshade-highlight-color":"#25304a", "hillshade-accent-color":"#1a2338" } });
+    try {
+      const srcs = map.getStyle().sources;
+      const vecName = Object.keys(srcs).find(k => srcs[k].type === "vector");
+      if (vecName) map.addLayer({ id:"bld3d", type:"fill-extrusion", source:vecName, "source-layer":"building",
+        paint:{ "fill-extrusion-color":"#2a3650", "fill-extrusion-height":["coalesce",["get","render_height"],8], "fill-extrusion-opacity":0.75 } });
+    } catch (e) { /* zgrade opcione */ }
+
+    // kartice za izbor rute
+    const rcBox = document.getElementById("routeCards");
+    ROUTES.forEach((rt, i) => {
+      const b = document.createElement("button");
+      b.className = "rc";
+      b.innerHTML = '<span class="ico">'+rt.ico+'</span><span><div class="rt">'+rt.t+'</div><div class="rs">'+rt.sub+'</div></span>';
+      b.onclick = async () => {
+        document.getElementById("startOv").classList.add("hide");
+        await loadRoute(i);
+        running = true; window.PHASE = "ride"; lastT = performance.now();
+        requestAnimationFrame(loop);
+      };
+      rcBox.appendChild(b);
+    });
+
+    // kontrole
+    const doBrk = () => { if (follow) { follow = false; document.getElementById("recenter").classList.add("on"); } };
+    const brk = (e) => { if (e && e.originalEvent) doBrk(); };
+    map.on("dragstart", brk); map.on("rotatestart", brk);
+    map.on("zoomstart", (e) => { if (e.originalEvent) userZooming = true; });
+    map.on("zoomend", () => {
+      if (!userZooming) return;
+      userZooming = false;
+      if (follow) { zoomOff = Math.max(-2.2, Math.min(1.8, map.getZoom() - zoomForSpeed(v))); zoomS = map.getZoom(); }
+    });
+    document.getElementById("recenter").onclick = () => { follow = true; zoomOff = 0; document.getElementById("recenter").classList.remove("on"); cam(0.05, true); };
+    const nudgeZoom = (dz) => {
+      if (follow) { zoomOff = Math.max(-2.2, Math.min(1.8, zoomOff + dz)); zoomS = zoomForSpeed(v) + zoomOff; cam(0.05, true); }
+      else map.easeTo({ zoom: map.getZoom() + dz, duration: 220 });
+    };
+    document.getElementById("zin").onclick = () => nudgeZoom(0.6);
+    document.getElementById("zout").onclick = () => nudgeZoom(-0.6);
+    const tsr = document.getElementById("tsRange");
+    tsr.oninput = () => { TS = +tsr.value; document.getElementById("tsVal").textContent = TS + "×"; };
+    document.getElementById("replayBtn").onclick = replay;
+    document.getElementById("closeSum").onclick = () => document.getElementById("sum").classList.remove("show");
+    const repSheet = document.getElementById("repSheet");
+    document.getElementById("reportBtn").onclick = () => repSheet.classList.toggle("hide");
+    document.querySelectorAll("#repSheet button").forEach((b) => b.onclick = () => {
+      repSheet.classList.add("hide");
+      const we = document.createElement("div");
+      we.textContent = "⚠"; we.style.cssText = "font-size:22px;text-shadow:0 1px 4px rgba(0,0,0,.9)";
+      new maplibregl.Marker({ element: we }).setLngLat(posAt(s)).addTo(map);
+      const toast = document.getElementById("toast");
+      toast.textContent = "✅ Prijavljeno: " + b.dataset.t + " · vozači iza tebe dobijaju upozorenje";
+      toast.classList.remove("hide"); toast.style.opacity = "1";
+      setTimeout(() => { toast.style.opacity = "0"; setTimeout(() => toast.classList.add("hide"), 450); }, 2600);
+    });
+
+    // headless screenshot rezimi (uvek ruta 0)
+    if (SHOT === "ride") {
+      document.getElementById("startOv").classList.add("hide"); window.PHASE = "ride";
+      await loadRoute(0);
+      let guard = 2e6;
+      while (s < 0.38*D && --guard > 0) step(0.1);
+      hud(); cam(0.05, true); pushRidden(true);
+      map.once("idle", () => { window.READY2 = true; });
+    } else if (SHOT === "sum") {
+      document.getElementById("startOv").classList.add("hide");
+      await loadRoute(0);
+      let guard = 2e6;
+      while (s < D && --guard > 0) step(0.1);
+      showSummary();
+      map.once("idle", () => { window.READY2 = true; });
+    } else {
+      // pozadinski pregled prve rute iza start overlaya
+      await loadRoute(0);
+    }
+
+    map.once("idle", () => { window.STATUS = "done"; window.READY = true; });
+    setTimeout(() => { window.STATUS += "+timeout"; window.READY = true; window.READY2 = true; }, 20000);
+  } catch (e) {
+    window.STATUS = "err: " + e.message; window.READY = true;
+  }
+});
+</script>
+</body></html>

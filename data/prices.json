@@ -1,0 +1,229 @@
+{
+  "meta": {
+    "updated": "2026-07-18",
+    "note": "Cene sa izvorom i datumom provere. verified=null znači seed procena koju updater tek treba da pokrije - aplikacija je označava sa ~. Osvežavanje: python3 update_prices.py",
+    "eurRsd": 117.2,
+    "eurBam": 1.9558
+  },
+  "fuel": {
+    "RS": {
+      "eur": 1.67,
+      "local": "196 RSD",
+      "verified": "2026-07-18",
+      "source": "nafta.hr (auto)"
+    },
+    "HR": {
+      "eur": 1.54,
+      "verified": "2026-07-18",
+      "source": "HAK medijan (auto)"
+    },
+    "BA": {
+      "eur": 1.42,
+      "local": "2.78 KM",
+      "verified": "2026-07-18",
+      "source": "nafta.hr (auto)"
+    },
+    "ME": {
+      "eur": 1.64,
+      "verified": "2026-07-18",
+      "source": "nafta.hr (auto)"
+    },
+    "SI": {
+      "eur": 1.52,
+      "verified": null,
+      "source": "TODO: regulisana cena gov.si"
+    },
+    "MK": {
+      "eur": 1.28,
+      "verified": null,
+      "source": "TODO: RKE dnevni cenovnik"
+    },
+    "AL": {
+      "eur": 1.75,
+      "verified": null,
+      "source": "TODO"
+    },
+    "XK": {
+      "eur": 1.35,
+      "verified": null,
+      "source": "TODO"
+    },
+    "AT": {
+      "eur": 1.65,
+      "verified": null,
+      "source": "TODO: EU Oil Bulletin"
+    },
+    "HU": {
+      "eur": 1.55,
+      "verified": null,
+      "source": "TODO: EU Oil Bulletin"
+    },
+    "RO": {
+      "eur": 1.45,
+      "verified": null,
+      "source": "TODO: EU Oil Bulletin"
+    },
+    "BG": {
+      "eur": 1.32,
+      "verified": null,
+      "source": "TODO: EU Oil Bulletin"
+    },
+    "GR": {
+      "eur": 1.82,
+      "verified": null,
+      "source": "TODO: EU Oil Bulletin"
+    },
+    "IT": {
+      "eur": 1.8,
+      "verified": null,
+      "source": "TODO: EU Oil Bulletin"
+    },
+    "DE": {
+      "eur": 1.72,
+      "verified": null,
+      "source": "TODO: EU Oil Bulletin"
+    }
+  },
+  "tollMotoPerKm": {
+    "RS": {
+      "eur": 0.025,
+      "verified": "2026-07-17",
+      "derived": "1030 RSD / 350 km BG(Vrčin)-Preševo, kat. IA",
+      "source": "tolls.eu/serbia, cenovnik ažuriran 27.03.2026"
+    },
+    "HR": {
+      "eur": 0.044,
+      "verified": "2026-07-17",
+      "derived": "10,80 € / 253 km ZG-Zadar, grupa I",
+      "source": "tolls.eu/croatia 2026"
+    },
+    "ME": {
+      "eur": 0.04,
+      "verified": null,
+      "source": "TODO: Monteput (Bar-Boljare, Sozina)"
+    },
+    "MK": {
+      "eur": 0.025,
+      "verified": null,
+      "source": "TODO: cenovnik naplatnih stanica"
+    },
+    "BA": {
+      "eur": 0.03,
+      "verified": null,
+      "source": "TODO: JP Autoceste FBiH"
+    },
+    "GR": {
+      "eur": 0.05,
+      "verified": null,
+      "source": "TODO"
+    },
+    "IT": {
+      "eur": 0.06,
+      "verified": null,
+      "source": "TODO"
+    },
+    "FR": {
+      "eur": 0.06,
+      "verified": null,
+      "source": "TODO"
+    }
+  },
+  "tollSections": {
+    "RS": [
+      {
+        "name": "Beograd (Vrčin) - Preševo",
+        "km": 350,
+        "rsd": 1030
+      },
+      {
+        "name": "Beograd (Stara Pazova) - Subotica",
+        "km": 132,
+        "rsd": 420
+      },
+      {
+        "name": "Beograd (Vrčin) - Dimitrovgrad",
+        "km": 301,
+        "rsd": 900
+      },
+      {
+        "name": "Beograd (Obrenovac) - Požega (Miloš Veliki)",
+        "km": 123,
+        "rsd": 480
+      },
+      {
+        "name": "Beograd (Simanovci) - Šid",
+        "km": 76,
+        "rsd": 260
+      },
+      {
+        "name": "Pojate - Vrba (Morava)",
+        "km": 71,
+        "rsd": 200
+      }
+    ],
+    "HR": [
+      {
+        "name": "Zagreb - Zadar (A1)",
+        "km": 253,
+        "eur": 10.8
+      },
+      {
+        "name": "Zagreb - Rijeka (A1/A6)",
+        "km": 135,
+        "eur": 6.1
+      },
+      {
+        "name": "Trakošćan - Split (A2/A1)",
+        "km": 444,
+        "eur": 19.6
+      },
+      {
+        "name": "Zagreb Istok - Lipovac (A3)",
+        "km": 258,
+        "eur": 11.2
+      }
+    ]
+  },
+  "vignette": {
+    "SI": {
+      "text": "moto e-vinjeta 7 dana = 8,00 €",
+      "verified": "2026-07-17",
+      "source": "DARS cenovnik 2026"
+    },
+    "AT": {
+      "text": "moto vinjeta 10 dana = 5,10 €",
+      "verified": "2026-07-17",
+      "source": "ASFINAG tarifa 2026"
+    },
+    "HU": {
+      "text": "moto D1M vinjeta 10 dana ≈ 15 €",
+      "verified": null,
+      "source": "TODO: nemzetiutdij.hu"
+    },
+    "RO": {
+      "text": "rovinjeta",
+      "verified": null,
+      "source": "TODO"
+    },
+    "BG": {
+      "text": "vinjeta",
+      "verified": null,
+      "source": "TODO"
+    },
+    "CZ": {
+      "text": "vinjeta",
+      "verified": null,
+      "source": "TODO"
+    },
+    "SK": {
+      "text": "vinjeta",
+      "verified": null,
+      "source": "TODO"
+    },
+    "CH": {
+      "text": "vinjeta ~44 €",
+      "verified": null,
+      "source": "TODO"
+    }
+  }
+}
