@@ -21,8 +21,8 @@
   .then{margin-left:auto;align-self:flex-start;background:rgba(0,0,0,.28);
     color:#d9fbe5;border-radius:9px;padding:4px 9px;font-size:12px;font-weight:700;white-space:nowrap}
   .then b{color:#fff}
-  .wx{background:rgba(69,26,3,.55);color:#fed7aa;padding:7px 14px calc(7px + 0px);
-    font-size:13px;font-weight:600;line-height:1.35;border-top:1px solid rgba(249,115,22,.35)}
+  .wx{background:rgba(153,27,27,.88);color:#fee2e2;padding:7px 14px;
+    font-size:13px;font-weight:600;line-height:1.35;border-top:1px solid rgba(239,68,68,.55)}
 
   .chev{width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent;
     border-bottom:28px solid #38bdf8;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))}
@@ -42,7 +42,7 @@
     box-shadow:0 0 0 6px rgba(249,115,22,.25);animation:pulse 1.4s infinite}
   @keyframes pulse{50%{box-shadow:0 0 0 12px rgba(249,115,22,.08)}}
 
-  .tspill{position:absolute;left:14px;right:70px;bottom:138px;background:rgba(15,23,42,.88);backdrop-filter:blur(8px);
+  .tspill{position:absolute;left:14px;right:70px;bottom:calc(86px + env(safe-area-inset-bottom, 12px));background:rgba(15,23,42,.88);backdrop-filter:blur(8px);
     border:1px solid rgba(148,163,184,.25);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:11px;z-index:5}
   .tspill .lbl{font-size:10px;color:#94a3b8;font-weight:700;letter-spacing:.06em}
   #tsVal{color:#f97316;font-weight:800;font-size:14px;min-width:36px;text-align:center;font-variant-numeric:tabular-nums}
