@@ -36,7 +36,9 @@
   .fab.recenter{bottom:132px}
   .fab.zout{bottom:188px;font-size:24px;font-weight:700}
   .fab.zin{bottom:244px;font-size:24px;font-weight:700}
-  .fab.mute{bottom:300px}
+  .fab.compass{bottom:300px}
+  .fab.compass svg{transition:transform .2s linear}
+  .fab.mute{bottom:356px}
   .fab.recenter.on{background:#f97316;border-color:#f97316;color:#fff;
     box-shadow:0 0 0 6px rgba(249,115,22,.25);animation:pulse 1.4s infinite}
   @keyframes pulse{50%{box-shadow:0 0 0 12px rgba(249,115,22,.08)}}
@@ -136,6 +138,12 @@
 </div>
 
 <div class="fab mute">🔇</div>
+<div class="fab compass" id="compass" title="Sever gore / kurs gore">
+  <svg id="compassNeedle" width="24" height="24" viewBox="0 0 24 24">
+    <polygon points="12,2.5 15.2,12 8.8,12" fill="#ef4444"/>
+    <polygon points="12,21.5 8.8,12 15.2,12" fill="#e2e8f0"/>
+  </svg>
+</div>
 <div class="fab zin" id="zin" title="Zoom in">+</div>
 <div class="fab zout" id="zout" title="Zoom out">−</div>
 <div class="fab recenter" id="recenter" title="Prati vozaca">◎</div>
@@ -310,7 +318,7 @@ let s = 0, v = 0;
 let simT = 0, movT = 0, stopT = 0, maxV = 0;
 let leanMax = 0, leanSum = 0, leanN = 0;
 let pauseLeft = 0, pauseState = 0, pauseDone = false;
-let follow = true, running = false;
+let follow = true, running = false, courseUp = true;
 let TS = 5;
 let zoomOff = 0, userZooming = false;
 let brgS = 0, zoomS = 16.8;
@@ -369,7 +377,7 @@ function cam(dt, instant) {
   rider.setLngLat(pos).setRotation(tb);
   if (!follow) return;
   const zu = userZooming ? map.getZoom() : zoomS;
-  const o = { center: destPoint(pos,(brgS+360)%360, aheadFor(zu, pos[1])), bearing: (brgS+360)%360, pitch: 60 };
+  const o = { center: destPoint(pos,(brgS+360)%360, aheadFor(zu, pos[1])), bearing: courseUp ? (brgS+360)%360 : 0, pitch: 60 };
   if (!userZooming) o.zoom = zoomS;
   map.jumpTo(o);
 }
@@ -555,6 +563,13 @@ map.on("load", async () => {
     };
     document.getElementById("zin").onclick = () => nudgeZoom(0.6);
     document.getElementById("zout").onclick = () => nudgeZoom(-0.6);
+    // kompas ruza: igla prati sever; klik = kurs-gore <-> sever-gore (van pracenja: vrati sever)
+    const needle = document.getElementById("compassNeedle");
+    map.on("rotate", () => { needle.style.transform = "rotate(" + (-map.getBearing()) + "deg)"; });
+    document.getElementById("compass").onclick = () => {
+      if (follow) { courseUp = !courseUp; cam(0.05, true); }
+      else map.easeTo({ bearing: 0, duration: 300 });
+    };
     const tsr = document.getElementById("tsRange");
     tsr.oninput = () => { TS = +tsr.value; document.getElementById("tsVal").textContent = TS + "×"; };
     document.getElementById("replayBtn").onclick = replay;
