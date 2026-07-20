@@ -44,11 +44,12 @@
     box-shadow:0 0 0 6px rgba(249,115,22,.25);animation:pulse 1.4s infinite}
   @keyframes pulse{50%{box-shadow:0 0 0 12px rgba(249,115,22,.08)}}
 
-  .tspill{position:absolute;right:70px;bottom:138px;background:rgba(15,23,42,.88);backdrop-filter:blur(8px);
-    border:1px solid rgba(148,163,184,.25);border-radius:14px;padding:9px 12px;display:flex;align-items:center;gap:9px;z-index:5}
+  .tspill{position:absolute;left:14px;right:70px;bottom:138px;background:rgba(15,23,42,.88);backdrop-filter:blur(8px);
+    border:1px solid rgba(148,163,184,.25);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:11px;z-index:5}
   .tspill .lbl{font-size:10px;color:#94a3b8;font-weight:700;letter-spacing:.06em}
-  #tsVal{color:#f97316;font-weight:800;font-size:13.5px;min-width:32px;text-align:center;font-variant-numeric:tabular-nums}
-  #tsRange{width:104px;accent-color:#f97316}
+  #tsVal{color:#f97316;font-weight:800;font-size:14px;min-width:36px;text-align:center;font-variant-numeric:tabular-nums}
+  #tsRange{flex:1;width:auto;min-width:0;accent-color:#f97316;height:22px}
+  #pauseBtn{background:none;border:none;color:#f97316;font-size:20px;font-weight:800;cursor:pointer;padding:0 2px;line-height:1}
 
   .bar{position:absolute;left:0;right:0;bottom:0;padding:12px 14px calc(14px + env(safe-area-inset-bottom, 12px));display:flex;align-items:center;gap:10px;z-index:5}
   .pill{background:rgba(15,23,42,.92);backdrop-filter:blur(8px);border:1px solid rgba(148,163,184,.22);
@@ -150,7 +151,7 @@
 <div class="fab zin" id="zin" title="Zoom in">+</div>
 <div class="fab zout" id="zout" title="Zoom out">−</div>
 <div class="fab recenter" id="recenter" title="Prati vozaca">◎</div>
-<div class="tspill"><span class="lbl">DEMO</span><input id="tsRange" type="range" min="1" max="30" step="1" value="5"><span id="tsVal">5×</span></div>
+<div class="tspill"><button id="pauseBtn" title="Pauziraj demo">⏸</button><span class="lbl">DEMO</span><input id="tsRange" type="range" min="1" max="30" step="1" value="5"><span id="tsVal">5×</span></div>
 
 <div class="bar">
   <div class="pill speed"><div><div class="v" id="spd">0</div><div class="u">km/h</div></div><div class="limit">60</div></div>
@@ -321,7 +322,7 @@ let s = 0, v = 0;
 let simT = 0, movT = 0, stopT = 0, maxV = 0;
 let leanMax = 0, leanSum = 0, leanN = 0;
 let pauseLeft = 0, pauseState = 0, pauseDone = false;
-let follow = true, running = false, courseUp = true;
+let follow = true, running = false, courseUp = true, paused = false;
 let TS = 5;
 let zoomOff = 0, userZooming = false;
 let brgS = 0, zoomS = 16.8;
@@ -455,6 +456,7 @@ function replay() {
   brgS = brgAt(0);
   map.jumpTo({ pitch: 62 });
   function rf(t) {
+    if (paused) { last = t; requestAnimationFrame(rf); return; }
     const dt = Math.min(0.1, (t-last)/1000); last = t;
     rs = Math.min(D, rs + 70*TS*dt);
     const pos = posAt(rs), tb = brgAt(rs);
@@ -471,6 +473,7 @@ function replay() {
 let lastT = 0;
 function loop(t) {
   if (!running) return;
+  if (paused) { lastT = t; requestAnimationFrame(loop); return; }   // pauza: vreme stoji, mapa slobodna
   const dt = Math.min(0.1, (t-lastT)/1000); lastT = t;
   step(dt*TS);
   if (performance.now() - lastHud > 150) { lastHud = performance.now(); hud(); }
@@ -575,6 +578,8 @@ map.on("load", async () => {
     };
     const tsr = document.getElementById("tsRange");
     tsr.oninput = () => { TS = +tsr.value; document.getElementById("tsVal").textContent = TS + "×"; };
+    const pb = document.getElementById("pauseBtn");
+    pb.onclick = () => { paused = !paused; pb.textContent = paused ? "▶" : "⏸"; pb.title = paused ? "Nastavi demo" : "Pauziraj demo"; };
     document.getElementById("replayBtn").onclick = replay;
     document.getElementById("closeSum").onclick = () => document.getElementById("sum").classList.remove("show");
     const repSheet = document.getElementById("repSheet");
