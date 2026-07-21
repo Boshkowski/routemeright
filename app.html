@@ -549,9 +549,9 @@ const state = { routes: [], selected: 0, markers: [], geocode: {}, revCache: {},
   catMarkers: { fuel: [], food: [], camp: [], cam: [], pause: [], work: [], hazard: [], meet: [] }, editorialMarkers: [], layerVis: {} };
 
 /* slojevi mape: koje kategorije markera se prikazuju (pamti se u localStorage) */
-const LAYER_DEFS = [["fuel", "⛽ Pumpe"], ["food", "🍽 Hrana i pauze"], ["camp", "⛺ Kampovi"],
-  ["cam", "📷 Kamere"], ["pause", "☕ Predlog pauze"], ["work", "🚧 Radovi"], ["hazard", "⚠ Opasnosti"],
-  ["meet", "🏍 Okupljališta i polasci"]];
+const LAYER_DEFS = [["fuel", "Pumpe"], ["food", "Hrana i pauze"], ["camp", "Kampovi"],
+  ["cam", "Kamere"], ["pause", "Predlog pauze"], ["work", "Radovi"], ["hazard", "Opasnosti"],
+  ["meet", "Okupljališta i polasci"]];
 const EMOJI_CAT = { "⛽": "fuel", "🍽": "food", "⛺": "camp", "📷": "cam", "☕": "pause", "🚧": "work" };
 function loadLayerVis() {
   let saved = {};
@@ -2007,8 +2007,8 @@ function renderViaChips() {
     row.dataset.gi = gi;
     const it = g.run ? null : state.vias[g.idx];
     const label = g.run
-      ? `${famous ? famous.emoji + " " + famous.name : "📍 deonica rute"} <span class="poi-dist">(${g.idxs.length} ${g.idxs.length === 1 ? "tačka" : "tačaka"})</span>`
-      : `🛑 ${it.name || "stanica"}`;
+      ? `${famous ? famous.name : "deonica rute"} <span class="poi-dist">(${g.idxs.length} ${g.idxs.length === 1 ? "tačka" : "tačaka"})</span>`
+      : `${it.name || "stanica"}`;
     row.innerHTML = `<span class="grip" aria-hidden="true" title="Prevuci za redosled ili na Od/Do polje">⠿</span><span class="stop-name">${gi + 1}. ${label}</span><span class="stop-acts"></span>`;
     row.querySelector(".grip").onpointerdown = (ev) => startRowDrag(ev, row, gi, g, it);
     const acts = row.querySelector(".stop-acts");
@@ -2294,7 +2294,7 @@ function renderFamousSuggestion() {
     if (!vias || !vias.length) continue;
     const d = document.createElement("div");
     d.className = "sugg";
-    d.innerHTML = `${f.emoji} U koridoru je <b>${f.name}</b> - ${f.desc}. `;
+    d.innerHTML = `U koridoru je <b>${f.name}</b> - ${f.desc}. `;
     const b = document.createElement("button");
     b.textContent = "Vozi baš tuda";
     b.style.cssText = "margin-left:6px;padding:4px 10px;border-radius:6px;border:none;background:#0891b2;color:#fff;cursor:pointer;font-size:12.5px";
@@ -2708,7 +2708,7 @@ function init() {
   const fs = $("famous");
   FAMOUS_ROUTES.forEach((f) => {
     const o = document.createElement("option");
-    o.value = f.id; o.textContent = `${f.emoji} ${f.name} (${f.startName} → ${f.endName})`;
+    o.value = f.id; o.textContent = `${f.name} (${f.startName} → ${f.endName})`;
     fs.appendChild(o);
   });
   fs.onchange = async () => {
