@@ -719,6 +719,16 @@ const FAMOUS_ROUTES = [
   { id: "sumadija", name: "Srce Šumadije", emoji: "🍇", desc: "kroz Šumadiju preko Rudnika i Gornjeg Milanovca (138 km)",
     startName: "Beograd", endName: "Čačak",
     wps: [[20.498,44.791],[20.640,44.280],[20.460,44.030],[20.349,43.893]] },
+  // KRUŽNE TURE 2026-07-21 (polazak = cilj; ceo krug je u wps) - Boskov zahtev, NAŠI koridori verifikovani
+  { id: "fruska", name: "Krug Fruške gore", emoji: "🔄", desc: "grebenski put preko Iriškog venca i Vrdnika, nazad u Novi Sad (52 km)",
+    startName: "Novi Sad", endName: "Novi Sad",
+    wps: [[19.8452,45.2551],[19.8296,45.1498],[19.7922,45.1217],[19.8434,45.2232],[19.8452,45.2551]] },
+  { id: "zlatibortara", name: "Krug Zlatibor - Tara", emoji: "🔄", desc: "kružno Zlatibor - NP Tara - Kremna - nazad (163 km)",
+    startName: "Zlatibor", endName: "Zlatibor",
+    wps: [[19.710,43.730],[19.560,43.900],[19.500,43.970],[19.400,43.860],[19.700,43.730]] },
+  { id: "jastrebacloop", name: "Krug oko Jastrepca", emoji: "🔄", desc: "kružno od Kruševca oko masiva Jastrebac (136 km)",
+    startName: "Kruševac", endName: "Kruševac",
+    wps: [[21.326,43.583],[21.200,43.470],[21.400,43.400],[21.500,43.480],[21.326,43.583]] },
 ];
 function famousVariant(f, A, B) {
   let ai = 0, bi = 0, ad = 1e9, bd = 1e9;
@@ -2418,8 +2428,12 @@ async function plan() {
     setStatus("");
     sheetAfterPlan();
   } catch (e) {
-    setStatus(e.message || "Greška", true);
-    logState({ phase: "error", msg: String(e.message || e) });
+    const raw = String(e.message || e);
+    const friendly = /failed to fetch|networkerror|load failed|timeout/i.test(raw)
+      ? "Server za rute trenutno ne odgovara (mreža ili preopterećenje). Probaj ponovo za par sekundi."
+      : raw;
+    setStatus(friendly, true);
+    logState({ phase: "error", msg: raw });
   } finally {
     btn.disabled = false;
   }
@@ -2697,19 +2711,28 @@ function init() {
     o.value = f.id; o.textContent = `${f.emoji} ${f.name} (${f.startName} → ${f.endName})`;
     fs.appendChild(o);
   });
-  fs.onchange = () => {
+  fs.onchange = async () => {
     const f = FAMOUS_ROUTES.find((x) => x.id === fs.value);
     if (!f) return;
+    const isLoop = f.startName.toLowerCase() === f.endName.toLowerCase();
     const userFrom = $("from").value.trim();
-    if (userFrom && userFrom.toLowerCase() !== f.startName.toLowerCase()) {
-      // krećeš iz svog grada: početak rute ulazi kao IMENOVANA stanica
-      // (npr. Beograd → Rijeka → magistrala → Dubrovnik; povratak kući = "Povratno putovanje")
-      $("to").value = f.endName;
-      state.vias = [{ t: "stop", v: f.wps[0], name: f.startName },
-        ...f.wps.slice(1, -1).map((w) => ({ t: "via", v: w }))];
+    if (!isLoop && userFrom && userFrom.toLowerCase() !== f.startName.toLowerCase()) {
+      // krećeš iz svog grada: ORIJENTIŠI rutu ka bližem kraju da ne voziš celu pa nazad
+      let wps = f.wps, sName = f.startName, eName = f.endName;
+      try {
+        const g = await geocode(userFrom);
+        const dStart = haversine(g.lat, g.lon, f.wps[0][1], f.wps[0][0]);
+        const dEnd = haversine(g.lat, g.lon, f.wps[f.wps.length - 1][1], f.wps[f.wps.length - 1][0]);
+        if (dEnd < dStart) { wps = [...f.wps].reverse(); sName = f.endName; eName = f.startName; }
+      } catch { /* bez geokodiranja ostaje podrazumevani smer */ }
+      $("to").value = eName;
+      state.vias = [{ t: "stop", v: wps[0], name: sName },
+        ...wps.slice(1, -1).map((w) => ({ t: "via", v: w }))];
     } else {
+      // ista ruta u punom obimu (ili kružna: polazak = cilj)
       $("from").value = f.startName; $("to").value = f.endName;
-      state.vias = f.wps.slice(1, -1).map((w) => ({ t: "via", v: w }));
+      state.vias = (isLoop ? f.wps.slice(1, -1) : f.wps.slice(1, -1)).map((w) => ({ t: "via", v: w }));
+      if (isLoop) $("roundTrip") && ($("roundTrip").checked = false); // kružna već ima ceo krug u wps
     }
     state.famousApplied = f.id;
     renderViaChips();
