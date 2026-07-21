@@ -167,9 +167,14 @@
     background: rgba(255,255,255,.03); font-size: 13px; margin-top: 6px; cursor: grab;
     transition: border-color 120ms var(--ease), opacity 120ms var(--ease);
   }
-  .stop-item .grip { color: #475569; font-size: 11px; flex: none; }
-  .stop-item.dragging-row { opacity: .45; cursor: grabbing; }
+  .stop-item .grip { color: #475569; font-size: 13px; flex: none; touch-action: none; cursor: grab; padding: 4px 2px; }
+  .stop-item.dragging-row { opacity: .4; }
   .stop-item.drag-over { border-color: var(--c-primary); }
+  .stop-item.drop-above { box-shadow: 0 -3px 0 0 var(--c-primary); }
+  .stop-item.drop-below { box-shadow: 0 3px 0 0 var(--c-primary); }
+  .drag-ghost { position: fixed; z-index: 999; pointer-events: none; opacity: .92; margin: 0;
+    box-shadow: 0 10px 26px rgba(0,0,0,.5); background: var(--c-card); }
+  #from.drop-target, #to.drop-target { border-color: var(--c-primary); box-shadow: 0 0 0 2px rgba(249,115,22,.35); }
   input.drop-target { border-color: var(--c-primary) !important; box-shadow: 0 0 0 3px rgba(249,115,22,.22); }
   .stop-item .stop-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .stop-acts { display: flex; gap: 4px; flex: none; }
@@ -1868,82 +1873,112 @@ function renderViaChips() {
     replan(false);
   };
 
+  // red -> polazak/cilj (koristi ga i drop na Od/Do polje)
+  const makeStart = async (g, it) => {
+    try {
+      const old = $("from").value.trim();
+      let nm;
+      if (g.run) {
+        const first = state.vias[g.idxs[0]].v;
+        nm = (await reverseName(first[1], first[0], 14)) || "ulaz deonice";
+        state.vias.splice(g.idxs[0], 1);
+      } else {
+        nm = it.name || (await reverseName(it.v[1], it.v[0], 14)) || "stanica";
+        state.vias.splice(g.idx, 1);
+      }
+      $("from").value = nm;
+      if (old) { try { const gg = await geocode(old); state.vias.unshift({ t: "stop", v: [gg.lon, gg.lat], name: gg.name }); } catch { } }
+      replan(false);
+    } catch (err) { setStatus(err.message, true); }
+  };
+  const makeEnd = async (g, it) => {
+    try {
+      const old = $("to").value.trim();
+      let nm;
+      if (g.run) {
+        const last = state.vias[g.idxs[g.idxs.length - 1]].v;
+        nm = (await reverseName(last[1], last[0], 14)) || "kraj deonice";
+        state.vias.splice(g.idxs[g.idxs.length - 1], 1);
+      } else {
+        nm = it.name || (await reverseName(it.v[1], it.v[0], 14)) || "stanica";
+        state.vias.splice(g.idx, 1);
+      }
+      $("to").value = nm;
+      if (old) { try { const gg = await geocode(old); state.vias.push({ t: "stop", v: [gg.lon, gg.lat], name: gg.name }); } catch { } }
+      replan(false);
+    } catch (err) { setStatus(err.message, true); }
+  };
+
+  // Google-stil prevlačenje (pointer events - radi mišem I prstom):
+  // red se vuče za ⠿; pusti između redova = novi redosled; pusti na Od/Do polje = postaje polazak/cilj.
+  const startRowDrag = (ev, row, gi, g, it) => {
+    ev.preventDefault();
+    const r = row.getBoundingClientRect();
+    const ghost = row.cloneNode(true);
+    ghost.classList.add("drag-ghost");
+    ghost.style.width = r.width + "px";
+    document.body.appendChild(ghost);
+    row.classList.add("dragging-row");
+    const fromEl = $("from"), toEl = $("to");
+    let target = null;
+    const clearHints = () => {
+      document.querySelectorAll(".stop-item.drop-above,.stop-item.drop-below").forEach((e2) => e2.classList.remove("drop-above", "drop-below"));
+      fromEl.classList.remove("drop-target"); toEl.classList.remove("drop-target");
+    };
+    const place = (x, y) => {
+      ghost.style.left = (x - 24) + "px";
+      ghost.style.top = (y - r.height / 2) + "px";
+      clearHints();
+      target = null;
+      const under = document.elementFromPoint(x, y);
+      if (!under) return;
+      if (under === fromEl || fromEl.contains(under)) { target = { type: "od" }; fromEl.classList.add("drop-target"); return; }
+      if (under === toEl || toEl.contains(under)) { target = { type: "do" }; toEl.classList.add("drop-target"); return; }
+      const over = under.closest ? under.closest(".stop-item:not(.drag-ghost)") : null;
+      if (over && over !== row && over.dataset.gi !== undefined) {
+        const rr = over.getBoundingClientRect();
+        const after = y > rr.top + rr.height / 2;
+        over.classList.add(after ? "drop-below" : "drop-above");
+        target = { type: "row", gi: +over.dataset.gi, after };
+      }
+    };
+    const mv = (e) => place(e.clientX, e.clientY);
+    const up = () => {
+      window.removeEventListener("pointermove", mv);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      ghost.remove();
+      row.classList.remove("dragging-row");
+      clearHints();
+      if (!target) return;
+      if (target.type === "od") { makeStart(g, it); return; }
+      if (target.type === "do") { makeEnd(g, it); return; }
+      let to = target.gi + (target.after ? 1 : 0);
+      if (to > gi) to--;
+      if (to !== gi) moveGroup(gi, to);
+    };
+    window.addEventListener("pointermove", mv);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+  };
+
   groups.forEach((g, gi) => {
     const row = document.createElement("div");
     row.className = "stop-item";
+    row.dataset.gi = gi;
     const it = g.run ? null : state.vias[g.idx];
     const label = g.run
       ? `${famous ? famous.emoji + " " + famous.name : "📍 deonica rute"} <span class="poi-dist">(${g.idxs.length} ${g.idxs.length === 1 ? "tačka" : "tačaka"})</span>`
       : `🛑 ${it.name || "stanica"}`;
-    row.innerHTML = `<span class="grip" aria-hidden="true">⠿</span><span class="stop-name">${gi + 1}. ${label}</span><span class="stop-acts"></span>`;
-    // prevlačenje grupa (desktop); strelice za touch. text/plain nosi via-indeks za drop na Od/Do polja.
-    row.draggable = true;
-    row.ondragstart = (ev) => {
-      ev.dataTransfer.setData("text/plain", g.run ? "g" + gi : String(g.idx));
-      ev.dataTransfer.setData("x-group", String(gi));
-      ev.dataTransfer.effectAllowed = "move";
-      row.classList.add("dragging-row");
-    };
-    row.ondragend = () => row.classList.remove("dragging-row");
-    row.ondragover = (ev) => { ev.preventDefault(); ev.dataTransfer.dropEffect = "move"; row.classList.add("drag-over"); };
-    row.ondragleave = () => row.classList.remove("drag-over");
-    row.ondrop = (ev) => {
-      ev.preventDefault();
-      row.classList.remove("drag-over");
-      let fromGi = parseInt(ev.dataTransfer.getData("x-group"), 10);
-      if (isNaN(fromGi)) {
-        const vi = parseInt(ev.dataTransfer.getData("text/plain"), 10);
-        fromGi = groups.findIndex((gg) => (gg.run ? gg.idxs.includes(vi) : gg.idx === vi));
-      }
-      if (isNaN(fromGi) || fromGi < 0 || fromGi === gi) return;
-      moveGroup(fromGi, gi);
-    };
+    row.innerHTML = `<span class="grip" aria-hidden="true" title="Prevuci za redosled ili na Od/Do polje">⠿</span><span class="stop-name">${gi + 1}. ${label}</span><span class="stop-acts"></span>`;
+    row.querySelector(".grip").onpointerdown = (ev) => startRowDrag(ev, row, gi, g, it);
     const acts = row.querySelector(".stop-acts");
     const mk = (txt, title, fn) => {
       const b = document.createElement("button");
       b.textContent = txt; b.title = title; b.type = "button"; b.onclick = fn;
       acts.appendChild(b);
     };
-    // ⤒/⤓ na SVAKOM redu (i na grupi poznate rute): bilo šta može da postane polazak ili cilj.
-    // Za grupu: polazak = njena prva tačka (ime obrnutim geokodiranjem), cilj = poslednja.
-    mk("⤒", "Neka bude polazak", async () => {
-      try {
-        const old = $("from").value.trim();
-        let nm;
-        if (g.run) {
-          const first = state.vias[g.idxs[0]].v;
-          nm = (await reverseName(first[1], first[0], 14)) || "ulaz deonice";
-          state.vias.splice(g.idxs[0], 1);
-        } else {
-          nm = it.name || (await reverseName(it.v[1], it.v[0], 14)) || "stanica";
-          state.vias.splice(g.idx, 1);
-        }
-        $("from").value = nm;
-        if (old) { try { const gg = await geocode(old); state.vias.unshift({ t: "stop", v: [gg.lon, gg.lat], name: gg.name }); } catch { } }
-        replan(false);
-      } catch (err) { setStatus(err.message, true); }
-    });
-    if (gi > 0) mk("↑", "Pomeri ranije", () => moveGroup(gi, gi - 1));
-    if (gi < groups.length - 1) mk("↓", "Pomeri kasnije", () => moveGroup(gi, gi + 1));
-    mk("⤓", "Neka bude cilj", async () => {
-      try {
-        const old = $("to").value.trim();
-        let nm;
-        if (g.run) {
-          const last = state.vias[g.idxs[g.idxs.length - 1]].v;
-          nm = (await reverseName(last[1], last[0], 14)) || "kraj deonice";
-          state.vias.splice(g.idxs[g.idxs.length - 1], 1);
-        } else {
-          nm = it.name || (await reverseName(it.v[1], it.v[0], 14)) || "stanica";
-          state.vias.splice(g.idx, 1);
-        }
-        $("to").value = nm;
-        if (old) { try { const gg = await geocode(old); state.vias.push({ t: "stop", v: [gg.lon, gg.lat], name: gg.name }); } catch { } }
-        replan(false);
-      } catch (err) { setStatus(err.message, true); }
-    });
     if (!g.run) mk("✎", "Izmeni mesto", () => {
-      row.draggable = false;
       const inp = document.createElement("input");
       inp.className = "stop-edit"; inp.value = it.name || "";
       row.replaceChild(inp, row.querySelector(".stop-name"));
