@@ -591,10 +591,10 @@ const FAMOUS_ROUTES = [
     wps: [[24.679,45.139],[24.617,45.604],[24.572,45.712]] },
   // proširenje 2026-07-18 - koordinate okvirne (snap na najbliži put), proveriti terenski/satelitski
   { id: "transalpina", name: "Transalpina (DN67C)", emoji: "🏔", desc: "najviši put Rumunije, iznad oblaka",
-    startName: "Novaci", endName: "Obârșia Lotrului",
+    startName: "Novaci, Gorj", endName: "Obârșia Lotrului",
     wps: [[23.669,45.175],[23.683,45.297],[23.643,45.464]] },
   { id: "grossglockner", name: "Grossglockner", emoji: "🗻", desc: "alpska panoramska cesta (AT, putarina za moto)",
-    startName: "Fusch an der Glocknerstraße", endName: "Heiligenblut",
+    startName: "Fusch an der Großglocknerstraße", endName: "Heiligenblut",
     wps: [[12.826,47.227],[12.830,47.166],[12.829,47.125],[12.843,47.084],[12.842,47.040]] },
   { id: "stelvio", name: "Passo dello Stelvio", emoji: "🌀", desc: "48 serpentina, legenda Alpa (IT)",
     startName: "Prato allo Stelvio", endName: "Bormio",
@@ -640,13 +640,13 @@ const FAMOUS_ROUTES = [
     startName: "Korçë", endName: "Tepelenë",
     wps: [[20.781,40.614],[20.679,40.338],[20.598,40.152],[20.351,40.234],[20.019,40.296]] },
   { id: "vlasic", name: "Vlašić", emoji: "🐑", desc: "preko Babanovca i visoravni ka Kneževu (59 km)",
-    startName: "Travnik", endName: "Kneževo",
+    startName: "Travnik", endName: "Kneževo, Republika Srpska",
     wps: [[17.666,44.226],[17.573,44.313],[17.377,44.482]] },
   { id: "drina", name: "Kanjon Drine", emoji: "🌉", desc: "M20 uz Drinu: Višegrad - Goražde - Foča (73 km)",
     startName: "Višegrad", endName: "Foča",
     wps: [[19.294,43.783],[18.976,43.667],[18.777,43.505]] },
   { id: "rama", name: "Ramsko jezero", emoji: "💧", desc: "M16.2 uz tirkizno Ramsko jezero (32 km)",
-    startName: "Jablanica", endName: "Prozor",
+    startName: "Jablanica", endName: "Prozor, Bosna i Hercegovina",
     wps: [[17.758,43.661],[17.608,43.823]] },
   { id: "crnojevica", name: "Rijeka Crnojevića", emoji: "🐍", desc: "stari put sa vidikovcem Pavlova strana, Skadarsko jezero (51 km)",
     startName: "Cetinje", endName: "Virpazar",
@@ -667,10 +667,10 @@ const FAMOUS_ROUTES = [
     startName: "Novi Iskar", endName: "Mezdra",
     wps: [[23.350,42.800],[23.347,42.960],[23.700,43.150]] },
   { id: "transrarau", name: "Transrarău", emoji: "🪨", desc: "preko masiva Rarău, Pietrele Doamnei stene (32 km)",
-    startName: "Pojorâta", endName: "Chiril",
+    startName: "Pojorâta, Suceava", endName: "Chiril",
     wps: [[25.426,47.508],[25.557,47.449],[25.563,47.397]] },
   { id: "bicaz", name: "Klisura Bicaz", emoji: "🧱", desc: "Cheile Bicazului - zidovi od 300 m + Lacu Roșu (57 km)",
-    startName: "Gheorgheni", endName: "Bicaz",
+    startName: "Gheorgheni", endName: "Bicaz, Neamț",
     wps: [[25.600,46.720],[25.789,46.789],[26.090,46.910]] },
   { id: "ucka", name: "Učka", emoji: "🌅", desc: "stari put preko prevoja Poklon, pogled na Kvarner (52 km)",
     startName: "Opatija", endName: "Pazin",
@@ -679,7 +679,7 @@ const FAMOUS_ROUTES = [
     startName: "Karlobag", endName: "Gospić",
     wps: [[15.074,44.526],[15.174,44.529],[15.374,44.546]] },
   { id: "katara", name: "Katara (Meteori - Metsovo)", emoji: "🏛", desc: "od manastira Meteori preko prevoja Katara (70 km)",
-    startName: "Kalabaka", endName: "Metsovo",
+    startName: "Kalampaka", endName: "Metsovo",
     wps: [[21.627,39.708],[21.240,39.799],[21.183,39.770]] },
   { id: "rugova", name: "Rugovska klisura", emoji: "🏔", desc: "klisura Bistrice pa prevoj Kula ka Rožaju (89 km)",
     startName: "Peć", endName: "Rožaje",
@@ -1380,10 +1380,13 @@ async function loadEditorial() {
 }
 /* Pinovi zajednice se dodaju TEK posle prvog planiranja rute (default ekran ostaje cist)
    i idu u postojece kategorije (kafana->food, okupljaliste->meet, upozorenje->hazard). */
-function addEditorialMarkers() {
-  if (!map || state.editorialAdded || !state.editorial) return;
-  state.editorialAdded = true;
-  for (const e of state.editorial) {
+/* Pinovi zajednice SAMO UZ RUTU (<6 km od trase) - osvezavaju se pri svakom planiranju. */
+function addEditorialMarkers(route) {
+  if (!map || !state.editorial) return;
+  for (const em of state.editorialMarkers) em.m.remove();
+  state.editorialMarkers = [];
+  const near = route ? bjbAlongRoute(route, 6) : [];
+  for (const e of near) {
     const el = document.createElement("div");
     el.textContent = BJB_EMOJI[e.type] || "📍";
     el.style.cssText = "font-size:20px;cursor:pointer;text-shadow:0 1px 4px rgba(0,0,0,.85)";
@@ -1427,7 +1430,7 @@ function toggleLayersPop(btn) {
 function drawRoute(route, assess) {
   if (!map) return;
   clearMap();
-  addEditorialMarkers();   // pinovi zajednice se pojavljuju tek uz prvu rutu
+  addEditorialMarkers(route);   // pinovi zajednice SAMO uz ovu rutu (<6 km)
   // alternativne rute sivo ispod
   const altFeats = state.routes.filter((_, i) => i !== state.selected)
     .map((r) => ({ type: "Feature", geometry: { type: "LineString", coordinates: r.coords } }));
