@@ -205,7 +205,7 @@
   .when-row .wr-sum { color: var(--c-muted-fg); flex: 1; }
 
   .compass-btn {
-    position: absolute; top: 92px; right: 10px; z-index: 5; width: 40px; height: 40px; border-radius: 50%;
+    position: absolute; top: 158px; right: 10px; z-index: 5; width: 40px; height: 40px; border-radius: 50%;
     border: 1px solid rgba(255,255,255,.14); background: rgba(15,23,42,.78); cursor: pointer; padding: 0;
     -webkit-backdrop-filter: blur(10px) saturate(150%); backdrop-filter: blur(10px) saturate(150%);
     box-shadow: var(--shadow-btn);
@@ -269,6 +269,7 @@
   .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: var(--c-card) !important; }
 
   /* MapLibre kontrole na tamnoj mapi */
+  .maplibregl-ctrl-top-right .maplibregl-ctrl { margin: 10px 10px 0 0 !important; }
   .maplibregl-ctrl-group { background: var(--c-card) !important; box-shadow: var(--shadow-btn) !important; }
   .maplibregl-ctrl-group button + button { border-top: 1px solid rgba(255,255,255,.10) !important; }
   .maplibregl-ctrl button .maplibregl-ctrl-icon { filter: invert(1) hue-rotate(180deg); }
@@ -323,7 +324,7 @@
     #panel.open .pchev { transform: rotate(180deg); }
     .map-tools { top: calc(10px + env(safe-area-inset-top)); }
     .lay-pop { top: calc(54px + env(safe-area-inset-top)); }
-    .compass-btn { top: calc(92px + env(safe-area-inset-top)); }
+    .compass-btn { top: calc(158px + env(safe-area-inset-top)); }
   }
 </style>
 </head>
