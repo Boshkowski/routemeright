@@ -175,6 +175,10 @@
   .drag-ghost { position: fixed; z-index: 999; pointer-events: none; opacity: .92; margin: 0;
     box-shadow: 0 10px 26px rgba(0,0,0,.5); background: var(--c-card); }
   #from.drop-target, #to.drop-target { border-color: var(--c-primary); box-shadow: 0 0 0 2px rgba(249,115,22,.35); }
+  .endpoint-wrap { position: relative; }
+  .endpoint-wrap .ep-grip { position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+    color: #475569; font-size: 13px; touch-action: none; cursor: grab; padding: 6px 3px; z-index: 2; }
+  .endpoint-wrap input { width: 100%; padding-left: 30px; }
   input.drop-target { border-color: var(--c-primary) !important; box-shadow: 0 0 0 3px rgba(249,115,22,.22); }
   .stop-item .stop-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .stop-acts { display: flex; gap: 4px; flex: none; }
@@ -348,10 +352,10 @@
     <label class="chk"><input type="checkbox" id="roundTrip"> Povratno putovanje - vrati me na polaznu tačku</label>
 
     <label for="from">Od</label>
-    <input id="from" placeholder="npr. Beograd">
+    <div class="endpoint-wrap"><span class="grip ep-grip" id="odGrip" title="Prevuci polazak u listu ili na Do">⠿</span><input id="from" placeholder="npr. Beograd"></div>
     <div id="viaChips"></div>
     <label for="to">Do</label>
-    <input id="to" placeholder="npr. Zlatibor">
+    <div class="endpoint-wrap"><span class="grip ep-grip" id="doGrip" title="Prevuci cilj u listu ili na Od">⠿</span><input id="to" placeholder="npr. Zlatibor"></div>
     <div class="row2" style="margin-top:6px">
       <div style="flex:2"><input id="stopInput" aria-label="Usputna destinacija" placeholder="dodaj destinaciju, npr. Mostar"></div>
       <div style="flex:1"><button id="addStopBtn" type="button">+ Dodaj</button></div>
@@ -1846,7 +1850,6 @@ function renderViaChips() {
   for (const m of state.viaMarkers) m.remove();
   state.viaMarkers = [];
   el.innerHTML = "";
-  if (!state.vias.length) return;
   const replan = (resetFamous = true) => {
     if (resetFamous) state.famousApplied = null;
     renderViaChips();
@@ -2003,7 +2006,7 @@ function renderViaChips() {
 
   const foot = document.createElement("div");
   foot.innerHTML = `<a href="#" class="clear-stops" id="revJourney">⇄ obrni smer</a><span class="poi-dist"> · </span><a href="#" class="clear-stops" id="clearStops">očisti sve stanice</a>`;
-  el.appendChild(foot);
+  if (groups.length) el.appendChild(foot);
   foot.querySelector("#clearStops").onclick = (e) => { e.preventDefault(); state.vias = []; replan(); };
   foot.querySelector("#revJourney").onclick = async (e) => {
     e.preventDefault();
@@ -2043,6 +2046,107 @@ function renderViaChips() {
     state.viaMarkers.push(new maplibregl.Marker({ element: d }).setLngLat(it.v)
       .setPopup(markerPopup(html)).addTo(map));
   });
+
+  /* ⠿ na Od/Do poljima: prevuci polazak/cilj u listu ili jedno na drugo (kao Google Maps).
+     Od na dno/Do polje -> Od postaje cilj, prva stanica se unapredi u novi polazak (i obrnuto). */
+  const slotToViasIdx = (slot) => slot >= groups.length ? state.vias.length
+    : (groups[slot].run ? groups[slot].idxs[0] : groups[slot].idx);
+  const promoteFirstToOd = async () => {
+    if (!state.vias.length) return;
+    const it0 = state.vias[0];
+    const nm = (it0.t === "stop" && it0.name) ? it0.name : ((await reverseName(it0.v[1], it0.v[0], 14)) || "stanica");
+    state.vias.splice(0, 1);
+    $("from").value = nm;
+  };
+  const promoteLastToDo = async () => {
+    if (!state.vias.length) return;
+    const itL = state.vias[state.vias.length - 1];
+    const nm = (itL.t === "stop" && itL.name) ? itL.name : ((await reverseName(itL.v[1], itL.v[0], 14)) || "stanica");
+    state.vias.pop();
+    $("to").value = nm;
+  };
+  const dropOd = async (target, oldOd) => {
+    if (target.type === "do") {
+      if (!state.vias.length) { const t = $("to").value; $("to").value = oldOd; $("from").value = t; return; }
+      const oldDo = $("to").value.trim();
+      if (oldDo) { try { const gg = await geocode(oldDo); state.vias.push({ t: "stop", v: [gg.lon, gg.lat], name: gg.name }); } catch { } }
+      $("to").value = oldOd;
+      await promoteFirstToOd();
+      return;
+    }
+    if (target.slot <= 0) return;                       // iznad prve stanice = ostaje polazak
+    const gg = await geocode(oldOd);
+    const idx = slotToViasIdx(target.slot);
+    await promoteFirstToOd();                           // skida vias[0] -> indeksi se pomere za -1
+    state.vias.splice(Math.max(0, Math.min(idx - 1, state.vias.length)), 0, { t: "stop", v: [gg.lon, gg.lat], name: gg.name });
+  };
+  const dropDo = async (target, oldDo) => {
+    if (target.type === "od") {
+      if (!state.vias.length) { const t = $("from").value; $("from").value = oldDo; $("to").value = t; return; }
+      const oldOd = $("from").value.trim();
+      if (oldOd) { try { const gg = await geocode(oldOd); state.vias.unshift({ t: "stop", v: [gg.lon, gg.lat], name: gg.name }); } catch { } }
+      $("from").value = oldDo;
+      await promoteLastToDo();
+      return;
+    }
+    if (target.slot >= groups.length) return;           // ispod poslednje = ostaje cilj
+    const gg = await geocode(oldDo);
+    const idx = slotToViasIdx(target.slot);
+    await promoteLastToDo();                            // skida poslednji element
+    state.vias.splice(Math.min(idx, state.vias.length), 0, { t: "stop", v: [gg.lon, gg.lat], name: gg.name });
+  };
+  const startEndpointDrag = (ev, kind) => {
+    ev.preventDefault();
+    const inputEl = $(kind === "od" ? "from" : "to");
+    const txt = inputEl.value.trim();
+    if (!txt) return;
+    const ghost = document.createElement("div");
+    ghost.className = "stop-item drag-ghost";
+    ghost.innerHTML = `<span class="grip">⠿</span><span class="stop-name">${kind === "od" ? "Polazak" : "Cilj"}: ${txt}</span>`;
+    ghost.style.width = inputEl.getBoundingClientRect().width + "px";
+    document.body.appendChild(ghost);
+    const fromEl = $("from"), toEl = $("to");
+    let target = null;
+    const clearHints = () => {
+      document.querySelectorAll(".stop-item.drop-above,.stop-item.drop-below").forEach((e2) => e2.classList.remove("drop-above", "drop-below"));
+      fromEl.classList.remove("drop-target"); toEl.classList.remove("drop-target");
+    };
+    const place = (x, y) => {
+      ghost.style.left = (x - 24) + "px";
+      ghost.style.top = (y - 20) + "px";
+      clearHints(); target = null;
+      const under = document.elementFromPoint(x, y);
+      if (!under) return;
+      if (kind === "do" && (under === fromEl || fromEl.contains(under))) { target = { type: "od" }; fromEl.classList.add("drop-target"); return; }
+      if (kind === "od" && (under === toEl || toEl.contains(under))) { target = { type: "do" }; toEl.classList.add("drop-target"); return; }
+      const over = under.closest ? under.closest(".stop-item:not(.drag-ghost)") : null;
+      if (over && over.dataset.gi !== undefined) {
+        const rr = over.getBoundingClientRect();
+        const after = y > rr.top + rr.height / 2;
+        over.classList.add(after ? "drop-below" : "drop-above");
+        target = { type: "row", slot: +over.dataset.gi + (after ? 1 : 0) };
+      }
+    };
+    const mv = (e) => place(e.clientX, e.clientY);
+    const up = async () => {
+      window.removeEventListener("pointermove", mv);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      ghost.remove(); clearHints();
+      if (!target) return;
+      try {
+        if (kind === "od") await dropOd(target, txt);
+        else await dropDo(target, txt);
+        renderViaChips();
+        if (state.routes.length) plan();
+      } catch (err) { setStatus(err.message, true); }
+    };
+    window.addEventListener("pointermove", mv);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+  };
+  $("odGrip").onpointerdown = (ev) => startEndpointDrag(ev, "od");
+  $("doGrip").onpointerdown = (ev) => startEndpointDrag(ev, "do");
 }
 
 /* ---------------- prijave opasnosti (lokalno, do servera) ---------------- */
