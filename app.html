@@ -815,10 +815,14 @@ async function fetchRoutes(from, to) {
   try {
     const all = await Promise.all(ROUTE_STYLES.map((s) => valhallaRoute(from, to, s)));
     state.engine = "valhalla";
-    // isti put pod dva stila (npr. tamo gde autoputa ni nema) - zadrži prvi
+    // isti put pod dva stila - zadrži prvi, ali NE gutaj "Najbrža · autoput" labelu
+    // (ako se najbrža poklopi sa Balans, korisnik mora da vidi da autoput opcija postoji)
     const uniq = [];
-    for (const r of all)
-      if (!uniq.some((u) => Math.abs(u.totalDist - r.totalDist) < 500 && Math.abs(u.totalDur - r.totalDur) < 60)) uniq.push(r);
+    for (const r of all) {
+      const dup = uniq.find((u) => Math.abs(u.totalDist - r.totalDist) < 500 && Math.abs(u.totalDur - r.totalDur) < 60);
+      if (!dup) uniq.push(r);
+      else if (r.label && r.label.startsWith("Najbrža")) dup.label = r.label;
+    }
     return uniq;
   } catch (e) {
     state.engine = "osrm";
@@ -1344,10 +1348,9 @@ function clearMap() {
   for (const m of state.markers) m.remove();
   state.markers = [];
   for (const k of ["fuel", "food", "camp", "cam", "pause", "work"]) state.catMarkers[k] = [];
-  for (const id of ["seg", "seg-casing", "alts"]) {
-    if (map.getLayer(id)) map.removeLayer(id);
-    if (map.getSource(id)) map.removeSource(id);
-  }
+  // prvo SVI slojevi pa onda izvori (seg-casing deli izvor "seg" - obrnut redosled puca i ostavlja staru rutu)
+  for (const id of ["seg", "seg-casing", "alts"]) if (map.getLayer(id)) map.removeLayer(id);
+  for (const id of ["seg", "alts"]) if (map.getSource(id)) map.removeSource(id);
 }
 const CAT_LABELS = { fuel: "Pumpa", food: "Hrana / restoran", camp: "Kamp", cam: "Fiksna kamera za brzinu", pause: "Predlog pauze", work: "Radovi na putu" };
 function markerPopup(html) {
