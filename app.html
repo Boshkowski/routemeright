@@ -351,12 +351,16 @@
       <div style="flex:1.6"><input id="depart" type="datetime-local"></div>
     </div>
     <label class="chk"><input type="checkbox" id="roundTrip"> Povratno putovanje - vrati me na polaznu tačku</label>
+    <label class="chk"><input type="checkbox" id="roundGen"> Kružna tura - napravi mi krug zadate dužine iz mog grada</label>
+    <div id="loopKmWrap" class="hidden" style="margin:4px 0 2px">Dužina kruga: <input id="loopKm" type="number" value="150" min="30" max="600" step="10" style="width:78px"> km</div>
 
-    <label for="from">Od</label>
+    <label for="from" id="fromLabel">Od</label>
     <div class="endpoint-wrap"><span class="grip ep-grip" id="odGrip" title="Prevuci polazak u listu ili na Do">⠿</span><input id="from" placeholder="npr. Beograd"></div>
     <div id="viaChips"></div>
+    <div id="toBlock">
     <label for="to">Do</label>
     <div class="endpoint-wrap"><span class="grip ep-grip" id="doGrip" title="Prevuci cilj u listu ili na Od">⠿</span><input id="to" placeholder="npr. Zlatibor"></div>
+    </div>
     <div class="row2" style="margin-top:6px">
       <div style="flex:2"><input id="stopInput" aria-label="Usputna destinacija" placeholder="dodaj destinaciju, npr. Mostar"></div>
       <div style="flex:1"><button id="addStopBtn" type="button">+ Dodaj</button></div>
@@ -820,6 +824,34 @@ function famousVariant(f, A, B) {
 
 /* ---------------- pomoćne ---------------- */
 function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function destPoint(lat, lon, brgDeg, distM) {
+  const R = 6371000, toRad = Math.PI / 180, toDeg = 180 / Math.PI;
+  const br = brgDeg * toRad, la = lat * toRad, lo = lon * toRad, dR = distM / R;
+  const la2 = Math.asin(Math.sin(la) * Math.cos(dR) + Math.cos(la) * Math.sin(dR) * Math.cos(br));
+  const lo2 = lo + Math.atan2(Math.sin(br) * Math.sin(dR) * Math.cos(la), Math.cos(dR) - Math.sin(la) * Math.sin(la2));
+  return { lat: la2 * toDeg, lon: lo2 * toDeg };
+}
+/* Kružna tura: 3 tačke oko polazišta (trougao), skaliramo radijus dok km ne pogodi metu. */
+async function generateLoop(center, targetKm) {
+  let R = targetKm / 7.6; // početna procena radijusa (km) za trougaonu petlju sa ~1.4x drumskim faktorom
+  const baseBrg = (Date.now() / 60000) % 360; // varira vremenom da svaki put bude drugi krug
+  let best = null;
+  for (let iter = 0; iter < 4; iter++) {
+    const pts = [0, 120, 240].map((a) => destPoint(center.lat, center.lon, (baseBrg + a) % 360, R * 1000));
+    const coords = [[center.lon, center.lat], ...pts.map((p) => [p.lon, p.lat]), [center.lon, center.lat]]
+      .map((c) => c.join(",")).join(";");
+    let km;
+    try {
+      const j = await (await fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=false`)).json();
+      if (j.code !== "Ok") { R *= 0.75; continue; }
+      km = j.routes[0].distance / 1000;
+    } catch { R *= 0.85; continue; }
+    best = { pts, km };
+    if (Math.abs(km - targetKm) / targetKm < 0.12) break; // dovoljno blizu (±12%)
+    R *= Math.max(0.4, Math.min(2.2, targetKm / km)); // skaliraj radijus ka meti
+  }
+  return best ? { vias: best.pts.map((p) => [p.lon, p.lat]), km: Math.round(best.km) } : null;
+}
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
@@ -2446,9 +2478,11 @@ async function plan() {
   btn.disabled = true;
   $("results").classList.add("hidden");
   try {
-    const fromQ = $("from").value.trim(), toQ = $("to").value.trim();
-    if (!fromQ || !toQ) throw new Error("Upiši i polazak i destinaciju.");
-    const arriveMode = $("timeMode").value === "arrive";
+    const roundGen = $("roundGen") && $("roundGen").checked;
+    const fromQ = $("from").value.trim();
+    const toQ = roundGen ? fromQ : $("to").value.trim();
+    if (!fromQ || (!roundGen && !toQ)) throw new Error(roundGen ? "Upiši polazak (grad iz kog kreće krug)." : "Upiši i polazak i destinaciju.");
+    const arriveMode = !roundGen && $("timeMode").value === "arrive";
     const timeInput = $("depart").value ? new Date($("depart").value) : new Date();
     let departure = arriveMode ? new Date() : timeInput;
     if (departure < new Date()) departure = new Date();
@@ -2457,7 +2491,17 @@ async function plan() {
     logState({ phase: "geocode" });
     const [from, to] = await Promise.all([geocode(fromQ), geocode(toQ)]);
     state.geocode = { from, to };
-    if (state.pendingFamous) {
+
+    if (roundGen) {
+      const targetKm = Math.max(30, Math.min(600, +$("loopKm").value || 150));
+      setStatus(`Pravim kružnu turu ~${targetKm} km iz ${from.name || fromQ}...`);
+      const loop = await generateLoop(from, targetKm);
+      if (!loop) throw new Error("Ne mogu da napravim krug odavde - probaj drugu dužinu ili polazak.");
+      state.vias = loop.vias.map((v) => ({ t: "via", v }));
+      state.famousApplied = null;
+      renderViaChips();
+    }
+    if (!roundGen && state.pendingFamous) {
       const f = FAMOUS_ROUTES.find((x) => x.id === state.pendingFamous);
       state.pendingFamous = null;
       if (f) {
@@ -2680,6 +2724,14 @@ async function loadBikes() {
 function init() {
   loadLayerVis();
   $("roundTrip").onchange = () => { if (state.routes.length) plan(); };
+  $("roundGen").onchange = () => {
+    const on = $("roundGen").checked;
+    $("loopKmWrap").classList.toggle("hidden", !on);
+    $("toBlock").classList.toggle("hidden", on);       // kružna tura ne treba "Do"
+    if (on) $("roundTrip").checked = false;            // međusobno isključivi
+    if ($("fromLabel")) $("fromLabel").textContent = on ? "Polazak (i cilj)" : "Od";
+  };
+  $("loopKm").addEventListener("change", () => { if ($("roundGen").checked && state.routes.length) plan(); });
   $("timeMode").onchange = () => { if (state.routes.length) plan(); };
   // prevlačenje stanice direktno na Od/Do polje: ona postaje polazak/cilj, a stara vrednost ulazi u listu
   for (const [inpId, isFrom] of [["from", true], ["to", false]]) {
