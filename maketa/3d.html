@@ -190,6 +190,14 @@ function addTerrainRoute(){
   if(!map.getSource('trav'))map.addSource('trav',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:[ROUTE[0]]}}});
   if(!map.getLayer('trav-ln'))map.addLayer({id:'trav-ln',type:'line',source:'trav',
     layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#38bdf8','line-width':6}});
+  // radar kiše (demo) - patch na mapi gde pada kiša
+  if(!map.getSource('rain'))map.addSource('rain',{type:'geojson',data:{type:'Feature',geometry:{type:'Point',coordinates:ROUTE[Math.min(560,ROUTE.length-1)]}}});
+  if(!map.getLayer('rain-out'))map.addLayer({id:'rain-out',type:'circle',source:'rain',layout:{visibility:'none'},
+    paint:{'circle-radius':['interpolate',['linear'],['zoom'],10,26,16,150],'circle-color':'#38bdf8','circle-opacity':0.16,'circle-blur':0.7}});
+  if(!map.getLayer('rain-mid'))map.addLayer({id:'rain-mid',type:'circle',source:'rain',layout:{visibility:'none'},
+    paint:{'circle-radius':['interpolate',['linear'],['zoom'],10,16,16,95],'circle-color':'#0ea5e9','circle-opacity':0.24,'circle-blur':0.6}});
+  if(!map.getLayer('rain-in'))map.addLayer({id:'rain-in',type:'circle',source:'rain',layout:{visibility:'none'},
+    paint:{'circle-radius':['interpolate',['linear'],['zoom'],10,8,16,50],'circle-color':'#6366f1','circle-opacity':0.30,'circle-blur':0.5}});
 }
 function setSky(){try{map.setSky({'sky-color':mode==='dark'?'#0a1330':'#93c5fd',
   'sky-horizon-blend':0.5,'horizon-color':mode==='dark'?'#1b2745':'#d5e8ff',
@@ -234,7 +242,7 @@ function idxAt(d){if(d<=0)return 0;if(d>=TOTAL)return CUM.length-2;let lo=0,hi=C
 function posAt(d){if(d<=0)return ROUTE[0].slice();if(d>=TOTAL)return ROUTE[ROUTE.length-1].slice();
   const i=idxAt(d),seg=(CUM[i+1]-CUM[i])||1,t=(d-CUM[i])/seg;
   return [ROUTE[i][0]+(ROUTE[i+1][0]-ROUTE[i][0])*t,ROUTE[i][1]+(ROUTE[i+1][1]-ROUTE[i][1])*t];}
-function brgAt(d){const a=posAt(d),b=posAt(Math.min(TOTAL,d+12));
+function brgAt(d){const a=posAt(d),b=posAt(Math.min(TOTAL,d+22));
   const y=Math.sin((b[0]-a[0])*Math.PI/180)*Math.cos(b[1]*Math.PI/180);
   const x=Math.cos(a[1]*Math.PI/180)*Math.sin(b[1]*Math.PI/180)-Math.sin(a[1]*Math.PI/180)*Math.cos(b[1]*Math.PI/180)*Math.cos((b[0]-a[0])*Math.PI/180);
   return (Math.atan2(y,x)*180/Math.PI+360)%360;}
@@ -244,7 +252,7 @@ const INSTR=[{i:0,dir:'start',t:'Kreni',s:'Kotor · ka Cetinju'},{i:120,dir:'lef
  {i:560,dir:'right',t:'Skreni desno',s:'ka Njegušima'},{i:703,dir:'left',t:'Njeguši',s:'nastavi ka Cetinju'},
  {i:ROUTE.length-1,dir:'finish',t:'Stigao si!',s:'Cetinje'}];
 INSTR.forEach(x=>x.d=CUM[Math.min(x.i,CUM.length-1)]);
-const ALERTS=[{i:300,t:'Kiša za ~10 min kod Njeguša - moguća pauza na prevoju'},{i:600,t:'Bočni vetar na grebenu - drži čvrsto'}];
+const ALERTS=[{i:300,t:'Kiša ispred na ruti - pojaviće se na mapi (radar)'},{i:640,t:'Bočni vetar na grebenu - drži čvrsto'}];
 ALERTS.forEach(x=>x.d=CUM[Math.min(x.i,CUM.length-1)]);
 const BASE=170;
 let S={on:false,playing:false,d:0,mult:5,last:0,raf:0};
@@ -256,8 +264,13 @@ function updNav(d){let n=INSTR[INSTR.length-1];for(const x of INSTR){if(x.d>=d-2
   $('navArr').querySelector('path').setAttribute('d',ARROWS[n.dir]||ARROWS.start);}
 function updAlert(d){let a=null;for(const x of ALERTS)if(d>=x.d-600&&d<=x.d+150)a=x;const w=$('navWx');
   if(a){w.textContent='⚠ '+a.t;w.classList.add('on');}else w.classList.remove('on');}
-function renderSim(){const p=posAt(S.d),b=brgAt(S.d);map.jumpTo({center:p,bearing:b,pitch:66,zoom:15});
-  updTrav(S.d);updNav(S.d);updAlert(S.d);
+let camBrg=null, rainShown=null;
+const RAIN_I=560, rainD=CUM[Math.min(RAIN_I,CUM.length-1)];
+function smoothBrg(t){if(camBrg==null){camBrg=t;return t;}let df=((t-camBrg+540)%360)-180;camBrg=(camBrg+df*0.1+360)%360;return camBrg;}
+function rainViz(d){const show=(d>=rainD-4500&&d<=rainD+900);if(show!==rainShown){rainShown=show;['rain-out','rain-mid','rain-in'].forEach(l=>{try{map.setLayoutProperty(l,'visibility',show?'visible':'none');}catch(e){}});}}
+function renderSim(){const p=posAt(S.d);const b=smoothBrg(brgAt(S.d));
+  map.jumpTo({center:p,bearing:b,pitch:66,zoom:16});
+  updTrav(S.d);updNav(S.d);updAlert(S.d);rainViz(S.d);
   $('kmh').textContent=Math.round(46+20*Math.abs(Math.sin(S.d/260)));
   $('progBar').style.width=(S.d/TOTAL*100).toFixed(1)+'%';}
 function loop(t){if(S.on){
@@ -267,7 +280,7 @@ function loop(t){if(S.on){
   }else S.last=0;
   S.raf=requestAnimationFrame(loop);}}
 function setInteract(on){['dragPan','dragRotate','scrollZoom','touchZoomRotate','doubleClickZoom'].forEach(h=>{try{on?map[h].enable():map[h].disable();}catch(e){}});}
-function startSim(){S.on=true;S.d=0;S.last=0;S.playing=true;document.body.classList.add('sim');is3D=true;
+function startSim(){S.on=true;S.d=0;S.last=0;S.playing=true;camBrg=null;rainShown=null;document.body.classList.add('sim');is3D=true;
   $('ppIcon').innerHTML='<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';setInteract(false);renderSim();
   cancelAnimationFrame(S.raf);S.raf=requestAnimationFrame(loop);}
 function exitSim(){S.on=false;S.playing=false;cancelAnimationFrame(S.raf);document.body.classList.remove('sim');
