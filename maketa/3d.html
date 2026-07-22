@@ -57,7 +57,7 @@
     display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;
     font-family:inherit;font-weight:800;font-size:16px;padding:15px 24px;border-radius:16px;box-shadow:0 12px 30px rgba(249,115,22,.45);cursor:pointer}
   #startSim svg{width:20px;height:20px;fill:#fff}
-  #rider{position:absolute;left:50%;top:67%;transform:translate(-50%,-50%);z-index:6;display:none;pointer-events:none;transition:transform .12s linear}
+  #rider{position:absolute;left:50%;top:64%;transform:translate(-50%,-50%);z-index:6;display:none;pointer-events:none;transition:transform .12s linear}
   #rider .rarrow{width:48px;height:56px;display:block;filter:drop-shadow(0 5px 14px rgba(0,0,0,.7))}
   #recenter{position:absolute;right:14px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:8;display:none;width:52px;height:52px;border-radius:16px;background:#f97316;border:none;box-shadow:0 8px 22px rgba(249,115,22,.5);cursor:pointer;align-items:center;justify-content:center}
   #recenter.on{display:flex}
@@ -65,6 +65,10 @@
   #simcompass{position:absolute;right:14px;top:calc(120px + env(safe-area-inset-top));z-index:7;display:none;width:52px;height:52px;border-radius:50%;background:rgba(15,23,42,.9);border:1px solid rgba(148,163,184,.25);box-shadow:0 6px 18px rgba(0,0,0,.4);align-items:center;justify-content:center;cursor:pointer}
   body.sim #simcompass{display:flex}
   #simcompass .rose{width:44px;height:44px;transition:transform .12s linear}
+  #satToggle{position:absolute;right:14px;top:calc(184px + env(safe-area-inset-top));z-index:7;display:none;flex-direction:column;gap:1px;width:52px;height:52px;border-radius:50%;background:rgba(15,23,42,.9);border:1px solid rgba(148,163,184,.25);box-shadow:0 6px 18px rgba(0,0,0,.4);align-items:center;justify-content:center;cursor:pointer;color:#94a3b8;font:800 10px/1 Archivo,system-ui,sans-serif;letter-spacing:.04em}
+  body.sim #satToggle{display:flex}
+  #satToggle svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linejoin:round}
+  #satToggle.on{color:#f97316;border-color:rgba(249,115,22,.55);background:rgba(30,17,6,.92)}
 
   #nav{position:absolute;top:calc(12px + env(safe-area-inset-top));left:12px;right:12px;z-index:7;display:none;
     background:#166534;border-radius:18px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5)}
@@ -159,6 +163,7 @@
 </div>
 <button id="recenter" aria-label="Centriraj na mene"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.5" fill="#fff" stroke="none"/></svg></button>
 <div id="simcompass" title="Sever"><svg class="rose" id="simRose" viewBox="0 0 48 48"><polygon points="24,7 18,26 24,21 30,26" fill="#ef4444"/><polygon points="24,41 18,22 24,27 30,22" fill="#cbd5e1"/><circle cx="24" cy="24" r="2.6" fill="#0f172a" stroke="#94a3b8" stroke-width="1.3"/></svg></div>
+<div id="satToggle" class="on" title="Satelit / Mapa"><svg viewBox="0 0 24 24"><polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/><path d="M2 15.5 12 22l10-6.5"/></svg><span id="satLbl">SAT</span></div>
 
 <div id="summary">
   <div class="top">
@@ -205,6 +210,13 @@ document.body.dataset.mode=mode;
 
 const HOME={center:[18.808,42.436],zoom:12.2,pitch:62,bearing:18};
 let is3D=true;
+let satOn=false;  // satelitski sloj: uključi se u navigaciji (turn-by-turn)
+function setSat(on){satOn=on;try{
+    if(map.getLayer('sat-ly'))map.setLayoutProperty('sat-ly','visibility',on?'visible':'none');
+    if(map.getLayer('hill'))map.setLayoutProperty('hill','visibility',on?'none':'visible');
+  }catch(e){}
+  const t=document.getElementById('satToggle');if(t)t.classList.toggle('on',on);
+  const l=document.getElementById('satLbl');if(l)l.textContent=on?'SAT':'MAPA';}
 const map=new maplibregl.Map({container:'map',style:STYLES[mode],center:HOME.center,zoom:HOME.zoom,
   pitch:HOME.pitch,bearing:HOME.bearing,maxPitch:82,attributionControl:false});
 map.addControl(new maplibregl.NavigationControl({showCompass:false,showZoom:true}),'top-right');
@@ -237,19 +249,25 @@ function addTerrainRoute(){
   map.setTerrain({source:'terr',exaggeration:1.5});
   if(!map.getLayer('hill'))map.addLayer({id:'hill',type:'hillshade',source:'terr',
     paint:{'hillshade-exaggeration':0.4}},firstSymbol());
+  // satelitski snimak drapiran preko terena - imerzivna navigacija kao Google (labeli ostaju iznad)
+  if(!map.getSource('sat'))map.addSource('sat',{type:'raster',
+    tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+    tileSize:256,maxzoom:19,attribution:'Esri, Maxar'});
+  if(!map.getLayer('sat-ly'))map.addLayer({id:'sat-ly',type:'raster',source:'sat',
+    layout:{visibility:satOn?'visible':'none'},paint:{'raster-opacity':1,'raster-fade-duration':300}},firstSymbol());
   if(!map.getSource('route'))map.addSource('route',{type:'geojson',
     data:{type:'Feature',geometry:{type:'LineString',coordinates:ROUTE}}});
   // DEBELA TRAKA PUTA (tanka u pregledu, debela u navigaciji) - kao maketa
   if(!map.getLayer('route-cas'))map.addLayer({id:'route-cas',type:'line',source:'route',
     layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#7c2d0a','line-opacity':.95,
-      'line-width':['interpolate',['linear'],['zoom'],12,8,15,16,17.5,30]}});
+      'line-width':['interpolate',['linear'],['zoom'],12,7,15,13,17,22]}});
   if(!map.getLayer('route-ln'))map.addLayer({id:'route-ln',type:'line',source:'route',
     layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#f97316',
-      'line-width':['interpolate',['linear'],['zoom'],12,5,15,11,17.5,22]}});
+      'line-width':['interpolate',['linear'],['zoom'],12,4.5,15,9,17,15]}});
   if(!map.getLayer('route-dash'))map.addLayer({id:'route-dash',type:'line',source:'route',
     layout:{'line-cap':'butt','line-join':'round'},paint:{'line-color':'#fff','line-dasharray':[1.4,3],
-      'line-opacity':['interpolate',['linear'],['zoom'],14.5,0,16,.65],
-      'line-width':['interpolate',['linear'],['zoom'],14.5,0,17.5,4]}});
+      'line-opacity':['interpolate',['linear'],['zoom'],14.5,0,16,.6],
+      'line-width':['interpolate',['linear'],['zoom'],14.5,0,17,3.2]}});
   if(!map.getSource('trav'))map.addSource('trav',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:[ROUTE[0]]}}});
   if(!map.getLayer('trav-ln'))map.addLayer({id:'trav-ln',type:'line',source:'trav',
     layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#38bdf8',
@@ -316,7 +334,7 @@ const INSTR=[{i:0,dir:'start',t:'Kreni',s:'Kotor · ka Cetinju'},{i:480,dir:'lef
  {i:2240,dir:'right',t:'Skreni desno',s:'ka Njegušima'},{i:2812,dir:'left',t:'Njeguši',s:'nastavi ka Cetinju'},
  {i:ROUTE.length-1,dir:'finish',t:'Stigao si!',s:'Cetinje'}];
 INSTR.forEach(x=>x.d=CUM[Math.min(x.i,CUM.length-1)]);
-const ALERTS=[{i:300,t:'Kiša ispred na ruti - pojaviće se na mapi (radar)'},{i:640,t:'Bočni vetar na grebenu - drži čvrsto'}];
+const ALERTS=[{i:1200,t:'Kiša ispred na ruti - pojaviće se na mapi (radar)'},{i:2560,t:'Bočni vetar na grebenu - drži čvrsto'}];
 ALERTS.forEach(x=>x.d=CUM[Math.min(x.i,CUM.length-1)]);
 const BASE=170;
 let S={on:false,playing:false,d:0,mult:5,last:0,raf:0};
@@ -335,7 +353,7 @@ function smoothBrg(t){if(camBrg==null){camBrg=t;return t;}let df=((t-camBrg+540)
 function smoothRider(t){if(riderBrg==null){riderBrg=t;return t;}let df=((t-riderBrg+540)%360)-180;riderBrg=(riderBrg+df*0.28+360)%360;return riderBrg;}
 function rainViz(d){const show=(d>=rainD-6500&&d<=rainD+1400);if(show!==rainShown){rainShown=show;['rain-out','rain-mid','rain-in'].forEach(l=>{try{map.setLayoutProperty(l,'visibility',show?'visible':'none');}catch(e){}});}}
 function renderSim(){const p=posAt(S.d);const head=brgAt(S.d);const rb=smoothRider(head);const b=smoothBrg(head);
-  map.jumpTo({center:p,bearing:b,pitch:68,zoom:17.5,padding:{top:Math.round((map.getContainer().clientHeight||800)*0.36),bottom:0,left:0,right:0}});   // FPV bliže (Google/Waze), rider u donjoj trećini
+  map.jumpTo({center:p,bearing:b,pitch:55,zoom:17,padding:{top:Math.round((map.getContainer().clientHeight||800)*0.30),bottom:0,left:0,right:0}});   // blaži ugao (kao Google) - manje crne praznine, mapa popunjava ekran
   const rd=$('rider');if(rd){rd.style.display='block';const rot=((rb-b+540)%360)-180;rd.style.transform='translate(-50%,-50%) rotate('+rot.toFixed(1)+'deg)';}
   updTrav(S.d);updNav(S.d);updAlert(S.d);rainViz(S.d);
   if(rainShown){try{map.setPaintProperty('rain-mid','circle-opacity',0.30+0.14*Math.abs(Math.sin(S.d/40)));}catch(e){}}
@@ -350,13 +368,15 @@ function loop(t){if(S.on){
 function setInteract(on){['dragPan','dragRotate','scrollZoom','touchZoomRotate','touchPitch','doubleClickZoom','boxZoom','keyboard'].forEach(h=>{try{on?map[h].enable():map[h].disable();}catch(e){}});}
 function startSim(){S.on=true;S.d=0;S.last=0;S.playing=true;camBrg=null;riderBrg=null;rainShown=null;follow=true;
   document.body.classList.add('sim');is3D=true;$('recenter').classList.remove('on');setInteract(false);   // FPV: zaključana mapa (nema pan/zoom da se trouglić ne izgubi)
+  setSat(true);   // navigacija = satelit preko terena (kao Google)
   $('ppIcon').innerHTML='<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';renderSim();
   cancelAnimationFrame(S.raf);S.raf=requestAnimationFrame(loop);}
 function exitSim(){S.on=false;S.playing=false;cancelAnimationFrame(S.raf);document.body.classList.remove('sim');
   $('summary').classList.remove('on');$('recenter').classList.remove('on');const rd=$('rider');if(rd)rd.style.display='none';
-  setInteract(true);map.easeTo({...HOME,duration:900});}
+  setSat(false);setInteract(true);map.easeTo({...HOME,duration:900});}
 $('startSim').onclick=startSim;
 $('simExit').onclick=exitSim;$('sClose').onclick=exitSim;
+$('satToggle').onclick=(e)=>{e.stopPropagation();setSat(!satOn);};
 function togglePlay(){if(!S.on)return;if($('summary').classList.contains('on'))return;S.playing=!S.playing;S.last=0;
   $('ppIcon').innerHTML=S.playing?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M8 5v14l11-7z"/>';}
 $('playPause').onclick=togglePlay;
