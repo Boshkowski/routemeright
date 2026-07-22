@@ -53,7 +53,7 @@
 
   /* ===== TBT simulacija ===== */
   body.sim .chip, body.sim .ctl, body.sim .hint, body.sim .maplibregl-ctrl, body.sim .fr, body.sim #startSim{display:none !important}
-  #startSim{position:absolute;left:50%;bottom:calc(64px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:8;
+  #startSim{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:8;
     display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;
     font-family:inherit;font-weight:800;font-size:16px;padding:15px 24px;border-radius:16px;box-shadow:0 12px 30px rgba(249,115,22,.45);cursor:pointer}
   #startSim svg{width:20px;height:20px;fill:#fff}
@@ -63,6 +63,9 @@
   #recenter{position:absolute;right:14px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:8;display:none;width:52px;height:52px;border-radius:16px;background:#f97316;border:none;box-shadow:0 8px 22px rgba(249,115,22,.5);cursor:pointer;align-items:center;justify-content:center}
   #recenter.on{display:flex}
   #recenter svg{width:24px;height:24px;stroke:#fff;fill:none}
+  #simcompass{position:absolute;right:14px;top:calc(120px + env(safe-area-inset-top));z-index:7;display:none;width:52px;height:52px;border-radius:50%;background:rgba(15,23,42,.9);border:1px solid rgba(148,163,184,.25);box-shadow:0 6px 18px rgba(0,0,0,.4);align-items:center;justify-content:center;cursor:pointer}
+  body.sim #simcompass{display:flex}
+  #simcompass .rose{width:44px;height:44px;transition:transform .12s linear}
 
   #nav{position:absolute;top:calc(12px + env(safe-area-inset-top));left:12px;right:12px;z-index:7;display:none;
     background:#166534;border-radius:18px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5)}
@@ -156,6 +159,7 @@
   </div>
 </div>
 <button id="recenter" aria-label="Centriraj na mene"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.5" fill="#fff" stroke="none"/></svg></button>
+<div id="simcompass" title="Sever"><svg class="rose" id="simRose" viewBox="0 0 48 48"><polygon points="24,7 18,26 24,21 30,26" fill="#ef4444"/><polygon points="24,41 18,22 24,27 30,22" fill="#cbd5e1"/><circle cx="24" cy="24" r="2.6" fill="#0f172a" stroke="#94a3b8" stroke-width="1.3"/></svg></div>
 
 <div id="summary">
   <div class="top">
@@ -184,8 +188,8 @@
     <div class="sect">Otključano <span>· 2 nova</span></div>
     <div class="badges">
       <div class="bd new"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.6 5.4 21.2l2.3-7.4-6-4.4h7.6z"/></svg></div><div class="nm">Serpentinac</div><div class="ds">25 zavoja</div></div>
-      <div class="bd new"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 7v5h-5"/></svg></div><div class="nm">Krstač</div><div class="ds">prevoj</div></div>
-      <div class="bd"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 01-12 0z"/></svg></div><div class="nm">Do mora</div><div class="ds">0 m</div></div>
+      <div class="bd new"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 7v5h-5"/></svg></div><div class="nm">Uspon 1k</div><div class="ds">od mora do vrha</div></div>
+      <div class="bd"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 20l6-8 4 5 3-4 5 7z"/><path d="M2 20h20"/></svg></div><div class="nm">Nad zalivom</div><div class="ds">pogled na Boku</div></div>
     </div>
     <div class="btns"><button class="rep" id="sReplay">Ponovi rutu</button><button class="cl" id="sClose">Zatvori</button></div>
   </div>
@@ -301,7 +305,7 @@ function brgAt(d){const a=posAt(d),b=posAt(Math.min(TOTAL,d+22));
   return (Math.atan2(y,x)*180/Math.PI+360)%360;}
 const ARROWS={start:'M5 12h13M13 6l6 6-6 6',left:'M9 6L4 12l5 6M4 12h11a4 4 0 014 4v2',right:'M15 6l5 6-5 6M20 12H9a4 4 0 00-4 4v2',straight:'M12 20V5M6 11l6-6 6 6',finish:'M6 21V4l7 3 5-2v9l-5 2-7-3'};
 const INSTR=[{i:0,dir:'start',t:'Kreni',s:'Kotor · ka Cetinju'},{i:120,dir:'left',t:'Oštra levo',s:'serpentina - drži unutra'},
- {i:230,dir:'right',t:'Skreni desno',s:'nastavi uzbrdo'},{i:388,dir:'straight',t:'Vrh prevoja',s:'Krstač - nastavi pravo'},
+ {i:230,dir:'right',t:'Skreni desno',s:'nastavi uzbrdo'},{i:388,dir:'straight',t:'Vrh prevoja',s:'najviša tačka - nastavi pravo'},
  {i:560,dir:'right',t:'Skreni desno',s:'ka Njegušima'},{i:703,dir:'left',t:'Njeguši',s:'nastavi ka Cetinju'},
  {i:ROUTE.length-1,dir:'finish',t:'Stigao si!',s:'Cetinje'}];
 INSTR.forEach(x=>x.d=CUM[Math.min(x.i,CUM.length-1)]);
@@ -350,10 +354,15 @@ function togglePlay(){if(!S.on)return;if($('summary').classList.contains('on'))r
   $('ppIcon').innerHTML=S.playing?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M8 5v14l11-7z"/>';}
 $('playPause').onclick=togglePlay;
 map.on('click',()=>{if(S.on)togglePlay();});                                  // klik na ekran = pauza/nastavi
-map.on('dragstart',(e)=>{if(S.on&&e&&e.originalEvent){follow=false;$('recenter').classList.add('on');}});   // SAMO korisničko pomeranje prekida praćenje
-map.on('rotatestart',(e)=>{if(S.on&&e&&e.originalEvent){follow=false;$('recenter').classList.add('on');}});
+function breakFollow(){if(!S.on)return;follow=false;$('recenter').classList.add('on');const rd=$('rider');if(rd)rd.style.display='none';}
+map.on('dragstart',(e)=>{if(e&&e.originalEvent)breakFollow();});   // korisničko pomeranje prekida praćenje + odmah sakriva trouglić
+map.on('rotatestart',(e)=>{if(e&&e.originalEvent)breakFollow();});
 $('recenter').onclick=()=>{if(!S.on)return;follow=true;camBrg=null;$('recenter').classList.remove('on');
   map.easeTo({center:posAt(S.d),bearing:brgAt(S.d),pitch:is3D?66:0,zoom:16,duration:600});};   // Centriraj = zumira na mene + prati dalje
+// ruža kompasa (rotira sa mapom, klik = sever)
+const simRoseUpd=()=>{const r=$('simRose');if(r)r.style.transform='rotate('+(-map.getBearing())+'deg)';};
+map.on('rotate',simRoseUpd);map.on('move',simRoseUpd);simRoseUpd();
+$('simcompass').onclick=()=>{map.easeTo({bearing:0,pitch:is3D?66:0,duration:500});};
 $('sReplay').onclick=()=>{$('summary').classList.remove('on');S.d=0;S.last=0;S.playing=true;
   $('ppIcon').innerHTML='<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';};
 $('speedSel').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.mult=+b.dataset.m;
