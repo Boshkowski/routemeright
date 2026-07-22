@@ -38,7 +38,8 @@
   .dchip.beg.on{border-color:var(--g);background:rgba(34,197,94,.12)}
   .dchip.mid.on{border-color:var(--a);background:rgba(245,158,11,.12)}
   .dchip.adv.on{border-color:var(--r);background:rgba(239,68,68,.12)}
-  .d-beg{background:var(--g)}.d-mid{background:var(--a)}.d-adv{background:var(--r)}
+  .dchip.off.on{border-color:#8b5cf6;background:rgba(139,92,246,.12)}
+  .d-beg{background:var(--g)}.d-mid{background:var(--a)}.d-adv{background:var(--r)}.d-off{background:#8b5cf6}
 
   .list{position:absolute;top:258px;bottom:58px;left:0;right:0;overflow:hidden;padding:4px 16px 10px}
   .rc{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:11px;margin-bottom:9px;align-items:center}
@@ -56,6 +57,7 @@
   .tg.beg{background:rgba(34,197,94,.12);color:#86efac;border-color:rgba(34,197,94,.3)}
   .tg.mid{background:rgba(245,158,11,.12);color:#fcd34d;border-color:rgba(245,158,11,.3)}
   .tg.adv{background:rgba(239,68,68,.12);color:#fca5a5;border-color:rgba(239,68,68,.3)}
+  .tg.off{background:rgba(139,92,246,.12);color:#c4b5fd;border-color:rgba(139,92,246,.3)}
   .tg.plain{background:rgba(148,163,184,.1);color:var(--txt)}
 
   .nav{position:absolute;left:0;right:0;bottom:0;height:58px;background:rgba(11,17,32,.98);border-top:1px solid var(--line);display:flex}
@@ -79,6 +81,7 @@
   <div class="dchip beg"><span class="dot d-beg"></span>Početnik</div>
   <div class="dchip mid"><span class="dot d-mid"></span>Srednji</div>
   <div class="dchip adv"><span class="dot d-adv"></span>Napredan</div>
+  <div class="dchip off"><span class="dot d-off"></span>Offroad</div>
 </div>
 
 <div class="list">
@@ -91,12 +94,16 @@
       <div class="tags"><span class="tg mid"><span class="dot d-mid"></span>Srednji</span><span class="tg plain">kanjon · Dunav</span></div></div></div>
 
   <div class="rc"><div class="th"><svg viewBox="0 0 60 60"><path d="M10 50 C20 34, 30 40, 36 26 C42 16, 50 20, 54 10" stroke="#f97316" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg><div class="km">28 km</div></div>
-    <div class="in"><div class="nm">Rajac — vinski put</div><div class="meta"><span class="near"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>156 km od tebe</span><span>brdo</span></div>
+    <div class="in"><div class="nm">Rajac - vinski put</div><div class="meta"><span class="near"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>156 km od tebe</span><span>brdo</span></div>
       <div class="tags"><span class="tg beg"><span class="dot d-beg"></span>Početnik</span><span class="tg plain">vinarije</span></div></div></div>
 
   <div class="rc"><div class="th"><svg viewBox="0 0 60 60"><path d="M12 52 C22 36, 30 44, 34 24 C38 12, 48 18, 52 8" stroke="#f97316" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg><div class="km">69 km</div></div>
     <div class="in"><div class="nm">Kotorske serpentine</div><div class="meta"><span class="near"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>421 km od tebe</span><span>25 serpentina</span></div>
       <div class="tags"><span class="tg adv"><span class="dot d-adv"></span>Napredan</span><span class="tg plain">oštre krivine</span></div></div></div>
+
+  <div class="rc"><div class="th"><svg viewBox="0 0 60 60"><path d="M8 50 L18 34 L26 42 L34 22 L44 30 L52 12" stroke="#8b5cf6" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 4"/></svg><div class="km" style="background:rgba(139,92,246,.92)">61 km</div></div>
+    <div class="in"><div class="nm">Durmitor prsten</div><div class="meta"><span class="near"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>468 km od tebe</span><span>makadam · TET</span></div>
+      <div class="tags"><span class="tg off"><span class="dot d-off"></span>Offroad</span><span class="tg plain">enduro</span></div></div></div>
 </div>
 
 <div class="nav">

@@ -367,7 +367,7 @@
     </div>
 
     <label for="famous">Poznata ruta (Balkan) - auto-popuna</label>
-    <select id="famous"><option value="">—</option></select>
+    <select id="famous"><option value="">-</option></select>
 
     <label for="bikeBrand">Moj motor - proizvođač</label>
     <select id="bikeBrand"></select>
@@ -1182,7 +1182,7 @@ async function renderDifficulty(route) {
   const c = analyzeCurves(route);
   let html = `Krivine: <b>${c.L + c.R}</b> (${c.L} levo / ${c.R} desno), oštrih ${c.sharp} · ` +
     `${c.perKmAvg.toFixed(2)} krivina/km - <b>${c.klasa}</b>`;
-  if (c.bestWin && c.bestCnt > 5) html += `<br>Najvijugavije: km ${c.bestWin[0]}–${c.bestWin[1]} (${c.bestCnt} krivina)`;
+  if (c.bestWin && c.bestCnt > 5) html += `<br>Najvijugavije: km ${c.bestWin[0]}-${c.bestWin[1]} (${c.bestCnt} krivina)`;
   if (route.roughKm > 0.3) {
     const where = route.roughAt.slice(0, 3).map((k) => `km ${k.toFixed(0)}`).join(", ");
     html += `<br><span class="warn-inline">⚠ Neasfaltirano ~${route.roughKm.toFixed(1)} km (${where})</span>`;
@@ -1767,7 +1767,7 @@ function renderGear(assess) {
   if (minT <= 5) rows.push(`🥶 Zimska oprema: termo sloj, zimske rukavice, grejači ako imaš${feelTxt}`);
   else if (minT <= 12) rows.push(`🧥 Topliji sloj ispod jakne, zatvori ventilacije${feelTxt}`);
   else if (maxT >= 28) rows.push(`☀️ Letnja/mrežasta oprema i dosta vode - do ${Math.round(maxT)}°C na ruti`);
-  else rows.push(`👍 Standardna oprema - raspon ${Math.round(minT)}–${Math.round(maxT)}°C${feelTxt}`);
+  else rows.push(`👍 Standardna oprema - raspon ${Math.round(minT)}-${Math.round(maxT)}°C${feelTxt}`);
   if (heavy) rows.push("🌧 Kišno odelo OBAVEZNO + vodootporne rukavice - jaka kiša na ruti");
   else if (wet) rows.push("🌦 Ponesi kišno odelo u koferu - moguća kiša");
   if (windy) rows.push("💨 Jaki udari vetra - opuštene ruke, računaj na bočne udare");
@@ -1791,8 +1791,8 @@ async function renderWarnings(assess) {
     const place = await reverseName(midA.lat, midA.lon);
     const li = document.createElement("li");
     li.className = z.level === 2 ? "bad-li" : "warn-li";
-    const tSpan = z.from === z.to ? `~${fmtTime(z.from.eta)}` : `${fmtTime(z.from.eta)}–${fmtTime(z.to.eta)}`;
-    const kmSpan = z.from === z.to ? `km ${z.from.km.toFixed(0)}` : `km ${z.from.km.toFixed(0)}–${z.to.km.toFixed(0)}`;
+    const tSpan = z.from === z.to ? `~${fmtTime(z.from.eta)}` : `${fmtTime(z.from.eta)}-${fmtTime(z.to.eta)}`;
+    const kmSpan = z.from === z.to ? `km ${z.from.km.toFixed(0)}` : `km ${z.from.km.toFixed(0)}-${z.to.km.toFixed(0)}`;
     li.textContent = `${z.level === 2 ? "⛈" : "🌧"} ${tSpan}` +
       `${place ? ", kod: " + place : ""} (${kmSpan}): ${z.reasons.join(", ")}`;
     ul.appendChild(li);
@@ -2670,8 +2670,8 @@ function previewFill() {
   $("timeline").innerHTML = lv.map((l) => `<div class="blk l${l}">${l === 2 ? "⛈" : l === 1 ? "🌧" : ""}</div>`).join("");
   $("tl-labels").innerHTML = `<span>09:00 (km 0)</span><span>13:50 (km 276)</span><span>18:40 (km 553)</span>`;
   $("warnList").innerHTML =
-    `<li class="warn-li">🌧 11:40–12:10, kod: Zvornik (km 148–170): moguća kiša (65%)</li>` +
-    `<li class="bad-li">⛈ 14:20–15:00, kod: Jablanica (km 320–350): grmljavina, jaka kiša (3,1 mm/h)</li>`;
+    `<li class="warn-li">🌧 11:40-12:10, kod: Zvornik (km 148-170): moguća kiša (65%)</li>` +
+    `<li class="bad-li">⛈ 14:20-15:00, kod: Jablanica (km 320-350): grmljavina, jaka kiša (3,1 mm/h)</li>`;
   $("suggestions").innerHTML =
     `<div class="sugg">☕ <b>Pauza oko km 305 (Konjic) u ~14:05</b>, sačekaj ~40 min da front prođe, pa nastavi suvim putem.<div class="note">Gde: Caffe Behar (+0.4 km) · Restoran Neretva (+0.6 km)</div></div>` +
     `<div class="sugg">💚 U koridoru je <b>Kanjon Neretve</b> - M-17 uz smaragdnu Neretvu. <button>Vozi baš tuda</button></div>`;
@@ -2690,7 +2690,7 @@ function previewFill() {
     `<br><span class="note">Cene ažurirane 2026-07-18</span>`;
   $("diffOut").innerHTML =
     `Krivine: <b>412</b> (198 levo / 214 desno), oštrih 36 · 0,75 krivina/km - <b>vijugava</b>` +
-    `<br>Najvijugavije: km 300–320 (48 krivina)<br>Za početnike: <b>zahtevna</b>`;
+    `<br>Najvijugavije: km 300-320 (48 krivina)<br>Za početnike: <b>zahtevna</b>`;
   const elev = [80,95,120,180,260,340,420,510,640,720,830,910,870,760,690,610,540,470,390,310,240,180,120,60,10];
   const W = 380, H = 74, pad = 5, mn = Math.min(...elev), mx = Math.max(...elev);
   const pts = elev.map((e, i) => `${(i / (elev.length - 1) * W).toFixed(1)},${(H - pad - (e - mn) / (mx - mn) * (H - 2 * pad)).toFixed(1)}`).join(" ");
@@ -2780,10 +2780,10 @@ function init() {
   };
   const fillYears = () => {
     const gens = BIKES.filter((b) => b[0] === brandSel.value && b[1] === modelSel.value);
-    fillSel(yearSel, gens.length ? gens.map((g) => g[2]) : ["—"]);
+    fillSel(yearSel, gens.length ? gens.map((g) => g[2]) : ["-"]);
   };
   const fillModels = () => {
-    if (brandSel.value === CUSTOM) { fillSel(modelSel, ["— (rezervoar/potrošnju upiši ručno)"]); fillSel(yearSel, ["—"]); return; }
+    if (brandSel.value === CUSTOM) { fillSel(modelSel, ["- (rezervoar/potrošnju upiši ručno)"]); fillSel(yearSel, ["-"]); return; }
     fillSel(modelSel, [...new Set(BIKES.filter((b) => b[0] === brandSel.value).map((b) => b[1]))]);
     fillYears();
   };
@@ -2809,7 +2809,7 @@ function init() {
   $("cons").oninput = () => { updateRangeNote(); saveBike(); };
   $("addBikeBtn").onclick = () => $("addBikeForm").classList.toggle("hidden");
   $("nbSave").onclick = () => {
-    const b = $("nbBrand").value.trim(), m = $("nbModel").value.trim(), y = $("nbYear").value.trim() || "—";
+    const b = $("nbBrand").value.trim(), m = $("nbModel").value.trim(), y = $("nbYear").value.trim() || "-";
     const t = +$("nbTank").value, c = +$("nbCons").value;
     if (!b || !m || !(t > 0) || !(c > 0)) { setStatus("Popuni proizvođača, model, rezervoar i potrošnju.", true); return; }
     const entry = [b, m, y, t, c];
