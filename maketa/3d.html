@@ -57,9 +57,8 @@
     display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;
     font-family:inherit;font-weight:800;font-size:16px;padding:15px 24px;border-radius:16px;box-shadow:0 12px 30px rgba(249,115,22,.45);cursor:pointer}
   #startSim svg{width:20px;height:20px;fill:#fff}
-  #rider{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;display:none;pointer-events:none;transition:transform .12s linear}
-  #rider .halo{width:54px;height:54px;border-radius:50%;background:rgba(56,189,248,.16);display:flex;align-items:center;justify-content:center}
-  #rider .chev{width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-bottom:24px solid #38bdf8;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))}
+  #rider{position:absolute;left:50%;top:67%;transform:translate(-50%,-50%);z-index:6;display:none;pointer-events:none;transition:transform .12s linear}
+  #rider .rarrow{width:48px;height:56px;display:block;filter:drop-shadow(0 5px 14px rgba(0,0,0,.7))}
   #recenter{position:absolute;right:14px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:8;display:none;width:52px;height:52px;border-radius:16px;background:#f97316;border:none;box-shadow:0 8px 22px rgba(249,115,22,.5);cursor:pointer;align-items:center;justify-content:center}
   #recenter.on{display:flex}
   #recenter svg{width:24px;height:24px;stroke:#fff;fill:none}
@@ -143,7 +142,7 @@
 <div class="hint" id="hint"><b>Dva prsta</b> = nagib i rotacija &nbsp;·&nbsp; prevuci = pomeranje</div>
 
 <button id="startSim"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Pokreni vožnju</button>
-<div id="rider"><div class="halo"><div class="chev"></div></div></div>
+<div id="rider"><svg class="rarrow" viewBox="0 0 44 52"><ellipse cx="22" cy="46" rx="12" ry="4" fill="rgba(0,0,0,.4)"/><path d="M22 4 L37 41 L22 32.5 L7 41 Z" fill="#38bdf8" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg></div>
 <div id="nav">
   <div class="main"><span class="arr" id="navArr"><svg viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>
     <div><div class="d" id="navDist">300 m</div><div class="st" id="navMain">Kreni</div><div class="su" id="navSub">Kotor</div></div></div>
@@ -327,7 +326,7 @@ function smoothBrg(t){if(camBrg==null){camBrg=t;return t;}let df=((t-camBrg+540)
 function smoothRider(t){if(riderBrg==null){riderBrg=t;return t;}let df=((t-riderBrg+540)%360)-180;riderBrg=(riderBrg+df*0.28+360)%360;return riderBrg;}
 function rainViz(d){const show=(d>=rainD-6500&&d<=rainD+1400);if(show!==rainShown){rainShown=show;['rain-out','rain-mid','rain-in'].forEach(l=>{try{map.setLayoutProperty(l,'visibility',show?'visible':'none');}catch(e){}});}}
 function renderSim(){const p=posAt(S.d);const head=brgAt(S.d);const rb=smoothRider(head);const b=smoothBrg(head);
-  map.jumpTo({center:p,bearing:b,pitch:66,zoom:16});   // FPV: kamera UVEK prati rider-a (zaključano)
+  map.jumpTo({center:p,bearing:b,pitch:67,zoom:17,padding:{top:Math.round((map.getContainer().clientHeight||800)*0.34),bottom:0,left:0,right:0}});   // FPV bliže (Google/Waze), rider u donjoj trećini
   const rd=$('rider');if(rd){rd.style.display='block';const rot=((rb-b+540)%360)-180;rd.style.transform='translate(-50%,-50%) rotate('+rot.toFixed(1)+'deg)';}
   updTrav(S.d);updNav(S.d);updAlert(S.d);rainViz(S.d);
   if(rainShown){try{map.setPaintProperty('rain-mid','circle-opacity',0.30+0.14*Math.abs(Math.sin(S.d/40)));}catch(e){}}
