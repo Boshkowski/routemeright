@@ -729,6 +729,28 @@ const FAMOUS_ROUTES = [
   { id: "jastrebacloop", name: "Krug oko Jastrepca", emoji: "🔄", desc: "kružno od Kruševca oko masiva Jastrebac (136 km)",
     startName: "Kruševac", endName: "Kruševac",
     wps: [[21.326,43.583],[21.200,43.470],[21.400,43.400],[21.500,43.480],[21.326,43.583]] },
+  // prošireno 2026-07-22 (balansiranje tankih regija sa dangerousroads checklista; NAŠI koridori, OSRM-verifikovani)
+  { id: "cetina", name: "Kanjon Cetine", emoji: "🌊", desc: "uz Cetinu od Omiša do Zadvarja, slapovi i klisura (30 km)",
+    startName: "Omiš", endName: "Zadvarje",
+    wps: [[16.6923,43.4435],[16.891,43.4324]] },
+  { id: "trigrad", name: "Trigradska klisura", emoji: "🕳", desc: "kroz Rodope do Đavolje grle i Trigrada (36 km)",
+    startName: "Devin", endName: "Trigrad",
+    wps: [[24.398,41.744],[24.361,41.651],[24.343,41.611]] },
+  { id: "troyan", name: "Trojanski prevoj", emoji: "🏔", desc: "preko Beklemeta, najviši prohodan prevoj Stare planine (94 km)",
+    startName: "Troyan", endName: "Apriltsi",
+    wps: [[24.7124,42.8911],[24.62,42.77],[24.9134,42.8408]] },
+  { id: "vikos", name: "Vikos i Zagori", emoji: "⛰", desc: "kameni mostovi Zagorija do najdubljeg kanjona (53 km)",
+    startName: "Ioannina", endName: "Monodendri",
+    wps: [[20.8523,39.664],[20.78,39.85],[20.7468,39.8829]] },
+  { id: "nestos", name: "Kanjon Nestosa", emoji: "🏞", desc: "meandri reke Nestos kroz Rodope (56 km)",
+    startName: "Xanthi", endName: "Stavroupoli, Xanthi",
+    wps: [[24.8864,41.138],[24.78,41.17],[24.7054,41.1988]] },
+  { id: "valbona", name: "Dolina Valbone", emoji: "🌲", desc: "u srce Prokletija, NP Valbona (Albanski Alpi)",
+    startName: "Bajram Curri", endName: "Valbonë",
+    wps: [[20.0753,42.3576],[20.04,42.40],[20.0094,42.417]] },
+  { id: "blidinje", name: "Blidinje", emoji: "🐑", desc: "preko visoravni Blidinje između Čvrsnice i Vran planine",
+    startName: "Jablanica", endName: "Tomislavgrad",
+    wps: [[17.758,43.661],[17.550,43.640],[17.450,43.620]] },
 ];
 function famousVariant(f, A, B) {
   let ai = 0, bi = 0, ad = 1e9, bd = 1e9;
