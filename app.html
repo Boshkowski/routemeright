@@ -751,6 +751,28 @@ const FAMOUS_ROUTES = [
   { id: "blidinje", name: "Blidinje", emoji: "🐑", desc: "preko visoravni Blidinje između Čvrsnice i Vran planine",
     startName: "Jablanica", endName: "Tomislavgrad",
     wps: [[17.758,43.661],[17.550,43.640],[17.450,43.620]] },
+  // prošireno 2026-07-22 (motorute + motoria checklist, neiskorišćene; NAŠI koridori, OSRM-verifikovani)
+  { id: "starapl", name: "Stara planina (Pirot krug)", emoji: "🏔", desc: "kružno od Pirota preko Stare planine i Dimitrovgrada (91 km)",
+    startName: "Pirot", endName: "Pirot",
+    wps: [[22.58086,43.15801],[22.77419,43.17247],[22.84701,43.14296],[22.90232,43.08252],[22.59105,43.14963]] },
+  { id: "bigar", name: "Bigar i Stara planina", emoji: "💧", desc: "kružno od Niša do vodopada Bigar i nazad (176 km)",
+    startName: "Niš", endName: "Niš",
+    wps: [[21.90871,43.31745],[22.59567,43.15511],[22.12921,43.41802],[21.92551,43.34749]] },
+  { id: "golijakop", name: "Golija - Kopaonik", emoji: "🌲", desc: "spoj dve planine, od Ivanjice preko Golije do Kopaonika (119 km)",
+    startName: "Ivanjica", endName: "Kopaonik",
+    wps: [[20.229,43.578],[20.45,43.40],[20.60,43.32],[20.826,43.269]] },
+  { id: "ulcinjcetinje", name: "Ulcinj - Cetinje", emoji: "🌊", desc: "od mora preko Skadarskog jezera i Rijeke Crnojevića (89 km)",
+    startName: "Ulcinj", endName: "Cetinje",
+    wps: [[19.216,41.925],[19.09,42.246],[18.924,42.391]] },
+  { id: "tridrzave", name: "Tri države", emoji: "🗺", desc: "velika tura Crna Gora - Kosovo - Albanija, kružno iz Rožaja (578 km)",
+    startName: "Rožaje", endName: "Rožaje",
+    wps: [[20.1709,42.8406],[20.70923,42.2132],[19.11072,42.09716],[18.9679,42.37836],[20.15099,42.83264]] },
+  { id: "cgtura", name: "Crna Gora velika tura", emoji: "⛰", desc: "od Rožaja preko planina do Jadrana (424 km)",
+    startName: "Rožaje", endName: "Ulcinj",
+    wps: [[20.1709,42.83753],[19.33044,43.32091],[18.59711,42.72441],[18.84705,42.29256],[19.23706,41.91361]] },
+  { id: "cgalb", name: "Crna Gora - Albanija krug", emoji: "🔄", desc: "kružno iz Rožaja preko severne Albanije (311 km)",
+    startName: "Rožaje", endName: "Rožaje",
+    wps: [[20.16129,42.83659],[19.2659,42.42523],[19.39774,42.80241],[19.57352,42.95244],[20.13107,42.83821]] },
 ];
 function famousVariant(f, A, B) {
   let ai = 0, bi = 0, ad = 1e9, bd = 1e9;
