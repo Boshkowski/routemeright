@@ -239,13 +239,21 @@ function addTerrainRoute(){
     paint:{'hillshade-exaggeration':0.4}},firstSymbol());
   if(!map.getSource('route'))map.addSource('route',{type:'geojson',
     data:{type:'Feature',geometry:{type:'LineString',coordinates:ROUTE}}});
+  // DEBELA TRAKA PUTA (tanka u pregledu, debela u navigaciji) - kao maketa
   if(!map.getLayer('route-cas'))map.addLayer({id:'route-cas',type:'line',source:'route',
-    layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#7c2d0a','line-width':9,'line-opacity':.9}});
+    layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#7c2d0a','line-opacity':.95,
+      'line-width':['interpolate',['linear'],['zoom'],12,8,15,16,17.5,30]}});
   if(!map.getLayer('route-ln'))map.addLayer({id:'route-ln',type:'line',source:'route',
-    layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#f97316','line-width':5}});
+    layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#f97316',
+      'line-width':['interpolate',['linear'],['zoom'],12,5,15,11,17.5,22]}});
+  if(!map.getLayer('route-dash'))map.addLayer({id:'route-dash',type:'line',source:'route',
+    layout:{'line-cap':'butt','line-join':'round'},paint:{'line-color':'#fff','line-dasharray':[1.4,3],
+      'line-opacity':['interpolate',['linear'],['zoom'],14.5,0,16,.65],
+      'line-width':['interpolate',['linear'],['zoom'],14.5,0,17.5,4]}});
   if(!map.getSource('trav'))map.addSource('trav',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:[ROUTE[0]]}}});
   if(!map.getLayer('trav-ln'))map.addLayer({id:'trav-ln',type:'line',source:'trav',
-    layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#38bdf8','line-width':6}});
+    layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#38bdf8',
+      'line-width':['interpolate',['linear'],['zoom'],12,6,17.5,9]}});
   // radar kiše (demo) - patch na mapi gde pada kiša
   if(!map.getSource('rain'))map.addSource('rain',{type:'geojson',data:{type:'Feature',geometry:{type:'Point',coordinates:ROUTE[Math.min(560,ROUTE.length-1)]}}});
   if(!map.getLayer('rain-out'))map.addLayer({id:'rain-out',type:'circle',source:'rain',layout:{visibility:'none'},
@@ -326,7 +334,7 @@ function smoothBrg(t){if(camBrg==null){camBrg=t;return t;}let df=((t-camBrg+540)
 function smoothRider(t){if(riderBrg==null){riderBrg=t;return t;}let df=((t-riderBrg+540)%360)-180;riderBrg=(riderBrg+df*0.28+360)%360;return riderBrg;}
 function rainViz(d){const show=(d>=rainD-6500&&d<=rainD+1400);if(show!==rainShown){rainShown=show;['rain-out','rain-mid','rain-in'].forEach(l=>{try{map.setLayoutProperty(l,'visibility',show?'visible':'none');}catch(e){}});}}
 function renderSim(){const p=posAt(S.d);const head=brgAt(S.d);const rb=smoothRider(head);const b=smoothBrg(head);
-  map.jumpTo({center:p,bearing:b,pitch:67,zoom:17,padding:{top:Math.round((map.getContainer().clientHeight||800)*0.34),bottom:0,left:0,right:0}});   // FPV bliže (Google/Waze), rider u donjoj trećini
+  map.jumpTo({center:p,bearing:b,pitch:68,zoom:17.5,padding:{top:Math.round((map.getContainer().clientHeight||800)*0.36),bottom:0,left:0,right:0}});   // FPV bliže (Google/Waze), rider u donjoj trećini
   const rd=$('rider');if(rd){rd.style.display='block';const rot=((rb-b+540)%360)-180;rd.style.transform='translate(-50%,-50%) rotate('+rot.toFixed(1)+'deg)';}
   updTrav(S.d);updNav(S.d);updAlert(S.d);rainViz(S.d);
   if(rainShown){try{map.setPaintProperty('rain-mid','circle-opacity',0.30+0.14*Math.abs(Math.sin(S.d/40)));}catch(e){}}
