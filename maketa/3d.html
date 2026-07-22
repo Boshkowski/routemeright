@@ -57,7 +57,7 @@
     display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;
     font-family:inherit;font-weight:800;font-size:16px;padding:15px 24px;border-radius:16px;box-shadow:0 12px 30px rgba(249,115,22,.45);cursor:pointer}
   #startSim svg{width:20px;height:20px;fill:#fff}
-  #rider{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;display:none;pointer-events:none}
+  #rider{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;display:none;pointer-events:none;transition:transform .12s linear}
   body.sim #rider{display:block}
   #rider .halo{width:56px;height:56px;border-radius:50%;background:rgba(56,189,248,.16);display:flex;align-items:center;justify-content:center}
   #rider .chev{width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-bottom:24px solid #38bdf8;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))}
@@ -75,8 +75,10 @@
 
   #simbar{position:absolute;left:0;right:0;bottom:0;z-index:7;display:none;flex-direction:column;gap:9px;padding:10px 14px calc(16px + env(safe-area-inset-bottom))}
   body.sim #simbar{display:flex}
-  #simbar .prog{height:5px;border-radius:3px;background:rgba(148,163,184,.25);overflow:hidden}
-  #simbar .prog i{display:block;height:100%;width:0;background:#f97316;border-radius:3px}
+  #simbar .prog{position:relative;height:20px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+  #simbar .prog .track{position:absolute;left:0;right:0;height:5px;border-radius:3px;background:rgba(148,163,184,.28)}
+  #simbar .prog i{position:absolute;left:0;height:5px;width:0;background:#f97316;border-radius:3px}
+  #simbar .prog .thumb{position:absolute;left:0;width:17px;height:17px;border-radius:50%;background:#fff;border:3px solid #f97316;box-shadow:0 2px 9px rgba(0,0,0,.55);transform:translateX(-50%);pointer-events:none}
   #simbar .row{display:flex;align-items:center;gap:9px}
   #simbar .kmh{background:rgba(15,23,42,.94);border:1px solid rgba(148,163,184,.2);border-radius:14px;padding:8px 12px;color:#fff;flex:none}
   #simbar .kmh b{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}#simbar .kmh span{font-size:11px;color:#94a3b8;margin-left:3px}
@@ -117,7 +119,7 @@
   <div class="wx" id="navWx"></div>
 </div>
 <div id="simbar">
-  <div class="prog"><i id="progBar"></i></div>
+  <div class="prog" id="prog"><div class="track"></div><i id="progBar"></i><div class="thumb" id="progThumb"></div></div>
   <div class="row">
     <div class="kmh"><b id="kmh">0</b><span>km/h</span></div>
     <div class="sp" id="speedSel"><button data-m="1">×1</button><button data-m="5" class="on">×5</button><button data-m="10">×10</button><button data-m="20">×20</button></div>
@@ -264,15 +266,18 @@ function updNav(d){let n=INSTR[INSTR.length-1];for(const x of INSTR){if(x.d>=d-2
   $('navArr').querySelector('path').setAttribute('d',ARROWS[n.dir]||ARROWS.start);}
 function updAlert(d){let a=null;for(const x of ALERTS)if(d>=x.d-600&&d<=x.d+150)a=x;const w=$('navWx');
   if(a){w.textContent='⚠ '+a.t;w.classList.add('on');}else w.classList.remove('on');}
-let camBrg=null, rainShown=null;
+let camBrg=null, riderBrg=null, rainShown=null;
 const RAIN_I=560, rainD=CUM[Math.min(RAIN_I,CUM.length-1)];
 function smoothBrg(t){if(camBrg==null){camBrg=t;return t;}let df=((t-camBrg+540)%360)-180;camBrg=(camBrg+df*0.1+360)%360;return camBrg;}
+function smoothRider(t){if(riderBrg==null){riderBrg=t;return t;}let df=((t-riderBrg+540)%360)-180;riderBrg=(riderBrg+df*0.28+360)%360;return riderBrg;}
 function rainViz(d){const show=(d>=rainD-4500&&d<=rainD+900);if(show!==rainShown){rainShown=show;['rain-out','rain-mid','rain-in'].forEach(l=>{try{map.setLayoutProperty(l,'visibility',show?'visible':'none');}catch(e){}});}}
-function renderSim(){const p=posAt(S.d);const b=smoothBrg(brgAt(S.d));
+function renderSim(){const p=posAt(S.d);const head=brgAt(S.d);const b=smoothBrg(head);const rb=smoothRider(head);
   map.jumpTo({center:p,bearing:b,pitch:66,zoom:16});
+  const rot=((rb-b+540)%360)-180;  // trouglić rotira po smeru puta (u odnosu na kameru)
+  const rd=document.getElementById('rider');if(rd)rd.style.transform='translate(-50%,-50%) rotate('+rot.toFixed(1)+'deg)';
   updTrav(S.d);updNav(S.d);updAlert(S.d);rainViz(S.d);
   $('kmh').textContent=Math.round(46+20*Math.abs(Math.sin(S.d/260)));
-  $('progBar').style.width=(S.d/TOTAL*100).toFixed(1)+'%';}
+  const pct=(S.d/TOTAL*100);$('progBar').style.width=pct.toFixed(1)+'%';$('progThumb').style.left=pct.toFixed(1)+'%';}
 function loop(t){if(S.on){
   if(S.playing){if(!S.last)S.last=t;const dt=t-S.last;S.last=t;S.d+=(dt/1000)*BASE*S.mult;
     if(S.d>=TOTAL){S.d=TOTAL;renderSim();S.playing=false;$('summary').classList.add('on');$('ppIcon').innerHTML='<path d="M8 5v14l11-7z"/>';}
@@ -280,7 +285,7 @@ function loop(t){if(S.on){
   }else S.last=0;
   S.raf=requestAnimationFrame(loop);}}
 function setInteract(on){['dragPan','dragRotate','scrollZoom','touchZoomRotate','doubleClickZoom'].forEach(h=>{try{on?map[h].enable():map[h].disable();}catch(e){}});}
-function startSim(){S.on=true;S.d=0;S.last=0;S.playing=true;camBrg=null;rainShown=null;document.body.classList.add('sim');is3D=true;
+function startSim(){S.on=true;S.d=0;S.last=0;S.playing=true;camBrg=null;riderBrg=null;rainShown=null;document.body.classList.add('sim');is3D=true;
   $('ppIcon').innerHTML='<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';setInteract(false);renderSim();
   cancelAnimationFrame(S.raf);S.raf=requestAnimationFrame(loop);}
 function exitSim(){S.on=false;S.playing=false;cancelAnimationFrame(S.raf);document.body.classList.remove('sim');
@@ -293,6 +298,13 @@ $('sReplay').onclick=()=>{$('summary').classList.remove('on');S.d=0;S.last=0;S.p
   $('ppIcon').innerHTML='<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';};
 $('speedSel').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.mult=+b.dataset.m;
   $('speedSel').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
+// slajder = prevlačenje kroz rutu (napred/nazad, na početak/kraj)
+(function(){const pr=$('prog');if(!pr)return;let scr=false;
+  function seek(x){const r=pr.getBoundingClientRect();let f=(x-r.left)/r.width;f=Math.max(0,Math.min(1,f));S.d=f*TOTAL;camBrg=null;riderBrg=null;renderSim();}
+  pr.addEventListener('pointerdown',e=>{if(!S.on)return;scr=true;S.playing=false;$('ppIcon').innerHTML='<path d="M8 5v14l11-7z"/>';try{pr.setPointerCapture(e.pointerId);}catch(_){}seek(e.clientX);});
+  pr.addEventListener('pointermove',e=>{if(scr)seek(e.clientX);});
+  pr.addEventListener('pointerup',()=>{scr=false;});pr.addEventListener('pointercancel',()=>{scr=false;});
+})();
 $('sKm').innerHTML=(TOTAL/1000).toFixed(0)+' <small>km</small>';
 if(new URLSearchParams(location.search).has('sim')){map.on('load',()=>setTimeout(startSim,1600));}
 </script></body></html>
