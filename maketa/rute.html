@@ -2,55 +2,107 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0f172a;--card:#1e293b;--or:#f97316;--txt:#e2e8f0;--mut:#94a3b8;--line:rgba(148,163,184,.16)}
+  :root{--bg:#0f172a;--card:#1e293b;--or:#f97316;--txt:#e2e8f0;--mut:#94a3b8;--line:rgba(148,163,184,.16);
+    --g:#22c55e;--a:#f59e0b;--r:#ef4444}
   *{box-sizing:border-box;margin:0;padding:0;font-family:Archivo,system-ui,sans-serif}
   body{width:390px;height:844px;overflow:hidden;background:var(--bg);position:relative}
-  .hd{padding:16px 16px 10px}
-  .hd h1{font-size:24px;font-weight:900;color:#fff;letter-spacing:-.01em}
-  .hd .sub{color:var(--mut);font-size:13px;margin-top:2px}
-  .srch{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin:12px 16px 0}
-  .srch svg{width:18px;height:18px;stroke:var(--mut)}
-  .srch input{flex:1;background:none;border:none;color:var(--txt);font-size:14.5px;font-weight:600;outline:none}
+  .hd{padding:14px 16px 6px}
+  .hd h1{font-size:23px;font-weight:900;color:#fff;letter-spacing:-.01em}
+  .hd .sub{color:var(--mut);font-size:12.5px;margin-top:1px}
+  .srch{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:10px 12px;margin:10px 16px 0}
+  .srch svg{width:17px;height:17px;stroke:var(--mut);fill:none}
+  .srch input{flex:1;background:none;border:none;color:var(--txt);font-size:14px;font-weight:600;outline:none}
   .srch input::placeholder{color:var(--mut)}
-  .fil{display:flex;gap:8px;padding:12px 16px 6px;overflow:hidden}
-  .f{white-space:nowrap;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:var(--txt)}
+
+  /* Blizu tebe */
+  .geo{margin:11px 16px 0;display:flex;align-items:center;gap:11px;background:linear-gradient(135deg,rgba(249,115,22,.16),rgba(30,41,59,.5));
+    border:1px solid rgba(249,115,22,.34);border-radius:15px;padding:12px 14px}
+  .geo .gic{width:38px;height:38px;border-radius:11px;flex:none;background:rgba(249,115,22,.16);display:flex;align-items:center;justify-content:center}
+  .geo .gic svg{width:20px;height:20px;stroke:var(--or);fill:none}
+  .geo .gt{flex:1}
+  .geo .gt b{display:block;font-size:14px;font-weight:800;color:#fff}
+  .geo .gt span{display:block;font-size:11.5px;color:var(--mut);font-weight:600;margin-top:1px}
+  .geo .on{font-size:11px;font-weight:800;color:var(--g);background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.3);border-radius:999px;padding:5px 10px;display:flex;align-items:center;gap:5px}
+  .geo .on .dt{width:6px;height:6px;border-radius:50%;background:var(--g)}
+
+  /* filteri */
+  .fil{display:flex;gap:7px;padding:11px 16px 3px;overflow:hidden}
+  .f{white-space:nowrap;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--txt)}
   .f.on{background:var(--or);border-color:var(--or);color:#fff}
-  .list{position:absolute;top:170px;bottom:58px;left:0;right:0;overflow:hidden;padding:4px 16px 16px}
-  .rc{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;align-items:center}
-  .rc .th{width:64px;height:64px;border-radius:12px;flex:none;background:radial-gradient(120% 100% at 40% 20%,#1c2c4a,#0d1626);position:relative;overflow:hidden}
+  .diff{display:flex;gap:6px;padding:7px 16px 4px;overflow:hidden;align-items:center}
+  .diff .dl{font-size:11px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-right:2px}
+  .dchip{white-space:nowrap;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px;
+    background:var(--card);border:1px solid var(--line);color:var(--txt)}
+  .dchip .dot{width:8px;height:8px;border-radius:50%}
+  .dchip.on{border-width:1.5px}
+  .dchip.beg.on{border-color:var(--g);background:rgba(34,197,94,.12)}
+  .dchip.mid.on{border-color:var(--a);background:rgba(245,158,11,.12)}
+  .dchip.adv.on{border-color:var(--r);background:rgba(239,68,68,.12)}
+  .d-beg{background:var(--g)}.d-mid{background:var(--a)}.d-adv{background:var(--r)}
+
+  .list{position:absolute;top:258px;bottom:58px;left:0;right:0;overflow:hidden;padding:4px 16px 10px}
+  .rc{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:11px;margin-bottom:9px;align-items:center}
+  .rc .th{width:60px;height:60px;border-radius:11px;flex:none;background:radial-gradient(120% 100% at 40% 20%,#1c2c4a,#0d1626);position:relative;overflow:hidden}
   .rc .th svg{position:absolute;inset:0;width:100%;height:100%}
+  .rc .th .km{position:absolute;left:0;bottom:0;right:0;background:rgba(249,115,22,.92);color:#fff;font-size:9px;font-weight:800;text-align:center;padding:2px 0}
   .rc .in{flex:1;min-width:0}
-  .rc .nm{font-size:15.5px;font-weight:800;color:#fff}
-  .rc .meta{font-size:12.5px;color:var(--mut);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
-  .rc .meta b{color:var(--txt);font-weight:700}
-  .rc .tags{margin-top:6px;display:flex;gap:6px}
-  .tg{font-size:10.5px;font-weight:700;border-radius:999px;padding:3px 8px;background:rgba(148,163,184,.12);color:var(--txt);border:1px solid var(--line)}
-  .tg.or{background:rgba(249,115,22,.14);color:#fdba74;border-color:rgba(249,115,22,.35)}
+  .rc .nm{font-size:15px;font-weight:800;color:#fff}
+  .rc .meta{font-size:12px;color:var(--mut);margin-top:2px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .rc .meta .near{color:#fdba74;font-weight:800;display:flex;align-items:center;gap:3px}
+  .rc .meta .near svg{width:11px;height:11px;stroke:#fdba74;fill:none}
+  .rc .tags{margin-top:7px;display:flex;gap:6px;align-items:center}
+  .tg{font-size:10.5px;font-weight:800;border-radius:999px;padding:3px 9px;display:flex;align-items:center;gap:5px;border:1px solid var(--line)}
+  .tg .dot{width:7px;height:7px;border-radius:50%}
+  .tg.beg{background:rgba(34,197,94,.12);color:#86efac;border-color:rgba(34,197,94,.3)}
+  .tg.mid{background:rgba(245,158,11,.12);color:#fcd34d;border-color:rgba(245,158,11,.3)}
+  .tg.adv{background:rgba(239,68,68,.12);color:#fca5a5;border-color:rgba(239,68,68,.3)}
+  .tg.plain{background:rgba(148,163,184,.1);color:var(--txt)}
+
   .nav{position:absolute;left:0;right:0;bottom:0;height:58px;background:rgba(11,17,32,.98);border-top:1px solid var(--line);display:flex}
   .nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--mut);font-size:10.5px;font-weight:700;text-decoration:none}
-  .nav a svg{width:22px;height:22px;stroke:var(--mut)}
+  .nav a svg{width:22px;height:22px;stroke:var(--mut);fill:none}
   .nav a.on{color:var(--or)}.nav a.on svg{stroke:var(--or)}
 </style></head><body>
 <div class="hd"><h1>Rute</h1><div class="sub">76 kuriranih balkanskih ruta</div></div>
-<div class="srch"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4-4"/></svg><input placeholder="Traži rutu, zemlju..." readonly></div>
-<div class="fil"><div class="f on">Sve</div><div class="f">Srbija</div><div class="f">Crna Gora</div><div class="f">Kružne</div><div class="f">Kanjoni</div></div>
-<div class="list">
-  <!-- karta rute 1 -->
-  <div class="rc"><div class="th"><svg viewBox="0 0 64 64"><path d="M10 52 C 20 40, 16 28, 30 24 C 44 20, 42 12, 54 10" stroke="#f97316" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="10" cy="52" r="4" fill="#22c55e"/><circle cx="54" cy="10" r="4" fill="#fff"/></svg></div>
-    <div class="in"><div class="nm">Đerdapska magistrala</div><div class="meta"><span><b>73 km</b></span><span>Golubac → Kladovo</span></div><div class="tags"><span class="tg or">Srbija</span><span class="tg">kanjon · Dunav</span></div></div></div>
-  <div class="rc"><div class="th"><svg viewBox="0 0 64 64"><path d="M12 50 C 26 46, 20 30, 34 26 C 46 22, 44 14, 52 12" stroke="#f97316" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="12" cy="50" r="4" fill="#22c55e"/><circle cx="52" cy="12" r="4" fill="#fff"/></svg></div>
-    <div class="in"><div class="nm">Kotorske serpentine</div><div class="meta"><span><b>69 km</b></span><span>Kotor → Cetinje</span></div><div class="tags"><span class="tg or">Crna Gora</span><span class="tg">25 serpentina</span></div></div></div>
-  <div class="rc"><div class="th"><svg viewBox="0 0 64 64"><path d="M16 48 C 30 52, 40 42, 48 30 C 52 22, 40 16, 30 22 C 22 26, 16 20, 16 48 Z" stroke="#f97316" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="16" cy="48" r="4" fill="#22c55e"/></svg></div>
-    <div class="in"><div class="nm">Krug Fruške gore</div><div class="meta"><span><b>52 km</b></span><span>Novi Sad → Novi Sad</span></div><div class="tags"><span class="tg or">Srbija</span><span class="tg">kružna</span></div></div></div>
-  <div class="rc"><div class="th"><svg viewBox="0 0 64 64"><path d="M12 52 C 22 36, 30 40, 36 28 C 42 18, 50 22, 54 12" stroke="#f97316" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="12" cy="52" r="4" fill="#22c55e"/><circle cx="54" cy="12" r="4" fill="#fff"/></svg></div>
-    <div class="in"><div class="nm">Dolina Valbone</div><div class="meta"><span><b>22 km</b></span><span>Bajram Curri → Valbonë</span></div><div class="tags"><span class="tg or">Albanija</span><span class="tg">Prokletije</span></div></div></div>
-  <div class="rc"><div class="th"><svg viewBox="0 0 64 64"><path d="M14 50 C 28 48, 24 34, 36 30 C 46 26, 46 16, 50 12" stroke="#f97316" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="14" cy="50" r="4" fill="#22c55e"/><circle cx="50" cy="12" r="4" fill="#fff"/></svg></div>
-    <div class="in"><div class="nm">Transfăgărășan</div><div class="meta"><span><b>85 km</b></span><span>Curtea de Argeș → Cârțișoara</span></div><div class="tags"><span class="tg or">Rumunija</span><span class="tg">legenda Evrope</span></div></div></div>
+<div class="srch"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4-4"/></svg><input placeholder="Traži rutu, zemlju..." readonly></div>
+
+<div class="geo">
+  <div class="gic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+  <div class="gt"><b>Blizu tebe · Beograd</b><span>sortirano po udaljenosti od tebe</span></div>
+  <div class="on"><span class="dt"></span>GPS</div>
 </div>
+
+<div class="fil"><div class="f on">Sve</div><div class="f">Srbija</div><div class="f">Crna Gora</div><div class="f">Kružne</div><div class="f">Kanjoni</div></div>
+<div class="diff">
+  <span class="dl">Težina</span>
+  <div class="dchip on">Sve</div>
+  <div class="dchip beg"><span class="dot d-beg"></span>Početnik</div>
+  <div class="dchip mid"><span class="dot d-mid"></span>Srednji</div>
+  <div class="dchip adv"><span class="dot d-adv"></span>Napredan</div>
+</div>
+
+<div class="list">
+  <div class="rc"><div class="th"><svg viewBox="0 0 60 60"><path d="M10 48 C22 40, 18 30, 30 26 C42 22, 40 14, 50 12" stroke="#f97316" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg><div class="km">52 km</div></div>
+    <div class="in"><div class="nm">Krug Fruške gore</div><div class="meta"><span class="near"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>18 km od tebe</span><span>kružna</span></div>
+      <div class="tags"><span class="tg beg"><span class="dot d-beg"></span>Početnik</span><span class="tg plain">blage krivine</span></div></div></div>
+
+  <div class="rc"><div class="th"><svg viewBox="0 0 60 60"><path d="M12 50 C26 46, 20 30, 34 26 C46 22, 44 14, 52 12" stroke="#f97316" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg><div class="km">73 km</div></div>
+    <div class="in"><div class="nm">Đerdapska magistrala</div><div class="meta"><span class="near"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>142 km od tebe</span><span>Golubac → Kladovo</span></div>
+      <div class="tags"><span class="tg mid"><span class="dot d-mid"></span>Srednji</span><span class="tg plain">kanjon · Dunav</span></div></div></div>
+
+  <div class="rc"><div class="th"><svg viewBox="0 0 60 60"><path d="M10 50 C20 34, 30 40, 36 26 C42 16, 50 20, 54 10" stroke="#f97316" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg><div class="km">28 km</div></div>
+    <div class="in"><div class="nm">Rajac — vinski put</div><div class="meta"><span class="near"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>156 km od tebe</span><span>brdo</span></div>
+      <div class="tags"><span class="tg beg"><span class="dot d-beg"></span>Početnik</span><span class="tg plain">vinarije</span></div></div></div>
+
+  <div class="rc"><div class="th"><svg viewBox="0 0 60 60"><path d="M12 52 C22 36, 30 44, 34 24 C38 12, 48 18, 52 8" stroke="#f97316" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg><div class="km">69 km</div></div>
+    <div class="in"><div class="nm">Kotorske serpentine</div><div class="meta"><span class="near"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>421 km od tebe</span><span>25 serpentina</span></div>
+      <div class="tags"><span class="tg adv"><span class="dot d-adv"></span>Napredan</span><span class="tg plain">oštre krivine</span></div></div></div>
+</div>
+
 <div class="nav">
-  <a><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Planer</a>
-  <a class="on"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Rute</a>
-  <a><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></svg>Zajednica</a>
-  <a><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>Ja</a>
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Planer</a>
+  <a class="on"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Rute</a>
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></svg>Zajednica</a>
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>Ja</a>
 </div>
 </body></html>
