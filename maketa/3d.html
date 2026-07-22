@@ -121,8 +121,6 @@ function endDot(color){const e=document.createElement('div');e.className='endpt'
 let placed=false;
 function addMarkers(){
   if(placed)return;placed=true;
-  new maplibregl.Marker({element:endDot('#22c55e')}).setLngLat(ROUTE[0]).addTo(map);
-  new maplibregl.Marker({element:endDot('#ffffff')}).setLngLat(ROUTE[ROUTE.length-1]).addTo(map);
   FRIENDS.forEach(f=>{const c=ROUTE[f.i];const el=document.createElement('div');el.className='fr'+(f.me?' me':'');
     el.innerHTML='<div class="av" style="background:'+f.col+'">'+f.n[0]+'</div>'+
       '<div class="lb"><b>'+f.n+'</b><span>'+f.s+'</span></div>';
@@ -137,7 +135,9 @@ map.on('styledata',()=>{addTerrainRoute();setSky();});
 mq.addEventListener('change',e=>{mode=e.matches?'dark':'light';
   document.body.dataset.mode=mode;map.setStyle(STYLES[mode]);});
 
+// Centriraj = vrati na MOJU lokaciju (u demou = pin "Ti")
+const ME=ROUTE[FRIENDS.find(f=>f.me).i];
 document.getElementById('rc').onclick=()=>{is3D=true;document.getElementById('cmode').textContent='2D';
-  map.easeTo({...HOME,duration:900});};
+  map.easeTo({center:ME,zoom:14.6,pitch:HOME.pitch,duration:900});};
 setTimeout(()=>document.getElementById('hint').classList.add('gone'),5600);
 </script></body></html>
