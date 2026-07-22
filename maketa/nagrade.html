@@ -1,0 +1,106 @@
+<!DOCTYPE html><html lang="sr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--or:#f97316;--or2:#ea580c;--txt:#e2e8f0;--mut:#94a3b8;--line:rgba(148,163,184,.16);
+    --g:#22c55e;--a:#f59e0b;--cy:#38bdf8}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Archivo,system-ui,sans-serif}
+  body{width:390px;height:844px;overflow:hidden;background:var(--bg);position:relative}
+  .scroll{position:absolute;top:0;left:0;right:0;bottom:58px;overflow:hidden;padding:16px 16px 8px}
+
+  .hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+  .hd h1{font-size:24px;font-weight:900;color:#fff;letter-spacing:-.01em}
+  .hd .rank{font-size:12.5px;color:var(--mut);font-weight:700}
+  .hd .rank b{color:var(--or)}
+
+  /* nivo karta */
+  .lvl{background:linear-gradient(135deg,rgba(249,115,22,.16),rgba(234,88,12,.06));border:1px solid rgba(249,115,22,.38);
+    border-radius:18px;padding:15px 16px;margin-bottom:16px;display:flex;align-items:center;gap:15px}
+  .lvl .ring{width:58px;height:58px;border-radius:50%;flex:none;background:conic-gradient(var(--or) 72%,rgba(148,163,184,.2) 0);
+    display:flex;align-items:center;justify-content:center}
+  .lvl .ring i{width:46px;height:46px;border-radius:50%;background:#141f34;display:flex;align-items:center;justify-content:center;
+    font-size:19px;font-weight:900;color:#fff}
+  .lvl .t .n{font-size:16px;font-weight:900;color:#fff}
+  .lvl .t .s{font-size:12.5px;color:#fed7aa;font-weight:700;margin-top:1px}
+  .lvl .pts{margin-left:auto;text-align:right}
+  .lvl .pts .v{font-size:22px;font-weight:900;color:var(--or);line-height:1;font-variant-numeric:tabular-nums}
+  .lvl .pts .l{font-size:10.5px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+  .sec{font-size:12px;font-weight:800;color:var(--txt);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px}
+  .sec span{color:var(--mut);font-weight:600;text-transform:none;letter-spacing:0}
+
+  /* questovi */
+  .q{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 14px;margin-bottom:9px;display:flex;align-items:center;gap:13px}
+  .q .qic{width:40px;height:40px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(249,115,22,.14)}
+  .q .qic svg{width:21px;height:21px;stroke:var(--or);fill:none}
+  .q .qb{flex:1;min-width:0}
+  .q .qn{font-size:14px;font-weight:800;color:#fff}
+  .q .qp{font-size:11.5px;color:var(--mut);font-weight:600;margin-top:1px}
+  .q .track{height:6px;border-radius:3px;background:rgba(148,163,184,.18);margin-top:8px;overflow:hidden}
+  .q .track i{display:block;height:100%;background:linear-gradient(90deg,var(--or),var(--or2));border-radius:3px}
+  .q .rw{flex:none;text-align:right}
+  .q .rw .v{font-size:14px;font-weight:900;color:var(--or)}
+  .q .rw .l{font-size:9.5px;color:var(--mut);font-weight:700}
+
+  /* bedzevi */
+  .bg{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:2px}
+  .b{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 4px;text-align:center}
+  .b .ic{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;background:rgba(249,115,22,.15)}
+  .b .ic svg{width:22px;height:22px;stroke:var(--or);fill:none}
+  .b .nm{font-size:10px;font-weight:800;color:#fff;line-height:1.1}
+  .b.lock{opacity:.5}
+  .b.lock .ic{background:rgba(148,163,184,.12)}
+  .b.lock .ic svg{stroke:var(--mut)}
+
+  /* bottom nav */
+  .nav{position:absolute;left:0;right:0;bottom:0;height:58px;background:rgba(11,17,32,.98);border-top:1px solid var(--line);display:flex}
+  .nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--mut);font-size:10.5px;font-weight:700;text-decoration:none}
+  .nav a svg{width:22px;height:22px;stroke:var(--mut);fill:none}
+  .nav a.on{color:var(--or)}.nav a.on svg{stroke:var(--or)}
+</style></head><body>
+<div class="scroll">
+  <div class="hd"><h1>Nagrade</h1><div class="rank">Rang <b>#312</b> u Srbiji</div></div>
+
+  <div class="lvl">
+    <div class="ring"><i>7</i></div>
+    <div class="t"><div class="n">Iskusni vozač</div><div class="s">Nivo 7 · još 160 poena</div></div>
+    <div class="pts"><div class="v">4 840</div><div class="l">poena</div></div>
+  </div>
+
+  <div class="sec">Aktivni questovi <span>· obnavljaju se nedeljno</span></div>
+  <div class="q">
+    <div class="qic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 6l3-3 4 4M21 6l-3-3-4 4M12 4v6M5 10h14l-1.5 9a2 2 0 01-2 1.7H8.5a2 2 0 01-2-1.7z"/></svg></div>
+    <div class="qb"><div class="qn">Osvoji Jadransku magistralu</div><div class="qp">Pređi celu rutu Rijeka → Ulcinj</div><div class="track"><i style="width:0%"></i></div></div>
+    <div class="rw"><div class="v">+500</div><div class="l">0 / 1</div></div>
+  </div>
+  <div class="q">
+    <div class="qic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3L13.7 4a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+    <div class="qb"><div class="qn">Oko sokolovo</div><div class="qp">Prijavi 5 opasnosti na ruti</div><div class="track"><i style="width:60%"></i></div></div>
+    <div class="rw"><div class="v">+150</div><div class="l">3 / 5</div></div>
+  </div>
+  <div class="q">
+    <div class="qic"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 3a15 15 0 010 18M12 3a15 15 0 000 18"/></svg></div>
+    <div class="qb"><div class="qn">Pasošar</div><div class="qp">Vozi u 3 različite zemlje</div><div class="track"><i style="width:66%"></i></div></div>
+    <div class="rw"><div class="v">+300</div><div class="l">2 / 3</div></div>
+  </div>
+
+  <div class="sec" style="margin-top:16px">Bedževi <span>· 9 / 24 otključano</span></div>
+  <div class="bg">
+    <div class="b"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 01-12 0z"/></svg></div><div class="nm">Prvi kanjon</div></div>
+    <div class="b"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 7v5h-5"/></svg></div><div class="nm">Uspon 1k</div></div>
+    <div class="b"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.6 5.4 21.2l2.3-7.4-6-4.4h7.6z"/></svg></div><div class="nm">Serpentine</div></div>
+    <div class="b"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="nm">Rani ptić</div></div>
+    <div class="b lock"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div><div class="nm">1000 km</div></div>
+    <div class="b lock"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div><div class="nm">Noćna</div></div>
+    <div class="b lock"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div><div class="nm">Kišni pas</div></div>
+    <div class="b lock"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div><div class="nm">5 zemalja</div></div>
+  </div>
+</div>
+
+<div class="nav">
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Planer</a>
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Rute</a>
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></svg>Zajednica</a>
+  <a class="on"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>Ja</a>
+</div>
+</body></html>

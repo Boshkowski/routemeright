@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="sr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--or:#f97316;--or2:#ea580c;--txt:#e2e8f0;--mut:#94a3b8;--line:rgba(148,163,184,.16);
+    --g:#22c55e;--cy:#38bdf8}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Archivo,system-ui,sans-serif}
+  body{width:390px;height:844px;overflow:hidden;background:var(--bg);position:relative}
+  .scroll{position:absolute;top:0;left:0;right:0;bottom:58px;overflow:hidden}
+
+  /* header */
+  .top{padding:16px 16px 12px;background:radial-gradient(120% 90% at 80% 0%,#1c2c4a,#0f172a 70%);position:relative}
+  .gear{position:absolute;top:18px;right:16px;width:38px;height:38px;border-radius:12px;background:rgba(15,23,42,.7);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+  .gear svg{width:20px;height:20px;stroke:var(--txt);fill:none}
+  .who{display:flex;align-items:center;gap:15px}
+  .who .av{width:60px;height:60px;border-radius:18px;background:linear-gradient(135deg,var(--or),var(--or2));display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff;box-shadow:0 10px 24px rgba(249,115,22,.3)}
+  .who .n{font-size:22px;font-weight:900;color:#fff;letter-spacing:-.01em}
+  .who .lv{font-size:13px;font-weight:700;color:#fed7aa;margin-top:2px;display:flex;align-items:center;gap:7px}
+  .who .lv .ring{width:16px;height:16px;border-radius:50%;background:conic-gradient(var(--or) 72%,rgba(148,163,184,.25) 0)}
+
+  /* stat traka */
+  .stats{display:flex;margin:12px 16px 0;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .stats .st{flex:1;text-align:center;padding:11px 6px;border-right:1px solid var(--line)}
+  .stats .st:last-child{border-right:none}
+  .stats .st .v{font-size:19px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums}
+  .stats .st .l{font-size:10px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+
+  .sec{font-size:12px;font-weight:800;color:var(--txt);text-transform:uppercase;letter-spacing:.06em;margin:14px 16px 9px;display:flex}
+  .sec span{margin-left:auto;color:var(--or);font-weight:700;text-transform:none;letter-spacing:0;font-size:12px}
+
+  /* moj motor */
+  .bike{margin:0 16px;background:linear-gradient(135deg,rgba(249,115,22,.12),rgba(30,41,59,.6));border:1px solid rgba(249,115,22,.3);border-radius:16px;padding:14px 15px;display:flex;align-items:center;gap:14px}
+  .bike .bic{width:48px;height:48px;border-radius:13px;flex:none;background:rgba(249,115,22,.15);display:flex;align-items:center;justify-content:center}
+  .bike .bic svg{width:28px;height:28px;stroke:var(--or);fill:none}
+  .bike .bn{font-size:15.5px;font-weight:900;color:#fff}
+  .bike .bd{font-size:12px;color:var(--mut);font-weight:600;margin-top:2px}
+  .bike .ch{margin-left:auto;font-size:12.5px;font-weight:800;color:var(--or)}
+
+  /* rekordi */
+  .rec{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 16px}
+  .rc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px}
+  .rc .rk{font-size:10.5px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;gap:6px}
+  .rc .rk svg{width:14px;height:14px;stroke:var(--cy);fill:none}
+  .rc .rv{font-size:20px;font-weight:900;color:#fff;margin-top:6px;font-variant-numeric:tabular-nums}
+  .rc .rv small{font-size:12px;color:var(--mut);font-weight:600}
+  .rc .rs{font-size:11px;color:var(--mut);font-weight:600;margin-top:2px}
+
+  /* sacuvane rute */
+  .save{margin:0 16px}
+  .sr{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 13px;margin-bottom:7px}
+  .sr .th{width:44px;height:44px;border-radius:11px;flex:none;background:radial-gradient(120% 100% at 40% 20%,#1c2c4a,#0d1626);position:relative;overflow:hidden}
+  .sr .th svg{position:absolute;inset:0;width:100%;height:100%}
+  .sr .srn{font-size:14px;font-weight:800;color:#fff}
+  .sr .srd{font-size:11.5px;color:var(--mut);font-weight:600;margin-top:1px}
+  .sr .star{margin-left:auto}
+  .sr .star svg{width:18px;height:18px;fill:var(--or);stroke:var(--or)}
+
+  /* kalibracija */
+  .cal{margin:0 16px;display:flex;align-items:center;gap:12px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28);border-radius:14px;padding:12px 14px}
+  .cal .cic{width:38px;height:38px;border-radius:11px;flex:none;background:rgba(56,189,248,.16);display:flex;align-items:center;justify-content:center}
+  .cal .cic svg{width:20px;height:20px;stroke:var(--cy);fill:none}
+  .cal .ct{flex:1}
+  .cal .cn{font-size:13.5px;font-weight:800;color:#fff}
+  .cal .cd{font-size:11.5px;color:var(--mut);font-weight:600;margin-top:1px}
+  .cal .cg{font-size:12.5px;font-weight:800;color:var(--cy)}
+
+  .nav{position:absolute;left:0;right:0;bottom:0;height:58px;background:rgba(11,17,32,.98);border-top:1px solid var(--line);display:flex}
+  .nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--mut);font-size:10.5px;font-weight:700;text-decoration:none}
+  .nav a svg{width:22px;height:22px;stroke:var(--mut);fill:none}
+  .nav a.on{color:var(--or)}.nav a.on svg{stroke:var(--or)}
+</style></head><body>
+<div class="scroll">
+  <div class="top">
+    <div class="gear"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7.7 1.6 1.6 0 01-3.2 0 1.6 1.6 0 00-2.7-.7l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 004.6 15a1.6 1.6 0 00-1.5-1H3a2 2 0 010-4h.1A1.6 1.6 0 004.6 9a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 014 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1h.1a2 2 0 010 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg></div>
+    <div class="who">
+      <div class="av">B</div>
+      <div><div class="n">Boško</div><div class="lv"><span class="ring"></span>Nivo 7 · Iskusni vozač</div></div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="st"><div class="v">3 210</div><div class="l">km</div></div>
+    <div class="st"><div class="v">28</div><div class="l">ruta</div></div>
+    <div class="st"><div class="v">4 840</div><div class="l">poena</div></div>
+    <div class="st"><div class="v">5</div><div class="l">zemalja</div></div>
+  </div>
+
+  <div class="sec">Moj motor</div>
+  <div class="bike">
+    <div class="bic"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="5.5" cy="17" r="3.2"/><circle cx="18.5" cy="17" r="3.2"/><path d="M5.5 17l4-7h4l2 4h3M9.5 10l2.5 7M14 6h3"/></svg></div>
+    <div><div class="bn">BMW R1150GS</div><div class="bd">Rezervoar 22 L · realno 5,4 L/100km</div></div>
+    <div class="ch">Promeni</div>
+  </div>
+
+  <div class="sec">Lični rekordi</div>
+  <div class="rec">
+    <div class="rc"><div class="rk"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Najduža vožnja</div><div class="rv">312 <small>km</small></div><div class="rs">Beograd → Žabljak</div></div>
+    <div class="rc"><div class="rk"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 20l6-8 4 5 3-4 5 7z"/></svg>Najveći uspon</div><div class="rv">2 140 <small>m</small></div><div class="rs">Durmitor prsten</div></div>
+    <div class="rc"><div class="rk"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="5.5" cy="17" r="3"/><circle cx="18.5" cy="17" r="3"/><path d="M5.5 17l4-7h4l2 4h3"/></svg>Max nagib</div><div class="rv">46°</div><div class="rs">Kotorske serpentine</div></div>
+    <div class="rc"><div class="rk"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.6 5.4 21.2l2.3-7.4-6-4.4h7.6z"/></svg>Serpentina u nizu</div><div class="rv">31</div><div class="rs">Transfăgărășan</div></div>
+  </div>
+
+  <div class="sec">Sačuvane rute <span>Sve →</span></div>
+  <div class="save">
+    <div class="sr"><div class="th"><svg viewBox="0 0 44 44"><path d="M8 36 C16 28, 14 19, 22 16 C29 13, 28 9, 35 8" stroke="#f97316" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="8" cy="36" r="2.5" fill="#22c55e"/></svg></div>
+      <div><div class="srn">Dolina Neretve</div><div class="srd">126 km · Mostar → Jablanica</div></div>
+      <div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.6 5.4 21.2l2.3-7.4-6-4.4h7.6z"/></svg></div></div>
+    <div class="sr"><div class="th"><svg viewBox="0 0 44 44"><path d="M10 34 C20 32, 16 20, 24 17 C31 15, 30 10, 34 8" stroke="#f97316" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="10" cy="34" r="2.5" fill="#22c55e"/></svg></div>
+      <div><div class="srn">Kotorske serpentine</div><div class="srd">69 km · 25 serpentina</div></div>
+      <div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.6 5.4 21.2l2.3-7.4-6-4.4h7.6z"/></svg></div></div>
+  </div>
+
+  <div class="sec">Senzori</div>
+  <div class="cal">
+    <div class="cic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M12 6v6l4 2"/></svg></div>
+    <div class="ct"><div class="cn">Kalibracija nagiba</div><div class="cd">Montiraj telefon i kalibriši za tačan lean angle</div></div>
+    <div class="cg">Kalibriši</div>
+  </div>
+</div>
+
+<div class="nav">
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Planer</a>
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Rute</a>
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></svg>Zajednica</a>
+  <a class="on"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>Ja</a>
+</div>
+</body></html>

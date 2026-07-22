@@ -1,0 +1,115 @@
+<!DOCTYPE html><html lang="sr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--or:#f97316;--or2:#ea580c;--txt:#e2e8f0;--mut:#94a3b8;--line:rgba(148,163,184,.16);
+    --g:#22c55e;--a:#f59e0b;--r:#ef4444;--cy:#38bdf8}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Archivo,system-ui,sans-serif}
+  body{width:390px;height:844px;overflow:hidden;background:var(--bg);position:relative}
+  .scroll{position:absolute;inset:0;overflow:hidden}
+
+  /* mapa vožnje */
+  .map{position:relative;height:264px;background:radial-gradient(120% 90% at 50% 25%,#16233b,#0b1424 70%,#0a1120)}
+  .map svg{position:absolute;inset:0;width:100%;height:264px}
+  .map::after{content:"";position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(transparent,var(--bg))}
+  .done{position:absolute;top:18px;left:16px;right:16px;z-index:3}
+  .done .k{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--g)}
+  .done h1{font-size:27px;font-weight:900;color:#fff;letter-spacing:-.02em;margin-top:3px}
+  .done .sub{font-size:13.5px;color:var(--mut);margin-top:2px;font-weight:600}
+
+  .body{padding:0 16px 24px;margin-top:-38px;position:relative;z-index:4}
+
+  /* poeni traka */
+  .pts{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(249,115,22,.18),rgba(234,88,12,.08));
+    border:1px solid rgba(249,115,22,.4);border-radius:18px;padding:15px 17px;margin-bottom:14px}
+  .pts .big{font-size:34px;font-weight:900;color:var(--or);line-height:1;font-variant-numeric:tabular-nums}
+  .pts .lab{font-size:13px;font-weight:700;color:#fed7aa}
+  .pts .lab small{display:block;color:var(--mut);font-weight:600;font-size:11.5px;margin-top:2px}
+  .pts .lvl{margin-left:auto;text-align:right}
+  .pts .lvl .n{font-size:13px;font-weight:800;color:#fff}
+  .pts .bar{width:96px;height:6px;border-radius:3px;background:rgba(148,163,184,.2);margin-top:6px;overflow:hidden}
+  .pts .bar i{display:block;height:100%;width:72%;background:var(--or);border-radius:3px}
+  .pts .lvl small{font-size:10.5px;color:var(--mut);font-weight:600}
+
+  /* metrike */
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:14px}
+  .m{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px}
+  .m .k{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:6px}
+  .m .v{font-size:21px;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
+  .m .v small{font-size:12px;color:var(--mut);font-weight:600}
+  .m.lean{grid-column:span 3;background:rgba(56,189,248,.09);border-color:rgba(56,189,248,.32);display:flex;align-items:center;gap:14px}
+  .m.lean .bikewrap{width:52px;height:52px;border-radius:14px;background:rgba(56,189,248,.14);display:flex;align-items:center;justify-content:center;flex:none}
+  .m.lean .bikewrap svg{width:30px;height:30px}
+  .m.lean .v{color:var(--cy);font-size:26px}
+  .m.lean .tap{margin-left:auto;display:flex;align-items:center;gap:5px;color:var(--cy);font-size:12px;font-weight:800}
+  .m.lean .tap svg{width:15px;height:15px;stroke:var(--cy)}
+
+  /* bedzevi otkljucani */
+  .ach{margin-bottom:16px}
+  .ach .h{font-size:12px;font-weight:800;color:var(--txt);text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+  .ach .h span{color:var(--or)}
+  .badges{display:flex;gap:10px}
+  .bd{flex:1;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 8px;text-align:center}
+  .bd.new{border-color:rgba(249,115,22,.5);background:rgba(249,115,22,.08)}
+  .bd .ic{width:42px;height:42px;border-radius:50%;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;background:rgba(249,115,22,.16)}
+  .bd .ic svg{width:23px;height:23px;stroke:var(--or);fill:none}
+  .bd .nm{font-size:11.5px;font-weight:800;color:#fff;line-height:1.15}
+  .bd .ds{font-size:10px;color:var(--mut);font-weight:600;margin-top:2px}
+
+  .btns{display:flex;gap:10px}
+  .b{flex:1;border-radius:15px;padding:15px;text-align:center;font-size:15px;font-weight:800;border:1px solid var(--line);background:var(--card);color:var(--txt);display:flex;align-items:center;justify-content:center;gap:8px}
+  .b svg{width:18px;height:18px;stroke:currentColor}
+  .b.p{background:linear-gradient(135deg,var(--or),var(--or2));color:#fff;border:none;box-shadow:0 8px 20px rgba(249,115,22,.3)}
+</style></head><body>
+<div class="scroll">
+  <div class="map">
+    <svg viewBox="0 0 390 264" preserveAspectRatio="none">
+      <g stroke="#25314a" stroke-width="1.1" fill="none" opacity=".55"><path d="M-20 80 Q120 60 220 130 T430 150"/><path d="M-20 200 Q140 180 250 220 T430 235"/></g>
+      <path d="M40 220 C 110 200, 120 130, 190 120 C 260 110, 280 60, 350 44" stroke="#38bdf8" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <circle cx="40" cy="220" r="8" fill="#22c55e" stroke="#0f172a" stroke-width="3"/>
+      <circle cx="350" cy="44" r="8" fill="#fff" stroke="#c2570a" stroke-width="3"/>
+    </svg>
+    <div class="done">
+      <div class="k">Ruta završena</div>
+      <h1>Dolina Neretve</h1>
+      <div class="sub">Mostar → Jablanica · danas 17:24</div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="pts">
+      <div><div class="big">+240</div><div class="lab">poena<small>+3 prijave · +1 kanjon</small></div></div>
+      <div class="lvl"><div class="n">Nivo 7</div><div class="bar"><i></i></div><small>još 160 do Nivoa 8</small></div>
+    </div>
+
+    <div class="grid">
+      <div class="m"><div class="k">Kilometara</div><div class="v">126 <small>km</small></div></div>
+      <div class="m"><div class="k">U pokretu</div><div class="v">2<small>h</small> 41</div></div>
+      <div class="m"><div class="k">Prosek</div><div class="v">58 <small>km/h</small></div></div>
+      <div class="m"><div class="k">Max brzina</div><div class="v">112 <small>km/h</small></div></div>
+      <div class="m"><div class="k">Uspon</div><div class="v">1 340 <small>m</small></div></div>
+      <div class="m"><div class="k">Pauze</div><div class="v">2 <small>× 14min</small></div></div>
+
+      <div class="m lean">
+        <div class="bikewrap"><svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="5.5" cy="17" r="3.2"/><circle cx="18.5" cy="17" r="3.2"/><path d="M5.5 17l4-7h4l2 4h3M9.5 10l2.5 7"/></svg></div>
+        <div><div class="k">Max nagib (lean)</div><div class="v">42°</div></div>
+        <div class="tap">Vidi gde<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
+
+    <div class="ach">
+      <div class="h">Otključano <span>· 2 nova</span></div>
+      <div class="badges">
+        <div class="bd new"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 01-12 0zM6 6H3v2a3 3 0 003 2M18 6h3v2a3 3 0 01-3 2"/></svg></div><div class="nm">Prvi kanjon</div><div class="ds">Neretva</div></div>
+        <div class="bd new"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M21 7v5h-5"/></svg></div><div class="nm">1 340 m</div><div class="ds">Uspon dana</div></div>
+        <div class="bd"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4-6.3-4.6L5.7 21l2.3-7.4-6-4.4h7.6z"/></svg></div><div class="nm">Serpentine</div><div class="ds">17 / 25</div></div>
+      </div>
+    </div>
+
+    <div class="btns">
+      <div class="b p"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><path d="M16 6l-4-4-4 4M12 2v14"/></svg>Podeli</div>
+      <div class="b"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Sačuvaj</div>
+    </div>
+  </div>
+</div>
+</body></html>

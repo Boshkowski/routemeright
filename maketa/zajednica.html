@@ -1,0 +1,109 @@
+<!DOCTYPE html><html lang="sr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--or:#f97316;--or2:#ea580c;--txt:#e2e8f0;--mut:#94a3b8;--line:rgba(148,163,184,.16);
+    --g:#22c55e;--a:#f59e0b;--r:#ef4444;--cy:#38bdf8}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Archivo,system-ui,sans-serif}
+  body{width:390px;height:844px;overflow:hidden;background:var(--bg);position:relative}
+  .scroll{position:absolute;top:0;left:0;right:0;bottom:58px;overflow:hidden}
+  .pad{padding:16px 16px 8px}
+
+  .hd h1{font-size:24px;font-weight:900;color:#fff;letter-spacing:-.01em}
+  .seg{display:flex;gap:7px;margin-top:12px}
+  .seg .s{flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:9px;font-size:12.5px;font-weight:700;color:var(--txt)}
+  .seg .s.on{background:var(--or);border-color:var(--or);color:#fff}
+
+  /* meet me there CTA */
+  .meet{margin:14px 16px 0;background:linear-gradient(135deg,rgba(56,189,248,.14),rgba(249,115,22,.1));
+    border:1px solid rgba(56,189,248,.32);border-radius:16px;padding:14px 15px;display:flex;align-items:center;gap:13px}
+  .meet .mic{width:44px;height:44px;border-radius:13px;flex:none;background:rgba(56,189,248,.18);display:flex;align-items:center;justify-content:center}
+  .meet .mic svg{width:23px;height:23px;stroke:var(--cy);fill:none}
+  .meet .mt{flex:1}
+  .meet .mt .n{font-size:14.5px;font-weight:800;color:#fff}
+  .meet .mt .d{font-size:12px;color:var(--mut);font-weight:600;margin-top:1px}
+  .meet .go{background:var(--cy);color:#04222e;font-size:13px;font-weight:800;border-radius:11px;padding:9px 13px}
+
+  .sec{font-size:12px;font-weight:800;color:var(--txt);text-transform:uppercase;letter-spacing:.06em;margin:18px 16px 10px;display:flex;align-items:center;gap:7px}
+  .sec .dot{width:8px;height:8px;border-radius:50%;background:var(--r);box-shadow:0 0 0 4px rgba(239,68,68,.2)}
+  .sec span{margin-left:auto;color:var(--or);font-weight:700;text-transform:none;letter-spacing:0;font-size:12px}
+
+  /* feed */
+  .feed{padding:0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 14px;margin-bottom:9px;display:flex;gap:12px;align-items:center}
+  .av{width:40px;height:40px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff}
+  .c1{background:linear-gradient(135deg,#f97316,#ea580c)}
+  .cb{flex:1;min-width:0}
+  .cb .top{font-size:14px;color:#fff;font-weight:700;line-height:1.25}
+  .cb .top b{font-weight:900}
+  .cb .sub{font-size:11.5px;color:var(--mut);font-weight:600;margin-top:2px;display:flex;gap:9px}
+  .cb .sub .pt{color:var(--or);font-weight:800}
+  .card .tag{flex:none;font-size:10.5px;font-weight:800;border-radius:999px;padding:5px 9px}
+  .tag.rep{background:rgba(239,68,68,.16);color:#fca5a5;border:1px solid rgba(239,68,68,.35)}
+  .tag.ride{background:rgba(34,197,94,.14);color:#86efac;border:1px solid rgba(34,197,94,.3)}
+  .thumb{width:40px;height:40px;border-radius:11px;flex:none;background:radial-gradient(120% 100% at 40% 20%,#1c2c4a,#0d1626);position:relative;overflow:hidden}
+  .thumb svg{position:absolute;inset:0;width:100%;height:100%}
+
+  /* leaderboard */
+  .lb{margin:0 16px;background:var(--card);border:1px solid var(--line);border-radius:15px;overflow:hidden}
+  .lb .row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .lb .row:last-child{border-bottom:none}
+  .lb .row.me{background:rgba(249,115,22,.08)}
+  .lb .pos{width:22px;font-size:14px;font-weight:900;color:var(--mut);text-align:center}
+  .lb .row:nth-child(1) .pos{color:var(--or)}
+  .lb .nm{flex:1;font-size:13.5px;font-weight:700;color:#fff}
+  .lb .nm small{color:var(--mut);font-weight:600}
+  .lb .pts{font-size:13px;font-weight:900;color:var(--or);font-variant-numeric:tabular-nums}
+
+  .nav{position:absolute;left:0;right:0;bottom:0;height:58px;background:rgba(11,17,32,.98);border-top:1px solid var(--line);display:flex}
+  .nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--mut);font-size:10.5px;font-weight:700;text-decoration:none}
+  .nav a svg{width:22px;height:22px;stroke:var(--mut);fill:none}
+  .nav a.on{color:var(--or)}.nav a.on svg{stroke:var(--or)}
+</style></head><body>
+<div class="scroll">
+  <div class="pad hd"><h1>Zajednica</h1>
+    <div class="seg"><div class="s on">Feed</div><div class="s">Mapa uživo</div><div class="s">Prijatelji</div></div>
+  </div>
+
+  <div class="meet">
+    <div class="mic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+    <div class="mt"><div class="n">Nađimo se tamo</div><div class="d">Pozovi ekipu i podeli živu lokaciju</div></div>
+    <div class="go">Pozovi</div>
+  </div>
+
+  <div class="sec"><span class="dot"></span>Uživo na mapi <span>7 prijava →</span></div>
+  <div class="feed">
+    <div class="card"><div class="av c1">M</div>
+      <div class="cb"><div class="top"><b>Marko D.</b> prijavio radar</div><div class="sub"><span>M-17 kod Konjica</span><span>· pre 4 min</span></div></div>
+      <div class="tag rep">Radar</div></div>
+    <div class="card"><div class="av" style="background:linear-gradient(135deg,#38bdf8,#0ea5e9)">S</div>
+      <div class="cb"><div class="top"><b>Stefan P.</b> prijavio šljunak na putu</div><div class="sub"><span>Cetinje serpentine</span><span>· pre 12 min</span></div></div>
+      <div class="tag rep">Opasnost</div></div>
+  </div>
+
+  <div class="sec">Nedavne vožnje</div>
+  <div class="feed">
+    <div class="card"><div class="thumb"><svg viewBox="0 0 40 40"><path d="M7 33 C15 26, 13 17, 21 14 C28 12, 27 7, 33 6" stroke="#f97316" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="7" cy="33" r="2.5" fill="#22c55e"/></svg></div>
+      <div class="cb"><div class="top"><b>Ana K.</b> · Kotorske serpentine</div><div class="sub"><span class="pt">+180p</span><span>69 km</span><span>· lean 44°</span></div></div>
+      <div class="tag ride">Nova PR</div></div>
+    <div class="card"><div class="av" style="background:linear-gradient(135deg,#a855f7,#7c3aed)">N</div>
+      <div class="cb"><div class="top"><b>Nikola</b> otključao <b>Prvi kanjon</b></div><div class="sub"><span class="pt">+240p</span><span>Neretva</span><span>· pre 1h</span></div></div>
+    </div>
+  </div>
+
+  <div class="sec">Rang ove nedelje</div>
+  <div class="lb">
+    <div class="row"><div class="pos">1</div><div class="nm">Vuk M. <small>· Novi Sad</small></div><div class="pts">1 920</div></div>
+    <div class="row"><div class="pos">2</div><div class="nm">Ana K. <small>· Podgorica</small></div><div class="pts">1 640</div></div>
+    <div class="row me"><div class="pos">8</div><div class="nm">Ti <small>· Beograd</small></div><div class="pts">840</div></div>
+  </div>
+  <div style="height:12px"></div>
+</div>
+
+<div class="nav">
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Planer</a>
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Rute</a>
+  <a class="on"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.9M16 3.1a4 4 0 010 7.8"/></svg>Zajednica</a>
+  <a><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 016-6h4a6 6 0 016 6v1"/></svg>Ja</a>
+</div>
+</body></html>
