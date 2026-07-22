@@ -1,0 +1,92 @@
+<!DOCTYPE html><html lang="sr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--or:#f97316;--or2:#ea580c;--txt:#e2e8f0;--mut:#94a3b8;--line:rgba(148,163,184,.18)}
+  *{box-sizing:border-box;margin:0;padding:0;font-family:Archivo,system-ui,sans-serif}
+  body{width:390px;height:844px;overflow:hidden;background:#0a1120;position:relative}
+
+  /* 3D mapa (pozadina) */
+  .map{position:absolute;inset:0;background:linear-gradient(180deg,#0d1730 0%,#0a1424 45%,#080f1e 100%)}
+  .map svg{position:absolute;inset:0;width:100%;height:100%}
+
+  /* nav kartica (2/3 navigacija + traka obavestenja) */
+  .nav{position:absolute;top:14px;left:12px;right:12px;background:#166534;border-radius:18px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);z-index:5}
+  .nmain{padding:12px 14px 9px;display:flex;align-items:center;gap:12px;color:#fff}
+  .nmain .arr{font-size:0;flex:none}
+  .nmain .arr svg{width:40px;height:40px;stroke:#fff;fill:none}
+  .nmain .d{font-size:26px;font-weight:900;letter-spacing:-.01em;line-height:1.05}
+  .nmain .st{font-size:14px;font-weight:600;opacity:.95;margin-top:1px}
+  .nmain .ln{font-size:12px;font-weight:600;opacity:.8;margin-top:3px;display:flex;align-items:center;gap:5px}
+  .nmain .ln svg{width:14px;height:14px;stroke:#fff}
+  .then{margin-left:auto;align-self:flex-start;background:rgba(0,0,0,.28);color:#d9fbe5;border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;white-space:nowrap}
+  .wx{background:rgba(153,27,27,.9);color:#fee2e2;padding:7px 14px;font-size:12.5px;font-weight:600;line-height:1.3;border-top:1px solid rgba(239,68,68,.5);display:flex;align-items:center;gap:8px}
+  .wx svg{width:16px;height:16px;stroke:#fee2e2;flex:none}
+
+  /* desna dugmad */
+  .fabs{position:absolute;right:14px;bottom:150px;display:flex;flex-direction:column;gap:10px;z-index:5}
+  .fab{width:44px;height:44px;border-radius:14px;background:rgba(15,23,42,.9);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+  .fab svg{width:20px;height:20px;stroke:var(--txt)}
+  .fab .needle{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent}
+  .fab .nn{border-bottom:12px solid #ef4444}.fab .ns{border-top:12px solid #cbd5e1;margin-top:-2px}
+
+  /* rider chevron */
+  .rider{position:absolute;left:50%;top:60%;transform:translateX(-50%);z-index:4}
+  .halo{width:60px;height:60px;border-radius:50%;background:rgba(56,189,248,.16);display:flex;align-items:center;justify-content:center}
+  .chev{width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:26px solid #38bdf8;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))}
+
+  /* donja traka */
+  .bar{position:absolute;left:0;right:0;bottom:0;padding:12px 14px 22px;display:flex;align-items:center;gap:10px;z-index:5}
+  .pill{background:rgba(15,23,42,.94);border:1px solid var(--line);border-radius:16px;padding:9px 13px;display:flex;align-items:center;gap:11px}
+  .pill .v{font-size:26px;font-weight:900;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
+  .pill .u{font-size:11px;color:var(--mut);margin-top:2px}
+  .limit{width:38px;height:38px;border-radius:50%;background:#fff;border:5px solid #dc2626;color:#111;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center}
+  .rep{flex:1;background:linear-gradient(135deg,var(--or),var(--or2));border-radius:16px;color:#fff;padding:14px;font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 22px rgba(249,115,22,.35)}
+  .rep svg{width:19px;height:19px;stroke:#fff}
+  .eta{background:rgba(15,23,42,.94);border:1px solid var(--line);border-radius:16px;padding:9px 12px;text-align:center}
+  .eta .t{font-size:18px;font-weight:900;color:#fff;line-height:1.1;font-variant-numeric:tabular-nums}
+  .eta .d{font-size:11px;color:var(--mut);margin-top:2px}
+</style></head><body>
+
+<div class="map">
+  <svg viewBox="0 0 390 844" preserveAspectRatio="none">
+    <!-- 3D perspektivne zgrade/teren -->
+    <g fill="#141f38" opacity=".8"><rect x="40" y="380" width="60" height="90" transform="skewY(-6)"/><rect x="290" y="360" width="70" height="120" transform="skewY(5)"/><rect x="60" y="520" width="50" height="70" transform="skewY(-4)"/><rect x="300" y="540" width="55" height="80" transform="skewY(4)"/></g>
+    <!-- put sa dubinom -->
+    <path d="M120 844 C 170 700, 150 560, 200 470 C 250 380, 245 300, 300 210" stroke="#c2570a" stroke-width="34" fill="none" stroke-linecap="round"/>
+    <path d="M120 844 C 170 700, 150 560, 200 470 C 250 380, 245 300, 300 210" stroke="#f97316" stroke-width="24" fill="none" stroke-linecap="round"/>
+    <path d="M120 844 C 170 700, 150 560, 200 470 C 250 380, 245 300, 300 210" stroke="#fff" stroke-width="4" stroke-dasharray="14 20" fill="none" opacity=".7"/>
+    <!-- predjeni deo (plavi) -->
+    <path d="M120 844 C 155 760, 150 620, 175 540" stroke="#38bdf8" stroke-width="6" fill="none" stroke-linecap="round" opacity=".9"/>
+  </svg>
+</div>
+
+<div class="nav">
+  <div class="nmain">
+    <div class="arr"><svg viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 12h13M13 6l6 6-6 6"/></svg></div>
+    <div>
+      <div class="d">300 m</div>
+      <div class="st">Skreni desno · M-17 ka Konjicu</div>
+      <div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 12h18M12 3v18"/></svg>Drži desnu traku · putokaz za Konjic</div>
+    </div>
+    <div class="then">zatim ← 2,1 km</div>
+  </div>
+  <div class="wx"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 16.2A5 5 0 0018 7h-1.3A8 8 0 104 15"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg>Kiša za ~8 min kod Konjica — pauza: Caffe Behar (+400 m), front prolazi</div>
+</div>
+
+<div class="rider"><div class="halo"><div class="chev"></div></div></div>
+
+<div class="fabs">
+  <div class="fab"><div><div class="needle nn"></div><div class="needle ns"></div></div></div>
+  <div class="fab"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div>
+  <div class="fab"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><path d="M5 12h14"/></svg></div>
+  <div class="fab"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5" fill="#f97316" stroke="none"/></svg></div>
+</div>
+
+<div class="bar">
+  <div class="pill"><div><div class="v">105</div><div class="u">km/h</div></div><div class="limit">60</div></div>
+  <div class="rep"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3L13.7 4a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Prijavi</div>
+  <div class="eta"><div class="t">17:18</div><div class="d">još 12,4 km</div></div>
+</div>
+
+</body></html>
