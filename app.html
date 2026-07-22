@@ -744,6 +744,7 @@ function famousVariant(f, A, B) {
 }
 
 /* ---------------- pomoćne ---------------- */
+function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
@@ -2008,7 +2009,7 @@ function renderViaChips() {
     const it = g.run ? null : state.vias[g.idx];
     const label = g.run
       ? `${famous ? famous.name : "deonica rute"} <span class="poi-dist">(${g.idxs.length} ${g.idxs.length === 1 ? "tačka" : "tačaka"})</span>`
-      : `${it.name || "stanica"}`;
+      : `${esc(it.name || "stanica")}`;
     row.innerHTML = `<span class="grip" aria-hidden="true" title="Prevuci za redosled ili na Od/Do polje">⠿</span><span class="stop-name">${gi + 1}. ${label}</span><span class="stop-acts"></span>`;
     row.querySelector(".grip").onpointerdown = (ev) => startRowDrag(ev, row, gi, g, it);
     const acts = row.querySelector(".stop-acts");
@@ -2091,6 +2092,7 @@ function renderViaChips() {
     if (!state.vias.length) return;
     const it0 = state.vias[0];
     const nm = (it0.t === "stop" && it0.name) ? it0.name : ((await reverseName(it0.v[1], it0.v[0], 14)) || "stanica");
+    if (it0.t !== "stop") state.famousApplied = null;   // via poznate rute postala polazak -> vise nije ta ruta
     state.vias.splice(0, 1);
     $("from").value = nm;
   };
@@ -2098,6 +2100,7 @@ function renderViaChips() {
     if (!state.vias.length) return;
     const itL = state.vias[state.vias.length - 1];
     const nm = (itL.t === "stop" && itL.name) ? itL.name : ((await reverseName(itL.v[1], itL.v[0], 14)) || "stanica");
+    if (itL.t !== "stop") state.famousApplied = null;
     state.vias.pop();
     $("to").value = nm;
   };
@@ -2138,7 +2141,7 @@ function renderViaChips() {
     if (!txt) return;
     const ghost = document.createElement("div");
     ghost.className = "stop-item drag-ghost";
-    ghost.innerHTML = `<span class="grip">⠿</span><span class="stop-name">${kind === "od" ? "Polazak" : "Cilj"}: ${txt}</span>`;
+    ghost.innerHTML = `<span class="grip">⠿</span><span class="stop-name">${kind === "od" ? "Polazak" : "Cilj"}: ${esc(txt)}</span>`;
     ghost.style.width = inputEl.getBoundingClientRect().width + "px";
     document.body.appendChild(ghost);
     const fromEl = $("from"), toEl = $("to");
@@ -2202,6 +2205,7 @@ function hazardMarker(h) {
     if (confirm(`Obriši prijavu "${h.type}"?`)) {
       saveHazards(getHazards().filter((x) => x.ts !== h.ts));
       m.remove();
+      state.catMarkers.hazard = state.catMarkers.hazard.filter((mm) => mm !== m);
     }
   };
 }
@@ -2731,7 +2735,7 @@ function init() {
     } else {
       // ista ruta u punom obimu (ili kružna: polazak = cilj)
       $("from").value = f.startName; $("to").value = f.endName;
-      state.vias = (isLoop ? f.wps.slice(1, -1) : f.wps.slice(1, -1)).map((w) => ({ t: "via", v: w }));
+      state.vias = f.wps.slice(1, -1).map((w) => ({ t: "via", v: w }));
       if (isLoop) $("roundTrip") && ($("roundTrip").checked = false); // kružna već ima ceo krug u wps
     }
     state.famousApplied = f.id;
