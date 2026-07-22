@@ -58,9 +58,11 @@
     font-family:inherit;font-weight:800;font-size:16px;padding:15px 24px;border-radius:16px;box-shadow:0 12px 30px rgba(249,115,22,.45);cursor:pointer}
   #startSim svg{width:20px;height:20px;fill:#fff}
   #rider{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;display:none;pointer-events:none;transition:transform .12s linear}
-  body.sim #rider{display:block}
-  #rider .halo{width:56px;height:56px;border-radius:50%;background:rgba(56,189,248,.16);display:flex;align-items:center;justify-content:center}
+  #rider .halo{width:54px;height:54px;border-radius:50%;background:rgba(56,189,248,.16);display:flex;align-items:center;justify-content:center}
   #rider .chev{width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-bottom:24px solid #38bdf8;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7))}
+  #recenter{position:absolute;right:14px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:8;display:none;width:52px;height:52px;border-radius:16px;background:#f97316;border:none;box-shadow:0 8px 22px rgba(249,115,22,.5);cursor:pointer;align-items:center;justify-content:center}
+  #recenter.on{display:flex}
+  #recenter svg{width:24px;height:24px;stroke:#fff;fill:none}
 
   #nav{position:absolute;top:calc(12px + env(safe-area-inset-top));left:12px;right:12px;z-index:7;display:none;
     background:#166534;border-radius:18px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5)}
@@ -88,20 +90,46 @@
   #simbar .pp,#simbar .exit{width:46px;height:46px;border-radius:14px;background:rgba(15,23,42,.94);border:1px solid rgba(148,163,184,.2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;color:#e2e8f0;font-weight:800;font-size:16px}
   #simbar .pp svg{width:20px;height:20px;fill:#f97316}
 
-  #summary{position:absolute;inset:0;z-index:9;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,10,20,.74)}
-  #summary.on{display:flex}
-  #summary .card{width:100%;max-width:360px;background:#0f172a;border:1px solid rgba(148,163,184,.2);border-radius:22px;padding:22px 20px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
-  #summary .k{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#22c55e}
-  #summary h2{font-size:25px;font-weight:900;color:#fff;margin-top:4px}
-  #summary .sub{font-size:13px;color:#94a3b8;font-weight:600;margin-top:2px}
-  #summary .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-top:16px}
-  #summary .m{background:#1e293b;border:1px solid rgba(148,163,184,.16);border-radius:13px;padding:11px}
-  #summary .m .kk{font-size:9.5px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
-  #summary .m .vv{font-size:18px;font-weight:900;color:#fff;margin-top:4px}#summary .m .vv small{font-size:11px;color:#94a3b8}
-  #summary .btns{display:flex;gap:9px;margin-top:16px}
-  #summary .btns button{flex:1;border:none;font-family:inherit;font-weight:800;font-size:15px;padding:14px;border-radius:13px;cursor:pointer}
-  #summary .rep{background:linear-gradient(135deg,#f97316,#ea580c);color:#fff}
-  #summary .cl{background:#1e293b;color:#e2e8f0;border:1px solid rgba(148,163,184,.2)}
+  #summary{position:absolute;inset:0;z-index:9;display:none;background:#0f172a;overflow-y:auto}
+  #summary.on{display:block}
+  #summary .top{padding:calc(22px + env(safe-area-inset-top)) 16px 0}
+  #summary .k{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#22c55e}
+  #summary h2{font-size:27px;font-weight:900;color:#fff;letter-spacing:-.02em;margin-top:3px}
+  #summary .subt{font-size:13.5px;color:#94a3b8;margin-top:2px;font-weight:600}
+  #summary .body{padding:16px}
+  #summary .pts{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(249,115,22,.18),rgba(234,88,12,.08));border:1px solid rgba(249,115,22,.4);border-radius:18px;padding:15px 17px;margin-bottom:14px}
+  #summary .pts .big{font-size:34px;font-weight:900;color:#f97316;line-height:1;font-variant-numeric:tabular-nums}
+  #summary .pts .lab{font-size:13px;font-weight:700;color:#fed7aa}
+  #summary .pts .lab small{display:block;color:#94a3b8;font-weight:600;font-size:11.5px;margin-top:2px}
+  #summary .pts .lvl{margin-left:auto;text-align:right}
+  #summary .pts .lvl .n{font-size:13px;font-weight:800;color:#fff}
+  #summary .pts .bar{width:96px;height:6px;border-radius:3px;background:rgba(148,163,184,.2);margin-top:6px;overflow:hidden}
+  #summary .pts .bar i{display:block;height:100%;width:72%;background:#f97316;border-radius:3px}
+  #summary .pts .lvl small{font-size:10.5px;color:#94a3b8;font-weight:600}
+  #summary .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:13px}
+  #summary .m{background:#1e293b;border:1px solid rgba(148,163,184,.16);border-radius:15px;padding:12px}
+  #summary .m .kk{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:6px}
+  #summary .m .vv{font-size:21px;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums}#summary .m .vv small{font-size:12px;color:#94a3b8;font-weight:600}
+  #summary .lean{background:rgba(56,189,248,.09);border:1px solid rgba(56,189,248,.32);border-radius:15px;padding:12px 14px;display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  #summary .lean .bw{width:52px;height:52px;border-radius:14px;background:rgba(56,189,248,.14);display:flex;align-items:center;justify-content:center;flex:none}
+  #summary .lean .bw svg{width:30px;height:30px}
+  #summary .lean .kk{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+  #summary .lean .vv{font-size:26px;font-weight:900;color:#38bdf8;line-height:1}
+  #summary .lean .tap{margin-left:auto;display:flex;align-items:center;gap:5px;color:#38bdf8;font-size:12px;font-weight:800}
+  #summary .lean .tap svg{width:15px;height:15px;stroke:#38bdf8}
+  #summary .sect{font-size:12px;font-weight:800;color:#e2e8f0;text-transform:uppercase;letter-spacing:.06em;margin:0 0 9px;display:flex;align-items:center;gap:7px}
+  #summary .sect span{color:#f97316}
+  #summary .badges{display:flex;gap:10px;margin-bottom:16px}
+  #summary .bd{flex:1;background:#1e293b;border:1px solid rgba(148,163,184,.16);border-radius:15px;padding:12px 8px;text-align:center}
+  #summary .bd.new{border-color:rgba(249,115,22,.5);background:rgba(249,115,22,.08)}
+  #summary .bd .ic{width:42px;height:42px;border-radius:50%;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;background:rgba(249,115,22,.16)}
+  #summary .bd .ic svg{width:23px;height:23px;stroke:#f97316;fill:none}
+  #summary .bd .nm{font-size:11.5px;font-weight:800;color:#fff;line-height:1.15}
+  #summary .bd .ds{font-size:10px;color:#94a3b8;font-weight:600;margin-top:2px}
+  #summary .btns{display:flex;gap:10px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+  #summary .btns button{flex:1;border:none;font-family:inherit;font-weight:800;font-size:15px;padding:15px;border-radius:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  #summary .btns .rep{background:linear-gradient(135deg,#f97316,#ea580c);color:#fff}
+  #summary .btns .cl{background:#1e293b;color:#e2e8f0;border:1px solid rgba(148,163,184,.2)}
 </style></head>
 <body data-mode="light">
 <div id="map"></div>
@@ -127,18 +155,41 @@
     <div class="exit" id="simExit">✕</div>
   </div>
 </div>
-<div id="summary"><div class="card">
-  <div class="k">Vožnja završena</div><h2>Kotorske serpentine</h2><div class="sub">Kotor → Cetinje</div>
-  <div class="grid">
-    <div class="m"><div class="kk">Kilometara</div><div class="vv" id="sKm">- <small>km</small></div></div>
-    <div class="m"><div class="kk">Vreme</div><div class="vv">1<small>h</small>04</div></div>
-    <div class="m"><div class="kk">Prosek</div><div class="vv">38 <small>km/h</small></div></div>
-    <div class="m"><div class="kk">Max nagib</div><div class="vv">44°</div></div>
-    <div class="m"><div class="kk">Uspon</div><div class="vv">1 190 <small>m</small></div></div>
-    <div class="m"><div class="kk">Serpentina</div><div class="vv">25</div></div>
+<button id="recenter" aria-label="Centriraj na mene"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.5" fill="#fff" stroke="none"/></svg></button>
+
+<div id="summary">
+  <div class="top">
+    <div class="k">Ruta završena</div>
+    <h2>Kotorske serpentine</h2>
+    <div class="subt">Kotor → Cetinje</div>
   </div>
-  <div class="btns"><button class="rep" id="sReplay">Ponovi rutu</button><button class="cl" id="sClose">Zatvori</button></div>
-</div></div>
+  <div class="body">
+    <div class="pts">
+      <div><div class="big">+180</div><div class="lab">poena<small>+1 prevoj · 25 serpentina</small></div></div>
+      <div class="lvl"><div class="n">Nivo 7</div><div class="bar"><i></i></div><small>još 160 do Nivoa 8</small></div>
+    </div>
+    <div class="grid">
+      <div class="m"><div class="kk">Kilometara</div><div class="vv" id="sKm">40 <small>km</small></div></div>
+      <div class="m"><div class="kk">U pokretu</div><div class="vv">1<small>h</small> 04</div></div>
+      <div class="m"><div class="kk">Prosek</div><div class="vv">38 <small>km/h</small></div></div>
+      <div class="m"><div class="kk">Max brzina</div><div class="vv">92 <small>km/h</small></div></div>
+      <div class="m"><div class="kk">Uspon</div><div class="vv">1 190 <small>m</small></div></div>
+      <div class="m"><div class="kk">Pauze</div><div class="vv">1 <small>×8min</small></div></div>
+    </div>
+    <div class="lean">
+      <div class="bw"><svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="5.5" cy="17" r="3.2"/><circle cx="18.5" cy="17" r="3.2"/><path d="M5.5 17l4-7h4l2 4h3M9.5 10l2.5 7"/></svg></div>
+      <div><div class="kk">Max nagib (lean)</div><div class="vv">44°</div></div>
+      <div class="tap">Vidi gde<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+    </div>
+    <div class="sect">Otključano <span>· 2 nova</span></div>
+    <div class="badges">
+      <div class="bd new"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.4L12 16.6 5.4 21.2l2.3-7.4-6-4.4h7.6z"/></svg></div><div class="nm">Serpentinac</div><div class="ds">25 zavoja</div></div>
+      <div class="bd new"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M21 7v5h-5"/></svg></div><div class="nm">Krstač</div><div class="ds">prevoj</div></div>
+      <div class="bd"><div class="ic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M8 21h8M12 17v4M6 4h12v4a6 6 0 01-12 0z"/></svg></div><div class="nm">Do mora</div><div class="ds">0 m</div></div>
+    </div>
+    <div class="btns"><button class="rep" id="sReplay">Ponovi rutu</button><button class="cl" id="sClose">Zatvori</button></div>
+  </div>
+</div>
 
 <script>
 const ROUTE=[[18.77018,42.42396],[18.77117,42.42323],[18.77128,42.42283],[18.77133,42.4224],[18.77123,42.42221],[18.77106,42.42207],[18.7704,42.42181],[18.77005,42.42171],[18.76993,42.42166],[18.76996,42.42156],[18.77005,42.42131],[18.76968,42.41998],[18.76942,42.41966],[18.769,42.4192],[18.76769,42.41784],[18.76739,42.41769],[18.76723,42.41692],[18.76731,42.41605],[18.76759,42.41547],[18.76774,42.41493],[18.76772,42.41465],[18.7672,42.41418],[18.76702,42.4138],[18.76672,42.41332],[18.76641,42.41292],[18.76602,42.41195],[18.76644,42.41169],[18.76701,42.41134],[18.76656,42.41126],[18.76651,42.41116],[18.76716,42.41101],[18.76719,42.41092],[18.76687,42.41076],[18.76697,42.41049],[18.76778,42.40946],[18.76768,42.40937],[18.7672,42.40925],[18.76732,42.40908],[18.76811,42.40897],[18.76862,42.40903],[18.76934,42.4096],[18.77004,42.41022],[18.77027,42.41018],[18.76979,42.40978],[18.76942,42.4094],[18.76925,42.40855],[18.76868,42.40819],[18.76808,42.40786],[18.76735,42.40722],[18.76693,42.40661],[18.76676,42.40606],[18.76681,42.40523],[18.76651,42.40508],[18.76605,42.40523],[18.765,42.40613],[18.76499,42.40646],[18.76485,42.40662],[18.76475,42.40648],[18.76493,42.40537],[18.76472,42.40544],[18.76442,42.40652],[18.76432,42.4064],[18.76448,42.40566],[18.76434,42.40489],[18.76435,42.40427],[18.76425,42.40389],[18.76394,42.4036],[18.7639,42.40312],[18.76422,42.4029],[18.76491,42.40283],[18.76497,42.4027],[18.76458,42.40255],[18.76479,42.40208],[18.76526,42.40191],[18.76558,42.40189],[18.76542,42.40179],[18.76519,42.40147],[18.76543,42.40139],[18.76571,42.40118],[18.76658,42.40069],[18.76671,42.40055],[18.76667,42.40044],[18.76713,42.40021],[18.76747,42.40008],[18.76731,42.39995],[18.7669,42.39948],[18.76698,42.3994],[18.76727,42.39957],[18.76809,42.39959],[18.76859,42.39941],[18.76876,42.39923],[18.76866,42.3989],[18.76839,42.39871],[18.76789,42.39826],[18.76779,42.398],[18.76847,42.39858],[18.76911,42.39921],[18.76973,42.39927],[18.7711,42.39919],[18.77158,42.39922],[18.772,42.39943],[18.77287,42.40045],[18.77359,42.401],[18.77367,42.40131],[18.77373,42.40171],[18.7742,42.40197],[18.77492,42.40211],[18.77503,42.40232],[18.77484,42.40279],[18.7752,42.40345],[18.7763,42.40495],[18.77674,42.40593],[18.77685,42.40664],[18.77672,42.40704],[18.77764,42.40752],[18.77814,42.40781],[18.77825,42.4081],[18.77811,42.40863],[18.77817,42.40897],[18.77851,42.40949],[18.77903,42.41038],[18.77924,42.41097],[18.77945,42.41212],[18.77972,42.4124],[18.77962,42.41275],[18.77969,42.41327],[18.77991,42.41323],[18.77976,42.41275],[18.77995,42.41238],[18.77974,42.41215],[18.77974,42.41115],[18.77959,42.41076],[18.77952,42.41033],[18.77933,42.40986],[18.77899,42.40966],[18.77902,42.40873],[18.77919,42.408],[18.77947,42.40753],[18.77948,42.40721],[18.77915,42.40697],[18.77883,42.40636],[18.77818,42.40495],[18.77786,42.40463],[18.77778,42.40411],[18.77707,42.40303],[18.77727,42.40298],[18.77754,42.40349],[18.77841,42.40462],[18.77899,42.40549],[18.77922,42.40594],[18.7796,42.40614],[18.78031,42.40648],[18.78064,42.40689],[18.78057,42.40731],[18.78024,42.40818],[18.78036,42.4086],[18.78053,42.4091],[18.78063,42.4094],[18.78073,42.40933],[18.78054,42.40868],[18.78053,42.40825],[18.7809,42.4075],[18.78119,42.40707],[18.78112,42.40612],[18.78083,42.40588],[18.78008,42.40563],[18.77986,42.40521],[18.77969,42.40463],[18.77954,42.40381],[18.77898,42.40298],[18.77848,42.40258],[18.77861,42.40245],[18.77905,42.40285],[18.77979,42.40376],[18.78024,42.40482],[18.7804,42.40514],[18.78031,42.40479],[18.78007,42.40391],[18.77994,42.40334],[18.77944,42.40273],[18.77945,42.40259],[18.77978,42.40293],[18.78022,42.40359],[18.78066,42.4043],[18.78076,42.40477],[18.78095,42.40497],[18.78085,42.40463],[18.78083,42.40422],[18.78056,42.40385],[18.78015,42.40267],[18.78017,42.40217],[18.78027,42.40212],[18.78039,42.40219],[18.78023,42.40252],[18.78049,42.40292],[18.7811,42.40383],[18.78144,42.40456],[18.78164,42.40477],[18.78176,42.40468],[18.78157,42.40431],[18.78135,42.4038],[18.781,42.40325],[18.78079,42.4026],[18.78067,42.40233],[18.78076,42.40231],[18.78087,42.40237],[18.7809,42.40261],[18.78128,42.40338],[18.78159,42.40362],[18.78223,42.40452],[18.78238,42.40453],[18.78228,42.40431],[18.78203,42.40377],[18.78152,42.40328],[18.78146,42.40297],[18.78129,42.40263],[18.78123,42.40242],[18.78147,42.40222],[18.78179,42.40163],[18.78169,42.4011],[18.78182,42.40075],[18.78202,42.40072],[18.78187,42.40105],[18.78209,42.40148],[18.78206,42.40198],[18.78201,42.40266],[18.78231,42.40317],[18.78297,42.40407],[18.78308,42.40417],[18.78319,42.40413],[18.78301,42.40389],[18.78261,42.40307],[18.7825,42.40252],[18.78287,42.40162],[18.7829,42.40123],[18.78273,42.40077],[18.78291,42.40036],[18.78273,42.40004],[18.78256,42.39945],[18.78268,42.39931],[18.78274,42.39956],[18.78284,42.39997],[18.78323,42.40029],[18.78309,42.40052],[18.78346,42.40156],[18.78349,42.40197],[18.78346,42.40249],[18.78395,42.40382],[18.78402,42.40393],[18.78415,42.40389],[18.7839,42.40339],[18.78391,42.40259],[18.78405,42.40193],[18.78397,42.40157],[18.78405,42.40117],[18.78406,42.40036],[18.78394,42.40011],[18.78366,42.39967],[18.78351,42.39911],[18.78353,42.399],[18.78361,42.39904],[18.78366,42.39935],[18.78408,42.3999],[18.78438,42.40026],[18.78447,42.40053],[18.78459,42.40141],[18.78488,42.4023],[18.78511,42.40301],[18.78537,42.40373],[18.78575,42.40384],[18.78657,42.40414],[18.78683,42.40454],[18.78678,42.40503],[18.78653,42.40535],[18.78629,42.4062],[18.7864,42.40689],[18.78633,42.40767],[18.78629,42.40862],[18.78653,42.40932],[18.78884,42.40921],[18.78924,42.40946],[18.78953,42.40993],[18.78961,42.41044],[18.79016,42.41083],[18.79011,42.41143],[18.79023,42.41195],[18.79058,42.41236],[18.79057,42.41302],[18.79066,42.41333],[18.79144,42.41374],[18.79185,42.41425],[18.79188,42.41463],[18.79183,42.41519],[18.79272,42.41663],[18.79376,42.41722],[18.79406,42.4175],[18.79402,42.41802],[18.79375,42.41845],[18.79401,42.41875],[18.79417,42.41928],[18.79453,42.41966],[18.7946,42.41999],[18.79444,42.42077],[18.7951,42.42098],[18.79649,42.42106],[18.79793,42.42142],[18.79866,42.42173],[18.79905,42.42194],[18.79949,42.42198],[18.79954,42.42241],[18.79962,42.42263],[18.79987,42.42242],[18.79999,42.42233],[18.80042,42.4226],[18.80068,42.42287],[18.80076,42.42327],[18.80082,42.42372],[18.80078,42.42398],[18.8001,42.42441],[18.79995,42.42463],[18.80013,42.42547],[18.80022,42.42597],[18.80023,42.42612],[18.80021,42.42626],[18.8001,42.42661],[18.80007,42.42674],[18.80007,42.42686],[18.80009,42.42695],[18.80012,42.42702],[18.80016,42.42709],[18.80021,42.42714],[18.80028,42.42721],[18.80036,42.42726],[18.80045,42.4273],[18.80055,42.42733],[18.80064,42.42736],[18.80075,42.42737],[18.80087,42.42737],[18.80099,42.42737],[18.8011,42.42735],[18.80177,42.4272],[18.80188,42.42718],[18.802,42.42717],[18.80211,42.42717],[18.80222,42.42718],[18.80232,42.4272],[18.80355,42.42761],[18.80381,42.42772],[18.80395,42.4278],[18.80406,42.42788],[18.80428,42.42815],[18.80505,42.4292],[18.80516,42.4293],[18.8053,42.4294],[18.80648,42.43008],[18.80657,42.43015],[18.80665,42.43022],[18.80722,42.43091],[18.8073,42.431],[18.80811,42.43164],[18.80825,42.43176],[18.80837,42.4319],[18.80871,42.43243],[18.80876,42.4325],[18.80882,42.43255],[18.80889,42.4326],[18.80896,42.43264],[18.80905,42.43267],[18.80913,42.43268],[18.80921,42.43269],[18.8093,42.43269],[18.80939,42.43268],[18.80947,42.43266],[18.80988,42.43251],[18.80999,42.43247],[18.81012,42.43244],[18.81023,42.43241],[18.81035,42.4324],[18.81048,42.43238],[18.81063,42.43238],[18.81077,42.43239],[18.81197,42.43246],[18.81209,42.43245],[18.81221,42.43243],[18.81232,42.4324],[18.81242,42.43236],[18.81249,42.43231],[18.81255,42.43227],[18.81261,42.43222],[18.81266,42.43216],[18.8127,42.43209],[18.81274,42.43201],[18.81277,42.43192],[18.81294,42.4311],[18.81296,42.43104],[18.813,42.43096],[18.81304,42.43089],[18.81309,42.43082],[18.81315,42.43075],[18.81321,42.4307],[18.81345,42.4305],[18.81353,42.43044],[18.81359,42.43037],[18.81364,42.4303],[18.81368,42.43022],[18.81371,42.43014],[18.8138,42.42987],[18.81383,42.42981],[18.81386,42.42974],[18.81392,42.42968],[18.81398,42.42962],[18.81406,42.42956],[18.81415,42.42951],[18.81425,42.42946],[18.81437,42.42943],[18.8145,42.4294],[18.81487,42.42938],[18.81499,42.42937],[18.81511,42.42936],[18.81522,42.42934],[18.81533,42.4293],[18.81545,42.42925],[18.81554,42.4292],[18.81561,42.42914],[18.81566,42.42908],[18.8157,42.42902],[18.81574,42.42895],[18.81583,42.42871],[18.81587,42.42861],[18.8159,42.42855],[18.81595,42.42848],[18.816,42.42841],[18.81607,42.42834],[18.81613,42.42829],[18.81672,42.42789],[18.81683,42.42782],[18.81694,42.42777],[18.81705,42.42772],[18.81717,42.42768],[18.8173,42.42764],[18.81743,42.42762],[18.81756,42.42761],[18.81765,42.4276],[18.81824,42.42764],[18.81836,42.42764],[18.81849,42.42762],[18.81906,42.42742],[18.81917,42.42739],[18.81929,42.42736],[18.81942,42.42735],[18.81955,42.42736],[18.81966,42.42738],[18.81977,42.4274],[18.81988,42.42744],[18.82,42.42748],[18.8201,42.42754],[18.82058,42.42778],[18.82076,42.42783],[18.82098,42.42784],[18.82149,42.42778],[18.82167,42.42778],[18.82183,42.42779],[18.8221,42.42782],[18.82233,42.42786],[18.8225,42.4279],[18.823,42.42805],[18.82319,42.42812],[18.82336,42.42821],[18.82489,42.42923],[18.82565,42.42975],[18.826,42.42998],[18.82629,42.43014],[18.82727,42.43061],[18.82742,42.43069],[18.82755,42.43079],[18.8282,42.43136],[18.82876,42.4319],[18.82883,42.43202],[18.82886,42.4321],[18.82886,42.43218],[18.82881,42.43246],[18.82882,42.43256],[18.82903,42.43312],[18.82943,42.43427],[18.8298,42.43625],[18.82981,42.43644],[18.8298,42.43655],[18.82976,42.43667],[18.8297,42.43677],[18.82962,42.43687],[18.82951,42.43696],[18.8292,42.43716],[18.82912,42.43727],[18.82891,42.43765],[18.82885,42.43777],[18.82887,42.43782],[18.82896,42.43784],[18.82902,42.43783],[18.82908,42.4378],[18.82911,42.43777],[18.82914,42.43774],[18.82931,42.43741],[18.82942,42.43729],[18.82952,42.43722],[18.82997,42.43701],[18.83007,42.43695],[18.83028,42.4368],[18.83038,42.43675],[18.83051,42.43672],[18.83063,42.43673],[18.83074,42.43676],[18.83083,42.43681],[18.83091,42.4369],[18.83095,42.43701],[18.83118,42.43849],[18.83121,42.43858],[18.83126,42.43866],[18.83133,42.43873],[18.83141,42.43878],[18.83151,42.43882],[18.83163,42.43885],[18.83176,42.43885],[18.8319,42.43884],[18.83205,42.4388],[18.83219,42.43874],[18.83294,42.43842],[18.83303,42.43838],[18.83311,42.43833],[18.8335,42.43807],[18.83362,42.438],[18.83391,42.4379],[18.8341,42.43784],[18.83516,42.43763],[18.8353,42.43761],[18.83545,42.43759],[18.8356,42.43758],[18.83578,42.43758],[18.83668,42.43762],[18.83692,42.43762],[18.83786,42.43754],[18.83814,42.43752],[18.83888,42.43754],[18.83908,42.43753],[18.83923,42.43751],[18.83937,42.43747],[18.83951,42.43741],[18.83977,42.43727],[18.83985,42.43724],[18.83993,42.43721],[18.84002,42.43719],[18.84069,42.43703],[18.84087,42.43696],[18.84101,42.43687],[18.84112,42.43678],[18.8412,42.43669],[18.84128,42.43656],[18.84133,42.43641],[18.84135,42.43627],[18.84135,42.43612],[18.84132,42.43598],[18.84128,42.43585],[18.8412,42.43575],[18.8411,42.43566],[18.84076,42.43552],[18.8407,42.43543],[18.84074,42.43535],[18.84087,42.43533],[18.84097,42.43535],[18.84127,42.43556],[18.84157,42.4358],[18.84166,42.43593],[18.84169,42.43607],[18.84169,42.43622],[18.84165,42.43637],[18.84136,42.437],[18.84124,42.43714],[18.84111,42.43725],[18.84084,42.43739],[18.84061,42.43751],[18.8405,42.43759],[18.84039,42.43769],[18.8401,42.43798],[18.84,42.43806],[18.83986,42.43814],[18.83968,42.43821],[18.83914,42.43841],[18.83896,42.43847],[18.83876,42.43852],[18.83858,42.43854],[18.83846,42.43854],[18.83812,42.43854],[18.83796,42.43854],[18.83782,42.43854],[18.83769,42.43856],[18.837,42.43864],[18.83678,42.43867],[18.8365,42.43867],[18.83614,42.43868],[18.83607,42.4387],[18.836,42.43874],[18.83597,42.43879],[18.83599,42.43884],[18.83604,42.43886],[18.83611,42.43886],[18.83657,42.4388],[18.83676,42.43879],[18.83745,42.43876],[18.8376,42.43876],[18.83777,42.43876],[18.83791,42.43877],[18.83806,42.43878],[18.83818,42.43879],[18.83829,42.4388],[18.83844,42.43883],[18.83858,42.43886],[18.83873,42.43889],[18.83921,42.43902],[18.83935,42.43906],[18.83948,42.43907],[18.83962,42.43908],[18.83977,42.43906],[18.83991,42.43903],[18.84006,42.43898],[18.84104,42.43855],[18.8412,42.43846],[18.84133,42.43837],[18.84262,42.43726],[18.84274,42.43715],[18.84284,42.43702],[18.84294,42.43688],[18.84302,42.43673],[18.84328,42.43614],[18.84336,42.43601],[18.84345,42.4359],[18.84357,42.43581],[18.84437,42.43533],[18.84454,42.43527],[18.84471,42.43524],[18.8449,42.43524],[18.8451,42.43526],[18.84562,42.43538],[18.84657,42.43555],[18.84668,42.43556],[18.84681,42.43556],[18.84692,42.43555],[18.84704,42.43552],[18.84716,42.43549],[18.84727,42.43545],[18.84741,42.43538],[18.84798,42.43508],[18.84807,42.43504],[18.84819,42.43499],[18.8483,42.43496],[18.84843,42.43492],[18.84861,42.4349],[18.84881,42.43489],[18.84901,42.43493],[18.84938,42.43511],[18.85266,42.43752],[18.85305,42.43768],[18.85319,42.43772],[18.85335,42.43775],[18.85352,42.43776],[18.85369,42.43776],[18.85388,42.43775],[18.85408,42.43772],[18.85426,42.43767],[18.85445,42.43761],[18.85463,42.43753],[18.85584,42.43677],[18.85609,42.43663],[18.85631,42.43651],[18.85651,42.43644],[18.85717,42.43626],[18.85733,42.43619],[18.85747,42.43609],[18.85759,42.43597],[18.85766,42.43584],[18.85793,42.43584],[18.85816,42.43585],[18.85989,42.43581],[18.86116,42.43568],[18.86248,42.43551],[18.86445,42.43501],[18.86656,42.43507],[18.86845,42.4358],[18.87074,42.43771],[18.87194,42.43926],[18.87345,42.44024],[18.87436,42.44113],[18.87438,42.44201],[18.87466,42.44228],[18.8749,42.44228],[18.87657,42.44115],[18.87971,42.43992],[18.8819,42.43839],[18.88555,42.43574],[18.88753,42.4336],[18.89005,42.43115],[18.89131,42.43016],[18.89235,42.42891],[18.89321,42.42818],[18.89504,42.42755],[18.89828,42.42701],[18.90079,42.42618],[18.90306,42.42515],[18.90636,42.42483],[18.90926,42.42376],[18.91188,42.42343],[18.91417,42.42317],[18.91586,42.42169],[18.9173,42.41871],[18.92045,42.41698],[18.92421,42.41556],[18.92557,42.41396],[18.92624,42.41238],[18.92651,42.40946],[18.92652,42.40527],[18.92707,42.40147],[18.92869,42.39909],[18.93144,42.39756],[18.93354,42.39583],[18.93564,42.39472],[18.939,42.39375],[18.94016,42.39254],[18.94046,42.39152],[18.94025,42.39006],[18.94025,42.38878],[18.94054,42.38735],[18.94004,42.38656],[18.93957,42.38674],[18.93933,42.38694],[18.93851,42.3876],[18.93753,42.38822],[18.93706,42.38839],[18.93646,42.38851],[18.93595,42.38852],[18.93531,42.38843],[18.93482,42.38826],[18.93432,42.38803],[18.93365,42.38775],[18.93235,42.38726],[18.93167,42.38706],[18.93078,42.38688],[18.93027,42.38705],[18.92974,42.38803],[18.92954,42.38848],[18.92936,42.38878],[18.92912,42.38907],[18.92877,42.38945],[18.92786,42.39047],[18.92685,42.39159],[18.92671,42.3918],[18.92662,42.39202],[18.92657,42.39225],[18.92657,42.39244],[18.92661,42.39281],[18.92619,42.39291],[18.926,42.39289],[18.92584,42.39284],[18.92568,42.39274],[18.92559,42.39263],[18.92538,42.39211],[18.92522,42.39158],[18.92507,42.39109],[18.92361,42.391],[18.92382,42.39081]];
@@ -266,15 +317,16 @@ function updNav(d){let n=INSTR[INSTR.length-1];for(const x of INSTR){if(x.d>=d-2
   $('navArr').querySelector('path').setAttribute('d',ARROWS[n.dir]||ARROWS.start);}
 function updAlert(d){let a=null;for(const x of ALERTS)if(d>=x.d-600&&d<=x.d+150)a=x;const w=$('navWx');
   if(a){w.textContent='⚠ '+a.t;w.classList.add('on');}else w.classList.remove('on');}
-let camBrg=null, riderBrg=null, rainShown=null;
+let camBrg=null, riderBrg=null, rainShown=null, follow=true;
 const RAIN_I=560, rainD=CUM[Math.min(RAIN_I,CUM.length-1)];
 function smoothBrg(t){if(camBrg==null){camBrg=t;return t;}let df=((t-camBrg+540)%360)-180;camBrg=(camBrg+df*0.1+360)%360;return camBrg;}
 function smoothRider(t){if(riderBrg==null){riderBrg=t;return t;}let df=((t-riderBrg+540)%360)-180;riderBrg=(riderBrg+df*0.28+360)%360;return riderBrg;}
 function rainViz(d){const show=(d>=rainD-4500&&d<=rainD+900);if(show!==rainShown){rainShown=show;['rain-out','rain-mid','rain-in'].forEach(l=>{try{map.setLayoutProperty(l,'visibility',show?'visible':'none');}catch(e){}});}}
-function renderSim(){const p=posAt(S.d);const head=brgAt(S.d);const b=smoothBrg(head);const rb=smoothRider(head);
-  map.jumpTo({center:p,bearing:b,pitch:66,zoom:16});
-  const rot=((rb-b+540)%360)-180;  // trouglić rotira po smeru puta (u odnosu na kameru)
-  const rd=document.getElementById('rider');if(rd)rd.style.transform='translate(-50%,-50%) rotate('+rot.toFixed(1)+'deg)';
+function renderSim(){const p=posAt(S.d);const head=brgAt(S.d);const rb=smoothRider(head);const rd=$('rider');
+  if(follow){const b=smoothBrg(head);map.jumpTo({center:p,bearing:b,pitch:is3D?66:0,zoom:16});
+    const rot=((rb-b+540)%360)-180;  // trouglić rotira po smeru puta
+    if(rd){rd.style.display='block';rd.style.transform='translate(-50%,-50%) rotate('+rot.toFixed(1)+'deg)';}
+  } else if(rd){rd.style.display='none';}   // mapa pomerena rukom -> sakrij trouglić (nije više na centru)
   updTrav(S.d);updNav(S.d);updAlert(S.d);rainViz(S.d);
   $('kmh').textContent=Math.round(46+20*Math.abs(Math.sin(S.d/260)));
   const pct=(S.d/TOTAL*100);$('progBar').style.width=pct.toFixed(1)+'%';$('progThumb').style.left=pct.toFixed(1)+'%';}
@@ -285,15 +337,23 @@ function loop(t){if(S.on){
   }else S.last=0;
   S.raf=requestAnimationFrame(loop);}}
 function setInteract(on){['dragPan','dragRotate','scrollZoom','touchZoomRotate','doubleClickZoom'].forEach(h=>{try{on?map[h].enable():map[h].disable();}catch(e){}});}
-function startSim(){S.on=true;S.d=0;S.last=0;S.playing=true;camBrg=null;riderBrg=null;rainShown=null;document.body.classList.add('sim');is3D=true;
-  $('ppIcon').innerHTML='<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';setInteract(false);renderSim();
+function startSim(){S.on=true;S.d=0;S.last=0;S.playing=true;camBrg=null;riderBrg=null;rainShown=null;follow=true;
+  document.body.classList.add('sim');is3D=true;$('recenter').classList.remove('on');
+  $('ppIcon').innerHTML='<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';renderSim();
   cancelAnimationFrame(S.raf);S.raf=requestAnimationFrame(loop);}
 function exitSim(){S.on=false;S.playing=false;cancelAnimationFrame(S.raf);document.body.classList.remove('sim');
-  $('summary').classList.remove('on');setInteract(true);map.easeTo({...HOME,duration:900});}
+  $('summary').classList.remove('on');$('recenter').classList.remove('on');const rd=$('rider');if(rd)rd.style.display='none';
+  map.easeTo({...HOME,duration:900});}
 $('startSim').onclick=startSim;
 $('simExit').onclick=exitSim;$('sClose').onclick=exitSim;
-$('playPause').onclick=()=>{if(!S.on)return;S.playing=!S.playing;S.last=0;
-  $('ppIcon').innerHTML=S.playing?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M8 5v14l11-7z"/>';};
+function togglePlay(){if(!S.on)return;if($('summary').classList.contains('on'))return;S.playing=!S.playing;S.last=0;
+  $('ppIcon').innerHTML=S.playing?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M8 5v14l11-7z"/>';}
+$('playPause').onclick=togglePlay;
+map.on('click',()=>{if(S.on)togglePlay();});                                  // klik na ekran = pauza/nastavi
+map.on('dragstart',(e)=>{if(S.on&&e&&e.originalEvent){follow=false;$('recenter').classList.add('on');}});   // SAMO korisničko pomeranje prekida praćenje
+map.on('rotatestart',(e)=>{if(S.on&&e&&e.originalEvent){follow=false;$('recenter').classList.add('on');}});
+$('recenter').onclick=()=>{if(!S.on)return;follow=true;camBrg=null;$('recenter').classList.remove('on');
+  map.easeTo({center:posAt(S.d),bearing:brgAt(S.d),pitch:is3D?66:0,zoom:16,duration:600});};   // Centriraj = zumira na mene + prati dalje
 $('sReplay').onclick=()=>{$('summary').classList.remove('on');S.d=0;S.last=0;S.playing=true;
   $('ppIcon').innerHTML='<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';};
 $('speedSel').querySelectorAll('button').forEach(b=>b.onclick=()=>{S.mult=+b.dataset.m;
