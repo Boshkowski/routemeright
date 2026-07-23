@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RouteMeRight - pametna ruta za motor</title>
+<meta property="og:type" content="website"><meta property="og:title" content="RouteMeRight - pametna ruta za motor"><meta property="og:image" content="https://routemeright.app/data/icon-512.png"><meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='90' fill='%230f172a'/><g fill='none' stroke-linecap='butt' stroke-linejoin='round'><path d='M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430' stroke='%23f97316' stroke-width='72'/><path d='M170 407 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L333 421' stroke='white' stroke-width='8' stroke-dasharray='18 25'/></g></svg>">
 <meta name="theme-color" content="#0f172a">
 <!-- iPhone/Android "Add to Home Screen" = fullscreen app bez browser trake -->
@@ -604,6 +605,12 @@
       <div class="card" id="card-food">
         <h3>Pauze, hrana i kamp</h3>
         <ul class="plain" id="foodList"></ul>
+      </div>
+
+      <div class="card" id="card-roads" style="display:none">
+        <h3>Stanje na putevima i upozorenja</h3>
+        <ul class="plain" id="roadsList"></ul>
+        <div class="note" id="roadsNote">Zvanični izvori po zemljama (HAK, Putevi Srbije, promet.si, BIHAMK, AMSCG...) + Meteoalarm upozorenja državnih meteo zavoda. Osvežava se više puta dnevno.</div>
       </div>
     </div>
 
@@ -1723,8 +1730,40 @@ function emojiMarker(lat, lon, emoji, title) {
 }
 /* ---------------- editorial sloj: kafane/okupljalista iz BJBikers zajednice ----------------
    Trajni markeri (ne brisu se pri ponovnom planiranju) - zato NE idu u state.markers. */
-const BJB_EMOJI = { kafana: "🍖", okupljaliste: "🏍", upozorenje: "⚠" };
-const BJB_CAT = { kafana: "food", okupljaliste: "meet", upozorenje: "hazard" };
+const BJB_EMOJI = { kafana: "🍖", okupljaliste: "🏍", upozorenje: "⚠", vidikovac: "🌄" };
+const BJB_CAT = { kafana: "food", okupljaliste: "meet", upozorenje: "hazard", vidikovac: "pause" };
+/* ---- stanje na putevima + meteo upozorenja (robot puni data/road_status.json 5x dnevno) ---- */
+async function loadRoadStatus() {
+  if (state.roadStatus !== undefined) return state.roadStatus;
+  try { state.roadStatus = await (await fetch("data/road_status.json")).json(); }
+  catch { state.roadStatus = null; }
+  return state.roadStatus;
+}
+const ROAD_PRIO = { "zatvaranje": 0, "closure": 0, "granicni_prelaz": 1, "granicni-prelaz": 1, "guzva": 1, "Zastoj": 1, "Nesreča": 1, "zabrana": 2, "restriction": 2, "radovi": 3, "roadworks": 3, "Delo": 3 };
+async function renderRoadStatus(route) {
+  const card = $("card-roads"), list = $("roadsList");
+  if (!card || !list) return;
+  const rs = await loadRoadStatus();
+  let spans = null; try { spans = await routeCountries(route); } catch { }
+  const ccs = [...new Set((spans || []).map((s) => s.cc).filter(Boolean))];
+  if (!rs || !ccs.length) { card.style.display = "none"; return; }
+  const rows = [];
+  for (const cc of ccs) {
+    // meteo upozorenja prvo (bezbednost)
+    for (const w of (rs.meteo && rs.meteo[cc] || []).slice(0, 3))
+      rows.push(`<li>⛈ <b>${w.region}</b>: ${w.detail || w.title}</li>`);
+    const c = rs.countries && rs.countries[cc];
+    if (!c || !c.ok || !c.items.length) continue;
+    const sorted = [...c.items].sort((a, b) => (ROAD_PRIO[a.type] ?? 9) - (ROAD_PRIO[b.type] ?? 9));
+    for (const it of sorted.slice(0, 5))
+      rows.push(`<li>🚧 <b>${c.name}</b> · ${it.title}${it.detail && it.detail !== it.title ? ` <span class="poi-dist">${it.detail.slice(0, 140)}</span>` : ""}</li>`);
+  }
+  if (!rows.length) { card.style.display = "none"; return; }
+  list.innerHTML = rows.slice(0, 16).join("");
+  const upd = rs.updated ? new Date(rs.updated) : null;
+  $("roadsNote").textContent = "Zvanični izvori po zemljama + Meteoalarm meteo-upozorenja." + (upd ? ` Ažurirano: ${upd.toLocaleString("sr-RS", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric" })}.` : "");
+  card.style.display = "";
+}
 async function loadEditorial() {
   try {
     const d = await (await fetch("data/editorial_bjbikers.json")).json();
@@ -1740,6 +1779,7 @@ function addEditorialMarkers(route) {
   state.editorialMarkers = [];
   const near = route ? bjbAlongRoute(route, 6) : [];
   for (const e of near) {
+    if (e.type === "ruta") continue;   // preporuke ruta iz zajednice nisu pinovi - idu u Rute tab (backlog)
     const el = document.createElement("div");
     el.textContent = BJB_EMOJI[e.type] || "📍";
     el.style.cssText = "font-size:20px;cursor:pointer;text-shadow:0 1px 4px rgba(0,0,0,.85)";
@@ -1749,7 +1789,7 @@ function addEditorialMarkers(route) {
       `<b>${e.name}</b><br>${e.details}` +
       `<br><span class="poi-dist">${e.where}${e.loc === "mesto" ? " · lokacija orijentaciona" : ""}` +
       `${e.year_hint ? " · " + e.year_hint + "." : ""}</span>` +
-      `<br><a href="${e.source}" target="_blank" rel="noopener">izvor: BJBikers ↗</a>`));
+      `<br><a href="${e.source}" target="_blank" rel="noopener">izvor: ${e.source_forum || "BJBikers"} ↗</a>`));
     const bcat = BJB_CAT[e.type] || "meet";
     state.editorialMarkers.push({ m, cat: bcat });   // poseban registar - clearMap ih ne dira
     if (!state.layerVis[bcat]) el.style.display = "none";
@@ -2659,7 +2699,7 @@ async function selectRoute(departure) {
   await renderSuggestions(route, assess, departure, zones);
   renderFamousSuggestion();
   await Promise.all([renderCost(route), renderFuel(route, assess, departure), renderFood(route, assess, departure),
-    renderDifficulty(route), renderCameras(route), renderRoadworks(route),
+    renderDifficulty(route), renderCameras(route), renderRoadworks(route), renderRoadStatus(route),
     (async () => {
       if (route.consensus === undefined) route.consensus = await fetchConsensus(route, departure);
       renderConsensus(route, departure);
