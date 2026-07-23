@@ -363,6 +363,7 @@
     .maplibregl-ctrl-top-right { display: none; }
 
     #homeChrome { display: block; position: fixed; left: 0; right: 0; top: 0; z-index: 12; padding: calc(12px + env(safe-area-inset-top)) 14px 0; pointer-events: none; }
+    #homeSheet .quick, #planCta, #homeChips { display: none !important; }   /* P2: cist pocetni - sve zivi u pretrazi i Rute tabu */
     #homeChrome > * { pointer-events: auto; }
     body.planning #homeChrome, body.planning #homeSheet, body.planning #homeFabs { display: none; }
 
@@ -424,6 +425,26 @@
     body.planning #motoWrap { display: none; }
     body.planning #motoWrap.open { display: block; }
     body.planning #planBtn { margin-top: 16px; }
+  }
+  /* ===== P2: Slojevi sheet ===== */
+  #layersSheet { position: fixed; inset: 0; z-index: 60; }
+  #layersSheet .lsback { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
+  #layersSheet .lsbody { position: absolute; left: 0; right: 0; bottom: 0; background: #0f172a; border-radius: 22px 22px 0 0; border-top: 1px solid rgba(148,163,184,.16); padding: 8px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 34px rgba(0,0,0,.5); }
+  #layersSheet .grab { width: 38px; height: 4px; border-radius: 2px; background: #475569; margin: 4px auto 12px; }
+  #layersSheet .lst { font-size: 16px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+  #layersSheet .lrow { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid rgba(148,163,184,.1); font-size: 14px; font-weight: 700; color: #e2e8f0; }
+  #layersSheet .lrow input { appearance: none; -webkit-appearance: none; width: 44px; height: 26px; border-radius: 999px; background: #334155; position: relative; transition: background .2s; margin: 0; cursor: pointer; flex: none; }
+  #layersSheet .lrow input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #94a3b8; transition: transform .2s, background .2s; }
+  #layersSheet .lrow input:checked { background: rgba(249,115,22,.9); }
+  #layersSheet .lrow input:checked::after { transform: translateX(18px); background: #fff; }
+  #layersSheet .lsleg { font-size: 11.5px; color: #94a3b8; font-weight: 600; margin-top: 12px; line-height: 1.6; }
+  #layersSheet .lsleg i { display: inline-block; width: 14px; height: 5px; border-radius: 3px; vertical-align: middle; margin: 0 2px; }
+  /* ===== P2: pilula aktivne rute ===== */
+  #routePill { display: none; }
+  @media (max-width: 900px) {
+    body.hasroute:not(.planning):not(.riding):not(.searching) #routePill { display: flex; flex-direction: column; position: fixed; left: 50%; transform: translateX(-50%); top: calc(74px + env(safe-area-inset-top)); z-index: 13; background: rgba(15,23,42,.95); border: 1.5px solid rgba(249,115,22,.5); border-radius: 999px; padding: 8px 16px; cursor: pointer; box-shadow: 0 8px 22px rgba(0,0,0,.4); max-width: 78%; }
+    #routePill b { color: #fff; font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #routePill span { color: #fdba74; font-size: 11px; font-weight: 700; text-align: center; }
   }
   /* ===== app2 Faza 4: cist ekran pretrage ===== */
   #searchOverlay { display: none; }
@@ -533,6 +554,23 @@
     #screen-rute { padding: 0; }
     #screen-rute .rhd { padding: calc(14px + env(safe-area-inset-top)) 16px 6px; }
     #screen-rute .rhd h2 { font-size: 23px; font-weight: 900; color: #fff; letter-spacing: -.01em; }
+    #screen-rute .rseg { display: flex; gap: 8px; margin: 10px 16px 0; }
+    #screen-rute .rseg button { flex: 1; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 12px; padding: 9px 6px; font-size: 13px; font-weight: 800; color: #e2e8f0; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+    #screen-rute .rseg button.on { border-color: #f97316; background: rgba(249,115,22,.12); color: #f97316; }
+    #screen-rute .mc { display: flex; gap: 12px; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 15px; padding: 12px; margin-bottom: 9px; align-items: center; }
+    #screen-rute .mc .ic { width: 44px; height: 44px; border-radius: 12px; flex: none; background: rgba(249,115,22,.12); display: flex; align-items: center; justify-content: center; font-size: 21px; }
+    #screen-rute .mc .in { flex: 1; min-width: 0; }
+    #screen-rute .mc .nm { font-size: 14.5px; font-weight: 800; color: #fff; }
+    #screen-rute .mc .wh { font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+    #screen-rute .mc .nr { font-size: 11.5px; color: #fdba74; font-weight: 800; margin-top: 2px; }
+    #screen-rute .mc .go { flex: none; background: linear-gradient(135deg, #f97316, #ea580c); border: none; border-radius: 11px; color: #fff; font-size: 12.5px; font-weight: 800; padding: 10px 13px; cursor: pointer; font-family: inherit; }
+    #screen-rute .kbox { margin: 14px 16px; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 16px; padding: 18px 16px; }
+    #screen-rute .kbox .kt { font-size: 16px; font-weight: 900; color: #fff; }
+    #screen-rute .kbox .ks { font-size: 12.5px; color: #94a3b8; font-weight: 600; margin-top: 4px; }
+    #screen-rute .krow { display: flex; align-items: center; gap: 13px; margin: 16px 0; }
+    #screen-rute .krow input[type=range] { flex: 1; accent-color: #f97316; }
+    #screen-rute .krow b { color: #fff; font-size: 16px; font-weight: 900; min-width: 74px; text-align: right; font-variant-numeric: tabular-nums; }
+    #screen-rute #kruznaGo { width: 100%; background: linear-gradient(135deg, #f97316, #ea580c); border: none; border-radius: 14px; color: #fff; font-size: 15.5px; font-weight: 800; padding: 14px; cursor: pointer; font-family: inherit; box-shadow: 0 8px 22px rgba(249,115,22,.3); }
     #screen-rute .rhd .sub { color: #94a3b8; font-size: 12.5px; margin-top: 1px; }
     #screen-rute .rsrch { display: flex; align-items: center; gap: 9px; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 13px; padding: 10px 12px; margin: 10px 16px 0; }
     #screen-rute .rsrch svg { width: 17px; height: 17px; stroke: #94a3b8; fill: none; flex: none; }
@@ -795,6 +833,7 @@
       <button class="chip" data-chip="radar"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20 16.2A5 5 0 0018 7h-1.3A8 8 0 104 15"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg>Radar</button>
     </div>
   </div>
+  <div id="routePill"><b id="rpTxt">-</b><span id="rpSub"></span></div>
   <!-- Faza 4: cist ekran pretrage (kao Google/Waze + nasa baza) -->
   <div id="searchOverlay">
     <div class="shead">
@@ -847,6 +886,7 @@
   <!-- Faza 1a: tab ekrani (za sad stub; pune se u kasnijim fazama) -->
   <div class="tabscreen" id="screen-rute">
     <div class="rhd"><h2>Rute</h2><div class="sub" id="ruteSub">76 kuriranih balkanskih ruta</div></div>
+    <div class="rseg" id="ruteSeg"><button class="on" data-seg="rute">Rute</button><button data-seg="mesta">Mesta</button><button data-seg="kruzna">Kružna tura</button></div>
     <div class="rsrch"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4-4"/></svg><input id="ruteSearch" placeholder="Traži rutu, zemlju, prevoj..." autocomplete="off"></div>
     <div class="rgeo" id="ruteGeo">
       <div class="gic"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
@@ -863,6 +903,17 @@
       <div class="dchip off" data-d="off"><span class="dot d-off"></span>Offroad</div>
     </div>
     <div class="rlist" id="ruteList"></div>
+    <div id="mestaPanel" style="display:none">
+      <div class="rlist" id="mestaList"></div>
+    </div>
+    <div id="kruznaPanel" style="display:none">
+      <div class="kbox">
+        <div class="kt">Napravi mi kružnu turu iz mog mesta</div>
+        <div class="ks">Biramo najlepše puteve i vraćamo te na polaznu tačku.</div>
+        <div class="krow"><input type="range" id="kruznaKm" min="30" max="600" step="10" value="150"><b id="kruznaKmV">150 km</b></div>
+        <button id="kruznaGo">Napravi krug</button>
+      </div>
+    </div>
   </div>
   <div class="tabscreen" id="screen-zajednica"><h2>Zajednica</h2><div class="stub"><b>Zajednica</b> - feed prijava, "nađimo se tamo", prijatelji na mapi i rang. Uskoro.</div></div>
   <div class="tabscreen" id="screen-ja"><h2>Ja</h2><div class="stub"><b>Tvoj profil</b> - moj motor, lični rekordi, sačuvane rute, poeni i bedževi. Uskoro.</div></div>
@@ -1807,7 +1858,7 @@ async function poisNear(points, filter, radiusM, cap) {
   const clauses = points.map((p) =>
     `node(around:${radiusM},${p.lat.toFixed(4)},${p.lon.toFixed(4)})${filter};way(around:${radiusM},${p.lat.toFixed(4)},${p.lon.toFixed(4)})${filter};`).join("");
   const els = await overpass(`[out:json][timeout:25];(${clauses});out center ${cap};`);
-  if (!els) return null;
+  if (!els) return [];   // prazan niz - pozivaoci rade .map/.filter bez pucanja
   return els.map((e) => {
     const { lat, lon } = poiLatLon(e);
     return { lat, lon, name: (e.tags && (e.tags.name || e.tags.brand)) || null, tags: e.tags || {} };
@@ -2087,7 +2138,7 @@ async function toggleRadar(btn) {
     const addFrame = (f) => {
       radarRemove();
       // maxzoom 12: RainViewer nema tajlove za veći zum - MapLibre preko toga uvećava z12 (bez "not supported" pločica)
-      map.addSource("radar", { type: "raster", tiles: radarTiles(f), tileSize: 256, maxzoom: 12 });
+      map.addSource("radar", { type: "raster", tiles: radarTiles(f), tileSize: 256, maxzoom: 9 });   // RainViewer iznad z9 vraca "Zoom Not Supported" plocice - overzoom resava
       map.addLayer({ id: "radar", type: "raster", source: "radar", paint: { "raster-opacity": 0.62 } },
         map.getLayer("seg-casing") ? "seg-casing" : undefined);
     };
@@ -2114,6 +2165,7 @@ function renderVerdict(assess, route, departure) {
   const arrive = new Date(departure.getTime() + route.totalDur * 1000);
   const rt = isRoundTrip();
   const routeTxt = `${state.geocode.from.name} → ${state.geocode.to.name}${rt ? " → " + state.geocode.from.name : ""}`;
+  try { renderResultHero(route); } catch (e) {}   // pilula + hero cim su rezultati tu (nezavisno od sporednih fetch-eva)
   $("summary").innerHTML =
     `<b>${routeTxt}</b>${rt ? " (povratno)" : ""} · ${(route.totalDist / 1000).toFixed(0)} km · ` +
     `${fmtDur(route.totalDur)}<br>Polazak ${fmtTime(departure)} → dolazak ~<b>${fmtTime(arrive)}</b> (bez pauza)`;
@@ -2896,16 +2948,17 @@ async function selectRoute(departure) {
   renderWhen(route, departure);
   renderGear(assess);
   drawRoute(route, assess);
-  btn.disabled = false; setStatus("");   // RUTA je gotova - dugme se otkljucava; pumpe/kafane stizu u pozadini
-  const zones = await renderWarnings(assess);
-  await renderSuggestions(route, assess, departure, zones);
-  renderFamousSuggestion();
-  await Promise.all([renderCost(route), renderFuel(route, assess, departure), renderFood(route, assess, departure),
+  $("planBtn").disabled = false; setStatus("");   // RUTA je gotova - dugme se otkljucava; pumpe/kafane stizu u pozadini
+  let zones = [];   // sporedni koraci NE SMEJU da obore plan (Overpass/mreza umeju da zakazu)
+  try { zones = await renderWarnings(assess) || []; } catch (e) { logState({ phase: "warn-fail", msg: String(e).slice(0, 120) }); }
+  try { await renderSuggestions(route, assess, departure, zones); } catch (e) {}
+  try { renderFamousSuggestion(); } catch (e) {}
+  await Promise.allSettled([renderCost(route), renderFuel(route, assess, departure), renderFood(route, assess, departure),
     renderDifficulty(route), renderCameras(route), renderRoadworks(route), renderRoadStatus(route),
     (async () => {
       if (route.consensus === undefined) route.consensus = await fetchConsensus(route, departure);
       renderConsensus(route, departure);
-    })()]);
+    })()]);   // allSettled: jedan pali servis vise ne rusi trosak/tezinu/hero
   try { renderResultHero(route); } catch (e) {}   // Faza 3: mobilni hero (svi podaci su sad na route objektu)
   try {   // "Nedavno" istorija za brzo dugme
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
@@ -3118,6 +3171,7 @@ function previewFill() {
   $("results").classList.remove("hidden");
   $("verdict").className = "verdict warn";
   $("verdict").textContent = "⚠ Vozivo, ali ima delova za oprez";
+  try { renderResultHero(route); } catch (e) {}   // pilula + hero cim su rezultati tu (nezavisno od sporednih fetch-eva)
   $("summary").innerHTML = `<b>Beograd → Split</b> · 553 km · 9 h 40 min<br>Polazak 09:00 → dolazak ~<b>18:40</b> (bez pauza)`;
   $("routeTabs").innerHTML =
     `<button class="rtab active"><b>Ekstra vijugava ★</b><span class="mini">553 km · 9 h 40 min<br><span class="dot l1"></span>oprez</span></button>` +
@@ -3355,6 +3409,14 @@ function init() {
   initMap();
   initSheet();
   loadEditorial();
+  // radar uvek aktivan (Boskova odluka); iskljucenje pamti rmr2_radar=0 (prekidac u Slojevima)
+  setTimeout(() => {
+    try {
+      if (localStorage.getItem("rmr2_radar") !== "0" && !radar.on) {
+        const rb = document.querySelector(".map-tools .radar-btn"); if (rb) rb.click();
+      }
+    } catch (e) {}
+  }, 2500);
 
   const params = new URLSearchParams(location.search);
   state.pendingFamous = params.get("famous") || null;
@@ -3413,7 +3475,7 @@ function init() {
   });
   // FAB dugmad -> postojeće kontrole mape
   const fabMap = {
-    layers: () => { const b = document.querySelector(".map-tools .lay-btn"); if (b) b.click(); },
+    layers: () => openLayersSheet(),
     gps: () => { const b = document.querySelector(".maplibregl-ctrl-geolocate"); if (b) b.click(); },
     theme: () => { /* dan/noć - poveži se u sledećoj fazi */ },
   };
@@ -3835,6 +3897,10 @@ function startRide() {
 function stopRide() {
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
   try { if (RIDE.marker) { RIDE.marker.remove(); RIDE.marker = null; } } catch (e) {}
+  if (state.routes && state.routes.length) {   // nazad na REZULTATE (izbor varijanti), ne na pocetni
+    document.body.classList.add("planning");
+    try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
+  }
   try { speechSynthesis.cancel(); } catch (e) {}
   try { if (RIDE.lock) { RIDE.lock.release(); RIDE.lock = null; } } catch (e) {}
   document.body.classList.remove("riding");
@@ -3919,6 +3985,12 @@ function stopRide() {
 function renderResultHero(route) {
   const box = document.getElementById("resHero");
   if (!box || !route) return;
+  try {   // pilula aktivne rute na mapi (tap = nazad na rezultate/varijante)
+    document.body.classList.add("hasroute");
+    const g = state.geocode || {};
+    document.getElementById("rpTxt").textContent = ((g.from && g.from.name) || "?") + " → " + ((g.to && g.to.name) || "?");
+    document.getElementById("rpSub").textContent = Math.round(route.totalDist / 1000) + " km · tap za detalje i varijante";
+  } catch (e) {}
   // vreme: preslikaj postojeći verdict (uvek sinhronizovano sa card-summary)
   const v = document.getElementById("verdict");
   const cls = v && /bad/.test(v.className) ? "bad" : v && /warn/.test(v.className) ? "warn" : "ok";
@@ -3975,6 +4047,91 @@ function renderResultHero(route) {
     } catch (e) {}
   });
 })();
+
+/* ---- P2: Rute segmenti (Rute|Mesta|Kruzna) + Slojevi sheet + pilula rute ---- */
+const MESTA_ICO = { kafana: "🍖", vidikovac: "🌄", okupljaliste: "🏍", upozorenje: "⚠️" };
+function renderMesta() {
+  const L = document.getElementById("mestaList");
+  if (!L) return;
+  let items = (state.editorial || []).filter((e) => e.type !== "ruta" && e.type !== "upozorenje" && e.lat != null);
+  const g = state.gpsFrom;
+  if (g) items = items.map((e) => ({ ...e, _d: haversine(g.lat, g.lon, e.lat, e.lon) })).sort((a, b) => a._d - b._d);
+  if (!items.length) { L.innerHTML = '<div class="rempty">Mesta zajednice se učitavaju…</div>'; return; }
+  L.innerHTML = items.slice(0, 60).map((e, i) =>
+    `<div class="mc"><div class="ic">${MESTA_ICO[e.type] || "📍"}</div>
+      <div class="in"><div class="nm">${e.name}</div><div class="wh">${(e.where || "").slice(0, 70)}</div>
+      ${e._d != null ? `<div class="nr">${Math.round(e._d)} km od tebe</div>` : ""}</div>
+      <button class="go" data-mi="${i}">Vodi me</button></div>`).join("");
+  L._items = items.slice(0, 60);
+}
+(function(){
+  const seg = document.getElementById("ruteSeg");
+  if (!seg) return;
+  const ruteParts = ["ruteSearch", "ruteGeo", "ruteFil", "ruteDiff", "ruteList"];
+  seg.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    seg.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+    const which = b.dataset.seg;
+    ruteParts.forEach((id) => { const el = document.getElementById(id); if (el) (el.closest(".rsrch") || el).style.display = which === "rute" ? "" : "none"; });
+    document.getElementById("mestaPanel").style.display = which === "mesta" ? "" : "none";
+    document.getElementById("kruznaPanel").style.display = which === "kruzna" ? "" : "none";
+    if (which === "mesta") {
+      if (!state.gpsFrom && navigator.geolocation)   // geo nezavisno od from polja (gpsPrefill preskace ako je polje puno)
+        navigator.geolocation.getCurrentPosition((p) => { state.gpsFrom = { name: "Moja lokacija", lat: p.coords.latitude, lon: p.coords.longitude }; renderMesta(); }, () => {}, { maximumAge: 60000, timeout: 6000 });
+      renderMesta();
+    }
+  });
+  document.getElementById("mestaList").addEventListener("click", (e) => {
+    const b = e.target.closest(".go"); if (!b) return;
+    const it = document.getElementById("mestaList")._items[+b.dataset.mi];
+    if (it) pickDestination({ n: it.name, lat: it.lat, lon: it.lon });
+  });
+  const kr = document.getElementById("kruznaKm");
+  if (kr) kr.addEventListener("input", () => { document.getElementById("kruznaKmV").textContent = kr.value + " km"; });
+  const kg = document.getElementById("kruznaGo");
+  if (kg) kg.addEventListener("click", () => {
+    document.body.classList.add("planning");
+    try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
+    const rg = document.getElementById("roundGen");
+    if (rg && !rg.checked) { rg.checked = true; rg.dispatchEvent(new Event("change")); }
+    const lk = document.getElementById("loopKm"); if (lk) lk.value = kr ? kr.value : 150;
+    gpsPrefill(false);
+    let tries = 20;
+    const go = () => {
+      if (document.getElementById("from").value.trim()) { document.getElementById("planBtn").click(); return; }
+      if (--tries > 0) setTimeout(go, 400);
+    };
+    go();
+  });
+  const rp = document.getElementById("routePill");
+  if (rp) rp.addEventListener("click", () => {
+    document.body.classList.add("planning");
+    try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
+  });
+})();
+/* Slojevi: lep bottom sheet umesto starog popupa (mobilno) */
+function openLayersSheet() {
+  let sh = document.getElementById("layersSheet");
+  if (sh) { sh.remove(); return; }
+  sh = document.createElement("div");
+  sh.id = "layersSheet";
+  const rows = LAYER_DEFS.map(([cat, label]) =>
+    `<label class="lrow"><span>${label}</span><input type="checkbox" data-cat="${cat}" ${state.layerVis[cat] ? "checked" : ""}></label>`).join("");
+  sh.innerHTML = `<div class="lsback"></div><div class="lsbody"><div class="grab"></div><div class="lst">Slojevi mape</div>
+    <label class="lrow"><span>🌧 Kišni radar (uživo)</span><input type="checkbox" id="lsRadar" ${radar.on ? "checked" : ""}></label>${rows}
+    <div class="lsleg">Boja rute = prognoza u satu prolaska: <i style="background:#22c55e"></i> vedro · <i style="background:#f59e0b"></i> oprez · <i style="background:#ef4444"></i> nevreme</div></div>`;
+  document.body.appendChild(sh);
+  sh.querySelector(".lsback").addEventListener("click", () => sh.remove());
+  sh.addEventListener("change", (e) => {
+    const c = e.target;
+    if (c.id === "lsRadar") {
+      try { localStorage.setItem("rmr2_radar", c.checked ? "1" : "0"); } catch (er) {}
+      const rb = document.querySelector(".map-tools .radar-btn"); if (rb) rb.click();
+      return;
+    }
+    if (c.dataset.cat) { state.layerVis[c.dataset.cat] = c.checked ? 1 : 0; applyLayerVis(); }
+  });
+}
 
 /* ---- app2 Faza 2: RUTE ekran (blizu tebe + težina, kao maketa) ---- */
 (function(){
