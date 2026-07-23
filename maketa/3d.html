@@ -218,7 +218,9 @@ function setSat(on){satOn=on;try{
   const t=document.getElementById('satToggle');if(t)t.classList.toggle('on',on);
   const l=document.getElementById('satLbl');if(l)l.textContent=on?'SAT':'MAPA';}
 const map=new maplibregl.Map({container:'map',style:STYLES[mode],center:HOME.center,zoom:HOME.zoom,
-  pitch:HOME.pitch,bearing:HOME.bearing,maxPitch:82,attributionControl:false});
+  pitch:HOME.pitch,bearing:HOME.bearing,maxPitch:82,attributionControl:false,
+  maxTileCacheSize:20,          // ograniči GPU memoriju (iOS Safari ruši tab kad se nagomila) - satelit preko terena je memorijski težak
+  fadeDuration:0,refreshExpiredTiles:false});
 map.addControl(new maplibregl.NavigationControl({showCompass:false,showZoom:true}),'top-right');
 
 // kompas = 2D/3D toggle + reset na sever (stoji ispod +/-)
@@ -246,13 +248,13 @@ function addTerrainRoute(){
   if(!map.getSource('terr'))map.addSource('terr',{type:'raster-dem',
     tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
     encoding:'terrarium',tileSize:256,maxzoom:14});
-  map.setTerrain({source:'terr',exaggeration:1.5});
+  map.setTerrain({source:'terr',exaggeration:1.25});   // manja egzageracija = ruta bolje prati teren (ne "lebdi") + lakši mesh
   if(!map.getLayer('hill'))map.addLayer({id:'hill',type:'hillshade',source:'terr',
     paint:{'hillshade-exaggeration':0.4}},firstSymbol());
   // satelitski snimak drapiran preko terena - imerzivna navigacija kao Google (labeli ostaju iznad)
   if(!map.getSource('sat'))map.addSource('sat',{type:'raster',
     tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
-    tileSize:256,maxzoom:19,attribution:'Esri, Maxar'});
+    tileSize:256,maxzoom:16,attribution:'Esri, Maxar'});   // maxzoom 16 (FPV je zoom 17): ~4x manje jedinstvenih pločica = manje GPU memorije, blaga zamućenost izbliza
   if(!map.getLayer('sat-ly'))map.addLayer({id:'sat-ly',type:'raster',source:'sat',
     layout:{visibility:satOn?'visible':'none'},paint:{'raster-opacity':1,'raster-fade-duration':300}},firstSymbol());
   if(!map.getSource('route'))map.addSource('route',{type:'geojson',
@@ -303,6 +305,9 @@ function addMarkers(){
 }
 map.on('load',()=>{addTerrainRoute();setSky();addMarkers();});
 map.on('styledata',()=>{addTerrainRoute();setSky();});
+// oporavak ako iOS izgubi WebGL kontekst pod memorijskim pritiskom - vrati teren/rutu umesto praznog/reload-a
+map.getCanvas().addEventListener('webglcontextlost',e=>{e.preventDefault();},false);
+map.getCanvas().addEventListener('webglcontextrestored',()=>{try{addTerrainRoute();setSky();setSat(satOn);}catch(e){}},false);
 
 // sistem promeni izgled -> mapa prati
 mq.addEventListener('change',e=>{mode=e.matches?'dark':'light';
