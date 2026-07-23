@@ -21,10 +21,13 @@ jobs:
           python-version: "3.12"
       - name: Sakupi podatke
         run: python3 tools/collect_road_status.py
+      - name: Osvezi cene goriva (benzin BMB95 po zemljama)
+        run: python3 update_prices.py || true
+        continue-on-error: true
       - name: Commit ako ima promena
         run: |
           git config user.name "rmr-bot"
           git config user.email "boskodjurica@gmail.com"
-          git add data/road_status.json
+          git add data/road_status.json data/prices.json
           git diff --cached --quiet && echo "nema promena" || git commit -m "auto: stanje na putevima + meteo upozorenja [skip ci]"
           git push
