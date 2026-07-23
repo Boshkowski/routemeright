@@ -402,6 +402,52 @@
     #plannerClose { position: absolute; top: 14px; right: 14px; z-index: 6; width: 34px; height: 34px; border-radius: 10px; background: #1e293b; border: 1px solid rgba(148,163,184,.2); color: #e2e8f0; font-size: 16px; font-weight: 800; cursor: pointer; align-items: center; justify-content: center; }
     body.planning #plannerClose { display: flex; }
   }
+  /* ===== app2 Faza 3: REZULTAT ekran (kao result2 maketa: hero + metrike + krivine) ===== */
+  #resHero, #resCta { display: none; }
+  @media (max-width: 900px) {
+    #resHero { display: block; margin-bottom: 4px; }
+    #resHero .rhero { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 11px; }
+    #resHero .hx { border-radius: 14px; padding: 12px 13px; border: 1px solid rgba(148,163,184,.16); }
+    #resHero .hx .k { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+    #resHero .hx .v { font-size: 18px; font-weight: 900; display: flex; align-items: center; gap: 8px; line-height: 1.05; }
+    #resHero .hx.wx.ok { background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.3); } #resHero .hx.wx.ok .k { color: #86efac; } #resHero .hx.wx.ok .v { color: #22c55e; }
+    #resHero .hx.wx.warn { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); } #resHero .hx.wx.warn .k { color: #fcd34d; } #resHero .hx.wx.warn .v { color: #f59e0b; }
+    #resHero .hx.wx.bad { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.3); } #resHero .hx.wx.bad .k { color: #fca5a5; } #resHero .hx.wx.bad .v { color: #ef4444; }
+    #resHero .hx.dif { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); }
+    #resHero .hx.dif .k { color: #fcd34d; } #resHero .hx.dif .v { color: #f59e0b; }
+    #resHero .hx.dif .sub { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 4px; }
+    #resHero .rmrow { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+    #resHero .m { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 12px; padding: 9px 6px; text-align: center; }
+    #resHero .m .k { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: .03em; font-weight: 700; }
+    #resHero .m .v { font-size: 15px; font-weight: 900; color: #fff; margin-top: 3px; font-variant-numeric: tabular-nums; }
+    #resHero .m .v small { font-size: 10px; color: #94a3b8; font-weight: 600; }
+    #resHero .rsect { font-size: 11px; font-weight: 800; color: #e2e8f0; text-transform: uppercase; letter-spacing: .05em; margin: 2px 2px 9px; }
+    #resHero .rcard { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 15px; padding: 13px 14px; margin-bottom: 13px; }
+    #resHero .relev svg { width: 100%; height: 74px; display: block; }
+    #resHero .relev .st { display: flex; gap: 16px; margin-top: 9px; }
+    #resHero .relev .st div { font-size: 12px; color: #94a3b8; font-weight: 600; }
+    #resHero .relev .st b { color: #fff; font-weight: 800; font-size: 14px; display: block; font-variant-numeric: tabular-nums; }
+    #resHero .rcurv .top { display: flex; align-items: flex-end; gap: 10px; margin-bottom: 11px; }
+    #resHero .rcurv .big { font-size: 26px; font-weight: 900; color: #fff; line-height: .9; }
+    #resHero .rcurv .big small { font-size: 13px; color: #94a3b8; font-weight: 700; }
+    #resHero .rcurv .sev { margin-left: auto; text-align: right; font-size: 11.5px; color: #fca5a5; font-weight: 800; }
+    #resHero .rcurv .sev span { display: block; color: #94a3b8; font-weight: 600; font-size: 10.5px; }
+    #resHero .lr { display: flex; gap: 9px; }
+    #resHero .lr .b { flex: 1; background: #0f172a; border: 1px solid rgba(148,163,184,.16); border-radius: 11px; padding: 9px 11px; display: flex; align-items: center; gap: 9px; }
+    #resHero .lr .b svg { width: 22px; height: 22px; stroke: #f97316; fill: none; }
+    #resHero .lr .b .n { font-size: 17px; font-weight: 900; color: #fff; line-height: 1; }
+    #resHero .lr .b .l { font-size: 10.5px; color: #94a3b8; font-weight: 700; margin-top: 1px; }
+    #resHero .sevbar { display: flex; height: 7px; border-radius: 4px; overflow: hidden; margin-top: 11px; }
+    #resHero .sevbar i { height: 100%; }
+    #resHero .sevleg { display: flex; gap: 13px; margin-top: 8px; font-size: 10.5px; font-weight: 700; color: #94a3b8; }
+    #resHero .sevleg span { display: flex; align-items: center; gap: 5px; }
+    #resHero .sevleg .d { width: 8px; height: 8px; border-radius: 2px; }
+    #card-diff { display: none; }   /* zamenjuju ga hero kartice (podaci isti) */
+    #resCta { display: flex; gap: 9px; position: sticky; bottom: 0; padding: 11px 0 calc(10px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, #0f172a 30%); z-index: 5; }
+    #resCta .b2 { flex: 1; border-radius: 13px; padding: 13px; text-align: center; font-size: 14.5px; font-weight: 800; border: 1px solid rgba(148,163,184,.16); background: #1e293b; color: #e2e8f0; display: flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    #resCta .b2 svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
+    #resCta .b2.p { flex: 1.5; background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; border: none; box-shadow: 0 8px 20px rgba(249,115,22,.3); }
+  }
   /* ===== app2 Faza 2: RUTE ekran (kao rute2 maketa: blizu tebe + težina) ===== */
   @media (max-width: 900px) {
     #screen-rute { padding: 0; }
@@ -547,6 +593,34 @@
     <div id="status"></div>
 
     <div id="results" class="hidden">
+      <!-- Faza 3: mobilni rezultat kao maketa (hero + metrike + krivine); desktop ga ne vidi -->
+      <div id="resHero">
+        <div class="rhero">
+          <div class="hx wx" id="rhWx"><div class="k">Vreme na ruti</div><div class="v" id="rhWxV">-</div></div>
+          <div class="hx dif"><div class="k">Težina</div><div class="v" id="rhDifV">-</div><div class="sub" id="rhDifS"></div></div>
+        </div>
+        <div class="rmrow">
+          <div class="m"><div class="k">Dužina</div><div class="v" id="rhKm">-</div></div>
+          <div class="m"><div class="k">Trajanje</div><div class="v" id="rhDur">-</div></div>
+          <div class="m"><div class="k">Trošak</div><div class="v" id="rhCost">-</div></div>
+          <div class="m"><div class="k">Putarina</div><div class="v" id="rhToll">-</div></div>
+        </div>
+        <div class="rsect">Profil visine</div>
+        <div class="rcard relev">
+          <svg id="rhElevSvg" viewBox="0 0 380 74" preserveAspectRatio="none"></svg>
+          <div class="st"><div>uspon<b id="rhAsc">-</b></div><div>spust<b id="rhDesc">-</b></div><div>najviša<b id="rhMax">-</b></div></div>
+        </div>
+        <div class="rsect">Krivine</div>
+        <div class="rcard rcurv">
+          <div class="top"><div class="big" id="rhCurvN">- <small>krivina</small></div><div class="sev" id="rhSharp"></div></div>
+          <div class="lr">
+            <div class="b"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 6L4 12l5 6M4 12h11a5 5 0 015 5v2"/></svg><div><div class="n" id="rhL">-</div><div class="l">levo ↰</div></div></div>
+            <div class="b"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M15 6l5 6-5 6M20 12H9a5 5 0 00-5 5v2"/></svg><div><div class="n" id="rhR">-</div><div class="l">desno ↱</div></div></div>
+          </div>
+          <div class="sevbar" id="rhSevbar"></div>
+          <div class="sevleg" id="rhSevleg"></div>
+        </div>
+      </div>
       <div class="card" id="card-summary">
         <div id="verdict" class="verdict"></div>
         <div class="summary-line" id="summary"></div>
@@ -611,6 +685,12 @@
         <h3>Stanje na putevima i upozorenja</h3>
         <ul class="plain" id="roadsList"></ul>
         <div class="note" id="roadsNote">Zvanični izvori po zemljama (HAK, Putevi Srbije, promet.si, BIHAMK, AMSCG...) + Meteoalarm upozorenja državnih meteo zavoda. Osvežava se više puta dnevno.</div>
+      </div>
+
+      <!-- Faza 3: lepljivi CTA (samo mobilno) -->
+      <div id="resCta">
+        <button class="b2 p" id="ctaKreni"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>Kreni</button>
+        <button class="b2" id="ctaCuvaj"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Čuvaj</button>
       </div>
     </div>
 
@@ -1300,6 +1380,8 @@ async function renderCost(route) {
   if (vign.length) html += `<br><span class="warn-inline">+ ${vign.map((c) => `${c}: ${VIGNETTE[c]}`).join(" · ")}</span>`;
   if (tollCost !== null)
     html += `<br>Ukupno: ≈ <b>${(fuelCost + tollCost).toFixed(0)} €</b> u jednom smeru${vign.length ? " + vinjete" : ""}`;
+  route._fuelCost = fuelCost; route._tollCost = tollCost;   // za mobilni hero (Faza 3)
+  try { renderResultHero(route); } catch (e) {}   // osveži hero čim su brojke tu (ne oslanjaj se na Promise.all)
   if (PRICES_META) {
     const age = (Date.now() - new Date(PRICES_META.updated).getTime()) / 86400e3;
     const unver = spans ? [...new Set(spans.map((s) => s.cc).filter((c) => c && PRICE_VERIFIED.fuel[c] !== true))] : [];
@@ -1326,12 +1408,12 @@ function analyzeCurves(route) {
     target += step;
   }
   const perKm = new Array(Math.max(1, Math.ceil(total / 1000))).fill(0);
-  let L = 0, R = 0, sharp = 0, acc = 0, dir = 0, curveStartIdx = 0, prevB = null;
+  let L = 0, R = 0, sharp = 0, med = 0, mild = 0, acc = 0, dir = 0, curveStartIdx = 0, prevB = null;
   function finishCurve() {
     const a = Math.abs(acc);
     if (a >= 40) {
       if (dir > 0) R++; else L++;
-      if (a >= 100) sharp++;
+      if (a >= 100) sharp++; else if (a >= 70) med++; else mild++;
       perKm[Math.min(perKm.length - 1, Math.floor(curveStartIdx * step / 1000))]++;
     }
     acc = 0; dir = 0;
@@ -1361,7 +1443,7 @@ function analyzeCurves(route) {
   }
   const klasa = perKmAvg > 1.5 ? "vrlo vijugava (uživancija)" : perKmAvg > 0.8 ? "vijugava" :
     perKmAvg > 0.3 ? "umereno vijugava" : "pretežno prava";
-  return { L, R, sharp, perKmAvg, klasa, bestWin, bestCnt, totalKm };
+  return { L, R, sharp, med, mild, perKmAvg, klasa, bestWin, bestCnt, totalKm };
 }
 async function fetchElevation(route) {
   const n = 100, totalKm = route.cumDist[route.cumDist.length - 1] / 1000;
@@ -1384,6 +1466,7 @@ function drawElev(elev) {
 }
 async function renderDifficulty(route) {
   const c = analyzeCurves(route);
+  route._curves = c;
   let html = `Krivine: <b>${c.L + c.R}</b> (${c.L} levo / ${c.R} desno), oštrih ${c.sharp} · ` +
     `${c.perKmAvg.toFixed(2)} krivina/km - <b>${c.klasa}</b>`;
   if (c.bestWin && c.bestCnt > 5) html += `<br>Najvijugavije: km ${c.bestWin[0]}-${c.bestWin[1]} (${c.bestCnt} krivina)`;
@@ -1412,6 +1495,10 @@ async function renderDifficulty(route) {
       c.perKmAvg > 0.8 || ascent > 2000 || maxG >= 7 ? "zahtevna" :
       c.perKmAvg > 0.35 || ascent > 800 ? "srednja" : "laka";
     $("diffOut").innerHTML += `<br>Za početnike: <b>${hard}</b>`;
+    let descent = 0; for (let i = 1; i < elev.length; i++) { const d = elev[i] - elev[i - 1]; if (d < 0) descent -= d; }
+    route._elevStats = { ascent: Math.round(ascent), descent: Math.round(descent), max: Math.round(Math.max(...elev)) };
+    route._hard = hard;
+    try { renderResultHero(route); } catch (e) {}   // hero se osveži kad stignu visine
   } catch { /* profil visine nije kritičan */ }
 }
 function coordAtKm(route, km) {
@@ -2704,6 +2791,7 @@ async function selectRoute(departure) {
       if (route.consensus === undefined) route.consensus = await fetchConsensus(route, departure);
       renderConsensus(route, departure);
     })()]);
+  try { renderResultHero(route); } catch (e) {}   // Faza 3: mobilni hero (svi podaci su sad na route objektu)
   logState({ phase: "done", route: state.selected, worst, warnings: zones.length,
     km: Math.round(route.totalDist / 1000), tollKm: route.tollKm === null ? null : Math.round(route.tollKm),
     vias: state.vias.length });
@@ -3197,6 +3285,70 @@ function init() {
   };
   document.querySelectorAll("#homeFabs button").forEach((b) => {
     b.addEventListener("click", () => { const f = fabMap[b.dataset.fab]; if (f) f(); });
+  });
+})();
+
+/* ---- app2 Faza 3: REZULTAT hero (kao result2 maketa) ---- */
+function renderResultHero(route) {
+  const box = document.getElementById("resHero");
+  if (!box || !route) return;
+  // vreme: preslikaj postojeći verdict (uvek sinhronizovano sa card-summary)
+  const v = document.getElementById("verdict");
+  const cls = v && /bad/.test(v.className) ? "bad" : v && /warn/.test(v.className) ? "warn" : "ok";
+  const wx = document.getElementById("rhWx");
+  wx.className = "hx wx " + cls;
+  document.getElementById("rhWxV").textContent = cls === "ok" ? "Suvo" : cls === "warn" ? "Oprez" : "Nevreme";
+  // težina
+  const c = route._curves;
+  document.getElementById("rhDifV").textContent = route._hard ? (route._hard[0].toUpperCase() + route._hard.slice(1)) : "…";
+  document.getElementById("rhDifS").textContent = c ? c.klasa : "";
+  // metrike
+  document.getElementById("rhKm").innerHTML = Math.round(route.totalDist / 1000) + "<small>km</small>";
+  const h = Math.floor(route.totalDur / 3600), mn = Math.round(route.totalDur % 3600 / 60);
+  document.getElementById("rhDur").innerHTML = h + "<small>h</small>" + String(mn).padStart(2, "0");
+  document.getElementById("rhCost").innerHTML = route._fuelCost != null ? Math.round(route._fuelCost + (route._tollCost || 0)) + "<small>€</small>" : "…";
+  document.getElementById("rhToll").innerHTML = route._tollCost != null ? Math.round(route._tollCost) + "<small>€</small>" : "…";
+  // profil visine (kopija iz postojeceg elevSvg + statistika)
+  const es = document.getElementById("elevSvg");
+  if (es && es.innerHTML) document.getElementById("rhElevSvg").innerHTML = es.innerHTML;
+  if (route._elevStats) {
+    document.getElementById("rhAsc").textContent = route._elevStats.ascent.toLocaleString("sr-RS") + " m";
+    document.getElementById("rhDesc").textContent = route._elevStats.descent.toLocaleString("sr-RS") + " m";
+    document.getElementById("rhMax").textContent = route._elevStats.max.toLocaleString("sr-RS") + " m";
+  }
+  // krivine
+  if (c) {
+    document.getElementById("rhCurvN").innerHTML = (c.L + c.R) + " <small>krivina</small>";
+    document.getElementById("rhSharp").innerHTML = c.sharp ? c.sharp + " oštrih<span>zaokret preko 100°</span>" : "";
+    document.getElementById("rhL").textContent = c.L;
+    document.getElementById("rhR").textContent = c.R;
+    const tot = Math.max(1, c.mild + c.med + c.sharp);
+    document.getElementById("rhSevbar").innerHTML =
+      `<i style="width:${(c.mild / tot * 100).toFixed(0)}%;background:#22c55e"></i>` +
+      `<i style="width:${(c.med / tot * 100).toFixed(0)}%;background:#f59e0b"></i>` +
+      `<i style="width:${(c.sharp / tot * 100).toFixed(0)}%;background:#ef4444"></i>`;
+    document.getElementById("rhSevleg").innerHTML =
+      `<span><span class="d" style="background:#22c55e"></span>blage ${c.mild}</span>` +
+      `<span><span class="d" style="background:#f59e0b"></span>srednje ${c.med}</span>` +
+      `<span><span class="d" style="background:#ef4444"></span>oštre ${c.sharp}</span>`;
+  }
+}
+(function(){
+  const k = document.getElementById("ctaKreni"), s = document.getElementById("ctaCuvaj");
+  if (k) k.addEventListener("click", () => {   // Kreni = skloni planer, pokaži mapu sa rutom
+    document.body.classList.remove("planning");
+    try { if (typeof map !== "undefined" && map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
+  });
+  if (s) s.addEventListener("click", () => {   // Čuvaj = sačuvaj relaciju lokalno
+    try {
+      const g = (typeof state !== "undefined" && state.geocode) || {};
+      const saved = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
+      saved.unshift({ from: g.from && g.from.name, to: g.to && g.to.name, ts: new Date().toISOString() });
+      localStorage.setItem("rmr2_saved", JSON.stringify(saved.slice(0, 30)));
+      const q = document.querySelector('[data-quick="saved"] span'); if (q) q.textContent = saved.length + " ruta";
+      s.innerHTML = "✓ Sačuvano";
+      setTimeout(() => { s.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Čuvaj'; }, 1800);
+    } catch (e) {}
   });
 })();
 
