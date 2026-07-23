@@ -246,18 +246,23 @@
   .hz-btn.on { background: #b91c1c; border-color: #b91c1c; color: #fff; }
   .hz-pop {
     position: absolute; z-index: 9; background: #0f172a; border: 1px solid rgba(249,115,22,.4);
-    border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.55); padding: 13px;
-    width: 252px; animation: pop 160ms var(--ease) backwards;
+    border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.55); padding: 13px; width: 252px;
+    animation: pop 160ms var(--ease) backwards;
   }
-  .hz-pop::before { content: "Šta si video na putu?"; display: block; color: #fff; font-size: 13.5px; font-weight: 800; margin: 0 2px 10px; }
-  .hz-pop .hzgrid { display: flex; gap: 7px; flex-wrap: wrap; }
-  .hz-pop button {
-    background: #1e293b; border: 1px solid rgba(148,163,184,.2); border-radius: 999px;
-    color: #e2e8f0; font-size: 13px; font-weight: 800; padding: 9px 13px; cursor: pointer; font-family: inherit;
-    -webkit-tap-highlight-color: transparent;
-  }
+  .hz-pop::before { content: "Šta si video na putu?"; display: block; color: #fff; font-size: 15px; font-weight: 900; margin: 0 2px 12px; }
+  .hz-pop .hzgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .hz-pop button { background: #1e293b; border: 1px solid rgba(148,163,184,.2); border-radius: 16px;
+    color: #e2e8f0; font-size: 12.5px; font-weight: 800; padding: 12px 4px; cursor: pointer; font-family: inherit;
+    display: flex; flex-direction: column; align-items: center; gap: 6px; -webkit-tap-highlight-color: transparent; }
+  .hz-pop button .hzi { font-size: 27px; line-height: 1; }
   .hz-pop button:active { transform: scale(.95); background: rgba(249,115,22,.18); border-color: rgba(249,115,22,.5); }
-  .hz-pop button.hzx { background: none; border-color: transparent; color: #94a3b8; }
+  .hz-pop .hzcancel { width: 100%; flex-direction: row; justify-content: center; margin-top: 10px; padding: 12px;
+    background: none; border-color: transparent; color: #94a3b8; font-size: 14px; }
+  @media (max-width: 900px) {
+    .hz-pop { position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important;
+      bottom: 0 !important; width: 100% !important; border-radius: 22px 22px 0 0; border-left: none; border-right: none; border-bottom: none;
+      padding: 16px 18px calc(20px + env(safe-area-inset-bottom)); z-index: 70; }
+  }
   @keyframes pop { from { opacity: 0; transform: scale(.95); } }
   #elevSvg { display: block; background: rgba(255,255,255,.03); border: 1px solid var(--c-border); border-radius: 8px; }
 
@@ -374,7 +379,7 @@
     .maplibregl-ctrl-top-right { display: none; }
 
     #homeChrome { display: block; position: fixed; left: 0; right: 0; top: 0; z-index: 12; padding: calc(12px + env(safe-area-inset-top)) 14px 0; pointer-events: none; }
-    #homeSheet .quick, #planCta, #homeChips { display: none !important; }   /* P2: cist pocetni - sve zivi u pretrazi i Rute tabu */
+    #homeSheet .quick, #planCta, #homeChips, #homeSheet { display: none !important; }   /* R5: potpuno cist pocetni kao Google - prognoza zivi u planiranju */
     #homeChrome > * { pointer-events: auto; }
     body.planning #homeChrome, body.planning #homeSheet, body.planning #homeFabs { display: none; }
 
@@ -436,6 +441,16 @@
     body.planning #motoWrap { display: none; }
     body.planning #motoWrap.open { display: block; }
     body.planning #planBtn { margin-top: 16px; }
+  }
+  /* ===== R5: varijante rute = horizontalne kartice (kao Google Directions red) ===== */
+  @media (max-width: 900px) {
+    body.planning #routeTabs { display: flex; flex-wrap: nowrap; gap: 9px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding: 2px 0 6px; scroll-snap-type: x proximity;
+      -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent); mask-image: linear-gradient(90deg, #000 92%, transparent); }
+    body.planning #routeTabs::-webkit-scrollbar { display: none; }
+    body.planning #routeTabs > * { flex: none; min-width: 138px; max-width: 218px; scroll-snap-align: start; background: #1e293b; border: 1.5px solid rgba(148,163,184,.16); border-radius: 14px;
+      padding: 11px 13px; font-size: 13.5px; font-weight: 800; color: #e2e8f0; cursor: pointer; }
+    body.planning #routeTabs > .on, body.planning #routeTabs > .active, body.planning #routeTabs > [aria-selected="true"] {
+      border-color: #f97316; background: rgba(249,115,22,.12); color: #f97316; }
   }
   /* ===== P2: Slojevi sheet ===== */
   #layersSheet { position: fixed; inset: 0; z-index: 60; }
@@ -1362,7 +1377,8 @@ async function reverseName(lat, lon, zoom = 10) {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&zoom=${zoom}&format=json&accept-language=hr,sr-Latn,en`);
     const j = await r.json();
     const a = j.address || {};
-    const name = a.suburb || a.neighbourhood || a.quarter || a.village || a.hamlet || a.town || a.city || a.municipality || a.county || j.name || "";
+    let name = a.suburb || a.neighbourhood || a.quarter || a.village || a.hamlet || a.town || a.city || a.municipality || a.county || j.name || "";
+    name = name.replace(/^(Gradska četvrt|Mjesna zajednica|Mesna zajednica|Grad|Općina|Opština|Municipality of)\s+/i, "");
     state.revCache[key] = name;
     return name;
   } catch { return ""; }
@@ -1959,6 +1975,12 @@ function initMap() {
         if (!map.getSource("terr")) map.addSource("terr", { type: "raster-dem",
           tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
           encoding: "terrarium", tileSize: 256, maxzoom: 14 });
+        if (!map.getSource("terrHill")) map.addSource("terrHill", { type: "raster-dem",
+          tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+          encoding: "terrarium", tileSize: 256, maxzoom: 14 });
+        if (!map.getLayer("hillsh")) map.addLayer({ id: "hillsh", type: "hillshade", source: "terrHill",
+          paint: { "hillshade-exaggeration": 0.55, "hillshade-shadow-color": "#0a0f1c",
+            "hillshade-highlight-color": state.mapTheme === "dark" ? "#3b4a66" : "#ffffff" } }, firstSym);
         if (!document.body.classList.contains("riding")) map.setTerrain({ source: "terr", exaggeration: 1.2 });
       } catch (e) {}
     });
@@ -2896,7 +2918,7 @@ function hazardPopup(e, btn) {
   const grid = document.createElement("div"); grid.className = "hzgrid"; pop.appendChild(grid);
   for (const t of HAZARD_TYPES) {
     const b = document.createElement("button");
-    b.textContent = (HZ_ICO[t] ? HZ_ICO[t] + " " : "") + t;
+    b.innerHTML = '<span class="hzi">' + (HZ_ICO[t] || "⚠️") + "</span>" + t;
     b.onclick = () => {
       const h = { type: t, v: [e.lngLat.lng, e.lngLat.lat], ts: Date.now() };
       saveHazards([...getHazards(), h]);
@@ -2908,8 +2930,9 @@ function hazardPopup(e, btn) {
     grid.appendChild(b);
   }
   const x = document.createElement("button");
-  x.textContent = "✕";
-  x.onclick = () => pop.remove();
+  x.className = "hzcancel";
+  x.textContent = "Otkaži";
+  x.onclick = () => { pop.remove(); state.hazardMode = false; btn.classList.remove("on"); };
   pop.appendChild(x);
   map.getContainer().appendChild(pop);
 }
@@ -3628,8 +3651,8 @@ function openSearch(mode) {   // mode: 'to' (default) ili 'from' - Google princi
   const sf = document.getElementById("sFromName");
   if (sf) { sf.textContent = (state.gpsFrom && state.gpsFrom.name) || "Moja lokacija";
     setTimeout(() => { if (state.gpsFrom) sf.textContent = state.gpsFrom.name; }, 2500); }
-  document.getElementById("sFrom").style.display = SEARCH_MODE === "from" ? "none" : "";
-  document.getElementById("sMyLoc").style.display = "";
+  document.getElementById("sFrom").style.display = "none";   // OD red zbunjuje - polazak se bira tapom na OD polje
+  document.getElementById("sMyLoc").style.display = SEARCH_MODE === "from" ? "" : "none";   // "Moja lokacija" samo kad biras POLAZAK
   const i = document.getElementById("sInput");
   i.placeholder = SEARCH_MODE === "from" ? "Polazak - odakle krećeš?" : "Kuda ćeš danas?";
   updateSearchStatic();
@@ -3665,7 +3688,8 @@ function renderSugg(q) {
   const sugg = document.getElementById("sSugg");
   const isTyping = q.trim().length >= 2;
   ["sRecentT", "sRecent"].forEach((id) => { document.getElementById(id).style.display = isTyping ? "none" : ""; });
-  document.querySelectorAll("#sBody > .srow").forEach((r) => { r.style.display = isTyping ? "none" : "flex"; });
+  document.querySelectorAll("#sBody > .srow").forEach((r) => {
+    r.style.display = isTyping ? "none" : (r.id === "sMyLoc" && SEARCH_MODE !== "from" ? "none" : "flex"); });
   if (!isTyping) { sugg.innerHTML = ""; updateSearchStatic(); return; }
   const fq = SFOLD(q.trim());
   const hits = searchIndex().filter((x) => x.f.includes(fq)).slice(0, 8);
@@ -3691,6 +3715,9 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
     if (fs) { fs.value = sel.fid; fs.dispatchEvent(new Event("change")); }
     return;
   }
+  const rg = document.getElementById("roundGen");
+  if (rg && rg.checked) { rg.checked = false; rg.dispatchEvent(new Event("change")); }   // novi cilj = nije vise kruzna (od=do petlja)
+  state.vias = []; state.famousApplied = null; try { renderViaChips(); } catch (e) {}
   document.getElementById("to").value = sel.n;
   if (sel.lat != null) state.searchTo = { name: sel.n, lat: sel.lat, lon: sel.lon };
   let tries = 20;   // do 8s: GPS koordinate stizu odmah po dozvoli
@@ -4231,6 +4258,7 @@ function renderMesta() {
   if (kr) kr.addEventListener("input", () => { document.getElementById("kruznaKmV").textContent = kr.value + " km"; });
   const kg = document.getElementById("kruznaGo");
   if (kg) kg.addEventListener("click", () => {
+    const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
     document.body.classList.add("planning");
     try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
     const rg = document.getElementById("roundGen");
