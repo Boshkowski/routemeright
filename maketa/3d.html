@@ -203,6 +203,18 @@ let mode=mq.matches?'dark':'light';
 document.body.dataset.mode=mode;
 
 const HOME={center:[18.808,42.436],zoom:12.2,pitch:62,bearing:18};
+// --- DIJAGNOSTIKA (privremeno, za lov na crash) ---
+const QP=new URLSearchParams(location.search);
+const FLAT=QP.has('flat');   // ?flat=1 -> iskljuci 3D teren (test: da li teren ruši)
+let PREV_REACHED=null;
+try{const _p=localStorage.getItem('rmr_prog');if(_p){PREV_REACHED=JSON.parse(_p);localStorage.removeItem('rmr_prog');}}catch(e){}
+function beacon(pct){try{localStorage.setItem('rmr_prog',JSON.stringify({pct:Math.round(pct),flat:FLAT}));}catch(e){}}
+if(PREV_REACHED){const b=document.createElement('div');
+  b.innerHTML='Prošla vožnja stala na <b>'+PREV_REACHED.pct+'%</b>'+(PREV_REACHED.flat?' · FLAT test':' · 3D')+' &nbsp;<span style="cursor:pointer;opacity:.85">×</span>';
+  b.style.cssText='position:fixed;left:50%;top:calc(50% - 10px);transform:translateX(-50%);z-index:9999;background:rgba(220,38,38,.96);color:#fff;font:700 13px/1.3 Archivo,system-ui,sans-serif;padding:11px 15px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.55);max-width:86%;text-align:center';
+  b.querySelector('span').onclick=()=>b.remove();
+  if(document.body)document.body.appendChild(b);
+  else addEventListener('DOMContentLoaded',()=>document.body.appendChild(b));}
 let is3D=true;
 const map=new maplibregl.Map({container:'map',style:STYLES[mode],center:HOME.center,zoom:HOME.zoom,
   pitch:HOME.pitch,bearing:HOME.bearing,maxPitch:82,attributionControl:false,
@@ -232,12 +244,14 @@ map.addControl(new maplibregl.AttributionControl({compact:true,customAttribution
 
 function firstSymbol(){const ls=map.getStyle().layers||[];for(const l of ls)if(l.type==='symbol')return l.id;return undefined;}
 function addTerrainRoute(){
-  if(!map.getSource('terr'))map.addSource('terr',{type:'raster-dem',
-    tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
-    encoding:'terrarium',tileSize:256,maxzoom:14});
-  map.setTerrain({source:'terr',exaggeration:1.25});   // manja egzageracija = ruta bolje prati teren (ne "lebdi") + lakši mesh
-  if(!map.getLayer('hill'))map.addLayer({id:'hill',type:'hillshade',source:'terr',
-    paint:{'hillshade-exaggeration':0.4}},firstSymbol());
+  if(!FLAT){   // 3D teren (u FLAT test modu se preskače - izoluj teren kao mogući uzrok rušenja)
+    if(!map.getSource('terr'))map.addSource('terr',{type:'raster-dem',
+      tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+      encoding:'terrarium',tileSize:256,maxzoom:14});
+    map.setTerrain({source:'terr',exaggeration:1.25});   // manja egzageracija = ruta bolje prati teren (ne "lebdi") + lakši mesh
+    if(!map.getLayer('hill'))map.addLayer({id:'hill',type:'hillshade',source:'terr',
+      paint:{'hillshade-exaggeration':0.4}},firstSymbol());
+  }
   if(!map.getSource('route'))map.addSource('route',{type:'geojson',
     data:{type:'Feature',geometry:{type:'LineString',coordinates:ROUTE}}});
   // DEBELA TRAKA PUTA (tanka u pregledu, debela u navigaciji) - kao maketa
@@ -347,8 +361,8 @@ function renderSim(){const p=posAt(S.d);const head=brgAt(S.d);const rb=smoothRid
   const pct=(S.d/TOTAL*100);$('progBar').style.width=pct.toFixed(1)+'%';$('progThumb').style.left=pct.toFixed(1)+'%';}
 function loop(t){if(S.on){
   if(S.playing){if(!S.last)S.last=t;const dt=t-S.last;S.last=t;S.d+=(dt/1000)*BASE*S.mult;
-    if(S.d>=TOTAL){S.d=TOTAL;renderSim();S.playing=false;$('summary').classList.add('on');$('ppIcon').innerHTML='<path d="M8 5v14l11-7z"/>';}
-    else renderSim();
+    if(S.d>=TOTAL){S.d=TOTAL;renderSim();S.playing=false;beacon(100);$('summary').classList.add('on');$('ppIcon').innerHTML='<path d="M8 5v14l11-7z"/>';}
+    else{renderSim();if(((loop._b=(loop._b||0)+1)&31)===0)beacon(S.d/TOTAL*100);}   // dijagnostika: piši dokle je stigla (~svakih pola sekunde)
   }else S.last=0;
   S.raf=requestAnimationFrame(loop);}}
 function setInteract(on){['dragPan','dragRotate','scrollZoom','touchZoomRotate','touchPitch','doubleClickZoom','boxZoom','keyboard'].forEach(h=>{try{on?map[h].enable():map[h].disable();}catch(e){}});}
