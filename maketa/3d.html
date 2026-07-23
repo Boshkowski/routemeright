@@ -233,7 +233,7 @@ class CompassToggle{
       '<polygon points="12,21 9,11 12,13 15,11" fill="#94a3b8"/></svg>'+
       '<span class="badge" id="cmode">2D</span></span>';
     b.onclick=()=>{is3D=!is3D;document.getElementById('cmode').textContent=is3D?'2D':'3D';
-      m.easeTo({pitch:is3D?HOME.pitch:0,bearing:0,duration:600});};
+      m.easeTo({pitch:is3D?HOME.pitch:0,bearing:0,padding:{top:0,bottom:0,left:0,right:0},duration:600});};
     this._ndl=b.querySelector('.ndl');this._c=c;c.appendChild(b);
     const upd=()=>{this._ndl.style.transform='rotate('+(-m.getBearing())+'deg)';};
     m.on('rotate',upd);m.on('move',upd);upd();
@@ -249,7 +249,7 @@ function addTerrainRoute(){
     if(!map.getSource('terr'))map.addSource('terr',{type:'raster-dem',
       tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
       encoding:'terrarium',tileSize:256,maxzoom:14});
-    if(!map.getTerrain())map.setTerrain({source:'terr',exaggeration:1.25});   // guard (audit): svaki setTerrain pravi NOVI RenderToTexture na GPU-u - bez guarda curi memorija; 1.25 = ruta prati teren
+    if(!map.getTerrain()&&!(typeof S!=='undefined'&&S.on))map.setTerrain({source:'terr',exaggeration:1.25});   // guard (audit) + NE vracaj teren usred voznje (styledata okida ovo, a FPV vozi bez 3D mreze)
     if(!map.getLayer('hill'))map.addLayer({id:'hill',type:'hillshade',source:'terr',
       paint:{'hillshade-exaggeration':0.4}},firstSymbol());
   }
@@ -298,8 +298,8 @@ function addMarkers(){
     el.innerHTML='<div class="av" style="background:'+f.col+'">'+f.n[0]+'</div>'+
       '<div class="lb"><b>'+f.n+'</b><span>'+f.s+'</span></div>';
     el.addEventListener('click',(e)=>{e.stopPropagation();
-      map.easeTo({center:c,zoom:14.3,pitch:is3D?66:0,duration:1000});});
-    new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat(c).addTo(map);});
+      map.easeTo({center:c,zoom:14.3,pitch:is3D?66:0,padding:{top:0,bottom:0,left:0,right:0},duration:1000});});
+    new maplibregl.Marker({element:el,anchor:'bottom',opacityWhenCovered:'1'}).setLngLat(c).addTo(map);});   // BUGFIX: MapLibre bledi markere iza terena (default 0.2) -> prijatelji su bili "duhovi"
 }
 map.on('load',()=>{addTerrainRoute();setSky();addMarkers();});
 map.on('styledata',()=>{addTerrainRoute();setSky();});
@@ -314,7 +314,7 @@ mq.addEventListener('change',e=>{mode=e.matches?'dark':'light';
 // Centriraj = vrati na MOJU lokaciju (u demou = pin "Ti")
 const ME=ROUTE[FRIENDS.find(f=>f.me).i];
 document.getElementById('rc').onclick=()=>{is3D=true;document.getElementById('cmode').textContent='2D';
-  map.easeTo({center:ME,zoom:14.6,pitch:HOME.pitch,duration:900});};
+  map.easeTo({center:ME,zoom:14.6,pitch:HOME.pitch,padding:{top:0,bottom:0,left:0,right:0},duration:900});};
 setTimeout(()=>document.getElementById('hint').classList.add('gone'),5600);
 
 /* ===== TBT SIMULACIJA ===== */
@@ -374,11 +374,16 @@ function loop(t){if(S.on){
 function setInteract(on){['dragPan','dragRotate','scrollZoom','touchZoomRotate','touchPitch','doubleClickZoom','boxZoom','keyboard'].forEach(h=>{try{on?map[h].enable():map[h].disable();}catch(e){}});}
 function startSim(){S.on=true;S.d=0;S.last=0;S.playing=true;camBrg=null;riderBrg=null;rainShown=null;follow=true;
   document.body.classList.add('sim');is3D=true;$('recenter').classList.remove('on');setInteract(false);   // FPV: zaključana mapa (nema pan/zoom da se trouglić ne izgubi)
+  try{map.stop();}catch(e){}   // prekini easeTo u letu (2D/3D/centriraj) da ne otima kameru
+  try{map.setTerrain(null);}catch(e){}   // FPV BEZ 3D mreze terena: MapLibre na strmim delovima sece pitch/zoom da kamera ne udje u planinu -> strelica 'othoda'; hillshade senke ostaju
   $('ppIcon').innerHTML='<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';renderSim();
+  const _settle=()=>{if(S.on){camBrg=null;renderSim();}};   // re-poravnanje kad se teren za novi ugao STVARNO ucita (ubija prolazno 'lebdenje')
+  setTimeout(_settle,750);try{map.once('idle',_settle);}catch(e){}
   cancelAnimationFrame(S.raf);S.raf=requestAnimationFrame(loop);}
 function exitSim(){S.on=false;S.playing=false;cancelAnimationFrame(S.raf);document.body.classList.remove('sim');
   $('summary').classList.remove('on');$('recenter').classList.remove('on');const rd=$('rider');if(rd)rd.style.display='none';
-  setInteract(true);map.easeTo({...HOME,duration:900});}
+  try{if(!map.getTerrain())map.setTerrain({source:'terr',exaggeration:1.25});}catch(e){}   // vrati 3D teren za pregled
+  setInteract(true);map.easeTo({...HOME,padding:{top:0,bottom:0,left:0,right:0},duration:900});}   // padding RESET (lepljiv je - bez ovoga overview centrira pomereno)
 $('startSim').onclick=startSim;
 $('simExit').onclick=exitSim;$('sClose').onclick=exitSim;function togglePlay(){if(!S.on)return;if($('summary').classList.contains('on'))return;S.playing=!S.playing;S.last=0;
   $('ppIcon').innerHTML=S.playing?'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>':'<path d="M8 5v14l11-7z"/>';}
@@ -387,8 +392,7 @@ map.on('click',()=>{if(S.on)togglePlay();});                                  //
 function breakFollow(){if(!S.on)return;follow=false;$('recenter').classList.add('on');const rd=$('rider');if(rd)rd.style.display='none';}
 map.on('dragstart',(e)=>{if(e&&e.originalEvent)breakFollow();});   // korisničko pomeranje prekida praćenje + odmah sakriva trouglić
 map.on('rotatestart',(e)=>{if(e&&e.originalEvent)breakFollow();});
-$('recenter').onclick=()=>{if(!S.on)return;follow=true;camBrg=null;$('recenter').classList.remove('on');
-  map.easeTo({center:posAt(S.d),bearing:brgAt(S.d),pitch:is3D?66:0,zoom:16,duration:600});};   // Centriraj = zumira na mene + prati dalje
+$('recenter').onclick=()=>{if(!S.on)return;follow=true;camBrg=null;riderBrg=null;$('recenter').classList.remove('on');renderSim();};   // Centriraj = ista zakljucana FPV kamera (ne stari slobodni easeTo)
 // ruža kompasa (rotira sa mapom, klik = sever)
 const simRoseUpd=()=>{const r=$('simRose');if(r)r.style.transform='rotate('+(-map.getBearing())+'deg)';};
 map.on('rotate',simRoseUpd);map.on('move',simRoseUpd);simRoseUpd();
