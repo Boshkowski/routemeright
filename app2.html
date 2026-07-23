@@ -328,7 +328,7 @@
     #panel.open .pchev { transform: rotate(180deg); }
     .map-tools { top: calc(10px + env(safe-area-inset-top)); }
     .lay-pop { top: calc(54px + env(safe-area-inset-top)); }
-    .compass-btn { top: calc(240px + env(safe-area-inset-top)); right: 14px; left: auto; width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.16); z-index: 12; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+    .compass-btn { top: calc(296px + env(safe-area-inset-top)); right: 14px; left: auto; width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.16); z-index: 12; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
   }
   /* ===== app2 Faza 1a: donji meni (Planer/Rute/Zajednica/Ja) + tab ekrani ===== */
   #bottomnav { display: none; }
@@ -487,7 +487,7 @@
   /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
   #rideBar { display: none; }
   @media (max-width: 900px) {
-    body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top)); z-index: 40; }
+    body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: max(calc(10px + env(safe-area-inset-top)), 52px); z-index: 40; }
     #rideBar .navcard { background: #166534; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
     #rideBar .nmain { padding: 12px 14px 11px; display: flex; align-items: center; gap: 12px; color: #fff; }
     #rideBar .arr { flex: none; } #rideBar .arr svg { width: 46px; height: 46px; stroke: #fff; fill: none; display: block; }
@@ -516,6 +516,8 @@
     #rideBarBottom .eta .t { font-size: 18px; font-weight: 900; color: #fff; line-height: 1.1; font-variant-numeric: tabular-nums; }
     #rideBarBottom .eta .d { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     body.riding #homeChrome, body.riding #homeSheet { display: none !important; }
+    body.riding .maplibregl-user-location-dot, body.riding .maplibregl-user-location-accuracy-circle { display: none !important; }
+    .maplibregl-user-location-dot { background: #38bdf8; box-shadow: 0 0 0 3px #fff, 0 2px 10px rgba(0,0,0,.5); }   /* vidljiva tacka na tamnoj mapi */
     #homeSheet { transition: transform .28s cubic-bezier(.2,.8,.2,1); touch-action: pan-y; }
     #homeSheet.collapsed { transform: translateY(calc(100% - 30px)); }
   }
@@ -858,6 +860,7 @@
     </div>
     <div class="sbody" id="sBody">
       <div class="sfrom" id="sFrom"><span>OD</span> 📍 <b id="sFromName">Moja lokacija</b></div>
+      <div class="srow" data-srow="myloc" id="sMyLoc"><span class="sic"><svg viewBox="0 0 24 24" stroke-width="2" style="width:19px;height:19px;stroke:#38bdf8;fill:none"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.5" fill="#38bdf8" stroke="none"/></svg></span><div class="st"><b>Moja lokacija</b><span>koristi GPS poziciju</span></div></div>
       <div class="srow" data-srow="home"><span class="sic h"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><div class="st"><b>Kuća</b><span id="sHomeSub">postavi jednom i kreni</span></div></div>
       <div class="srow" data-srow="saved"><span class="sic s"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></span><div class="st"><b>Sačuvane rute</b><span id="sSavedSub">—</span></div></div>
       <div class="ssect" id="sRecentT">NEDAVNO</div>
@@ -883,6 +886,7 @@
   </div>
   <div id="homeFabs">
     <button data-fab="layers" aria-label="Slojevi"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></button>
+    <button data-fab="tilt" aria-label="3D nagib"><span style="font:800 13px/1 Archivo,system-ui;color:#e2e8f0">3D</span></button>
     <button data-fab="gps" aria-label="Moja lokacija"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.5" fill="#f97316" stroke="none"/></svg></button>
 
   </div>
@@ -3072,7 +3076,8 @@ async function plan() {
 
     setStatus("Tražim lokacije...");
     logState({ phase: "geocode" });
-    const gpsF = (state.gpsFrom && fromQ === state.gpsFrom.name) ? state.gpsFrom : null;   // "od" = tacne GPS koordinate, ne Nominatim pogadjanje
+    const gpsF = (state.gpsFrom && fromQ === state.gpsFrom.name) ? state.gpsFrom :
+                 (state.fromOverride && fromQ === state.fromOverride.name) ? state.fromOverride : null;   // "od" = tacne koordinate (GPS ili izbor iz pretrage)
     const homeT = (state.homeTo && toQ === state.homeTo.name) ? state.homeTo : null;
     const searchT = (state.searchTo && toQ === state.searchTo.name) ? state.searchTo : null;
     const [from, to] = await Promise.all([
@@ -3552,6 +3557,7 @@ function init() {
   // FAB dugmad -> postojeće kontrole mape
   const fabMap = {
     layers: () => openLayersSheet(),
+    tilt: () => { try { const p = map.getPitch() > 20; map.easeTo({ pitch: p ? 0 : 55, duration: 500 }); } catch (e) {} },
     gps: () => { const b = document.querySelector(".maplibregl-ctrl-geolocate"); if (b) b.click(); },
     theme: () => { /* dan/noć - poveži se u sledećoj fazi */ },
   };
@@ -3614,17 +3620,23 @@ async function homeWxPeek() {
 /* ---- app2 Faza 4: cist ekran pretrage (Google/Waze stil + NASA BAZA u predlozima) ---- */
 const SFOLD = (x) => String(x || "").toLowerCase().replace(/č|ć/g,"c").replace(/š/g,"s").replace(/ž/g,"z").replace(/đ/g,"dj");
 const SICONS = { kafana:"🍖", vidikovac:"🌄", okupljaliste:"🏍", ruta:"🛣", grad:"📍", nedavno:"🕐", geo:"📍" };
-function openSearch() {
+function openSearch(mode) {   // mode: 'to' (default) ili 'from' - Google princip: tap na polje otvara pretragu
+  SEARCH_MODE = mode === "from" ? "from" : "to";
   document.body.classList.remove("planning");
   document.body.classList.add("searching");
   gpsPrefill(false);
   const sf = document.getElementById("sFromName");
   if (sf) { sf.textContent = (state.gpsFrom && state.gpsFrom.name) || "Moja lokacija";
     setTimeout(() => { if (state.gpsFrom) sf.textContent = state.gpsFrom.name; }, 2500); }
+  document.getElementById("sFrom").style.display = SEARCH_MODE === "from" ? "none" : "";
+  document.getElementById("sMyLoc").style.display = "";
+  const i = document.getElementById("sInput");
+  i.placeholder = SEARCH_MODE === "from" ? "Polazak - odakle krećeš?" : "Kuda ćeš danas?";
   updateSearchStatic();
-  const i = document.getElementById("sInput"); i.value = ""; renderSugg("");
+  i.value = ""; renderSugg("");
   setTimeout(() => i.focus(), 120);
 }
+let SEARCH_MODE = "to";
 function closeSearch() { document.body.classList.remove("searching"); }
 function updateSearchStatic() {
   try {
@@ -3664,7 +3676,15 @@ function renderSugg(q) {
 }
 async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
   closeSearch();
+  const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();   // sa Rute/Mesta taba: predji na planer (tab ekran je prekrivao sve)
   document.body.classList.add("planning");
+  if (SEARCH_MODE === "from") {   // biran je POLAZAK
+    document.getElementById("from").value = sel.n;
+    if (sel.lat != null) state.fromOverride = { name: sel.n, lat: sel.lat, lon: sel.lon };
+    SEARCH_MODE = "to";
+    if (document.getElementById("to").value.trim()) document.getElementById("planBtn").click();   // ako je cilj vec tu - odmah preracunaj
+    return;
+  }
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   if (sel.fid) {   // poznata ruta -> postojeci famous tok
     const fs = document.getElementById("famous");
@@ -3696,6 +3716,23 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
   });
   so.addEventListener("click", async (e) => {
     const row = e.target.closest(".srow"); if (!row) return;
+    if (row.dataset.srow === "myloc") {
+      if (SEARCH_MODE === "from") {
+        closeSearch(); document.body.classList.add("planning");
+        if (navigator.geolocation) navigator.geolocation.getCurrentPosition((p) => {
+          state.gpsFrom = { name: "Moja lokacija", lat: p.coords.latitude, lon: p.coords.longitude };
+          document.getElementById("from").value = "Moja lokacija";
+          if (document.getElementById("to").value.trim()) document.getElementById("planBtn").click();
+        });
+        SEARCH_MODE = "to";
+      } else {   // kao odrediste nema smisla - samo centriraj mapu na mene
+        closeSearch();
+        if (navigator.geolocation) navigator.geolocation.getCurrentPosition((p) => {
+          try { map.easeTo({ center: [p.coords.longitude, p.coords.latitude], zoom: 14 }); } catch (e2) {}
+        });
+      }
+      return;
+    }
     if (row.dataset.srow === "home") {
       closeSearch();
       const hb = document.querySelector('[data-quick="home"]'); if (hb) hb.click();   // postojeci Kuca tok
@@ -3990,6 +4027,12 @@ function stopRide() {
   const openPlanning = () => { document.body.classList.add("planning"); try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {} };
   // GPS polazak pri otvaranju planera
   ["homeSearch", "planCta"].forEach((id) => { const el = document.getElementById(id); if (el) el.addEventListener("click", () => { openSearch(); }); });   // cist ekran pretrage umesto formulara (stari openPlanner listener se ponisti u openSearch)
+  // tap na OD/DO otvara CIST ekran pretrage (Google princip) - mobilno
+  if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) {
+    const fEl = document.getElementById("from"), tEl = document.getElementById("to");
+    if (fEl) fEl.addEventListener("focus", (e) => { e.target.blur(); openSearch("from"); });
+    if (tEl) tEl.addEventListener("focus", (e) => { e.target.blur(); openSearch("to"); });
+  }
   // rucna izmena OD/DO cisti zaostale stanice poznate rute (izvor "izbaguje" stanja)
   ["from", "to"].forEach((id) => { const el = document.getElementById(id); if (el) el.addEventListener("input", () => {
     if (typeof state !== "undefined" && state.famousApplied) { state.vias = []; state.famousApplied = null; try { renderViaChips(); } catch (e) {} }
