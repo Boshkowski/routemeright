@@ -354,6 +354,14 @@
     .tabscreen h2 { font-size: 23px; font-weight: 900; color: #fff; letter-spacing: -.01em; margin: 0; }
     .tabscreen .stub { margin-top: 14px; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 16px; padding: 18px 16px; color: #94a3b8; font-size: 14px; line-height: 1.55; }
     .tabscreen .stub b { color: #e2e8f0; font-weight: 800; }
+    .jset { margin-top: 12px; }
+    .jrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(148,163,184,.1); color: #e2e8f0; font-size: 14px; font-weight: 700; }
+    .jrow select { background: #0f172a; border: 1px solid rgba(148,163,184,.2); border-radius: 10px; color: #fff; padding: 8px 10px; font-family: inherit; font-size: 13px; font-weight: 600; }
+    .jrow input[type=checkbox] { appearance: none; -webkit-appearance: none; width: 44px; height: 26px; border-radius: 999px; background: #334155; position: relative; margin: 0; cursor: pointer; }
+    .jrow input[type=checkbox]::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #94a3b8; transition: transform .2s, background .2s; }
+    .jrow input[type=checkbox]:checked { background: rgba(249,115,22,.9); }
+    .jrow input[type=checkbox]:checked::after { transform: translateX(18px); background: #fff; }
+    .jnote { font-size: 11.5px; color: #94a3b8; font-weight: 600; margin-top: 10px; }
   }
   /* ===== app2 Faza 1b: HOME kao maketa (pretraga + chipovi + FAB + čist sheet) ===== */
   #homeChrome, #homeFabs, #homeSheet, #plannerClose { display: none; }
@@ -916,7 +924,17 @@
     </div>
   </div>
   <div class="tabscreen" id="screen-zajednica"><h2>Zajednica</h2><div class="stub"><b>Zajednica</b> - feed prijava, "nađimo se tamo", prijatelji na mapi i rang. Uskoro.</div></div>
-  <div class="tabscreen" id="screen-ja"><h2>Ja</h2><div class="stub"><b>Tvoj profil</b> - moj motor, lični rekordi, sačuvane rute, poeni i bedževi. Uskoro.</div></div>
+  <div class="tabscreen" id="screen-ja"><h2>Ja</h2>
+    <div class="stub" style="margin-top:14px"><b>Podešavanja</b>
+      <div class="jset">
+        <label class="jrow"><span>Tema mape</span>
+          <select id="jaTheme"><option value="auto">Auto (prati telefon)</option><option value="light">Svetla</option><option value="dark">Tamna</option></select></label>
+        <label class="jrow"><span>Glas navigacije</span><input type="checkbox" id="jaSound"></label>
+        <div class="jnote">Promena teme se primenjuje odmah (app se osveži).</div>
+      </div>
+    </div>
+    <div class="stub"><b>Profil</b> - moj motor, lični rekordi, sačuvane rute, poeni i bedževi stižu sa nalozima. Uskoro.</div>
+  </div>
 
   <nav id="bottomnav">
     <a data-tab="planer" class="on"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Planer</a>
@@ -1569,18 +1587,30 @@ function analyzeCurves(route) {
     pts.push(route.coords[Math.min(j, route.coords.length - 1)]);
     target += step;
   }
+  // gradska skretanja = skretanja NA RASKRSNICAMA (tacke manevara iz rutera) - njih NE brojimo;
+  // prave krivine (serpentine, zavoji otvorenog puta) su UNUTAR deonice izmedju manevara
+  const manDists = (route.maneuvers || [])
+    .map((m) => route.cumDist[Math.min(m.begin_shape_index, route.cumDist.length - 1)])
+    .filter((d) => d != null).sort((a, b) => a - b);
+  function nearJunction(d1, d2) {
+    for (const md of manDists) { if (md > d2 + 60) break; if (md >= d1 - 60) return true; }
+    return false;
+  }
   const perKm = new Array(Math.max(1, Math.ceil(total / 1000))).fill(0);
-  let L = 0, R = 0, sharp = 0, med = 0, mild = 0, acc = 0, dir = 0, curveStartIdx = 0, prevB = null;
+  let L = 0, R = 0, sharp = 0, med = 0, mild = 0, acc = 0, dir = 0, curveStartIdx = 0, prevB = null, iNow = 0;
   function finishCurve() {
     const a = Math.abs(acc);
-    if (a >= 40) {
+    const spanM = (iNow - curveStartIdx) * step;
+    const isJunction = nearJunction(curveStartIdx * step, iNow * step);
+    if (a >= 45 && spanM <= 400 && !isJunction) {
       if (dir > 0) R++; else L++;
-      if (a >= 100) sharp++; else if (a >= 70) med++; else mild++;
+      if (a >= 150 && spanM <= 200) sharp++; else if (a >= 80) med++; else mild++;   // serpentina = skoro pun obrt na kratko
       perKm[Math.min(perKm.length - 1, Math.floor(curveStartIdx * step / 1000))]++;
     }
     acc = 0; dir = 0;
   }
   for (let i = 1; i < pts.length; i++) {
+    iNow = i;
     const b = bearingDeg(pts[i - 1], pts[i]);
     if (prevB !== null) {
       let d = b - prevB;
@@ -1629,7 +1659,7 @@ function drawElev(elev) {
 async function renderDifficulty(route) {
   const c = analyzeCurves(route);
   route._curves = c;
-  let html = `Krivine: <b>${c.L + c.R}</b> (${c.L} levo / ${c.R} desno), oštrih ${c.sharp} · ` +
+  let html = `Krivine na otvorenom putu: <b>${c.L + c.R}</b> (${c.L} levo / ${c.R} desno), serpentina ${c.sharp} · ` +
     `${c.perKmAvg.toFixed(2)} krivina/km - <b>${c.klasa}</b>`;
   if (c.bestWin && c.bestCnt > 5) html += `<br>Najvijugavije: km ${c.bestWin[0]}-${c.bestWin[1]} (${c.bestCnt} krivina)`;
   if (route.roughKm > 0.3) {
@@ -1876,16 +1906,38 @@ function nearestTo(pois, point, maxKm, topN) {
 let map = null;
 function initMap() {
   try {
+    // vektorski stil (kao 3D demo): svetliji putevi, 3D zgrade, teren, teme
+    const MAP_STYLES = { dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+                         light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json" };
+    let themePref = "auto"; try { themePref = localStorage.getItem("rmr2_theme") || "auto"; } catch (e) {}
+    const sysLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+    state.mapTheme = themePref === "light" || (themePref === "auto" && sysLight) ? "light" : "dark";
     map = new maplibregl.Map({
-    container: "map",
-    style: {
-      version: 8,
-      sources: { carto: { type: "raster",
-        tiles: ["a", "b", "c", "d"].map((s) => `https://${s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png`),
-        tileSize: 256, attribution: "© OpenStreetMap contributors · © CARTO" } },
-      layers: [{ id: "carto", type: "raster", source: "carto" }],
-    },
+      container: "map",
+      style: MAP_STYLES[state.mapTheme],
       center: [20.45, 44.0], zoom: 7,
+      maxPitch: 68, pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+    });
+    map.on("load", () => {
+      try {   // citljiviji putevi na tamnoj mapi + 3D zgrade + teren u pregledu
+        if (state.mapTheme === "dark") {
+          for (const l of map.getStyle().layers) {
+            if (l.type === "line" && /road|street|highway|bridge|tunnel/i.test(l.id)) {
+              try { map.setPaintProperty(l.id, "line-opacity", 1); } catch (e2) {}
+            }
+          }
+        }
+        const firstSym = (map.getStyle().layers.find((l) => l.type === "symbol") || {}).id;
+        map.addLayer({ id: "bld3d", type: "fill-extrusion", source: "carto", "source-layer": "building", minzoom: 14.5,
+          paint: { "fill-extrusion-color": state.mapTheme === "dark" ? "#2a3752" : "#d9dee8",
+            "fill-extrusion-height": ["coalesce", ["get", "render_height"], 10],
+            "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
+            "fill-extrusion-opacity": 0.75 } }, firstSym);
+        if (!map.getSource("terr")) map.addSource("terr", { type: "raster-dem",
+          tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+          encoding: "terrarium", tileSize: 256, maxzoom: 14 });
+        if (!document.body.classList.contains("riding")) map.setTerrain({ source: "terr", exaggeration: 1.2 });
+      } catch (e) {}
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
     // plava tačka = trenutna GPS lokacija (klik prati; bitno i za Prijavi na licu mesta)
@@ -3784,6 +3836,7 @@ function startRide() {
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
+  try { map.setTerrain(null); } catch (e) {}   // teren OFF u navigaciji (sece pitch/zoom na strminama - lekcija iz 3D demoa)
   // reset banera (druga voznja ne sme da krene sa tekstom prosle) + "trazim GPS" stanje
   const _nc = document.querySelector("#rideBar .navcard");
   if (_nc) { _nc.classList.remove("nosignal", "rerouting"); _nc.classList.add("acquiring"); }
@@ -3897,6 +3950,7 @@ function startRide() {
 function stopRide() {
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
   try { if (RIDE.marker) { RIDE.marker.remove(); RIDE.marker = null; } } catch (e) {}
+  try { if (map && map.getSource("terr") && !map.getTerrain()) map.setTerrain({ source: "terr", exaggeration: 1.2 }); } catch (e) {}
   if (state.routes && state.routes.length) {   // nazad na REZULTATE (izbor varijanti), ne na pocetni
     document.body.classList.add("planning");
     try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
@@ -4017,8 +4071,8 @@ function renderResultHero(route) {
   }
   // krivine
   if (c) {
-    document.getElementById("rhCurvN").innerHTML = (c.L + c.R) + " <small>krivina</small>";
-    document.getElementById("rhSharp").innerHTML = c.sharp ? c.sharp + " oštrih<span>zaokret preko 100°</span>" : "";
+    document.getElementById("rhCurvN").innerHTML = (c.L + c.R) + " <small>krivina · otvoren put</small>";
+    document.getElementById("rhSharp").innerHTML = c.sharp ? c.sharp + (c.sharp === 1 ? " serpentina" : " serpentine") + "<span>ukosnice, van naselja</span>" : "";
     document.getElementById("rhL").textContent = c.L;
     document.getElementById("rhR").textContent = c.R;
     const tot = Math.max(1, c.mild + c.med + c.sharp);
@@ -4029,7 +4083,7 @@ function renderResultHero(route) {
     document.getElementById("rhSevleg").innerHTML =
       `<span><span class="d" style="background:#22c55e"></span>blage ${c.mild}</span>` +
       `<span><span class="d" style="background:#f59e0b"></span>srednje ${c.med}</span>` +
-      `<span><span class="d" style="background:#ef4444"></span>oštre ${c.sharp}</span>`;
+      `<span><span class="d" style="background:#ef4444"></span>serpentine ${c.sharp}</span>`;
   }
 }
 (function(){
@@ -4046,6 +4100,23 @@ function renderResultHero(route) {
       setTimeout(() => { s.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Čuvaj'; }, 1800);
     } catch (e) {}
   });
+})();
+
+/* ---- P3: Ja podesavanja (tema mape + zvuk) ---- */
+(function(){
+  const th = document.getElementById("jaTheme"), snd = document.getElementById("jaSound");
+  if (!th) return;
+  try { th.value = localStorage.getItem("rmr2_theme") || "auto"; } catch (e) {}
+  th.addEventListener("change", () => {
+    try { localStorage.setItem("rmr2_theme", th.value); } catch (e) {}
+    location.reload();   // mapa se gradi sa novim stilom
+  });
+  if (snd) {
+    const sync = () => { snd.checked = localStorage.getItem("rmr2_mute") !== "1"; };
+    snd.addEventListener("change", () => { try { localStorage.setItem("rmr2_mute", snd.checked ? "0" : "1"); } catch (e) {}
+      const rm = document.getElementById("rideMute"); if (rm) rm.dispatchEvent(new Event("resync")); });
+    sync();
+  }
 })();
 
 /* ---- P2: Rute segmenti (Rute|Mesta|Kruzna) + Slojevi sheet + pilula rute ---- */
