@@ -448,17 +448,32 @@
   /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
   #rideBar { display: none; }
   @media (max-width: 900px) {
-    body.riding #rideBar { display: block; position: fixed; left: 10px; right: 10px; top: calc(8px + env(safe-area-inset-top)); z-index: 40; }
-    #rideBar .navb { display: flex; align-items: center; gap: 13px; background: linear-gradient(160deg, #15803d, #166534); border-radius: 17px; padding: 13px 15px; box-shadow: 0 10px 28px rgba(0,0,0,.45); }
-    #rideBar .arr { font-size: 34px; line-height: 1; color: #fff; flex: none; width: 44px; text-align: center; font-weight: 900; }
-    #rideBar .nt { flex: 1; min-width: 0; color: #fff; }
-    #rideBar .nt b { display: block; font-size: 25px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
-    #rideBar .nt span { display: block; font-size: 14.5px; font-weight: 800; margin-top: 2px; }
-    #rideBar .nt .sub { font-size: 12px; font-weight: 600; opacity: .85; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #rideBar .meta { display: flex; align-items: center; gap: 7px; background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.2); border-radius: 13px; padding: 8px 12px; margin-top: 7px; color: #e2e8f0; font-size: 13px; font-weight: 800; }
-    #rideBar .meta .dot { color: #64748b; }
-    #rideBar .meta .sp { margin-left: auto; color: #94a3b8; font-weight: 700; }
-    #rideBar .meta button { background: rgba(148,163,184,.15); border: none; color: #fff; width: 30px; height: 30px; border-radius: 9px; font-size: 14px; font-weight: 900; cursor: pointer; flex: none; }
+    body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top)); z-index: 40; }
+    #rideBar .navcard { background: #166534; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
+    #rideBar .nmain { padding: 12px 14px 11px; display: flex; align-items: center; gap: 12px; color: #fff; }
+    #rideBar .arr { flex: none; } #rideBar .arr svg { width: 46px; height: 46px; stroke: #fff; fill: none; display: block; }
+    #rideBar .nt { flex: 1; min-width: 0; }
+    #rideBar .nt b { display: block; font-size: 34px; font-weight: 900; letter-spacing: -.01em; line-height: 1.02; font-variant-numeric: tabular-nums; }
+    #rideBar .nt span { display: block; font-size: 17px; font-weight: 700; opacity: .95; margin-top: 2px; }
+    #rideBar .nt .sub { font-size: 14px; font-weight: 600; opacity: .85; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #rideBar .right { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; align-self: flex-start; flex: none; }
+    #rideBar .then { background: rgba(0,0,0,.28); color: #d9fbe5; border-radius: 8px; padding: 3px 8px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    #rideBar .then:empty { display: none; }
+    #rideBar #rideX { background: rgba(0,0,0,.25); border: none; color: #fff; min-width: 46px; height: 46px; border-radius: 13px; font-size: 17px; font-weight: 900; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    #rideBar #rideX.arm { background: #dc2626; padding: 0 13px; font-size: 14px; }
+    #rideBar .navcard.acquiring, #rideBar .navcard.nosignal, #rideBar .navcard.rerouting { background: linear-gradient(160deg, #475569, #334155); }
+    #rideBar .wx { display: none; background: rgba(153,27,27,.92); color: #fee2e2; padding: 7px 14px; font-size: 12.5px; font-weight: 600; line-height: 1.3; border-top: 1px solid rgba(239,68,68,.5); }
+    #rideBar .wx.on { display: block; }
+    #rideBarBottom { display: none; }
+    body.riding #rideBarBottom { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(66px + env(safe-area-inset-bottom)); z-index: 40; align-items: stretch; gap: 10px; }
+    #rideBarBottom .pill { background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); border-radius: 16px; padding: 9px 13px; display: flex; align-items: center; }
+    #rideBarBottom .pill .v { font-size: 26px; font-weight: 900; color: #fff; line-height: 1; font-variant-numeric: tabular-nums; }
+    #rideBarBottom .pill .u { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    #rideBarBottom .rep { flex: 1; background: linear-gradient(135deg, #f97316, #ea580c); border: none; border-radius: 16px; color: #fff; padding: 12px; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 22px rgba(249,115,22,.35); cursor: pointer; font-family: inherit; }
+    #rideBarBottom .rep svg { width: 19px; height: 19px; stroke: #fff; fill: none; }
+    #rideBarBottom .eta { background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); border-radius: 16px; padding: 9px 12px; text-align: center; }
+    #rideBarBottom .eta .t { font-size: 18px; font-weight: 900; color: #fff; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    #rideBarBottom .eta .d { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     body.riding #homeChrome, body.riding #homeSheet { display: none !important; }
     #homeSheet { transition: transform .28s cubic-bezier(.2,.8,.2,1); touch-action: pan-y; }
     #homeSheet.collapsed { transform: translateY(calc(100% - 30px)); }
@@ -792,8 +807,19 @@
     </div>
   </div>
   <div id="rideBar">
-    <div class="navb"><span class="arr" id="rideArr">↑</span><div class="nt"><b id="rideDist">-</b><span id="rideInstr">Krećemo</span><span class="sub" id="rideStreet"></span></div></div>
-    <div class="meta"><span id="rideRem">-</span><span class="dot">·</span><span id="rideEta"></span><span class="sp" id="rideKmh"></span><button id="rideX" aria-label="Prekini vožnju">✕</button></div>
+    <div class="navcard">
+      <div class="nmain">
+        <span class="arr" id="rideArr"></span>
+        <div class="nt"><b id="rideDist">-</b><span id="rideInstr">Krećemo</span><span class="sub" id="rideStreet"></span></div>
+        <div class="right"><span class="then" id="rideThen"></span><button id="rideX" aria-label="Prekini vožnju">✕</button></div>
+      </div>
+      <div class="wx" id="rideWx"></div>
+    </div>
+  </div>
+  <div id="rideBarBottom">
+    <div class="pill"><div><div class="v" id="rideKmh">0</div><div class="u">km/h</div></div></div>
+    <button class="rep" id="rideRep"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3L13.7 4a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Prijavi</button>
+    <div class="eta"><div class="t" id="rideEta">-</div><div class="d" id="rideRem">-</div></div>
   </div>
   <div id="homeFabs">
     <button data-fab="layers" aria-label="Slojevi"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></button>
@@ -2879,6 +2905,7 @@ async function selectRoute(departure) {
     localStorage.setItem("rmr2_recent", JSON.stringify(rec.filter((x, i, a) => a.findIndex((y) => y.from === x.from && y.to === x.to) === i).slice(0, 10)));
     if (typeof updateQuickLabels === "function") updateQuickLabels();
   } catch (e) {}
+  state._zones = zones;   // za wx traku tokom vožnje
   logState({ phase: "done", route: state.selected, worst, warnings: zones.length,
     km: Math.round(route.totalDist / 1000), tollKm: route.tollKm === null ? null : Math.round(route.tollKm),
     vias: state.vias.length });
@@ -3578,19 +3605,35 @@ function cyr2lat(t) {
   }).join("");
 }
 /* srpske instrukcije iz Valhalla type kodova (jezik "sr" ne postoji na serveru - generisemo sami) */
-const MAN_SR = {
-  1:["↑","Kreni"],2:["↱","Kreni desno"],3:["↰","Kreni levo"],
-  4:["🏁","Stigao si na odredište"],5:["🏁","Odredište je desno"],6:["🏁","Odredište je levo"],
-  7:["↑","Nastavi pravo"],8:["↑","Nastavi pravo"],
-  9:["↗","Blago desno"],10:["↱","Skreni desno"],11:["↘","Oštro desno"],
-  12:["↩","Polukružno okretanje"],13:["↩","Polukružno okretanje"],
-  14:["↙","Oštro levo"],15:["↰","Skreni levo"],16:["↖","Blago levo"],
-  17:["↑","Priključak pravo"],18:["↱","Priključak desno"],19:["↰","Priključak levo"],
-  20:["↱","Izlaz desno"],21:["↰","Izlaz levo"],
-  22:["↑","Nastavi pravo"],23:["⇗","Drži desnu traku"],24:["⇖","Drži levu traku"],
-  25:["⇑","Uključi se"],26:["↻","Kružni tok"],27:["↻","Izađi iz kružnog toka"],
-  28:["⛴","Trajekt"],29:["⛴","Silazak sa trajekta"],37:["⇗","Uključi se desno"],38:["⇖","Uključi se levo"]
+/* SVG strelice kao maketa (stroke 2.5, bele) */
+const ARR_SVG = {
+  up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  right: '<path d="M5 12h13M13 6l6 6-6 6"/>',
+  left: '<path d="M19 12H6M11 6l-6 6 6 6"/>',
+  sright: '<path d="M6 18L16 8M9 7h8v8"/>',
+  sleft: '<path d="M18 18L8 8M15 7H7v8"/>',
+  hright: '<path d="M7 5v7a4 4 0 004 4h6M13 12l4 4-4 4"/>',
+  hleft: '<path d="M17 5v7a4 4 0 01-4 4H7M11 12l-4 4 4 4"/>',
+  uturn: '<path d="M17 19V10a5 5 0 00-10 0v3M4 10l3 3 3-3"/>',
+  round: '<circle cx="12" cy="13" r="5.5"/><path d="M12 7.5V3M9 5l3-3 3 3"/>',
+  merge: '<path d="M6 20c0-6 4-8 6-10m6 10c0-6-4-8-6-10M12 12V4M9 7l3-3 3 3"/>',
+  flag: '<path d="M6 21V4h11l-2 4 2 4H6"/>',
+  ferry: '<path d="M4 17l2-6h12l2 6M12 11V5M8 21c1.5-1 2.5-1 4 0s2.5 1 4 0"/>'
 };
+const MAN_SR = {
+  1:["up","Kreni"],2:["right","Kreni desno"],3:["left","Kreni levo"],
+  4:["flag","Stigao si na odredište"],5:["flag","Odredište je desno"],6:["flag","Odredište je levo"],
+  7:["up","Nastavi pravo"],8:["up","Nastavi pravo"],
+  9:["sright","Blago desno"],10:["right","Skreni desno"],11:["hright","Oštro desno"],
+  12:["uturn","Polukružno okretanje"],13:["uturn","Polukružno okretanje"],
+  14:["hleft","Oštro levo"],15:["left","Skreni levo"],16:["sleft","Blago levo"],
+  17:["up","Priključak pravo"],18:["sright","Priključak desno"],19:["sleft","Priključak levo"],
+  20:["sright","Izlaz desno"],21:["sleft","Izlaz levo"],
+  22:["up","Nastavi pravo"],23:["sright","Drži desnu traku"],24:["sleft","Drži levu traku"],
+  25:["merge","Uključi se"],26:["round","Kružni tok"],27:["round","Izađi iz kružnog toka"],
+  28:["ferry","Trajekt"],29:["ferry","Silazak sa trajekta"],37:["merge","Uključi se desno"],38:["merge","Uključi se levo"]
+};
+function arrSvg(key) { return '<svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' + (ARR_SVG[key] || ARR_SVG.up) + "</svg>"; }
 function srMan(m) {
   const base = MAN_SR[m.type] || ["↑", "Nastavi"];
   let t = base[1];
@@ -3638,9 +3681,12 @@ function navProject(route, lo, la) {   // najbliza tacka rute: grubi sken pa fin
 async function rideReroute(route, lo, la) {
   const now = Date.now();
   if (now - RIDE.lastReroute < 20000) return;
-  RIDE.lastReroute = now;
+  RIDE.lastReroute = now; RIDE.rerouting = true;
   try {
+    const nc = document.querySelector("#rideBar .navcard"); if (nc) nc.classList.add("rerouting");
+    document.getElementById("rideDist").textContent = "";
     document.getElementById("rideInstr").textContent = "Menjam rutu…";
+    document.getElementById("rideStreet").textContent = "";
     speakSr("Menjam rutu.");
     const to = state.geocode && state.geocode.to; if (!to) return;
     const style = ROUTE_STYLES.find((x) => route.label && route.label.startsWith(x.label.split(" ")[0])) || ROUTE_STYLES[1];
@@ -3653,6 +3699,7 @@ async function rideReroute(route, lo, la) {
     if (src) src.setData({ type: "FeatureCollection", features: [{ type: "Feature", properties: { color: "#22c55e" },
       geometry: { type: "LineString", coordinates: route.coords } }] });
   } catch (e) { /* zadrzi staru rutu, pokusace opet */ }
+  finally { RIDE.rerouting = false; const nc = document.querySelector("#rideBar .navcard"); if (nc) nc.classList.remove("rerouting"); }
 }
 function startRide() {
   const route = (typeof state !== "undefined" && state.routes) ? state.routes[state.selected] : null;
@@ -3660,7 +3707,20 @@ function startRide() {
   if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
-  RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0;
+  RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
+  // reset banera (druga voznja ne sme da krene sa tekstom prosle) + "trazim GPS" stanje
+  const _nc = document.querySelector("#rideBar .navcard");
+  if (_nc) { _nc.classList.remove("nosignal", "rerouting"); _nc.classList.add("acquiring"); }
+  document.getElementById("rideArr").innerHTML = arrSvg("up");
+  document.getElementById("rideDist").textContent = "";
+  document.getElementById("rideInstr").textContent = "Tražim GPS signal…";
+  document.getElementById("rideStreet").textContent = "";
+  document.getElementById("rideThen").textContent = "";
+  document.getElementById("rideWx").classList.remove("on");
+  document.getElementById("rideKmh").textContent = "0";
+  document.getElementById("rideEta").textContent = "-";
+  document.getElementById("rideRem").textContent = "-";
+  const _rx = document.getElementById("rideX"); if (_rx) { _rx.textContent = "✕"; _rx.classList.remove("arm"); }
   rideLock();
   try { const u = new SpeechSynthesisUtterance(""); speechSynthesis.speak(u); } catch (e) {}   // otkljucaj TTS na user gesture (iOS)
   if (!localStorage.getItem("rmr2_mutehint") && /iPhone|iPad/.test(navigator.userAgent)) {
@@ -3670,18 +3730,26 @@ function startRide() {
   const total = route.cumDist[route.cumDist.length - 1];
   RIDE.watch = navigator.geolocation.watchPosition((p) => {
     const la = p.coords.latitude, lo = p.coords.longitude;
+    const nc = document.querySelector("#rideBar .navcard");
+    if (nc) nc.classList.remove("acquiring", "nosignal");
+    RIDE.gotFix = true;
     const pr = navProject(route, lo, la);
     const d = route.cumDist[pr.i];
-    // van rute? (2 uzastopna fiksa >60 m)
-    if (pr.offM > 60) { if (++RIDE.offCount >= 2) { RIDE.offCount = 0; rideReroute(route, lo, la); } }
-    else RIDE.offCount = 0;
+    if (RIDE.rerouting) return;   // dok se racuna nova ruta, ne prepisuj "Menjam rutu…" baner
+    // van rute? (2 uzastopna fiksa >60 m; ignorisi nepouzdane fikseve - hladan GPS/urbani kanjon)
+    const acc = p.coords.accuracy || 0;
+    if (acc < 80 && pr.offM > 60) { if (++RIDE.offCount >= 2) { RIDE.offCount = 0; rideReroute(route, lo, la); } }
+    else if (acc < 80) RIDE.offCount = 0;
     // sledeci manevar
     const nav = RIDE.nav;
     while (nav.next < nav.mans.length && nav.mans[nav.next].d - d < -30) nav.next++;
     const m = nav.mans[nav.next];
     let distTo = m ? Math.max(0, m.d - d) : Math.max(0, total - d);
     if (m) {
-      document.getElementById("rideArr").textContent = m.sr.arr;
+      document.getElementById("rideArr").innerHTML = arrSvg(m.sr.arr);
+      const nx = nav.mans[nav.next + 1];   // "zatim" najava sledeceg (kao maketa) - samo kad je ovo skretanje blizu
+      document.getElementById("rideThen").textContent =
+        (nx && distTo < 900) ? "zatim " + (MAN_SR[nx.type] ? MAN_SR[nx.type][1].toLowerCase().split(" ")[0] === "skreni" ? (nx.type === 15 ? "↰" : "↱") : "→" : "→") + " " + fmtM(Math.max(0, nx.d - m.d)) : "";
       document.getElementById("rideDist").textContent = fmtM(distTo);
       document.getElementById("rideInstr").textContent = m.sr.t;
       document.getElementById("rideStreet").textContent = m.sr.street;
@@ -3691,26 +3759,48 @@ function startRide() {
       if (!m.spoke90 && distTo <= 95) { m.spoke90 = true;
         speakSr(m.sr.arrive ? m.sr.t : m.sr.t + (m.sr.street ? ", na " + m.sr.street : "")); }
     }
+    // wx traka: nevreme na ruti ispred (iz plana)
+    try {
+      const wxEl = document.getElementById("rideWx");
+      const z = (state._zones || []).find((zz) => zz.from && zz.from.km * 1000 > d - 500);
+      if (z && z.from.km * 1000 - d < 30000) {
+        const inKm = Math.max(0, (z.from.km * 1000 - d) / 1000);
+        wxEl.textContent = "⛈ " + (z.reasons && z.reasons[0] ? z.reasons[0] : "Nevreme") + " za ~" + (inKm < 1 ? "manje od 1" : Math.round(inKm)) + " km";
+        wxEl.classList.add("on");
+      } else wxEl.classList.remove("on");
+    } catch (e) {}
     // dolazak
     const remM = Math.max(0, total - d);
     if (remM < 35 && (!m || m.sr.arrive)) {
+      document.getElementById("rideArr").innerHTML = arrSvg("flag");
       document.getElementById("rideInstr").textContent = "Stigao si! 🎉";
       document.getElementById("rideDist").textContent = "";
-      setTimeout(stopRide, 6000);
+      document.getElementById("rideStreet").textContent = (state.geocode && state.geocode.to && state.geocode.to.name) || "";
+      document.getElementById("rideThen").textContent = "";
+      document.getElementById("rideRem").textContent = "";
+      setTimeout(stopRide, 8000);
     }
     // meta traka
     const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total));
-    document.getElementById("rideRem").textContent = (remM / 1000).toFixed(remM < 10000 ? 1 : 0) + " km";
-    document.getElementById("rideEta").textContent = "~" + new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
-    if (p.coords.speed != null) document.getElementById("rideKmh").textContent = Math.round(p.coords.speed * 3.6) + " km/h";
+    document.getElementById("rideRem").textContent = "još " + (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
+    document.getElementById("rideEta").textContent = new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+    if (p.coords.speed != null) document.getElementById("rideKmh").textContent = Math.round(p.coords.speed * 3.6);
     // kamera: blizi zoom pred skretanje
     try {
-      const z = distTo < 250 ? 16.6 : distTo < 700 ? 16 : 15.3;
-      map.easeTo({ center: [lo, la], zoom: z, pitch: 52,
-        bearing: (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : map.getBearing(),
-        duration: 900 });
+      if (Date.now() > (RIDE.freeCamUntil || 0)) {   // korisnik je pomerio mapu -> pusti ga 8s pa nastavi pracenje
+        const z = distTo < 250 ? 16.6 : distTo < 700 ? 16 : 15.3;
+        const cam = { center: [lo, la], zoom: z, pitch: 52,
+          bearing: (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : map.getBearing() };
+        if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) map.jumpTo(cam);
+        else map.easeTo({ ...cam, duration: 900 });
+      }
     } catch (e) {}
-  }, () => { alert("Ne mogu da dobijem lokaciju - proveri dozvolu za lokaciju u browseru."); stopRide(); },
+  }, (err) => {
+    if (err && err.code === 1) { alert("Dozvoli lokaciju u podešavanjima browsera da bi navigacija radila."); stopRide(); return; }
+    // timeout/nedostupno (tunel, klisura): NE gasi voznju - sivi baner, watch nastavlja i sam se oporavi
+    const nc = document.querySelector("#rideBar .navcard"); if (nc) nc.classList.add("nosignal");
+    if (RIDE.gotFix) document.getElementById("rideInstr").textContent = "Slab GPS signal…";
+  },
   { enableHighAccuracy: true, maximumAge: 1500, timeout: 15000 });
 }
 function stopRide() {
@@ -3777,7 +3867,16 @@ function stopRide() {
     const grab = sheet.querySelector(".grab");
     if (grab) grab.addEventListener("click", () => sheet.classList.toggle("collapsed"));
   }
-  const rx = document.getElementById("rideX"); if (rx) rx.addEventListener("click", stopRide);
+  const rx = document.getElementById("rideX"); if (rx) rx.addEventListener("click", () => {   // dvostepeno (rukavice): prvi tap pita, drugi gasi
+    if (rx.classList.contains("arm")) { stopRide(); return; }
+    rx.classList.add("arm"); rx.textContent = "Prekini?";
+    setTimeout(() => { rx.classList.remove("arm"); rx.textContent = "✕"; }, 2500);
+  });
+  try { map.on("dragstart", (e) => { if (e && e.originalEvent && document.body.classList.contains("riding")) RIDE.freeCamUntil = Date.now() + 8000; }); } catch (e) {}
+  const rp = document.getElementById("rideRep"); if (rp) rp.addEventListener("click", () => {
+    const hb = document.querySelector(".map-tools .hz-btn");
+    if (hb) hb.click(); else alert("Prijave (gužva, policija, opasnost) stižu sa nalozima - uskoro.");
+  });
 })();
 
 /* ---- app2 Faza 3: REZULTAT hero (kao result2 maketa) ---- */
