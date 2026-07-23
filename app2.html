@@ -402,6 +402,27 @@
     #plannerClose { position: absolute; top: 14px; right: 14px; z-index: 6; width: 34px; height: 34px; border-radius: 10px; background: #1e293b; border: 1px solid rgba(148,163,184,.2); color: #e2e8f0; font-size: 16px; font-weight: 800; cursor: pointer; align-items: center; justify-content: center; }
     body.planning #plannerClose { display: flex; }
   }
+  /* ===== app2 Faza 4.1: reskin naprednog planera (mobilno) ===== */
+  @media (max-width: 900px) {
+    body.planning #panel h1, body.planning #panel .sub { display: none; }   /* logo+marketing ne pripadaju alatu */
+    body.planning #panel label:not(.chk) { font-size: 10.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 14px 2px 7px; display: block; }
+    body.planning #panel .chk { text-transform: none; letter-spacing: 0; }
+    body.planning #panel input[type="text"], body.planning #panel input:not([type]), body.planning #panel input[type="datetime-local"], body.planning #panel input[type="number"], body.planning #panel select {
+      background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 13px; padding: 12px 13px; color: #fff; font-size: 15px; font-weight: 600; font-family: inherit; width: 100%; }
+    body.planning #panel .chk { display: flex; align-items: center; gap: 11px; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 13px; padding: 11px 13px; margin: 8px 0 0; font-size: 13.5px; font-weight: 700; color: #e2e8f0; }
+    body.planning #panel .chk input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 44px; height: 26px; border-radius: 999px; background: #334155; position: relative; flex: none; transition: background .2s; margin: 0; cursor: pointer; }
+    body.planning #panel .chk input[type="checkbox"]::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #94a3b8; transition: transform .2s, background .2s; }
+    body.planning #panel .chk input[type="checkbox"]:checked { background: rgba(249,115,22,.9); }
+    body.planning #panel .chk input[type="checkbox"]:checked::after { transform: translateX(18px); background: #fff; }
+    #motoHead { display: none; }
+    body.planning #motoHead { display: flex; align-items: center; gap: 11px; width: 100%; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 13px; padding: 12px 13px; margin-top: 14px; cursor: pointer; font-family: inherit; color: #fff; font-size: 14px; font-weight: 800; text-align: left; }
+    body.planning #motoHead .ms { flex: 1; color: #94a3b8; font-size: 12px; font-weight: 600; text-align: right; }
+    body.planning #motoHead .chev { transition: transform .2s; color: #94a3b8; }
+    body.planning #motoHead.open .chev { transform: rotate(180deg); }
+    body.planning #motoWrap { display: none; }
+    body.planning #motoWrap.open { display: block; }
+    body.planning #planBtn { margin-top: 16px; }
+  }
   /* ===== app2 Faza 4: cist ekran pretrage ===== */
   #searchOverlay { display: none; }
   @media (max-width: 900px) {
@@ -3353,6 +3374,57 @@ function init() {
   document.querySelectorAll("#homeFabs button").forEach((b) => {
     b.addEventListener("click", () => { const f = fabMap[b.dataset.fab]; if (f) f(); });
   });
+})();
+
+/* ---- app2 Faza 4.1: ziva prognoza na pocetnom + motor sekcija sklopljena ---- */
+async function homeWxPeek() {
+  const el = document.querySelector("#homeSheet .wxpeek .t");
+  if (!el) return;
+  const run = async (lat, lon) => {
+    try {
+      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&hourly=precipitation,precipitation_probability&forecast_hours=12&timezone=auto`);
+      const j = await r.json();
+      const h = j.hourly, now = new Date().getHours();
+      let rainAt = -1;
+      for (let i = 0; i < h.precipitation.length; i++)
+        if (h.precipitation[i] >= 0.2 || (h.precipitation_probability && h.precipitation_probability[i] >= 60)) { rainAt = i; break; }
+      if (rainAt < 0) el.innerHTML = "<b>Suvo narednih 12h</b> - savršen dan za vožnju. Isplaniraj rutu za detalje po kilometru.";
+      else {
+        const hh = new Date(h.time ? h.time[rainAt] : Date.now() + rainAt * 3600e3).getHours();
+        if (rainAt >= 5) el.innerHTML = `<b>Suvo do ~${hh}h</b> - dobar prozor za vožnju, kiša stiže kasnije.`;
+        else el.innerHTML = `<b>Kiša oko ${hh}h</b> kod tebe - proveri radar i isplaniraj pametno.`;
+      }
+    } catch (e) { /* zadrzi postojeci tekst */ }
+  };
+  if (navigator.geolocation) navigator.geolocation.getCurrentPosition(
+    (p) => run(p.coords.latitude, p.coords.longitude),
+    () => { try { const c = map.getCenter(); run(c.lat, c.lng); } catch (e) {} },
+    { maximumAge: 600000, timeout: 8000 });
+  else { try { const c = map.getCenter(); run(c.lat, c.lng); } catch (e) {} }
+}
+(function(){
+  // motor sekcija -> sklopljena kartica (fabricki podaci rade i sklopljeni)
+  const start = document.querySelector('label[for="bikeBrand"]');
+  const planBtn = document.getElementById("planBtn");
+  if (start && planBtn && start.parentNode === planBtn.parentNode) {
+    const wrap = document.createElement("div"); wrap.id = "motoWrap";
+    const head = document.createElement("button"); head.type = "button"; head.id = "motoHead";
+    head.innerHTML = '🏍 Moj motor <span class="ms" id="motoSum"></span><span class="chev">▾</span>';
+    start.parentNode.insertBefore(head, start);
+    const nodes = [];
+    for (let n = start; n && n !== planBtn; ) { const nx = n.nextSibling; nodes.push(n); n = nx; }
+    nodes.forEach((n) => wrap.appendChild(n));
+    head.parentNode.insertBefore(wrap, planBtn);
+    head.addEventListener("click", () => { wrap.classList.toggle("open"); head.classList.toggle("open"); });
+    const sum = () => {
+      const b = document.getElementById("bikeBrand"), m = document.getElementById("bikeModel");
+      const t = [b && b.value, m && m.value].filter(Boolean).join(" ");
+      const el = document.getElementById("motoSum"); if (el) el.textContent = t || "izaberi";
+    };
+    ["bikeBrand", "bikeModel", "bikeYear"].forEach((id) => { const e = document.getElementById(id); if (e) e.addEventListener("change", sum); });
+    setTimeout(sum, 1500); setTimeout(sum, 4000);
+  }
+  if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) setTimeout(homeWxPeek, 1200);
 })();
 
 /* ---- app2 Faza 4: cist ekran pretrage (Google/Waze stil + NASA BAZA u predlozima) ---- */
