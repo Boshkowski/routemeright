@@ -402,6 +402,17 @@
     #plannerClose { position: absolute; top: 14px; right: 14px; z-index: 6; width: 34px; height: 34px; border-radius: 10px; background: #1e293b; border: 1px solid rgba(148,163,184,.2); color: #e2e8f0; font-size: 16px; font-weight: 800; cursor: pointer; align-items: center; justify-content: center; }
     body.planning #plannerClose { display: flex; }
   }
+  /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
+  #rideBar { display: none; }
+  @media (max-width: 900px) {
+    body.riding #rideBar { display: flex; position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top)); z-index: 40;
+      background: linear-gradient(135deg, #f97316, #ea580c); border-radius: 15px; padding: 12px 14px; align-items: center; gap: 10px; box-shadow: 0 10px 26px rgba(249,115,22,.4); }
+    #rideBar .t { flex: 1; color: #fff; } #rideBar b { font-size: 19px; font-weight: 900; } #rideBar span { display: block; font-size: 12px; font-weight: 700; opacity: .9; }
+    #rideBar button { background: rgba(255,255,255,.18); border: none; color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 15px; font-weight: 900; cursor: pointer; flex: none; }
+    body.riding #homeChrome, body.riding #homeSheet { display: none !important; }
+    #homeSheet { transition: transform .28s cubic-bezier(.2,.8,.2,1); touch-action: pan-y; }
+    #homeSheet.collapsed { transform: translateY(calc(100% - 30px)); }
+  }
   /* ===== app2 Faza 3: REZULTAT ekran (kao result2 maketa: hero + metrike + krivine) ===== */
   #resHero, #resCta { display: none; }
   @media (max-width: 900px) {
@@ -715,6 +726,7 @@
       <button class="chip" data-chip="radar"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20 16.2A5 5 0 0018 7h-1.3A8 8 0 104 15"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg>Radar</button>
     </div>
   </div>
+  <div id="rideBar"><div class="t"><b id="rideRem">-</b><span id="rideEta"></span></div><button id="rideX" aria-label="Prekini vožnju">✕</button></div>
   <div id="homeFabs">
     <button data-fab="layers" aria-label="Slojevi"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></button>
     <button data-fab="gps" aria-label="Moja lokacija"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.5" fill="#f97316" stroke="none"/></svg></button>
@@ -2792,6 +2804,12 @@ async function selectRoute(departure) {
       renderConsensus(route, departure);
     })()]);
   try { renderResultHero(route); } catch (e) {}   // Faza 3: mobilni hero (svi podaci su sad na route objektu)
+  try {   // "Nedavno" istorija za brzo dugme
+    const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
+    rec.unshift({ from: state.geocode.from.name, to: state.geocode.to.name, ts: Date.now() });
+    localStorage.setItem("rmr2_recent", JSON.stringify(rec.filter((x, i, a) => a.findIndex((y) => y.from === x.from && y.to === x.to) === i).slice(0, 10)));
+    if (typeof updateQuickLabels === "function") updateQuickLabels();
+  } catch (e) {}
   logState({ phase: "done", route: state.selected, worst, warnings: zones.length,
     km: Math.round(route.totalDist / 1000), tollKm: route.tollKm === null ? null : Math.round(route.tollKm),
     vias: state.vias.length });
@@ -2805,7 +2823,14 @@ async function plan() {
   try {
     const roundGen = $("roundGen") && $("roundGen").checked;
     const fromQ = $("from").value.trim();
-    const toQ = roundGen ? fromQ : $("to").value.trim();
+    let toQ = roundGen ? fromQ : $("to").value.trim();
+    let toOverride = null;
+    if (!roundGen && !toQ && state.vias && state.vias.length) {   // Google-fix: DO prazno a postoji stanica -> poslednja stanica postaje odredište
+      const lastV = state.vias.pop(); renderViaChips();
+      const nm = (await reverseName(lastV.v[1], lastV.v[0], 12)) || "odredište";
+      toOverride = { lat: lastV.v[1], lon: lastV.v[0], name: nm };
+      $("to").value = nm; toQ = nm;
+    }
     if (!fromQ || (!roundGen && !toQ)) throw new Error(roundGen ? "Upiši polazak (grad iz kog kreće krug)." : "Upiši i polazak i destinaciju.");
     const arriveMode = !roundGen && $("timeMode").value === "arrive";
     const timeInput = $("depart").value ? new Date($("depart").value) : new Date();
@@ -2814,7 +2839,11 @@ async function plan() {
 
     setStatus("Tražim lokacije...");
     logState({ phase: "geocode" });
-    const [from, to] = await Promise.all([geocode(fromQ), geocode(toQ)]);
+    const gpsF = (state.gpsFrom && fromQ === state.gpsFrom.name) ? state.gpsFrom : null;   // "od" = tacne GPS koordinate, ne Nominatim pogadjanje
+    const homeT = (state.homeTo && toQ === state.homeTo.name) ? state.homeTo : null;
+    const [from, to] = await Promise.all([
+      gpsF ? Promise.resolve({ lat: gpsF.lat, lon: gpsF.lon, name: gpsF.name }) : geocode(fromQ),
+      toOverride ? Promise.resolve(toOverride) : homeT ? Promise.resolve({ lat: homeT.lat, lon: homeT.lon, name: homeT.name }) : geocode(toQ)]);
     state.geocode = { from, to };
 
     if (roundGen) {
@@ -3288,6 +3317,122 @@ function init() {
   });
 })();
 
+/* ---- app2 Faza 3.1: GPS polazak + brza dugmad + sheet drag + vožnja ---- */
+function updateQuickLabels() {
+  try {
+    const h = JSON.parse(localStorage.getItem("rmr2_home") || "null");
+    const hb = document.querySelector('[data-quick="home"] span'); if (hb) hb.textContent = h ? h.name : "postavi";
+    const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
+    const rb = document.querySelector('[data-quick="recent"] span'); if (rb) rb.textContent = rec.length ? rec[0].from + " → " + rec[0].to : "—";
+    const sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
+    const sb = document.querySelector('[data-quick="saved"] span'); if (sb) sb.textContent = sv.length ? sv.length + " ruta" : "—";
+  } catch (e) {}
+}
+function gpsPrefill(force) {   // polazak = trenutna lokacija (moze da se prekuca)
+  const f = document.getElementById("from");
+  if (!f || (!force && f.value.trim()) || !navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(async (p) => {
+    try {
+      const nm = (await reverseName(p.coords.latitude, p.coords.longitude, 14)) ||
+                 (await reverseName(p.coords.latitude, p.coords.longitude, 10)) || "Trenutna lokacija";
+      state.gpsFrom = { name: nm, lat: p.coords.latitude, lon: p.coords.longitude };
+      if (!f.value.trim() || force) f.value = nm;
+    } catch (e) {}
+  }, () => {}, { maximumAge: 60000, timeout: 8000 });
+}
+const RIDE = { watch: null };
+function startRide() {
+  const route = (typeof state !== "undefined" && state.routes) ? state.routes[state.selected] : null;
+  if (!route) return;
+  if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
+  document.body.classList.remove("planning"); document.body.classList.add("riding");
+  try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
+  const cum = route.cumDist, coords = route.coords, total = cum[cum.length - 1];
+  const stepN = Math.max(1, Math.floor(coords.length / 400));
+  RIDE.watch = navigator.geolocation.watchPosition((p) => {
+    const la = p.coords.latitude, lo = p.coords.longitude;
+    try {
+      map.easeTo({ center: [lo, la], zoom: 15.5, pitch: 50,
+        bearing: (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : map.getBearing(),
+        duration: 900 });
+    } catch (e) {}
+    let best = 1e18, bi = 0;   // najbliža tačka rute (uzorkovano ~400 tačaka)
+    for (let i = 0; i < coords.length; i += stepN) {
+      const dx = (coords[i][0] - lo) * 78, dy = (coords[i][1] - la) * 111;
+      const d = dx * dx + dy * dy; if (d < best) { best = d; bi = i; }
+    }
+    const remM = Math.max(0, total - cum[Math.min(bi, cum.length - 1)]);
+    const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total));
+    document.getElementById("rideRem").textContent = (remM / 1000).toFixed(remM < 10000 ? 1 : 0) + " km";
+    document.getElementById("rideEta").textContent = "dolazak ~" + new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+  }, () => { alert("Ne mogu da dobijem lokaciju - proveri dozvolu za lokaciju u browseru."); stopRide(); },
+  { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 });
+}
+function stopRide() {
+  if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
+  document.body.classList.remove("riding");
+}
+(function(){
+  const openPlanning = () => { document.body.classList.add("planning"); try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {} };
+  // GPS polazak pri otvaranju planera
+  ["homeSearch", "planCta"].forEach((id) => { const el = document.getElementById(id); if (el) el.addEventListener("click", () => gpsPrefill(false)); });
+  // rucna izmena OD/DO cisti zaostale stanice poznate rute (izvor "izbaguje" stanja)
+  ["from", "to"].forEach((id) => { const el = document.getElementById(id); if (el) el.addEventListener("input", () => {
+    if (typeof state !== "undefined" && state.famousApplied) { state.vias = []; state.famousApplied = null; try { renderViaChips(); } catch (e) {} }
+  }); });
+  // brza dugmad: Kuca / Nedavno / Sacuvane
+  document.querySelectorAll('#homeSheet .quick button').forEach((b) => b.addEventListener("click", async () => {
+    const q = b.dataset.quick;
+    try {
+      if (q === "home") {
+        let h = JSON.parse(localStorage.getItem("rmr2_home") || "null");
+        if (!h) {
+          const val = prompt("Gde ti je kuća? Unesi mesto ili adresu:");
+          if (!val) return;
+          b.querySelector("span").textContent = "tražim…";
+          const g = await geocode(val);
+          h = { name: g.name, lat: g.lat, lon: g.lon };
+          localStorage.setItem("rmr2_home", JSON.stringify(h)); updateQuickLabels();
+          return;
+        }
+        state.homeTo = h;
+        document.getElementById("to").value = h.name;
+        gpsPrefill(false); openPlanning();
+        setTimeout(() => { if (document.getElementById("from").value.trim()) document.getElementById("planBtn").click(); }, 1400);
+      }
+      if (q === "recent") {
+        const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
+        if (!rec.length) { openPlanning(); return; }
+        document.getElementById("from").value = rec[0].from; document.getElementById("to").value = rec[0].to;
+        openPlanning();
+      }
+      if (q === "saved") {
+        const sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
+        if (!sv.length) { openPlanning(); return; }
+        if (sv[0].from) document.getElementById("from").value = sv[0].from;
+        if (sv[0].to) document.getElementById("to").value = sv[0].to;
+        openPlanning();
+      }
+    } catch (e) { alert("Ne mogu da nađem to mesto - probaj drugačiji naziv."); updateQuickLabels(); }
+  }));
+  updateQuickLabels();
+  // sheet: prevuci dole = skupi, gore/tap = vrati
+  const sheet = document.getElementById("homeSheet");
+  if (sheet) {
+    let y0 = null;
+    sheet.addEventListener("touchstart", (e) => { y0 = e.touches[0].clientY; }, { passive: true });
+    sheet.addEventListener("touchend", (e) => {
+      if (y0 == null) return;
+      const dy = e.changedTouches[0].clientY - y0; y0 = null;
+      if (dy > 45) sheet.classList.add("collapsed");
+      else if (dy < -45) sheet.classList.remove("collapsed");
+    }, { passive: true });
+    const grab = sheet.querySelector(".grab");
+    if (grab) grab.addEventListener("click", () => sheet.classList.toggle("collapsed"));
+  }
+  const rx = document.getElementById("rideX"); if (rx) rx.addEventListener("click", stopRide);
+})();
+
 /* ---- app2 Faza 3: REZULTAT hero (kao result2 maketa) ---- */
 function renderResultHero(route) {
   const box = document.getElementById("resHero");
@@ -3335,10 +3480,7 @@ function renderResultHero(route) {
 }
 (function(){
   const k = document.getElementById("ctaKreni"), s = document.getElementById("ctaCuvaj");
-  if (k) k.addEventListener("click", () => {   // Kreni = skloni planer, pokaži mapu sa rutom
-    document.body.classList.remove("planning");
-    try { if (typeof map !== "undefined" && map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
-  });
+  if (k) k.addEventListener("click", () => startRide());   // Kreni = prava vožnja: GPS praćenje + preostalo km + ETA
   if (s) s.addEventListener("click", () => {   // Čuvaj = sačuvaj relaciju lokalno
     try {
       const g = (typeof state !== "undefined" && state.geocode) || {};
