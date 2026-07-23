@@ -335,7 +335,8 @@
     #panel.open .pchev { transform: rotate(180deg); }
     .map-tools { top: calc(10px + env(safe-area-inset-top)); }
     .lay-pop { top: calc(54px + env(safe-area-inset-top)); }
-    .compass-btn { top: calc(296px + env(safe-area-inset-top)); right: 14px; left: auto; width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.16); z-index: 12; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+    .compass-btn { top: calc(178px + env(safe-area-inset-top)); right: 14px; left: auto; width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.16); z-index: 12; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+    body.riding .compass-btn { top: auto; bottom: calc(190px + env(safe-area-inset-bottom)); }
   }
   /* ===== app2 Faza 1a: donji meni (Planer/Rute/Zajednica/Ja) + tab ekrani ===== */
   #bottomnav { display: none; }
@@ -381,7 +382,8 @@
     .maplibregl-ctrl-top-right { display: none; }
 
     #homeChrome { display: block; position: fixed; left: 0; right: 0; top: 0; z-index: 12; padding: calc(12px + env(safe-area-inset-top)) 14px 0; pointer-events: none; }
-    #homeSheet .quick, #planCta, #homeChips, #homeSheet { display: none !important; }   /* R5: potpuno cist pocetni kao Google - prognoza zivi u planiranju */
+    #homeSheet .quick, #planCta, #homeSheet { display: none !important; }   /* R5: cist pocetni; R7: chips (Kafane/Vidikovci/Legendarne) vraceni kao Google */
+    body.planning #homeChips, body.riding #homeChips, body.searching #homeChips, body.hasroute #homeChips { display: none !important; }
     #homeChrome > * { pointer-events: auto; }
     body.planning #homeChrome, body.planning #homeSheet, body.planning #homeFabs { display: none; }
 
@@ -395,7 +397,7 @@
       -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent); }
     #homeChips::-webkit-scrollbar { display: none; }
     #homeChips::-webkit-scrollbar { display: none; }
-    #homeChips .chip { white-space: nowrap; display: flex; align-items: center; gap: 7px; background: rgba(15,23,42,.9); border: 1px solid rgba(148,163,184,.2); border-radius: 999px; padding: 9px 14px; color: #e2e8f0; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    #homeChips .chip { white-space: nowrap; display: flex; align-items: center; gap: 7px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.2); border-radius: 999px; padding: 8px 13px; color: #e2e8f0; font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.3); }
     #homeChips .chip svg { width: 16px; height: 16px; stroke: #f97316; fill: none; }
     #homeChips .chip.on { background: #f97316; border-color: #f97316; color: #fff; }
     #homeChips .chip.on svg { stroke: #fff; }
@@ -403,9 +405,11 @@
     #homeFabs { display: flex; position: fixed; right: 14px; top: calc(122px + env(safe-area-inset-top)); z-index: 12; flex-direction: column; gap: 10px; }
     #homeFabs button { width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.2); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,0,0,.35); cursor: pointer; }
     #homeFabs button svg { width: 22px; height: 22px; stroke: #e2e8f0; fill: none; }
-    #homeFabs button[data-fab="tilt"] { display: none; }   /* 3D prekidac zivi u Slojevi sheetu */
-    .compass-btn { display: none !important; }              /* kompas samo kad je mapa rotirana/nagnuta (kao Google) */
-    body.maprot .compass-btn { display: block !important; }
+    #homeFabs button[data-fab="tilt"] { display: none; }   /* 3D toggle = kompas dugme */
+    /* moja lokacija: donji desni ugao (kao Google) */
+    #homeFabs button[data-fab="gps"] { position: fixed; right: 14px; top: auto; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 12; }
+    body.planning:not(.riding) #homeFabs button[data-fab="gps"] { display: none; }
+    body.riding #homeFabs button[data-fab="gps"] { bottom: calc(132px + env(safe-area-inset-bottom)); }
 
     #homeSheet { display: block; position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 11; background: rgba(15,23,42,.97); border-top: 1px solid rgba(148,163,184,.16); border-radius: 22px 22px 0 0; padding: 8px 16px 18px; box-shadow: 0 -10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
     #homeSheet .grab { width: 40px; height: 4.5px; border-radius: 999px; background: #475569; margin: 0 auto 12px; }
@@ -447,11 +451,41 @@
     body.planning #motoWrap.open { display: block; }
     body.planning #planBtn { margin-top: 16px; }
   }
+  /* ===== R7: "Jos opcija" sheet ===== */
+  #optsSheet { position: fixed; inset: 0; z-index: 62; }
+  #optsSheet .lsback { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
+  #optsSheet .lsbody { position: absolute; left: 0; right: 0; bottom: 0; background: #0f172a; border-radius: 22px 22px 0 0; border-top: 1px solid rgba(148,163,184,.16); padding: 8px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 34px rgba(0,0,0,.5); max-height: 80vh; overflow-y: auto; }
+  #optsSheet .grab { width: 38px; height: 4px; border-radius: 2px; background: #475569; margin: 4px auto 12px; }
+  #optsSheet .lst { font-size: 16px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+  #optsSheet .chk { display: flex; align-items: center; gap: 11px; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 13px; padding: 11px 13px; margin: 10px 0 0; font-size: 13.5px; font-weight: 700; color: #e2e8f0; }
+  #optsSheet .chk input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 44px; height: 26px; border-radius: 999px; background: #334155; position: relative; flex: none; transition: background .2s; margin: 0; cursor: pointer; }
+  #optsSheet .chk input[type="checkbox"]::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #94a3b8; transition: transform .2s, background .2s; }
+  #optsSheet .chk input[type="checkbox"]:checked { background: rgba(249,115,22,.9); }
+  #optsSheet .chk input[type="checkbox"]:checked::after { transform: translateX(18px); background: #fff; }
+  #optsSheet input, #optsSheet select { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 13px; padding: 12px 13px; color: #fff; font-size: 15px; font-weight: 600; font-family: inherit; width: 100%; }
+  #optsSheet #loopKmWrap { margin-top: 10px; color: #e2e8f0; font-size: 13.5px; font-weight: 700; }
+  #optsSheet #loopKmWrap input { width: 88px; }
+  #optsSheet .row2 { display: flex; gap: 8px; margin-top: 10px; }
+  #optsSheet .row2 > div { flex: 1; }
+  #optsSheet .apply { width: 100%; margin-top: 14px; border: none; cursor: pointer; font-family: inherit; background: linear-gradient(135deg,#f97316,#ea580c); color: #fff; font-size: 15.5px; font-weight: 800; padding: 14px; border-radius: 14px; }
+  #optsSheet label:not(.chk) { display: block; font-size: 10.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 14px 2px 7px; }
+  @media (max-width: 900px) {
+    label[for="famous"], #famous { display: none !important; }   /* legendarne zive u Rute tabu */
+  }
   /* ===== R6: brzi planer - destinacija iz pretrage vodi PRAVO na rezultat ===== */
   #qbar { display: none; }
   @media (max-width: 900px) {
     body.qplan.planning #panel > *:not(#peekBar):not(#plannerClose):not(#qbar):not(#status):not(#results) { display: none !important; }
-    body.qplan.planning #qbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 2px 0 12px; }
+    body.qplan.planning #panel { height: 54vh; height: 54dvh; }   /* do pola kao Google; detalji sire */
+    body.qplan.planning.qdetails #panel { height: 86vh; height: 86dvh; }
+    body.qplan.planning:not(.qdetails) #results > .card:not(#card-routes) { display: none !important; }
+    body.qplan.planning:not(.qdetails) #resHero .rcurv .sevbar, body.qplan.planning:not(.qdetails) #resHero .rcurv .sevleg { display: none; }
+    body.qplan.planning:not(.qdetails) #resHero .relev svg { height: 56px; }
+    body.qplan.planning:not(.qdetails) #resHero .hx .v { font-size: 16.5px; }
+    body.qplan.planning:not(.qdetails) #resHero .rcurv .top .big { font-size: 24px; }
+    #qDet { display: none; }
+    body.qplan.planning #qDet { display: block; width: 100%; background: none; border: 1px dashed rgba(148,163,184,.35); border-radius: 13px; color: #94a3b8; font-size: 13.5px; font-weight: 700; font-family: inherit; padding: 12px; margin: 2px 0 12px; cursor: pointer; }
+    body.qplan.planning #qbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 12px; }
     #qbar select, #qbar button { background: #1e293b; border: 1px solid rgba(148,163,184,.2); border-radius: 999px;
       color: #e2e8f0; font-size: 13.5px; font-weight: 700; font-family: inherit; padding: 9px 13px; cursor: pointer;
       -webkit-appearance: none; appearance: none; width: auto; }
@@ -834,6 +868,7 @@
         <h3>Rute</h3>
         <div class="routes-tabs" id="routeTabs"></div>
       </div>
+      <button id="qDet" type="button">Svi detalji rute ▾</button>
 
       <div class="card" id="card-weather">
         <h3>Vreme duž rute</h3>
@@ -913,10 +948,9 @@
       <span class="av">B</span>
     </div>
     <div id="homeChips">
-      <button class="chip on" data-chip="famous"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Poznate rute</button>
-      <button class="chip" data-chip="loop"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M21 12a9 9 0 11-3-6.7M21 3v5h-5"/></svg>Kružna tura</button>
-      <button class="chip" data-chip="kafane"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 8h13v5a5 5 0 01-5 5H9a5 5 0 01-5-5zM17 9h2a2 2 0 010 4h-2M6 2v2M10 2v2M14 2v2"/></svg>Kafane</button>
-      <button class="chip" data-chip="radar"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M20 16.2A5 5 0 0018 7h-1.3A8 8 0 104 15"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg>Radar</button>
+      <button class="chip" data-chip="mkafana"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 8h13v5a5 5 0 01-5 5H9a5 5 0 01-5-5zM17 9h2a2 2 0 010 4h-2M6 2v2M10 2v2M14 2v2"/></svg>Kafane</button>
+      <button class="chip" data-chip="mvidikovac"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 20l6-11 4 7 3-4 5 8z"/><circle cx="17.5" cy="6" r="2.5"/></svg>Vidikovci</button>
+      <button class="chip" data-chip="lrute"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Legendarne rute</button>
     </div>
   </div>
   <div id="routePill"><div class="rpin"><b id="rpTxt">-</b><span id="rpSub"></span></div><button id="rpX" aria-label="Poništi rutu">✕</button></div>
@@ -1418,7 +1452,12 @@ async function geocode(q) {
   const r = await fetch(url);
   if (!r.ok) throw new Error("Geokodiranje nije uspelo");
   const j = await r.json();
-  if (!j.length) throw new Error(`Ne mogu da nađem mesto: "${q}"`);
+  if (!j.length) {
+    const fold = (t) => (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const hit = (state.editorial || []).find((x) => x.lat != null && fold(x.name) === fold(q.trim()));
+    if (hit) return { lat: hit.lat, lon: hit.lon, name: hit.name };   // nasa baza (kafane, klubovi...) kad Nominatim ne zna
+    throw new Error(`Ne mogu da nađem mesto: "${q}"`);
+  }
   // naselje/grad ima prednost nad parkovima, planinama itd.
   const best = j.find((x) => x.class === "place" || x.addresstype === "city" || x.addresstype === "town" || x.addresstype === "village") || j[0];
   return { lat: +best.lat, lon: +best.lon, name: (best.display_name || q).split(",")[0] };
@@ -2047,13 +2086,14 @@ function initMap() {
     const comp = document.createElement("button");
     comp.className = "compass-btn"; comp.title = "Vrati mapu na sever";
     comp.innerHTML = '<div class="rose"><span class="n">N</span><span class="e">E</span><span class="s">S</span><span class="w">W</span><div class="needle"></div></div>';
-    comp.onclick = () => map.easeTo({ bearing: 0, pitch: 0, duration: 400 });
-    map.getContainer().appendChild(comp);
-    const updCompass = () => {
-      comp.querySelector(".rose").style.transform = `rotate(${-map.getBearing()}deg)`;
-      document.body.classList.toggle("maprot", Math.abs(map.getBearing()) > 1 || map.getPitch() > 5);
+    comp.title = "2D / 3D pogled (i sever)";
+    comp.onclick = () => {
+      if (map.getPitch() > 5) map.easeTo({ pitch: 0, bearing: 0, duration: 450 });
+      else map.easeTo({ pitch: 55, bearing: 0, duration: 450 });
     };
-    map.on("rotate", updCompass); map.on("pitch", updCompass);
+    map.getContainer().appendChild(comp);
+    const updCompass = () => { comp.querySelector(".rose").style.transform = `rotate(${-map.getBearing()}deg)`; };
+    map.on("rotate", updCompass);
     updCompass();
     const tools = document.createElement("div");
     tools.className = "map-tools";
@@ -2963,6 +3003,38 @@ function hazardMarker(h) {
   };
 }
 function loadHazards() { getHazards().forEach(hazardMarker); }
+/* R7: "Jos opcija" = mali sheet (kruzna, stanica, motor) - stari formular vise ne postoji na mobilnom */
+let _optsAnchors = null;
+function openOptsSheet() {
+  let sh = document.getElementById("optsSheet");
+  if (sh) { closeOptsSheet(); return; }
+  sh = document.createElement("div");
+  sh.id = "optsSheet";
+  sh.innerHTML = '<div class="lsback"></div><div class="lsbody"><div class="grab"></div><div class="lst">Još opcija</div><div id="optsHost"></div><button class="apply" id="optsApply">Primeni</button></div>';
+  document.body.appendChild(sh);
+  const host = sh.querySelector("#optsHost");
+  const rg = document.getElementById("roundGen");
+  const items = [rg ? rg.closest("label") : null, document.getElementById("loopKmWrap"),
+    document.getElementById("stopInput") ? document.getElementById("stopInput").closest(".row2") : null,
+    document.getElementById("motoHead"), document.getElementById("motoWrap")].filter(Boolean);
+  _optsAnchors = items.map((el) => ({ el, parent: el.parentNode, next: el.nextSibling }));
+  for (const el of items) host.appendChild(el);
+  sh.querySelector(".lsback").addEventListener("click", closeOptsSheet);
+  sh.querySelector("#optsApply").addEventListener("click", () => { closeOptsSheet(); plan(); });
+}
+function closeOptsSheet() {
+  const sh = document.getElementById("optsSheet");
+  if (!sh) return;
+  if (_optsAnchors) {
+    for (const a of [..._optsAnchors].reverse()) {   // obrnuto: anchor moze biti element koji je i sam premesten
+      try { a.parent.insertBefore(a.el, a.next && a.next.parentNode === a.parent ? a.next : null); }
+      catch (e) { try { a.parent.appendChild(a.el); } catch (e2) {} }
+    }
+  }
+  _optsAnchors = null;
+  sh.remove();
+}
+
 /* R6: brzi planer - kompaktna traka (Polazak: sada / u... / Stigni do + Povratno) */
 (function () {
   const qm = document.getElementById("qMode"), qw = document.getElementById("qWhen"),
@@ -2977,6 +3049,8 @@ function loadHazards() { getHazards().forEach(hazardMarker); }
   window.qbarSync = () => {
     qr.classList.toggle("on", $("roundTrip").checked);
     qm.value = "now"; qb.classList.remove("timed");
+    document.body.classList.remove("qdetails");
+    const qd2 = document.getElementById("qDet"); if (qd2) qd2.textContent = "Svi detalji rute ▾";
   };
   qm.addEventListener("change", () => {
     if (qm.value === "now") {
@@ -2994,7 +3068,13 @@ function loadHazards() { getHazards().forEach(hazardMarker); }
     qr.classList.toggle("on", $("roundTrip").checked);
     plan();
   });
-  qa.addEventListener("click", () => { document.body.classList.remove("qplan"); window.scrollTo(0, 0); });
+  qa.addEventListener("click", () => openOptsSheet());
+  const qd = document.getElementById("qDet");
+  if (qd) qd.addEventListener("click", () => {
+    const on = document.body.classList.toggle("qdetails");
+    qd.textContent = on ? "Sakrij detalje ▴" : "Svi detalji rute ▾";
+    if (on) setTimeout(() => { try { $("panel").scrollTop = $("results").offsetTop - $("peekBar").offsetHeight; } catch (e) {} }, 120);
+  });
 })();
 
 function hazardPopup(e, btn) {
@@ -3672,9 +3752,11 @@ function init() {
   document.querySelectorAll("#homeChips .chip").forEach((c) => {
     c.addEventListener("click", () => {
       const chip = c.dataset.chip;
-      if (chip === "radar") { const rb = document.querySelector(".map-tools .radar-btn"); if (rb) rb.click(); c.classList.toggle("on"); return; }
-      if (chip === "kafane") { openPlanner(); return; }
-      openPlanner(chip);
+      const ruteTab = document.querySelector('#bottomnav a[data-tab="rute"]');
+      if (ruteTab) ruteTab.click();
+      if (chip === "lrute") { const rb2 = document.querySelector('#ruteSeg [data-seg="rute"]'); if (rb2) rb2.click(); return; }
+      const mb = document.querySelector('#ruteSeg [data-seg="mesta"]'); if (mb) mb.click();
+      renderMesta(chip === "mkafana" ? "kafana" : "vidikovac");
     });
   });
   // FAB dugmad -> postojeće kontrole mape
@@ -4319,10 +4401,11 @@ function renderResultHero(route) {
 
 /* ---- P2: Rute segmenti (Rute|Mesta|Kruzna) + Slojevi sheet + pilula rute ---- */
 const MESTA_ICO = { kafana: "🍖", vidikovac: "🌄", okupljaliste: "🏍", upozorenje: "⚠️" };
-function renderMesta() {
+function renderMesta(ftype) {
   const L = document.getElementById("mestaList");
   if (!L) return;
   let items = (state.editorial || []).filter((e) => e.type !== "ruta" && e.type !== "upozorenje" && e.lat != null);
+  if (ftype) items = items.filter((e) => e.type === ftype);
   const g = state.gpsFrom;
   if (g) items = items.map((e) => ({ ...e, _d: haversine(g.lat, g.lon, e.lat, e.lon) })).sort((a, b) => a._d - b._d);
   if (!items.length) { L.innerHTML = '<div class="rempty">Mesta zajednice se učitavaju…</div>'; return; }
