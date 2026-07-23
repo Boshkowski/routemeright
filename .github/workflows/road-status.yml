@@ -3,7 +3,7 @@ name: Stanje na putevima + meteo upozorenja
 # u data/road_status.json - app ga cita staticki (nema server-a).
 on:
   schedule:
-    - cron: "17 4,7,10,13,16 * * *"   # 5x dnevno (UTC): ~6h, 9h, 12h, 15h, 18h po CEST
+    - cron: "17 * * * *"   # svakih sat vremena (Actions besplatan za javne repoe; commit samo ako ima promena)
   workflow_dispatch: {}
 permissions:
   contents: write
