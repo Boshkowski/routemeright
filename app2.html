@@ -810,9 +810,9 @@ const FAMOUS_ROUTES = [
   { id: "stelvio", name: "Passo dello Stelvio", emoji: "🌀", desc: "48 serpentina, legenda Alpa (IT)",
     startName: "Prato allo Stelvio", endName: "Bormio",
     wps: [[10.590,46.618],[10.506,46.555],[10.4525,46.5285],[10.370,46.466]] },
-  { id: "llogara", name: "Rivijera + Llogara", emoji: "🏖", desc: "SH8 albanska obala preko prevoja Llogara",
-    startName: "Vlorë", endName: "Sarandë",
-    wps: [[19.4897,40.466],[19.588,40.201],[19.642,40.145],[19.744,40.101],[20.005,39.875]] },
+  { id: "llogara", name: "Prevoj Llogara", emoji: "🏔", desc: "SH8 uspon na Llogara (1027 m) - serpentine i pogled na celu rivijeru (40 km)",
+    startName: "Orikum", endName: "Dhërmi",
+    wps: [[19.472,40.331],[19.588,40.201],[19.642,40.145]] },
   { id: "ibarska", name: "Dolina Ibra", emoji: "🏰", desc: "Kraljevo → Raška uz Ibar i Maglič (dolina jorgovana)",
     startName: "Kraljevo", endName: "Raška",
     wps: [[20.689,43.725],[20.610,43.464],[20.615,43.286]] },
@@ -838,7 +838,7 @@ const FAMOUS_ROUTES = [
   { id: "jerma", name: "Kanjon Jerme", emoji: "🧗", desc: "klisura kroz Vlašku planinu, manastir Poganovo (84 km)",
     startName: "Pirot", endName: "Babušnica",
     wps: [[22.586,43.153],[22.679,42.983],[22.573,42.955],[22.412,43.068]] },
-  { id: "sicevo", name: "Sićevačka klisura", emoji: "🦅", desc: "stari put kroz klisuru Nišave (60 km)",
+  { id: "sicevo", name: "Sićevačka klisura", emoji: "🦅", desc: "stari put kroz klisuru Nišave (40 km)",
     startName: "Niš", endName: "Bela Palanka",
     wps: [[21.896,43.320],[22.077,43.333],[22.311,43.218]] },
   { id: "vermosh", name: "Kanjon Cema + Vermosh", emoji: "🏔", desc: "SH20 kroz kanjon Cema do najsevernijeg sela Albanije, izlaz na Gusinje (87 km)",
@@ -892,7 +892,7 @@ const FAMOUS_ROUTES = [
   { id: "katara", name: "Katara (Meteori - Metsovo)", emoji: "🏛", desc: "od manastira Meteori preko prevoja Katara (70 km)",
     startName: "Kalampaka", endName: "Metsovo",
     wps: [[21.627,39.708],[21.240,39.799],[21.183,39.770]] },
-  { id: "rugova", name: "Rugovska klisura", emoji: "🏔", desc: "klisura Bistrice pa prevoj Kula ka Rožaju (89 km)",
+  { id: "rugova", name: "Rugovska klisura", emoji: "🏔", desc: "klisura Bistrice pa prevoj Kula ka Rožaju (47 km)",
     startName: "Peć", endName: "Rožaje",
     wps: [[20.289,42.660],[20.200,42.665],[20.152,42.728],[20.167,42.842]] },
   // prošireno 2026-07-21 (checklist motoria.co + motorute.com; NAŠI koridori, svaki verifikovan kroz OSRM)
@@ -934,7 +934,7 @@ const FAMOUS_ROUTES = [
   { id: "cetina", name: "Kanjon Cetine", emoji: "🌊", desc: "uz Cetinu od Omiša do Zadvarja, slapovi i klisura (30 km)",
     startName: "Omiš", endName: "Zadvarje",
     wps: [[16.6923,43.4435],[16.891,43.4324]] },
-  { id: "trigrad", name: "Trigradska klisura", emoji: "🕳", desc: "kroz Rodope do Đavolje grle i Trigrada (36 km)",
+  { id: "trigrad", name: "Trigradska klisura", emoji: "🕳", desc: "kroz Rodope do Đavolje grle i Trigrada (27 km)",
     startName: "Devin", endName: "Trigrad",
     wps: [[24.398,41.744],[24.361,41.651],[24.343,41.611]] },
   { id: "troyan", name: "Trojanski prevoj", emoji: "🏔", desc: "preko Beklemeta, najviši prohodan prevoj Stare planine (94 km)",
@@ -971,9 +971,9 @@ const FAMOUS_ROUTES = [
   { id: "cgtura", name: "Crna Gora velika tura", emoji: "⛰", desc: "od Rožaja preko planina do Jadrana (424 km)",
     startName: "Rožaje", endName: "Ulcinj",
     wps: [[20.1709,42.83753],[19.33044,43.32091],[18.59711,42.72441],[18.84705,42.29256],[19.23706,41.91361]] },
-  { id: "cgalb", name: "Crna Gora - Albanija krug", emoji: "🔄", desc: "kružno iz Rožaja preko severne Albanije (311 km)",
+  { id: "cgalb", name: "Crna Gora - Albanija krug", emoji: "🔄", desc: "kružno iz Rožaja: Gusinje, kanjon Cema kroz severnu Albaniju, pa Podgorica i Kolašin (340 km)",
     startName: "Rožaje", endName: "Rožaje",
-    wps: [[20.16129,42.83659],[19.2659,42.42523],[19.39774,42.80241],[19.57352,42.95244],[20.13107,42.83821]] },
+    wps: [[20.16129,42.83659],[19.873,42.842],[19.79,42.735],[19.834,42.563],[19.694,42.601],[19.556,42.437],[19.37,42.36],[19.2659,42.42523],[19.52,42.822],[19.57352,42.95244],[20.13107,42.83821]] },
   // prošireno 2026-07-22 (dangerousroads checklist: ALB/HR/RO/BG; NAŠI koridori, OSRM-verifikovani + geocode audit)
   { id: "krraba", name: "Krraba prevoj", emoji: "🏔", desc: "stari vijugavi put Tirana - Elbasan preko Krrabe (57 km)",
     startName: "Tirana", endName: "Elbasan",
@@ -3167,17 +3167,17 @@ function init() {
   /* uredničke oznake: c = zemlja, d = težina (beg/mid/adv/off), t = kratak tag */
   const ROUTE_META = {
     jadranska:{c:"HR",d:"mid",t:"legendarna D8",k:600}, djerdap:{c:"RS",d:"beg",t:"Dunav · Golubac",k:125},
-    tara:{c:"ME",d:"mid",t:"most Đurđevića",k:70}, durmitor:{c:"ME",d:"adv",t:"Sedlo 1907 m",k:80},
+    tara:{c:"ME",d:"mid",t:"most Đurđevića",k:70}, durmitor:{c:"ME",d:"adv",t:"Sedlo 1907 m",k:50},
     lovcen:{c:"ME",d:"adv",t:"25 serpentina",k:40}, ovcar:{c:"RS",d:"beg",t:"klisura · manastiri",k:85},
     uvac:{c:"RS",d:"mid",t:"vidikovci · meandri",k:55}, neretva:{c:"BA",d:"beg",t:"smaragdna reka",k:60},
     vrsic:{c:"SI",d:"adv",t:"50 serpentina · kaldrma",k:45}, transfagarasan:{c:"RO",d:"adv",t:"2034 m · legenda",k:115},
     transalpina:{c:"RO",d:"adv",t:"2145 m · iznad oblaka",k:55}, grossglockner:{c:"AT",d:"adv",t:"2504 m · putarina",k:48},
-    stelvio:{c:"IT",d:"adv",t:"48 serpentina · 2757 m",k:46}, llogara:{c:"AL",d:"mid",t:"prevoj 1027 m",k:125},
+    stelvio:{c:"IT",d:"adv",t:"48 serpentina · 2757 m",k:46}, llogara:{c:"AL",d:"mid",t:"serpentine · vidik"},
     ibarska:{c:"RS",d:"beg",t:"dolina jorgovana",k:78}, kopaonik:{c:"RS",d:"mid",t:"planinski uspon",k:60},
     sutjeska:{c:"BA",d:"mid",t:"NP Sutjeska",k:75}, una:{c:"BA",d:"beg",t:"slapovi Une",k:55},
     radika:{c:"MK",d:"mid",t:"kanjon · Mavrovo",k:45}, golija:{c:"RS",d:"mid",t:"šumski prevoji"},
     taranp:{c:"RS",d:"mid",t:"NP Tara · Zaovine"}, jerma:{c:"RS",d:"mid",t:"klisura · Poganovo"},
-    sicevo:{c:"RS",d:"beg",t:"klisura Nišave"}, vermosh:{c:"ME",d:"adv",t:"kanjon Cema · zabačeno"},
+    sicevo:{c:"RS",d:"beg",t:"klisura Nišave",k:40}, vermosh:{c:"ME",d:"adv",t:"kanjon Cema · zabačeno"},
     riviera:{c:"AL",d:"mid",t:"plaže · Himarë"}, juzalb:{c:"AL",d:"mid",t:"dolina Vjose"},
     vlasic:{c:"BA",d:"mid",t:"visoravan"}, drina:{c:"BA",d:"beg",t:"uz Drinu"},
     rama:{c:"BA",d:"beg",t:"tirkizno jezero"}, crnojevica:{c:"ME",d:"mid",t:"Pavlova strana · usko"},
@@ -3186,13 +3186,13 @@ function init() {
     iskar:{c:"BG",d:"beg",t:"defile"}, transrarau:{c:"RO",d:"mid",t:"Pietrele Doamnei"},
     bicaz:{c:"RO",d:"mid",t:"zidovi 300 m"}, ucka:{c:"HR",d:"mid",t:"Poklon · Kvarner"},
     velebit:{c:"HR",d:"adv",t:"serpentine nad morem"}, katara:{c:"GR",d:"mid",t:"Meteori · 1690 m"},
-    rugova:{c:"XK",d:"mid",t:"klisura · prevoj Kula"}, primorje:{c:"ME",d:"beg",t:"obala · plaže"},
+    rugova:{c:"XK",d:"mid",t:"klisura · prevoj Kula",k:47}, primorje:{c:"ME",d:"beg",t:"obala · plaže"},
     pester:{c:"RS",d:"mid",t:"visoravan · Sopoćani"}, lovcenprsten:{c:"ME",d:"adv",t:"njeguške serpentine"},
     goc:{c:"RS",d:"mid",t:"planinski prevoj"}, cer:{c:"RS",d:"mid",t:"vidici nad Podrinjem"},
     jastrebac:{c:"RS",d:"mid",t:"planinski put"}, debelobrdo:{c:"RS",d:"mid",t:"brdski zavoji"},
     sumadija:{c:"RS",d:"beg",t:"Rudnik · blage krivine"}, fruska:{c:"RS",d:"beg",t:"grebenski put"},
     zlatibortara:{c:"RS",d:"mid",t:"NP Tara"}, jastrebacloop:{c:"RS",d:"mid",t:"oko masiva"},
-    cetina:{c:"HR",d:"mid",t:"slapovi"}, trigrad:{c:"BG",d:"mid",t:"Đavolje grlo"},
+    cetina:{c:"HR",d:"mid",t:"slapovi"}, trigrad:{c:"BG",d:"mid",t:"Đavolje grlo",k:27},
     troyan:{c:"BG",d:"mid",t:"Beklemeto 1525 m"}, vikos:{c:"GR",d:"mid",t:"kameni mostovi"},
     nestos:{c:"GR",d:"beg",t:"meandri"}, valbona:{c:"AL",d:"mid",t:"Prokletije · NP",k:27},
     blidinje:{c:"BA",d:"mid",t:"visoravan · NP",k:65}, starapl:{c:"RS",d:"mid",t:"Stara planina"},
@@ -3211,9 +3211,11 @@ function init() {
     ["BG","Bugarska"],["RO","Rumunija"],["alpi","Alpi"],["MK","Makedonija"],["GR","Grčka"],["XK","Kosovo"],
     ["loop","Kružne"],["canyon","Kanjoni"]
   ];
-  const RCITIES = [["Beograd",44.79,20.45],["Novi Sad",45.25,19.84],["Niš",43.32,21.90],["Kragujevac",44.01,20.92],["Čačak",43.89,20.35],["Kraljevo",43.72,20.69],["Užice",43.85,19.84],["Kruševac",43.58,21.33],["Novi Pazar",43.14,20.51],["Pirot",43.15,22.59],["Loznica",44.53,19.22],["Subotica",46.10,19.66],["Zrenjanin",45.38,20.39],["Smederevo",44.66,20.93],["Podgorica",42.44,19.26],["Nikšić",42.77,18.94],["Budva",42.29,18.84],["Kotor",42.42,18.77],["Sarajevo",43.85,18.36],["Banja Luka",44.77,17.19],["Mostar",43.34,17.81],["Tuzla",44.54,18.67],["Zagreb",45.81,15.98],["Split",43.51,16.44],["Rijeka",45.33,14.44],["Dubrovnik",42.65,18.09],["Ljubljana",46.06,14.51],["Skoplje",41.99,21.43],["Ohrid",41.12,20.80],["Tirana",41.33,19.82],["Priština",42.66,21.17],["Sofija",42.70,23.32],["Plovdiv",42.14,24.75],["Solun",40.64,22.94],["Bukurešt",44.43,26.10],["Temišvar",45.76,21.23]];
+  const RCITIES = [["Beograd",44.79,20.45],["Novi Sad",45.25,19.84],["Niš",43.32,21.90],["Kragujevac",44.01,20.92],["Čačak",43.89,20.35],["Kraljevo",43.72,20.69],["Užice",43.85,19.84],["Kruševac",43.58,21.33],["Novi Pazar",43.14,20.51],["Pirot",43.15,22.59],["Loznica",44.53,19.22],["Subotica",46.10,19.66],["Zrenjanin",45.38,20.39],["Smederevo",44.66,20.93],["Podgorica",42.44,19.26],["Nikšić",42.77,18.94],["Budva",42.29,18.84],["Kotor",42.42,18.77],["Sarajevo",43.85,18.36],["Banja Luka",44.77,17.19],["Mostar",43.34,17.81],["Tuzla",44.54,18.67],["Zagreb",45.81,15.98],["Split",43.51,16.44],["Rijeka",45.33,14.44],["Dubrovnik",42.65,18.09],["Ljubljana",46.06,14.51],["Skoplje",41.99,21.43],["Ohrid",41.12,20.80],["Tirana",41.33,19.82],["Priština",42.66,21.17],["Sofija",42.70,23.32],["Plovdiv",42.14,24.75],["Solun",40.64,22.94],["Bukurešt",44.43,26.10],["Temišvar",45.76,21.23],["Šibenik",43.74,15.89],["Zadar",44.12,15.23],["Osijek",45.55,18.69],["Šabac",44.75,19.69],["Valjevo",44.27,19.89],["Vranje",42.55,21.90],["Bor",44.07,22.10],["Herceg Novi",42.45,18.53],["Ulcinj",41.93,19.21],["Bijeljina",44.76,19.22],["Bitola",41.03,21.33],["Bihać",44.82,15.87]];
 
   const st = { q:"", fil:"sve", diff:"sve", geo:null };  // geo = {lat,lon}
+  const CNAME = { RS:"Srbija", ME:"Crna Gora", BA:"BiH Bosna i Hercegovina", AL:"Albanija", HR:"Hrvatska", BG:"Bugarska", RO:"Rumunija", MK:"Makedonija", GR:"Grčka", XK:"Kosovo", SI:"Slovenija Alpi", AT:"Austrija Alpi", IT:"Italija Alpi" };
+  const fold = (s) => s.toLowerCase().replace(/č|ć/g,"c").replace(/š/g,"s").replace(/ž/g,"z").replace(/đ/g,"dj").replace(/ă|â/g,"a").replace(/ș/g,"s").replace(/ț/g,"t").replace(/ë/g,"e");
   const isLoop = (f) => f.startName.toLowerCase() === f.endName.toLowerCase();
   const isCanyon = (f) => /kanjon|klisur|defile|cheile|klanac/i.test(f.name + " " + f.desc);
   function lenKm(f){
@@ -3231,14 +3233,15 @@ function init() {
   function thumbSvg(f){
     const xs = f.wps.map(w=>w[0]), ys = f.wps.map(w=>w[1]);
     const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-    const sp = Math.max(x1-x0, y1-y0, 1e-6), pad = 9, sz = 60 - pad*2;
     const cx = (x0+x1)/2, cy = (y0+y1)/2;
-    const pts = f.wps.map(w=>[(pad+sz/2)+((w[0]-cx)/sp)*sz, (pad+sz/2)-((w[1]-cy)/sp)*sz]);
+    const kx = Math.cos(cy*Math.PI/180);   // lon stepen je kraći od lat stepena (~0.72x na 44°N) - bez ovoga su sličice razvučene
+    const sp = Math.max((x1-x0)*kx, y1-y0, 1e-6), pad = 9, sz = 60 - pad*2;
+    const pts = f.wps.map(w=>[(pad+sz/2)+((w[0]-cx)*kx/sp)*sz, (pad+sz/2)-((w[1]-cy)/sp)*sz]);
     const dstr = pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
     return '<svg viewBox="0 0 60 60"><path d="'+dstr+'" stroke="#f97316" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
   function visible(){
-    const q = st.q.trim().toLowerCase();
+    const q = fold(st.q.trim());
     let out = FAMOUS_ROUTES.filter(f=>{
       const meta = ROUTE_META[f.id] || {c:"?",d:"mid",t:""};
       if (st.diff !== "sve" && meta.d !== st.diff) return false;
@@ -3246,7 +3249,7 @@ function init() {
       else if (st.fil === "canyon" && !isCanyon(f)) return false;
       else if (st.fil === "alpi" && !["SI","AT","IT"].includes(meta.c)) return false;
       else if (!["sve","loop","canyon","alpi"].includes(st.fil) && meta.c !== st.fil) return false;
-      if (q && !(f.name+" "+f.desc+" "+f.startName+" "+f.endName+" "+meta.t).toLowerCase().includes(q)) return false;
+      if (q && !fold(f.name+" "+f.desc+" "+f.startName+" "+f.endName+" "+meta.t+" "+(CNAME[meta.c]||"")).includes(q)) return false;
       return true;
     });
     if (st.geo) out = out.map(f=>({f, d:distKm(f)})).sort((a,b)=>a.d-b.d).map(x=>x.f);
@@ -3284,6 +3287,13 @@ function init() {
     st.fil = t.dataset.f;
     filWrap.querySelectorAll(".rf").forEach(x=>x.classList.toggle("on", x===t));
     render();
+  });
+  /* fade maska samo dok ima još sadržaja desno (na kraju skrola bez maske) */
+  ["ruteFil","ruteDiff"].forEach(id=>{
+    const el = document.getElementById(id);
+    const upd = ()=>{ const end = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+      el.style.webkitMaskImage = el.style.maskImage = end ? "none" : "linear-gradient(90deg,#000 90%,transparent)"; };
+    el.addEventListener("scroll", upd, {passive:true}); setTimeout(upd, 100);
   });
   document.getElementById("ruteDiff").addEventListener("click",(e)=>{
     const t = e.target.closest(".dchip"); if (!t) return;
@@ -3324,8 +3334,12 @@ function init() {
     if (planerA) planerA.click();
     document.body.classList.add("planning");
     try { if (typeof map !== "undefined" && map && map.resize) setTimeout(()=>map.resize(), 80); } catch(e2) {}
-    const fs = document.getElementById("famous");
-    if (fs){ fs.value = card.dataset.id; fs.dispatchEvent(new Event("change")); }
+    const id = card.dataset.id;
+    (function applyFamous(tries){   // init() puni #famous tek posle bikes.json - sačekaj opciju (spora mreža)
+      const fs = document.getElementById("famous");
+      if (fs && fs.querySelector('option[value="'+id+'"]')){ fs.value = id; fs.dispatchEvent(new Event("change")); }
+      else if (tries > 0) setTimeout(()=>applyFamous(tries-1), 250);
+    })(48);
   });
   render();
 })();
