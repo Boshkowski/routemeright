@@ -448,10 +448,17 @@
   /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
   #rideBar { display: none; }
   @media (max-width: 900px) {
-    body.riding #rideBar { display: flex; position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top)); z-index: 40;
-      background: linear-gradient(135deg, #f97316, #ea580c); border-radius: 15px; padding: 12px 14px; align-items: center; gap: 10px; box-shadow: 0 10px 26px rgba(249,115,22,.4); }
-    #rideBar .t { flex: 1; color: #fff; } #rideBar b { font-size: 19px; font-weight: 900; } #rideBar span { display: block; font-size: 12px; font-weight: 700; opacity: .9; }
-    #rideBar button { background: rgba(255,255,255,.18); border: none; color: #fff; width: 34px; height: 34px; border-radius: 10px; font-size: 15px; font-weight: 900; cursor: pointer; flex: none; }
+    body.riding #rideBar { display: block; position: fixed; left: 10px; right: 10px; top: calc(8px + env(safe-area-inset-top)); z-index: 40; }
+    #rideBar .navb { display: flex; align-items: center; gap: 13px; background: linear-gradient(160deg, #15803d, #166534); border-radius: 17px; padding: 13px 15px; box-shadow: 0 10px 28px rgba(0,0,0,.45); }
+    #rideBar .arr { font-size: 34px; line-height: 1; color: #fff; flex: none; width: 44px; text-align: center; font-weight: 900; }
+    #rideBar .nt { flex: 1; min-width: 0; color: #fff; }
+    #rideBar .nt b { display: block; font-size: 25px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+    #rideBar .nt span { display: block; font-size: 14.5px; font-weight: 800; margin-top: 2px; }
+    #rideBar .nt .sub { font-size: 12px; font-weight: 600; opacity: .85; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #rideBar .meta { display: flex; align-items: center; gap: 7px; background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.2); border-radius: 13px; padding: 8px 12px; margin-top: 7px; color: #e2e8f0; font-size: 13px; font-weight: 800; }
+    #rideBar .meta .dot { color: #64748b; }
+    #rideBar .meta .sp { margin-left: auto; color: #94a3b8; font-weight: 700; }
+    #rideBar .meta button { background: rgba(148,163,184,.15); border: none; color: #fff; width: 30px; height: 30px; border-radius: 9px; font-size: 14px; font-weight: 900; cursor: pointer; flex: none; }
     body.riding #homeChrome, body.riding #homeSheet { display: none !important; }
     #homeSheet { transition: transform .28s cubic-bezier(.2,.8,.2,1); touch-action: pan-y; }
     #homeSheet.collapsed { transform: translateY(calc(100% - 30px)); }
@@ -784,7 +791,10 @@
       <button class="sadv" id="sAdv">⚙ Napredno planiranje - vreme polaska, kružna tura, motor</button>
     </div>
   </div>
-  <div id="rideBar"><div class="t"><b id="rideRem">-</b><span id="rideEta"></span></div><button id="rideX" aria-label="Prekini vožnju">✕</button></div>
+  <div id="rideBar">
+    <div class="navb"><span class="arr" id="rideArr">↑</span><div class="nt"><b id="rideDist">-</b><span id="rideInstr">Krećemo</span><span class="sub" id="rideStreet"></span></div></div>
+    <div class="meta"><span id="rideRem">-</span><span class="dot">·</span><span id="rideEta"></span><span class="sp" id="rideKmh"></span><button id="rideX" aria-label="Prekini vožnju">✕</button></div>
+  </div>
   <div id="homeFabs">
     <button data-fab="layers" aria-label="Slojevi"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></button>
     <button data-fab="gps" aria-label="Moja lokacija"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.5" fill="#f97316" stroke="none"/></svg></button>
@@ -1299,7 +1309,8 @@ function tripToRoute(trip, label) {
     if (m.ferry) hasFerry = true;
   }
   return { coords, cumDist, cumDur, totalDist: trip.summary.length * 1000, totalDur: trip.summary.time, label,
-    tollKm, roughKm, roughAt, hasFerry, tollSegs };
+    tollKm, roughKm, roughAt, hasFerry, tollSegs,
+    maneuvers: mans };   // TBT: instrukcije skretanja (begin_shape_index -> coords indeks)
 }
 async function valhallaRoute(from, to, style) {
   const vias = (state.vias || []).map((it) => ({ lat: it.v[1], lon: it.v[0], type: it.t === "stop" ? "break" : "through" }));
@@ -3556,36 +3567,156 @@ function gpsPrefill(force) {   // polazak = trenutna lokacija (moze da se prekuc
     } catch (e) {}
   }, () => {}, { maximumAge: 60000, timeout: 8000 });
 }
-const RIDE = { watch: null };
+const RIDE = { watch: null, nav: null, lock: null, lastFix: 0, offCount: 0, lastReroute: 0, lastSpeak: 0 };
+/* ćirilica -> latinica (imena ulica iz OSM-a su ćirilična) */
+const C2L = {"а":"a","б":"b","в":"v","г":"g","д":"d","ђ":"đ","е":"e","ж":"ž","з":"z","и":"i","ј":"j","к":"k","л":"l","љ":"lj","м":"m","н":"n","њ":"nj","о":"o","п":"p","р":"r","с":"s","т":"t","ћ":"ć","у":"u","ф":"f","х":"h","ц":"c","ч":"č","џ":"dž","ш":"š"};
+function cyr2lat(t) {
+  return String(t || "").split("").map((ch) => {
+    const lo = ch.toLowerCase(), m = C2L[lo];
+    if (m === undefined) return ch;
+    return ch === lo ? m : (m.length > 1 ? m[0].toUpperCase() + m.slice(1) : m.toUpperCase());
+  }).join("");
+}
+/* srpske instrukcije iz Valhalla type kodova (jezik "sr" ne postoji na serveru - generisemo sami) */
+const MAN_SR = {
+  1:["↑","Kreni"],2:["↱","Kreni desno"],3:["↰","Kreni levo"],
+  4:["🏁","Stigao si na odredište"],5:["🏁","Odredište je desno"],6:["🏁","Odredište je levo"],
+  7:["↑","Nastavi pravo"],8:["↑","Nastavi pravo"],
+  9:["↗","Blago desno"],10:["↱","Skreni desno"],11:["↘","Oštro desno"],
+  12:["↩","Polukružno okretanje"],13:["↩","Polukružno okretanje"],
+  14:["↙","Oštro levo"],15:["↰","Skreni levo"],16:["↖","Blago levo"],
+  17:["↑","Priključak pravo"],18:["↱","Priključak desno"],19:["↰","Priključak levo"],
+  20:["↱","Izlaz desno"],21:["↰","Izlaz levo"],
+  22:["↑","Nastavi pravo"],23:["⇗","Drži desnu traku"],24:["⇖","Drži levu traku"],
+  25:["⇑","Uključi se"],26:["↻","Kružni tok"],27:["↻","Izađi iz kružnog toka"],
+  28:["⛴","Trajekt"],29:["⛴","Silazak sa trajekta"],37:["⇗","Uključi se desno"],38:["⇖","Uključi se levo"]
+};
+function srMan(m) {
+  const base = MAN_SR[m.type] || ["↑", "Nastavi"];
+  let t = base[1];
+  if (m.type === 26 && m.roundabout_exit_count) t = "Kružni tok - " + m.roundabout_exit_count + ". izlaz";
+  const street = cyr2lat((m.street_names || [])[0] || "");
+  return { arr: base[0], t, street, arrive: m.type >= 4 && m.type <= 6 };
+}
+function fmtM(d) { return d >= 950 ? (d / 1000).toFixed(1).replace(".", ",") + " km" : Math.max(0, Math.round(d / 10) * 10) + " m"; }
+function speakSr(text) {
+  try {
+    if (!window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance(text);
+    const vs = speechSynthesis.getVoices();
+    u.voice = vs.find((v) => /^sr/i.test(v.lang)) || vs.find((v) => /^hr/i.test(v.lang)) || null;   // iOS nema srpski -> hrvatska Lana cita latinicu ok
+    u.lang = u.voice ? u.voice.lang : "hr-HR"; u.rate = 1.02;
+    RIDE._u = u;   // drži referencu (iOS GC bug gasi govor)
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch (e) {}
+}
+async function rideLock() {
+  try { RIDE.lock = await navigator.wakeLock.request("screen"); } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => {   // iOS gubi lock pri svakom odlasku u pozadinu
+  if (document.visibilityState === "visible" && document.body.classList.contains("riding")) rideLock();
+});
+function buildNav(route) {
+  const mans = (route.maneuvers || []).filter((m) => m.type !== 0)
+    .map((m) => { const i = Math.min(m.begin_shape_index, route.cumDist.length - 1);
+      return { ...m, d: route.cumDist[i], sr: srMan(m), spoke400: false, spoke90: false }; });
+  return { mans, next: 0 };
+}
+function navProject(route, lo, la) {   // najbliza tacka rute: grubi sken pa fino oko pogotka
+  const coords = route.coords, stepN = Math.max(1, Math.floor(coords.length / 400));
+  let best = 1e18, bi = 0;
+  for (let i = 0; i < coords.length; i += stepN) {
+    const dx = (coords[i][0] - lo) * 78, dy = (coords[i][1] - la) * 111;
+    const d = dx * dx + dy * dy; if (d < best) { best = d; bi = i; }
+  }
+  for (let i = Math.max(0, bi - stepN); i < Math.min(coords.length, bi + stepN + 1); i++) {
+    const dx = (coords[i][0] - lo) * 78, dy = (coords[i][1] - la) * 111;
+    const d = dx * dx + dy * dy; if (d < best) { best = d; bi = i; }
+  }
+  return { i: bi, offM: Math.sqrt(best) * 1000 };
+}
+async function rideReroute(route, lo, la) {
+  const now = Date.now();
+  if (now - RIDE.lastReroute < 20000) return;
+  RIDE.lastReroute = now;
+  try {
+    document.getElementById("rideInstr").textContent = "Menjam rutu…";
+    speakSr("Menjam rutu.");
+    const to = state.geocode && state.geocode.to; if (!to) return;
+    const style = ROUTE_STYLES.find((x) => route.label && route.label.startsWith(x.label.split(" ")[0])) || ROUTE_STYLES[1];
+    const savedVias = state.vias; state.vias = [];   // reroute ide direktno ka cilju
+    const nr = await valhallaRoute({ lat: la, lon: lo }, to, style);
+    state.vias = savedVias;
+    Object.assign(route, nr);   // mutiraj isti objekat (ostatak app-a drzi referencu)
+    RIDE.nav = buildNav(route);
+    const src = map.getSource("seg");
+    if (src) src.setData({ type: "FeatureCollection", features: [{ type: "Feature", properties: { color: "#22c55e" },
+      geometry: { type: "LineString", coordinates: route.coords } }] });
+  } catch (e) { /* zadrzi staru rutu, pokusace opet */ }
+}
 function startRide() {
   const route = (typeof state !== "undefined" && state.routes) ? state.routes[state.selected] : null;
   if (!route) return;
   if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
-  const cum = route.cumDist, coords = route.coords, total = cum[cum.length - 1];
-  const stepN = Math.max(1, Math.floor(coords.length / 400));
+  RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0;
+  rideLock();
+  try { const u = new SpeechSynthesisUtterance(""); speechSynthesis.speak(u); } catch (e) {}   // otkljucaj TTS na user gesture (iOS)
+  if (!localStorage.getItem("rmr2_mutehint") && /iPhone|iPad/.test(navigator.userAgent)) {
+    try { localStorage.setItem("rmr2_mutehint", "1"); } catch (e) {}
+    setTimeout(() => speakSr("Krećemo. Ako me ne čuješ, isključi nečujni režim na telefonu."), 400);
+  } else setTimeout(() => speakSr("Krećemo."), 400);
+  const total = route.cumDist[route.cumDist.length - 1];
   RIDE.watch = navigator.geolocation.watchPosition((p) => {
     const la = p.coords.latitude, lo = p.coords.longitude;
+    const pr = navProject(route, lo, la);
+    const d = route.cumDist[pr.i];
+    // van rute? (2 uzastopna fiksa >60 m)
+    if (pr.offM > 60) { if (++RIDE.offCount >= 2) { RIDE.offCount = 0; rideReroute(route, lo, la); } }
+    else RIDE.offCount = 0;
+    // sledeci manevar
+    const nav = RIDE.nav;
+    while (nav.next < nav.mans.length && nav.mans[nav.next].d - d < -30) nav.next++;
+    const m = nav.mans[nav.next];
+    let distTo = m ? Math.max(0, m.d - d) : Math.max(0, total - d);
+    if (m) {
+      document.getElementById("rideArr").textContent = m.sr.arr;
+      document.getElementById("rideDist").textContent = fmtM(distTo);
+      document.getElementById("rideInstr").textContent = m.sr.t;
+      document.getElementById("rideStreet").textContent = m.sr.street;
+      const spd = p.coords.speed != null ? p.coords.speed * 3.6 : 0;
+      if (!m.spoke400 && distTo < (spd > 22 ? 600 : 400) && distTo > 120) { m.spoke400 = true;
+        speakSr("Za " + Math.round(distTo / 50) * 50 + " metara " + m.sr.t.toLowerCase() + (m.sr.street ? " na " + m.sr.street : "")); }
+      if (!m.spoke90 && distTo <= 95) { m.spoke90 = true;
+        speakSr(m.sr.arrive ? m.sr.t : m.sr.t + (m.sr.street ? ", na " + m.sr.street : "")); }
+    }
+    // dolazak
+    const remM = Math.max(0, total - d);
+    if (remM < 35 && (!m || m.sr.arrive)) {
+      document.getElementById("rideInstr").textContent = "Stigao si! 🎉";
+      document.getElementById("rideDist").textContent = "";
+      setTimeout(stopRide, 6000);
+    }
+    // meta traka
+    const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total));
+    document.getElementById("rideRem").textContent = (remM / 1000).toFixed(remM < 10000 ? 1 : 0) + " km";
+    document.getElementById("rideEta").textContent = "~" + new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+    if (p.coords.speed != null) document.getElementById("rideKmh").textContent = Math.round(p.coords.speed * 3.6) + " km/h";
+    // kamera: blizi zoom pred skretanje
     try {
-      map.easeTo({ center: [lo, la], zoom: 15.5, pitch: 50,
+      const z = distTo < 250 ? 16.6 : distTo < 700 ? 16 : 15.3;
+      map.easeTo({ center: [lo, la], zoom: z, pitch: 52,
         bearing: (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : map.getBearing(),
         duration: 900 });
     } catch (e) {}
-    let best = 1e18, bi = 0;   // najbliža tačka rute (uzorkovano ~400 tačaka)
-    for (let i = 0; i < coords.length; i += stepN) {
-      const dx = (coords[i][0] - lo) * 78, dy = (coords[i][1] - la) * 111;
-      const d = dx * dx + dy * dy; if (d < best) { best = d; bi = i; }
-    }
-    const remM = Math.max(0, total - cum[Math.min(bi, cum.length - 1)]);
-    const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total));
-    document.getElementById("rideRem").textContent = (remM / 1000).toFixed(remM < 10000 ? 1 : 0) + " km";
-    document.getElementById("rideEta").textContent = "dolazak ~" + new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
   }, () => { alert("Ne mogu da dobijem lokaciju - proveri dozvolu za lokaciju u browseru."); stopRide(); },
-  { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 });
+  { enableHighAccuracy: true, maximumAge: 1500, timeout: 15000 });
 }
 function stopRide() {
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
+  try { speechSynthesis.cancel(); } catch (e) {}
+  try { if (RIDE.lock) { RIDE.lock.release(); RIDE.lock = null; } } catch (e) {}
   document.body.classList.remove("riding");
 }
 (function(){
