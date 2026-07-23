@@ -334,6 +334,7 @@
     .pchev { flex: none; font-size: 12px; color: var(--c-muted-fg); transition: transform 320ms var(--ease); }
     #panel.open .pchev { transform: rotate(180deg); }
     .map-tools { top: calc(10px + env(safe-area-inset-top)); }
+    .maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right { bottom: calc(58px + env(safe-area-inset-bottom)); opacity: .7; }
     .lay-pop { top: calc(54px + env(safe-area-inset-top)); }
     .compass-btn { top: calc(178px + env(safe-area-inset-top)); right: 14px; left: auto; width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.16); z-index: 12; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
     body.riding .compass-btn { top: auto; bottom: calc(190px + env(safe-area-inset-bottom)); }
@@ -345,7 +346,7 @@
     #bottomnav {
       display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
       height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
-      background: rgba(11,17,32,.98); border-top: 1px solid rgba(148,163,184,.16);
+      background: #0b1120; border-top: 1px solid rgba(148,163,184,.16);
     }
     #bottomnav a {
       flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
@@ -479,6 +480,11 @@
     body.qplan.planning #panel { height: 54vh; height: 54dvh; }   /* do pola kao Google; detalji sire */
     body.qplan.planning.qdetails #panel { height: 86vh; height: 86dvh; }
     body.qplan.planning:not(.qdetails) #results > .card:not(#card-routes) { display: none !important; }
+    body.qplan.planning:not(.qdetails) #resCta { position: static; padding: 6px 0 10px; background: none; }
+    body.qplan.planning:not(.qdetails) #resHero .rslide { height: 158px; }
+    body.qplan.planning:not(.qdetails) #resHero .rslide .rcard { height: calc(100% - 25px); overflow: hidden; }
+    body.qplan.planning:not(.qdetails) #resHero .rcurv .top { margin-bottom: 7px; }
+    body.qplan.planning:not(.qdetails) #resHero .rcurv .lr .b svg { display: none; }
     body.qplan.planning:not(.qdetails) #resHero .rcurv .sevbar, body.qplan.planning:not(.qdetails) #resHero .rcurv .sevleg { display: none; }
     body.qplan.planning:not(.qdetails) #resHero .relev svg { height: 56px; }
     body.qplan.planning:not(.qdetails) #resHero .hx .v { font-size: 16.5px; }
@@ -3272,6 +3278,13 @@ async function plan() {
     }
     if (!fromQ || (!roundGen && !toQ)) throw new Error(roundGen ? "Upiši polazak (grad iz kog kreće krug)." : "Upiši i polazak i destinaciju.");
     const arriveMode = !roundGen && $("timeMode").value === "arrive";
+    try {   // qplan "Polazak: sada": depart ne sme da ostane star (kreni 02:00 u 01:09)
+      const qmEl = document.getElementById("qMode");
+      if (document.body.classList.contains("qplan") && qmEl && qmEl.value === "now") {
+        const dnow = new Date(Date.now() + 3 * 60000), p2 = (n) => String(n).padStart(2, "0");
+        $("depart").value = `${dnow.getFullYear()}-${p2(dnow.getMonth() + 1)}-${p2(dnow.getDate())}T${p2(dnow.getHours())}:${p2(dnow.getMinutes())}`;
+      }
+    } catch (e) {}
     const timeInput = $("depart").value ? new Date($("depart").value) : new Date();
     let departure = arriveMode ? new Date() : timeInput;
     if (departure < new Date()) departure = new Date();
