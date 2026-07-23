@@ -411,6 +411,7 @@
     #homeFabs button[data-fab="gps"] { position: fixed; right: 14px; top: auto; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 12; }
     body.planning:not(.riding) #homeFabs button[data-fab="gps"] { display: none; }
     body.riding #homeFabs button[data-fab="gps"] { bottom: calc(132px + env(safe-area-inset-bottom)); }
+    #homeFabs button[data-fab="gps"].recenter { border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,.35), 0 6px 18px rgba(0,0,0,.35); }
 
     #homeSheet { display: block; position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 11; background: rgba(15,23,42,.97); border-top: 1px solid rgba(148,163,184,.16); border-radius: 22px 22px 0 0; padding: 8px 16px 18px; box-shadow: 0 -10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
     #homeSheet .grab { width: 40px; height: 4.5px; border-radius: 999px; background: #475569; margin: 0 auto 12px; }
@@ -620,7 +621,7 @@
     #resHero .hx.wx.bad { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.3); } #resHero .hx.wx.bad .k { color: #fca5a5; } #resHero .hx.wx.bad .v { color: #ef4444; }
     #resHero .hx.dif { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); }
     #resHero .hx.dif .k { color: #fcd34d; } #resHero .hx.dif .v { color: #f59e0b; }
-    #resHero .hx.dif .sub { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 4px; }
+    #resHero .hx .sub { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 4px; line-height: 1.35; }
     #resHero .rmrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 100%; }
     #resHero .m { display: flex; flex-direction: column; justify-content: center; }
     #resHero .m .v { font-size: 17px; }
@@ -833,7 +834,7 @@
       <div id="resHero">
         <div class="rslide">
           <div class="rhero">
-            <div class="hx wx" id="rhWx"><div class="k">Vreme na ruti</div><div class="v" id="rhWxV">-</div></div>
+            <div class="hx wx" id="rhWx"><div class="k">Vreme na ruti</div><div class="v" id="rhWxV">-</div><div class="sub" id="rhWxS"></div></div>
             <div class="hx dif"><div class="k">Težina</div><div class="v" id="rhDifV">-</div><div class="sub" id="rhDifS"></div></div>
           </div>
         </div>
@@ -3247,6 +3248,7 @@ async function selectRoute(departure) {
       if (route.consensus === undefined) route.consensus = await fetchConsensus(route, departure);
       renderConsensus(route, departure);
     })()]);   // allSettled: jedan pali servis vise ne rusi trosak/tezinu/hero
+  state._zones = zones;   // MORA pre hero rendera - hero cita razlog iz zona
   try { renderResultHero(route); } catch (e) {}   // Faza 3: mobilni hero (svi podaci su sad na route objektu)
   try {   // "Nedavno" istorija za brzo dugme
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
@@ -3254,7 +3256,6 @@ async function selectRoute(departure) {
     localStorage.setItem("rmr2_recent", JSON.stringify(rec.filter((x, i, a) => a.findIndex((y) => y.from === x.from && y.to === x.to) === i).slice(0, 10)));
     if (typeof updateQuickLabels === "function") updateQuickLabels();
   } catch (e) {}
-  state._zones = zones;   // za wx traku tokom vožnje
   logState({ phase: "done", route: state.selected, worst, warnings: zones.length,
     km: Math.round(route.totalDist / 1000), tollKm: route.tollKm === null ? null : Math.round(route.tollKm),
     vias: state.vias.length });
@@ -3749,7 +3750,7 @@ function init() {
   /* ---- HOME kao maketa: otvaranje/zatvaranje planera + čipovi + FAB ---- */
   const $id = (x) => document.getElementById(x);
   function openPlanner(preset) {
-    document.body.classList.remove("qplan");
+    if (matchMedia("(max-width:900px)").matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }   // R8: stari formular ne postoji na mobilnom
     document.body.classList.add("planning");
     setTimeout(rz, 80);
     try {
@@ -3776,7 +3777,10 @@ function init() {
   const fabMap = {
     layers: () => openLayersSheet(),
     tilt: () => { try { const p = map.getPitch() > 20; map.easeTo({ pitch: p ? 0 : 55, duration: 500 }); } catch (e) {} },
-    gps: () => { const b = document.querySelector(".maplibregl-ctrl-geolocate"); if (b) b.click(); },
+    gps: () => {
+      if (document.body.classList.contains("riding") && typeof rideRecenter === "function") { rideRecenter(); return; }
+      const b = document.querySelector(".maplibregl-ctrl-geolocate"); if (b) b.click();
+    },
     theme: () => { /* dan/noć - poveži se u sledećoj fazi */ },
   };
   document.querySelectorAll("#homeFabs button").forEach((b) => {
@@ -4123,6 +4127,11 @@ function startRide() {
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
+  if (!RIDE._freeReg) {   // registracija OVDE - na load-u je map jos null (tihi catch je gutao dragstart!)
+    RIDE._freeReg = true;
+    try { map.on("dragstart", rideFree); map.on("zoomstart", rideFree); map.on("rotatestart", rideFree); } catch (e) {}
+  }
+  const gfab = document.querySelector('[data-fab="gps"]'); if (gfab) gfab.classList.remove("recenter");
   try { map.setTerrain(null); } catch (e) {}   // teren OFF u navigaciji (sece pitch/zoom na strminama - lekcija iz 3D demoa)
   // reset banera (druga voznja ne sme da krene sa tekstom prosle) + "trazim GPS" stanje
   const _nc = document.querySelector("#rideBar .navcard");
@@ -4216,9 +4225,10 @@ function startRide() {
     document.getElementById("rideRem").textContent = "još " + (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
     document.getElementById("rideEta").textContent = new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
     if (p.coords.speed != null) document.getElementById("rideKmh").textContent = Math.round(p.coords.speed * 3.6);
+    RIDE.lastPos = [lo, la, (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : null];
     // kamera: blizi zoom pred skretanje
     try {
-      if (Date.now() > (RIDE.freeCamUntil || 0)) {   // korisnik je pomerio mapu -> pusti ga 8s pa nastavi pracenje
+      if (Date.now() > (RIDE.freeCamUntil || 0)) {   // korisnik pomerio mapu -> slobodno dok ne klikne lokaciju
         const z = distTo < 250 ? 16.6 : distTo < 700 ? 16 : 15.3;
         const cam = { center: [lo, la], zoom: z, pitch: 52,
           bearing: (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : map.getBearing() };
@@ -4315,7 +4325,22 @@ function stopRide() {
     rx.classList.add("arm"); rx.textContent = "Prekini?";
     setTimeout(() => { rx.classList.remove("arm"); rx.textContent = "✕"; }, 2500);
   });
-  try { map.on("dragstart", (e) => { if (e && e.originalEvent && document.body.classList.contains("riding")) RIDE.freeCamUntil = Date.now() + 8000; }); } catch (e) {}
+window.rideFree = function (e) {   // na window - definicija je unutar IIFE a koristi je startRide/fabMap iz drugih scope-ova
+  if (e && e.originalEvent && document.body.classList.contains("riding")) {
+    RIDE.freeCamUntil = Infinity;   // R8: slobodan pregled dokle god hoces; dugme lokacije vraca pracenje
+    const g = document.querySelector('[data-fab="gps"]'); if (g) g.classList.add("recenter");
+  }
+};
+window.rideRecenter = function () {
+  RIDE.freeCamUntil = 0;
+  const g = document.querySelector('[data-fab="gps"]'); if (g) g.classList.remove("recenter");
+  if (RIDE.lastPos) {
+    const cam = { center: [RIDE.lastPos[0], RIDE.lastPos[1]], zoom: 16, pitch: 52,
+      bearing: RIDE.lastPos[2] != null ? RIDE.lastPos[2] : map.getBearing() };
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) map.jumpTo(cam);
+    else map.easeTo({ ...cam, duration: 700 });
+  }
+};
   const rm = document.getElementById("rideMute");
   if (rm) {
     const sync = () => { const off = localStorage.getItem("rmr2_mute") === "1"; rm.textContent = off ? "🔇" : "🔊"; rm.classList.toggle("off", off); };
@@ -4344,10 +4369,21 @@ function renderResultHero(route) {
   const wx = document.getElementById("rhWx");
   wx.className = "hx wx " + cls;
   document.getElementById("rhWxV").textContent = cls === "ok" ? "Suvo" : cls === "warn" ? "Oprez" : "Nevreme";
-  // težina
+  try {   // ZASTO: najgora zona iz prognoze
+    const zs = state._zones || [], wxs = document.getElementById("rhWxS");
+    if (zs.length) {
+      const worst = zs.reduce((b, z) => (z.level > b.level ? z : b), zs[0]);
+      const extra = worst.reasons.length > 1 ? " +" + (worst.reasons.length - 1) : "";
+      const kmTxt = worst.from.km.toFixed(0) === worst.to.km.toFixed(0) ? `km ${worst.from.km.toFixed(0)}` : `km ${worst.from.km.toFixed(0)}-${worst.to.km.toFixed(0)}`;
+      wxs.textContent = `${worst.reasons[0]}${extra} · ${kmTxt} · ~${fmtTime(worst.from.eta)}`;
+    } else wxs.textContent = cls === "ok" ? "čista prognoza za sva vremena prolaska" : "";
+  } catch (e) {}
+  // težina + ZASTO (krivine/serpentine/uspon)
   const c = route._curves;
   document.getElementById("rhDifV").textContent = route._hard ? (route._hard[0].toUpperCase() + route._hard.slice(1)) : "…";
-  document.getElementById("rhDifS").textContent = c ? c.klasa : "";
+  document.getElementById("rhDifS").textContent = c
+    ? `${c.L + c.R} krivina · ${c.sharp} serpentina${route._elevStats ? " · uspon " + route._elevStats.ascent + " m" : ""} · ${c.klasa}`
+    : "";
   // metrike
   document.getElementById("rhKm").innerHTML = Math.round(route.totalDist / 1000) + "<small>km</small>";
   const h = Math.floor(route.totalDur / 3600), mn = Math.round(route.totalDur % 3600 / 60);
