@@ -258,10 +258,12 @@
   .hz-pop button:active { transform: scale(.95); background: rgba(249,115,22,.18); border-color: rgba(249,115,22,.5); }
   .hz-pop .hzcancel { width: 100%; flex-direction: row; justify-content: center; margin-top: 10px; padding: 12px;
     background: none; border-color: transparent; color: #94a3b8; font-size: 14px; }
+  .hz-back { position: fixed; inset: 0; z-index: 238; background: rgba(2,6,23,.45); }
   @media (max-width: 900px) {
     .hz-pop { position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important;
       bottom: 0 !important; width: 100% !important; border-radius: 22px 22px 0 0; border-left: none; border-right: none; border-bottom: none;
-      padding: 16px 18px calc(20px + env(safe-area-inset-bottom)); z-index: 70; }
+      padding: 16px 18px calc(26px + env(safe-area-inset-bottom)); z-index: 240;
+      background: rgba(15,23,42,.92); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
   }
   @keyframes pop { from { opacity: 0; transform: scale(.95); } }
   #elevSvg { display: block; background: rgba(255,255,255,.03); border: 1px solid var(--c-border); border-radius: 8px; }
@@ -313,7 +315,7 @@
     #peekBar {
       display: block; position: sticky; top: 0; z-index: 3;
       margin: 0 -16px 4px; padding: 8px 16px 10px;
-      background: linear-gradient(rgba(15,23,42,.99) 72%, rgba(15,23,42,.55) 92%, rgba(15,23,42,0));
+      background: linear-gradient(rgba(15,23,42,.99) 84%, rgba(15,23,42,.92) 95%, rgba(15,23,42,.6));
       touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none;
     }
     .grabber { width: 40px; height: 4.5px; border-radius: 999px; background: #475569; margin: 0 auto; }
@@ -401,6 +403,9 @@
     #homeFabs { display: flex; position: fixed; right: 14px; top: calc(122px + env(safe-area-inset-top)); z-index: 12; flex-direction: column; gap: 10px; }
     #homeFabs button { width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.2); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,0,0,.35); cursor: pointer; }
     #homeFabs button svg { width: 22px; height: 22px; stroke: #e2e8f0; fill: none; }
+    #homeFabs button[data-fab="tilt"] { display: none; }   /* 3D prekidac zivi u Slojevi sheetu */
+    .compass-btn { display: none !important; }              /* kompas samo kad je mapa rotirana/nagnuta (kao Google) */
+    body.maprot .compass-btn { display: block !important; }
 
     #homeSheet { display: block; position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 11; background: rgba(15,23,42,.97); border-top: 1px solid rgba(148,163,184,.16); border-radius: 22px 22px 0 0; padding: 8px 16px 18px; box-shadow: 0 -10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
     #homeSheet .grab { width: 40px; height: 4.5px; border-radius: 999px; background: #475569; margin: 0 auto 12px; }
@@ -441,6 +446,22 @@
     body.planning #motoWrap { display: none; }
     body.planning #motoWrap.open { display: block; }
     body.planning #planBtn { margin-top: 16px; }
+  }
+  /* ===== R6: brzi planer - destinacija iz pretrage vodi PRAVO na rezultat ===== */
+  #qbar { display: none; }
+  @media (max-width: 900px) {
+    body.qplan.planning #panel > *:not(#peekBar):not(#plannerClose):not(#qbar):not(#status):not(#results) { display: none !important; }
+    body.qplan.planning #qbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 2px 0 12px; }
+    #qbar select, #qbar button { background: #1e293b; border: 1px solid rgba(148,163,184,.2); border-radius: 999px;
+      color: #e2e8f0; font-size: 13.5px; font-weight: 700; font-family: inherit; padding: 9px 13px; cursor: pointer;
+      -webkit-appearance: none; appearance: none; width: auto; }
+    #qbar #qMode { padding-right: 26px; background-image: linear-gradient(45deg, transparent 50%, #94a3b8 50%), linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+      background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+    #qbar .qchip.on { background: rgba(249,115,22,.14); border-color: #f97316; color: #f97316; }
+    #qbar #qAdv { margin-left: auto; background: none; border: none; color: #94a3b8; font-size: 13px; }
+    #qbar #qWhen { display: none; flex-basis: 100%; background: #1e293b; border: 1px solid rgba(148,163,184,.2);
+      border-radius: 13px; color: #fff; font-size: 15px; font-weight: 600; font-family: inherit; padding: 11px 13px; width: 100%; }
+    #qbar.timed #qWhen { display: block; }
   }
   /* ===== R5: varijante rute = horizontalne kartice (kao Google Directions red) ===== */
   @media (max-width: 900px) {
@@ -532,15 +553,25 @@
     #rideBarBottom .eta .d { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     body.riding #homeChrome, body.riding #homeSheet { display: none !important; }
     body.riding .maplibregl-user-location-dot, body.riding .maplibregl-user-location-accuracy-circle { display: none !important; }
-    .maplibregl-user-location-dot { background: #38bdf8; box-shadow: 0 0 0 3px #fff, 0 2px 10px rgba(0,0,0,.5); }   /* vidljiva tacka na tamnoj mapi */
+    .maplibregl-user-location-dot { width: 17px !important; height: 17px !important; background: #4285f4 !important; border: 3px solid #fff !important; box-shadow: 0 1px 8px rgba(0,0,0,.45) !important; }
+    .maplibregl-user-location-dot::before { background: rgba(66,133,244,.4) !important; }
+    .maplibregl-user-location-accuracy-circle { background: rgba(66,133,244,.13) !important; border: 1px solid rgba(66,133,244,.22) !important; }
     #homeSheet { transition: transform .28s cubic-bezier(.2,.8,.2,1); touch-action: pan-y; }
     #homeSheet.collapsed { transform: translateY(calc(100% - 30px)); }
   }
   /* ===== app2 Faza 3: REZULTAT ekran (kao result2 maketa: hero + metrike + krivine) ===== */
   #resHero, #resCta { display: none; }
   @media (max-width: 900px) {
-    #resHero { display: block; margin-bottom: 4px; }
-    #resHero .rhero { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 11px; }
+    #resHero { display: flex; overflow-x: auto; gap: 10px; scroll-snap-type: x mandatory; scrollbar-width: none;
+      margin: 0 -16px 12px; padding: 2px 16px 6px;
+      -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent); mask-image: linear-gradient(90deg, #000 94%, transparent); }
+    #resHero::-webkit-scrollbar { display: none; }
+    #resHero .rslide { flex: 0 0 85%; min-width: 0; scroll-snap-align: center; }
+    #resHero .rslide:last-child { margin-right: 10px; }
+    #resHero .rhero { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; height: 100%; }
+    #resHero .hx { display: flex; flex-direction: column; justify-content: center; }
+    #resHero .hx .k { margin-bottom: 8px; }
+    #resHero .rslide .rcard { margin-bottom: 0; }
     #resHero .hx { border-radius: 14px; padding: 12px 13px; border: 1px solid rgba(148,163,184,.16); }
     #resHero .hx .k { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
     #resHero .hx .v { font-size: 18px; font-weight: 900; display: flex; align-items: center; gap: 8px; line-height: 1.05; }
@@ -550,7 +581,10 @@
     #resHero .hx.dif { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); }
     #resHero .hx.dif .k { color: #fcd34d; } #resHero .hx.dif .v { color: #f59e0b; }
     #resHero .hx.dif .sub { font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 4px; }
-    #resHero .rmrow { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
+    #resHero .rmrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; height: 100%; }
+    #resHero .m { display: flex; flex-direction: column; justify-content: center; }
+    #resHero .m .v { font-size: 17px; }
+    #resHero .rslide .rcard { height: calc(100% - 25px); box-sizing: border-box; }
     #resHero .m { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 12px; padding: 9px 6px; text-align: center; }
     #resHero .m .k { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: .03em; font-weight: 700; }
     #resHero .m .v { font-size: 15px; font-weight: 900; color: #fff; margin-top: 3px; font-variant-numeric: tabular-nums; }
@@ -671,6 +705,17 @@
       </div>
     </div>
     <button id="plannerClose" type="button" aria-label="Nazad na početnu">✕</button>
+    <!-- R6: brzi planer (Google princip) - kompaktna traka umesto formulara -->
+    <div id="qbar">
+      <select id="qMode" aria-label="Vreme polaska">
+        <option value="now">Polazak: sada</option>
+        <option value="depart">Polazak u...</option>
+        <option value="arrive">Stigni do...</option>
+      </select>
+      <button id="qRet" class="qchip" type="button">↩ Povratno</button>
+      <button id="qAdv" type="button">Još opcija</button>
+      <input id="qWhen" type="datetime-local" aria-label="Vreme polaska ili dolaska">
+    </div>
     <h1><svg width="30" height="30" viewBox="0 0 512 512" style="vertical-align:-7px;margin-right:9px;border-radius:9px"><rect width="512" height="512" rx="112" fill="#0b1120"/><g fill="none" stroke-linecap="butt" stroke-linejoin="round"><path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#c2570a" stroke-width="80"/><path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#f97316" stroke-width="66"/><path d="M170 407 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L333 421" stroke="#fff" stroke-width="7" stroke-dasharray="17 24"/></g><circle cx="170" cy="414" r="12" fill="#22c55e" stroke="#0f172a" stroke-width="5"/><circle cx="340" cy="430" r="13" fill="#fff" stroke="#c2570a" stroke-width="5"/></svg>Route<span class="moto">Me</span>Right</h1>
     <div class="sub">Kuda ćeš danas? Reci od-do, a mi računamo <b style="color:#e2e8f0;font-weight:700">vreme na svakom kilometru</b>, trošak za baš tvoj motor i najlepšu rutu.</div>
 
@@ -746,30 +791,38 @@
     <div id="results" class="hidden">
       <!-- Faza 3: mobilni rezultat kao maketa (hero + metrike + krivine); desktop ga ne vidi -->
       <div id="resHero">
-        <div class="rhero">
-          <div class="hx wx" id="rhWx"><div class="k">Vreme na ruti</div><div class="v" id="rhWxV">-</div></div>
-          <div class="hx dif"><div class="k">Težina</div><div class="v" id="rhDifV">-</div><div class="sub" id="rhDifS"></div></div>
-        </div>
-        <div class="rmrow">
-          <div class="m"><div class="k">Dužina</div><div class="v" id="rhKm">-</div></div>
-          <div class="m"><div class="k">Trajanje</div><div class="v" id="rhDur">-</div></div>
-          <div class="m"><div class="k">Trošak</div><div class="v" id="rhCost">-</div></div>
-          <div class="m"><div class="k">Putarina</div><div class="v" id="rhToll">-</div></div>
-        </div>
-        <div class="rsect">Profil visine</div>
-        <div class="rcard relev">
-          <svg id="rhElevSvg" viewBox="0 0 380 74" preserveAspectRatio="none"></svg>
-          <div class="st"><div>uspon<b id="rhAsc">-</b></div><div>spust<b id="rhDesc">-</b></div><div>najviša<b id="rhMax">-</b></div></div>
-        </div>
-        <div class="rsect">Krivine</div>
-        <div class="rcard rcurv">
-          <div class="top"><div class="big" id="rhCurvN">- <small>krivina</small></div><div class="sev" id="rhSharp"></div></div>
-          <div class="lr">
-            <div class="b"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 6L4 12l5 6M4 12h11a5 5 0 015 5v2"/></svg><div><div class="n" id="rhL">-</div><div class="l">levo ↰</div></div></div>
-            <div class="b"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M15 6l5 6-5 6M20 12H9a5 5 0 00-5 5v2"/></svg><div><div class="n" id="rhR">-</div><div class="l">desno ↱</div></div></div>
+        <div class="rslide">
+          <div class="rhero">
+            <div class="hx wx" id="rhWx"><div class="k">Vreme na ruti</div><div class="v" id="rhWxV">-</div></div>
+            <div class="hx dif"><div class="k">Težina</div><div class="v" id="rhDifV">-</div><div class="sub" id="rhDifS"></div></div>
           </div>
-          <div class="sevbar" id="rhSevbar"></div>
-          <div class="sevleg" id="rhSevleg"></div>
+        </div>
+        <div class="rslide">
+          <div class="rmrow">
+            <div class="m"><div class="k">Dužina</div><div class="v" id="rhKm">-</div></div>
+            <div class="m"><div class="k">Trajanje</div><div class="v" id="rhDur">-</div></div>
+            <div class="m"><div class="k">Trošak</div><div class="v" id="rhCost">-</div></div>
+            <div class="m"><div class="k">Putarina</div><div class="v" id="rhToll">-</div></div>
+          </div>
+        </div>
+        <div class="rslide">
+          <div class="rsect">Krivine</div>
+          <div class="rcard rcurv">
+            <div class="top"><div class="big" id="rhCurvN">- <small>krivina</small></div><div class="sev" id="rhSharp"></div></div>
+            <div class="lr">
+              <div class="b"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 6L4 12l5 6M4 12h11a5 5 0 015 5v2"/></svg><div><div class="n" id="rhL">-</div><div class="l">levo ↰</div></div></div>
+              <div class="b"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M15 6l5 6-5 6M20 12H9a5 5 0 00-5 5v2"/></svg><div><div class="n" id="rhR">-</div><div class="l">desno ↱</div></div></div>
+            </div>
+            <div class="sevbar" id="rhSevbar"></div>
+            <div class="sevleg" id="rhSevleg"></div>
+          </div>
+        </div>
+        <div class="rslide">
+          <div class="rsect">Profil visine</div>
+          <div class="rcard relev">
+            <svg id="rhElevSvg" viewBox="0 0 380 74" preserveAspectRatio="none"></svg>
+            <div class="st"><div>uspon<b id="rhAsc">-</b></div><div>spust<b id="rhDesc">-</b></div><div>najviša<b id="rhMax">-</b></div></div>
+          </div>
         </div>
       </div>
       <div class="card" id="card-summary">
@@ -1378,7 +1431,7 @@ async function reverseName(lat, lon, zoom = 10) {
     const j = await r.json();
     const a = j.address || {};
     let name = a.suburb || a.neighbourhood || a.quarter || a.village || a.hamlet || a.town || a.city || a.municipality || a.county || j.name || "";
-    name = name.replace(/^(Gradska četvrt|Mjesna zajednica|Mesna zajednica|Grad|Općina|Opština|Municipality of)\s+/i, "");
+    name = name.replace(/^(Gradska četvrt|Gradska opština|Gradska općina|Mjesna zajednica|Mesna zajednica|Grad|Općina|Opština|Municipality of)\s+/i, "");
     state.revCache[key] = name;
     return name;
   } catch { return ""; }
@@ -1996,8 +2049,11 @@ function initMap() {
     comp.innerHTML = '<div class="rose"><span class="n">N</span><span class="e">E</span><span class="s">S</span><span class="w">W</span><div class="needle"></div></div>';
     comp.onclick = () => map.easeTo({ bearing: 0, pitch: 0, duration: 400 });
     map.getContainer().appendChild(comp);
-    const updCompass = () => { comp.querySelector(".rose").style.transform = `rotate(${-map.getBearing()}deg)`; };
-    map.on("rotate", updCompass);
+    const updCompass = () => {
+      comp.querySelector(".rose").style.transform = `rotate(${-map.getBearing()}deg)`;
+      document.body.classList.toggle("maprot", Math.abs(map.getBearing()) > 1 || map.getPitch() > 5);
+    };
+    map.on("rotate", updCompass); map.on("pitch", updCompass);
     updCompass();
     const tools = document.createElement("div");
     tools.className = "map-tools";
@@ -2907,13 +2963,58 @@ function hazardMarker(h) {
   };
 }
 function loadHazards() { getHazards().forEach(hazardMarker); }
+/* R6: brzi planer - kompaktna traka (Polazak: sada / u... / Stigni do + Povratno) */
+(function () {
+  const qm = document.getElementById("qMode"), qw = document.getElementById("qWhen"),
+        qr = document.getElementById("qRet"), qa = document.getElementById("qAdv"),
+        qb = document.getElementById("qbar");
+  if (!qm) return;
+  const pad = (n) => String(n).padStart(2, "0");
+  const nowLocal = (plusMin) => {
+    const d = new Date(Date.now() + (plusMin || 0) * 60000);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  window.qbarSync = () => {
+    qr.classList.toggle("on", $("roundTrip").checked);
+    qm.value = "now"; qb.classList.remove("timed");
+  };
+  qm.addEventListener("change", () => {
+    if (qm.value === "now") {
+      $("timeMode").value = "depart"; $("depart").value = nowLocal(5);
+      qb.classList.remove("timed"); plan();
+    } else {
+      $("timeMode").value = qm.value; qb.classList.add("timed");
+      qw.value = $("depart").value || nowLocal(60);
+      try { qw.showPicker(); } catch (er) { qw.focus(); }
+    }
+  });
+  qw.addEventListener("change", () => { if (qw.value) { $("depart").value = qw.value; plan(); } });
+  qr.addEventListener("click", () => {
+    $("roundTrip").checked = !$("roundTrip").checked;
+    qr.classList.toggle("on", $("roundTrip").checked);
+    plan();
+  });
+  qa.addEventListener("click", () => { document.body.classList.remove("qplan"); window.scrollTo(0, 0); });
+})();
+
 function hazardPopup(e, btn) {
-  const old = document.querySelector(".hz-pop");
-  if (old) old.remove();
+  const old = document.querySelector(".hz-pop"); if (old) old.remove();
+  const ob = document.querySelector(".hz-back"); if (ob) ob.remove();
+  const closeAll = () => {
+    document.querySelectorAll(".hz-pop, .hz-back").forEach((n) => n.remove());
+    state.hazardMode = false; btn.classList.remove("on");
+  };
+  const back = document.createElement("div");
+  back.className = "hz-back";
+  back.addEventListener("click", closeAll);
+  document.body.appendChild(back);
   const pop = document.createElement("div");
   pop.className = "hz-pop";
-  pop.style.left = Math.min(e.point.x, map.getContainer().clientWidth - 220) + "px";
-  pop.style.top = (e.point.y + 8) + "px";
+  pop._closeAll = closeAll;
+  const mrect = map.getContainer().getBoundingClientRect();   // pop ide na body (map pravi svoj stacking context pa bi ostao ISPOD donjih traka)
+  pop.style.position = "fixed";
+  pop.style.left = (mrect.left + Math.min(e.point.x, map.getContainer().clientWidth - 220)) + "px";
+  pop.style.top = (mrect.top + e.point.y + 8) + "px";
   const HZ_ICO = { "šljunak": "🪨", "ulje": "🛢", "radovi": "🚧", "rupa": "🕳", "divljač": "🦌", "udes": "💥" };
   const grid = document.createElement("div"); grid.className = "hzgrid"; pop.appendChild(grid);
   for (const t of HAZARD_TYPES) {
@@ -2923,18 +3024,16 @@ function hazardPopup(e, btn) {
       const h = { type: t, v: [e.lngLat.lng, e.lngLat.lat], ts: Date.now() };
       saveHazards([...getHazards(), h]);
       hazardMarker(h);
-      pop.remove();
-      state.hazardMode = false;
-      btn.classList.remove("on");
+      closeAll();
     };
     grid.appendChild(b);
   }
   const x = document.createElement("button");
   x.className = "hzcancel";
   x.textContent = "Otkaži";
-  x.onclick = () => { pop.remove(); state.hazardMode = false; btn.classList.remove("on"); };
+  x.onclick = closeAll;
   pop.appendChild(x);
-  map.getContainer().appendChild(pop);
+  document.body.appendChild(pop);
 }
 
 /* ---------------- kamere na ruti (OSM) ---------------- */
@@ -3557,6 +3656,7 @@ function init() {
   /* ---- HOME kao maketa: otvaranje/zatvaranje planera + čipovi + FAB ---- */
   const $id = (x) => document.getElementById(x);
   function openPlanner(preset) {
+    document.body.classList.remove("qplan");
     document.body.classList.add("planning");
     setTimeout(rz, 80);
     try {
@@ -3702,6 +3802,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
   closeSearch();
   const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();   // sa Rute/Mesta taba: predji na planer (tab ekran je prekrivao sve)
   document.body.classList.add("planning");
+  if (matchMedia("(max-width:900px)").matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }   // R6: pravo na rezultat, bez formulara
   if (SEARCH_MODE === "from") {   // biran je POLAZAK
     document.getElementById("from").value = sel.n;
     if (sel.lat != null) state.fromOverride = { name: sel.n, lat: sel.lat, lon: sel.lon };
@@ -4260,6 +4361,7 @@ function renderMesta() {
   if (kg) kg.addEventListener("click", () => {
     const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
     document.body.classList.add("planning");
+    if (matchMedia("(max-width:900px)").matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }
     try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
     const rg = document.getElementById("roundGen");
     if (rg && !rg.checked) { rg.checked = true; rg.dispatchEvent(new Event("change")); }
@@ -4297,12 +4399,17 @@ function openLayersSheet() {
   const rows = LAYER_DEFS.map(([cat, label]) =>
     `<label class="lrow"><span>${label}</span><input type="checkbox" data-cat="${cat}" ${state.layerVis[cat] ? "checked" : ""}></label>`).join("");
   sh.innerHTML = `<div class="lsback"></div><div class="lsbody"><div class="grab"></div><div class="lst">Slojevi mape</div>
-    <label class="lrow"><span>🌧 Kišni radar (uživo)</span><input type="checkbox" id="lsRadar" ${radar.on ? "checked" : ""}></label>${rows}
+    <label class="lrow"><span>🌧 Kišni radar (uživo)</span><input type="checkbox" id="lsRadar" ${radar.on ? "checked" : ""}></label>
+    <label class="lrow"><span>🏔 3D pogled (nagib mape)</span><input type="checkbox" id="lsTilt" ${map.getPitch() > 20 ? "checked" : ""}></label>${rows}
     <div class="lsleg">Boja rute = prognoza u satu prolaska: <i style="background:#22c55e"></i> vedro · <i style="background:#f59e0b"></i> oprez · <i style="background:#ef4444"></i> nevreme</div></div>`;
   document.body.appendChild(sh);
   sh.querySelector(".lsback").addEventListener("click", () => sh.remove());
   sh.addEventListener("change", (e) => {
     const c = e.target;
+    if (c.id === "lsTilt") {
+      const t = document.querySelector('[data-fab="tilt"]'); if (t) t.click();
+      return;
+    }
     if (c.id === "lsRadar") {
       try { localStorage.setItem("rmr2_radar", c.checked ? "1" : "0"); } catch (er) {}
       const rb = document.querySelector(".map-tools .radar-btn"); if (rb) rb.click();
