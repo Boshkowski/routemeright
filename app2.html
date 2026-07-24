@@ -338,7 +338,7 @@
     .maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right { bottom: calc(58px + env(safe-area-inset-bottom)); opacity: .7; }
     .lay-pop { top: calc(54px + env(safe-area-inset-top)); }
     .compass-btn { top: calc(178px + env(safe-area-inset-top)); right: 14px; left: auto; width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.16); z-index: 12; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
-    body.riding .compass-btn { top: auto; bottom: calc(190px + env(safe-area-inset-bottom)); }
+    body.riding .compass-btn { top: auto; bottom: calc(142px + env(safe-area-inset-bottom)); }
   }
   /* ===== app2 Faza 1a: donji meni (Planer/Rute/Zajednica/Ja) + tab ekrani ===== */
   #bottomnav { display: none; }
@@ -411,7 +411,7 @@
     /* moja lokacija: donji desni ugao (kao Google) */
     #homeFabs button[data-fab="gps"] { position: fixed; right: 14px; top: auto; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 12; }
     body.planning:not(.riding) #homeFabs button[data-fab="gps"] { display: none; }
-    body.riding #homeFabs button[data-fab="gps"] { bottom: calc(132px + env(safe-area-inset-bottom)); }
+    body.riding #homeFabs button[data-fab="gps"] { bottom: calc(84px + env(safe-area-inset-bottom)); }
     #homeFabs button[data-fab="gps"].recenter { border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,.35), 0 6px 18px rgba(0,0,0,.35); }
 
     #homeSheet { display: block; position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 11; background: rgba(15,23,42,.97); border-top: 1px solid rgba(148,163,184,.16); border-radius: 22px 22px 0 0; padding: 8px 16px 18px; box-shadow: 0 -10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
@@ -572,7 +572,7 @@
   /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
   #rideBar { display: none; }
   @media (max-width: 900px) {
-    body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: max(calc(10px + env(safe-area-inset-top)), 52px); z-index: 40; }
+    body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: max(calc(6px + env(safe-area-inset-top)), 44px); z-index: 40; }
     #rideBar .navcard { background: #166534; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
     #rideBar .nmain { padding: 12px 14px 11px; display: flex; align-items: center; gap: 12px; color: #fff; }
     #rideBar .arr { flex: none; } #rideBar .arr svg { width: 46px; height: 46px; stroke: #fff; fill: none; display: block; }
@@ -581,17 +581,18 @@
     #rideBar .nt span { display: block; font-size: 17px; font-weight: 700; opacity: .95; margin-top: 2px; }
     #rideBar .nt .sub { font-size: 14px; font-weight: 600; opacity: .85; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #rideBar .right { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; align-self: flex-start; flex: none; }
-    #rideBar .then { background: rgba(0,0,0,.28); color: #d9fbe5; border-radius: 8px; padding: 3px 8px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    #rideBar .then { background: rgba(0,0,0,.26); color: #d9fbe5; padding: 8px 16px; font-size: 13.5px; font-weight: 800; border-top: 1px solid rgba(255,255,255,.09); }
+    #rideBar .then::before { content: "zatim  "; font-weight: 600; opacity: .75; }
     #rideBar .then:empty { display: none; }
     #rideBar .btns { display: flex; gap: 7px; }
-    #rideBar #rideX, #rideBar #rideMute { background: rgba(0,0,0,.25); border: none; color: #fff; min-width: 46px; height: 46px; border-radius: 13px; font-size: 17px; font-weight: 900; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    #rideBar #rideX, #rideBar #rideMute { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); color: #fff; min-width: 44px; height: 44px; border-radius: 50%; font-size: 16px; font-weight: 900; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; align-items: center; justify-content: center; }
     #rideBar #rideMute.off { opacity: .55; }
-    #rideBar #rideX.arm { background: #dc2626; padding: 0 13px; font-size: 14px; }
+    #rideBar #rideX.arm { background: #dc2626; border-color: #dc2626; border-radius: 999px; padding: 0 14px; font-size: 14px; width: auto; }
     #rideBar .navcard.acquiring, #rideBar .navcard.nosignal, #rideBar .navcard.rerouting { background: linear-gradient(160deg, #475569, #334155); }
     #rideBar .wx { display: none; background: rgba(153,27,27,.92); color: #fee2e2; padding: 7px 14px; font-size: 12.5px; font-weight: 600; line-height: 1.3; border-top: 1px solid rgba(239,68,68,.5); }
     #rideBar .wx.on { display: block; }
     #rideBarBottom { display: none; }
-    body.riding #rideBarBottom { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(66px + env(safe-area-inset-bottom)); z-index: 40; align-items: stretch; gap: 10px; }
+    body.riding #rideBarBottom { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 40; align-items: stretch; gap: 10px; }
     #rideBarBottom .pill { background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); border-radius: 16px; padding: 9px 13px; display: flex; align-items: center; }
     #rideBarBottom .pill .v { font-size: 26px; font-weight: 900; color: #fff; line-height: 1; font-variant-numeric: tabular-nums; }
     #rideBarBottom .pill .u { font-size: 11px; color: #94a3b8; margin-top: 2px; }
@@ -601,6 +602,7 @@
     #rideBarBottom .eta .t { font-size: 18px; font-weight: 900; color: #fff; line-height: 1.1; font-variant-numeric: tabular-nums; }
     #rideBarBottom .eta .d { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     body.riding #homeChrome, body.riding #homeSheet { display: none !important; }
+    body.riding #bottomnav, body.riding #screen-rute, body.riding #screen-zajednica, body.riding #screen-ja { display: none !important; }   /* u voznji: samo mapa i nav kontrole */
     body.riding .maplibregl-user-location-dot, body.riding .maplibregl-user-location-accuracy-circle { display: none !important; }
     .maplibregl-user-location-dot { width: 17px !important; height: 17px !important; background: #4285f4 !important; border: 3px solid #fff !important; box-shadow: 0 1px 8px rgba(0,0,0,.45) !important; }
     .maplibregl-user-location-dot::before { background: rgba(66,133,244,.4) !important; }
@@ -984,7 +986,7 @@
       <div class="ssect" id="sRecentT">NEDAVNO</div>
       <div id="sRecent"></div>
       <div id="sSugg"></div>
-      <button class="sadv" id="sAdv">⚙ Napredno planiranje - vreme polaska, kružna tura, motor</button>
+
     </div>
   </div>
   <div id="rideBar">
@@ -992,8 +994,9 @@
       <div class="nmain">
         <span class="arr" id="rideArr"></span>
         <div class="nt"><b id="rideDist">-</b><span id="rideInstr">Krećemo</span><span class="sub" id="rideStreet"></span></div>
-        <div class="right"><span class="then" id="rideThen"></span><div class="btns"><button id="rideMute" aria-label="Zvuk">🔊</button><button id="rideX" aria-label="Prekini vožnju">✕</button></div></div>
+        <div class="right"><div class="btns"><button id="rideMute" aria-label="Zvuk">🔊</button><button id="rideX" aria-label="Prekini vožnju">✕</button></div></div>
       </div>
+      <div class="then" id="rideThen"></div>
       <div class="wx" id="rideWx"></div>
     </div>
   </div>
@@ -3958,7 +3961,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
   const so = document.getElementById("searchOverlay");
   if (!so) return;
   document.getElementById("sBack").addEventListener("click", closeSearch);
-  document.getElementById("sAdv").addEventListener("click", () => { closeSearch(); document.body.classList.add("planning"); try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {} });
+  { const _sadv = document.getElementById("sAdv"); if (_sadv) _sadv.addEventListener("click", () => { closeSearch(); document.body.classList.add("planning"); }); }   // R9: dugme uklonjeno (vreme=qbar, motor/kruzna=Jos opcija)
   const si = document.getElementById("sInput");
   si.addEventListener("input", () => renderSugg(si.value));
   si.addEventListener("keydown", async (e) => {
@@ -4152,6 +4155,7 @@ function startRide() {
   const route = (typeof state !== "undefined" && state.routes) ? state.routes[state.selected] : null;
   if (!route) return;
   if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
+  try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
@@ -4215,7 +4219,7 @@ function startRide() {
       document.getElementById("rideArr").innerHTML = arrSvg(m.sr.arr);
       const nx = nav.mans[nav.next + 1];   // "zatim" najava sledeceg (kao maketa) - samo kad je ovo skretanje blizu
       document.getElementById("rideThen").textContent =
-        (nx && distTo < 900) ? "zatim " + (MAN_SR[nx.type] ? MAN_SR[nx.type][1].toLowerCase().split(" ")[0] === "skreni" ? (nx.type === 15 ? "↰" : "↱") : "→" : "→") + " " + fmtM(Math.max(0, nx.d - m.d)) : "";
+        (nx && distTo < 900) ? (MAN_SR[nx.type] ? MAN_SR[nx.type][1].toLowerCase().split(" ")[0] === "skreni" ? (nx.type === 15 ? "↰" : "↱") : "→" : "→") + " " + fmtM(Math.max(0, nx.d - m.d)) : "";
       document.getElementById("rideDist").textContent = fmtM(distTo);
       document.getElementById("rideInstr").textContent = m.sr.t;
       document.getElementById("rideStreet").textContent = m.sr.street;
