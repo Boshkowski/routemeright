@@ -244,6 +244,7 @@
   .radar-btn svg { width: 14px; height: 14px; flex: none; }
   .radar-btn:active { transform: scale(.96); }
   .radar-btn.on { background: var(--c-teal); color: #fff; border-color: var(--c-teal); }
+  .hz-btn svg { width: 19px; height: 19px; stroke-width: 2.3px; }   /* Prijavi: veci trougao + deblji uzvicnik da se vidi */
   .hz-btn.on { background: #b91c1c; border-color: #b91c1c; color: #fff; }
   .hz-pop {
     position: absolute; z-index: 9; background: #0f172a; border: 1px solid rgba(249,115,22,.4);
@@ -633,7 +634,7 @@
     #rideBarBottom .rep { flex: none; width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #f97316, #ea580c);
       border: none; color: #fff; font-size: 0; display: flex; align-items: center; justify-content: center;
       box-shadow: 0 8px 22px rgba(249,115,22,.4); cursor: pointer; font-family: inherit; align-self: center; margin: 0 auto; }
-    #rideBarBottom .rep svg { width: 26px; height: 26px; stroke: #fff; fill: none; }
+    #rideBarBottom .rep svg { width: 30px; height: 30px; stroke: #fff; fill: none; stroke-width: 2.3px; }   /* jasniji trougao s uzvicnikom */
     #rideBarBottom .eta { background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); border-radius: 16px; padding: 9px 12px; text-align: center; }
     #rideBarBottom .eta .t { font-size: 21px; font-weight: 900; color: #fff; line-height: 1.1; font-variant-numeric: tabular-nums; }
     #rideBarBottom .eta .d { font-size: 13.5px; color: #e2e8f0; margin-top: 2px; font-weight: 700; }
@@ -2206,7 +2207,7 @@ async function poisNear(points, filter, radiusM, cap) {
   const clauses = points.map((p) =>
     `node(around:${radiusM},${p.lat.toFixed(4)},${p.lon.toFixed(4)})${filter};way(around:${radiusM},${p.lat.toFixed(4)},${p.lon.toFixed(4)})${filter};`).join("");
   const els = await overpass(`[out:json][timeout:25];(${clauses});out center ${cap};`);
-  if (!els) return [];   // prazan niz - pozivaoci rade .map/.filter bez pucanja
+  if (els === null) return null;   // svi mirrori pali/429 → null (posten "servis zauzet"); [] je SAMO kad je upit uspeo ali nema POI
   return els.map((e) => {
     const { lat, lon } = poiLatLon(e);
     return { lat, lon, name: (e.tags && (e.tags.name || e.tags.brand)) || null, tags: e.tags || {} };
@@ -2809,7 +2810,7 @@ async function renderFuel(route, assess, departure) {
     if (best.length) {
       const names = best.map((p) => `${esc(p.name || "pumpa")} <span class="poi-dist">(+${p.distKm.toFixed(1)} km)</span>`).join(" · ");
       li.innerHTML = `${rIco("fuel", 15)} <b>${i + 1}. točenje</b> oko km ${t.km.toFixed(0)} (~${fmtTime(t.eta)}): ${names}`;
-      emojiMarker(best[0].lat, best[0].lon, "⛽", best[0].name || "Pumpa");
+      best.forEach((p) => emojiMarker(p.lat, p.lon, "⛽", p.name || "Pumpa"));   // sve nadjene pumpe kod stajanja na mapu (ne samo najbliza) - iz podataka koje vec imamo
     } else {
       li.className = "warn-li";
       li.innerHTML = `${rIco("fuel", 15)} <b>${i + 1}. točenje</b> oko km ${t.km.toFixed(0)}: nema pumpe u krugu 12 km - natoči ranije!`;
