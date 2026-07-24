@@ -258,6 +258,7 @@
   .hz-pop button:active { transform: scale(.95); background: rgba(249,115,22,.18); border-color: rgba(249,115,22,.5); }
   .hz-pop .hzcancel { width: 100%; flex-direction: row; justify-content: center; margin-top: 10px; padding: 12px;
     background: none; border-color: transparent; color: #94a3b8; font-size: 14px; }
+  #rideBarBottom, #rideBar { display: none; }   /* vozacke trake postoje samo u voznji (mobilni media ih ukljucuje) */
   .hz-back { position: fixed; inset: 0; z-index: 238; background: rgba(2,6,23,.45); }
   @media (max-width: 900px) {
     .hz-pop { position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important;
@@ -398,7 +399,7 @@
       -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent); }
     #homeChips::-webkit-scrollbar { display: none; }
     #homeChips::-webkit-scrollbar { display: none; }
-    #homeChips .chip { white-space: nowrap; display: flex; align-items: center; gap: 7px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.2); border-radius: 999px; padding: 8px 13px; color: #e2e8f0; font-size: 12.5px; font-weight: 700; font-family: inherit; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.3); }
+    #homeChips .chip { white-space: nowrap; display: flex; align-items: center; gap: 7px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.2); border-radius: 999px; padding: 12px 15px; min-height: 44px; color: #e2e8f0; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.3); }
     #homeChips .chip svg { width: 16px; height: 16px; stroke: #f97316; fill: none; }
     #homeChips .chip.on { background: #f97316; border-color: #f97316; color: #fff; }
     #homeChips .chip.on svg { stroke: #fff; }
@@ -434,7 +435,7 @@
   }
   /* ===== app2 Faza 4.1: reskin naprednog planera (mobilno) ===== */
   @media (max-width: 900px) {
-    body.planning #panel h1, body.planning #panel .sub { display: none; }   /* logo+marketing ne pripadaju alatu */
+    body.planning #panel h1, body.planning #panel > .sub { display: none; }   /* logo+marketing ne pripadaju alatu; > da NE sakrije hero .sub razloge */
     body.planning #panel label:not(.chk) { font-size: 10.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 14px 2px 7px; display: block; }
     body.planning #panel .chk { text-transform: none; letter-spacing: 0; }
     body.planning #panel input[type="text"], body.planning #panel input:not([type]), body.planning #panel input[type="datetime-local"], body.planning #panel input[type="number"], body.planning #panel select {
@@ -452,6 +453,10 @@
     body.planning #motoWrap { display: none; }
     body.planning #motoWrap.open { display: block; }
     body.planning #planBtn { margin-top: 16px; }
+  }
+  @media (min-width: 901px) {
+    #motoHead, body.planning #motoHead { display: none !important; }   /* mobilna sklopljena kartica; desktop ima prave selecte */
+    #motoWrap, body.planning #motoWrap { display: block !important; }
   }
   /* ===== R7: "Jos opcija" sheet ===== */
   #optsSheet { position: fixed; inset: 0; z-index: 62; }
@@ -2149,7 +2154,7 @@ function initMap() {
     loadHazards();
   } catch (e) {
     map = null; // bez WebGL-a i dalje radi sve osim mape
-    $("map").innerHTML = '<div style="padding:30px;color:#94a3b8">Mapa nije dostupna u ovom browseru (WebGL) - svi podaci su u panelu levo.</div>';
+    $("map").innerHTML = '<div style="padding:calc(120px + env(safe-area-inset-top)) 30px 30px;color:#94a3b8;text-align:center;max-width:420px;margin:0 auto">Mapa nije dostupna u ovom browseru (WebGL) - svi podaci rute su i dalje tu, u panelu.</div>';
   }
 }
 function clearMap() {
