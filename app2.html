@@ -259,6 +259,9 @@
   .hz-pop .hzcancel { width: 100%; flex-direction: row; justify-content: center; margin-top: 10px; padding: 12px;
     background: none; border-color: transparent; color: #94a3b8; font-size: 14px; }
   #rideBarBottom, #rideBar { display: none; }   /* vozacke trake postoje samo u voznji (mobilni media ih ukljucuje) */
+  .bjb-row { cursor: pointer; padding: 4px 0; -webkit-tap-highlight-color: transparent; }
+  .bjb-row:active { opacity: .65; }
+  .bjb-more { background: none; border: none; color: var(--c-muted-fg, #94a3b8); text-decoration: underline; cursor: pointer; font: inherit; font-size: .92em; padding: 4px 0 0; display: block; }
   .hz-back { position: fixed; inset: 0; z-index: 238; background: rgba(2,6,23,.45); }
   @media (max-width: 900px) {
     .hz-pop { position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important;
@@ -336,6 +339,8 @@
     #panel.open .pchev { transform: rotate(180deg); }
     .map-tools { top: calc(10px + env(safe-area-inset-top)); }
     .maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right { bottom: calc(58px + env(safe-area-inset-bottom)); opacity: .7; }
+    body.riding .maplibregl-ctrl-bottom-right { right: auto; left: 6px; bottom: calc(78px + env(safe-area-inset-bottom)); opacity: .5; }
+    body.riding .maplibregl-ctrl-bottom-left { bottom: calc(78px + env(safe-area-inset-bottom)); opacity: .5; }
     .lay-pop { top: calc(54px + env(safe-area-inset-top)); }
     .compass-btn { top: calc(178px + env(safe-area-inset-top)); right: 14px; left: auto; width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.16); z-index: 12; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
     body.riding .compass-btn { top: auto; bottom: calc(142px + env(safe-area-inset-bottom)); }
@@ -1475,6 +1480,17 @@ function haversine(lat1, lon1, lat2, lon2) {
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 function fmtTime(d) { return d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" }); }
+function wxIco(txt, level) {   // emoji po TIPU pojave (Boskov nalaz: kisa-emoji uz vetar zbunjuje)
+  const t = String(txt || "").toLowerCase();
+  if (/sneg|led|poledic/.test(t)) return "❄️";
+  if (/magl/.test(t)) return "🌫";
+  if (/grmljavin|pljus|oluj|nevreme/.test(t)) return "⛈";
+  if (/vetar/.test(t)) return "💨";
+  if (/sunce|glare|bljest|blješt/.test(t)) return "🌞";
+  if (/hladno|mraz/.test(t)) return "🥶";
+  if (/kiš|kis|padavin/.test(t)) return level === 2 ? "⛈" : "🌧";
+  return level === 2 ? "⛈" : "🌧";
+}
 function fmtDur(sec) {
   const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
   return h > 0 ? `${h} h ${String(m).padStart(2, "0")} min` : `${m} min`;
@@ -2470,7 +2486,7 @@ function renderWhen(route, departure) {
     b.type = "button";
     b.className = "when-row" + (c === best ? " best" : "") + (Math.abs(c.dep - departure) < 60000 ? " active" : "");
     const sum = c.n2 ? `⛈ nevreme na ${c.n2} ${c.n2 === 1 ? "deonici" : "deonice"}` :
-      c.n1 ? `🌧 oprez na ${c.n1} ${c.n1 === 1 ? "deonici" : "deonice"}` : "✓ suvo celim putem";
+      c.n1 ? `${wxIco((c.reasons || []).join ? (c.reasons || []).join(" ") : "", 1)} oprez na ${c.n1} ${c.n1 === 1 ? "deonici" : "deonice"}` : "✓ suvo celim putem";
     b.innerHTML = `<span class="dot l${c.worst}"></span><span class="wr-time">${fmtTime(c.dep)} → ${fmtTime(arr)}</span>` +
       `<span class="wr-sum">${sum}</span>` + (c === best ? "<b>★</b>" : "");
     b.onclick = () => applyDeparture(c.dep);
@@ -2520,10 +2536,12 @@ async function renderWarnings(assess) {
     li.className = z.level === 2 ? "bad-li" : "warn-li";
     const tSpan = z.from === z.to ? `~${fmtTime(z.from.eta)}` : `${fmtTime(z.from.eta)}-${fmtTime(z.to.eta)}`;
     const kmSpan = z.from === z.to ? `km ${z.from.km.toFixed(0)}` : `km ${z.from.km.toFixed(0)}-${z.to.km.toFixed(0)}`;
-    li.textContent = `${z.level === 2 ? "⛈" : "🌧"} ${tSpan}` +
+    li.textContent = `${wxIco(z.reasons.join(" "), z.level)} ${tSpan}` +
       `${place ? ", kod: " + place : ""} (${kmSpan}): ${z.reasons.join(", ")}`;
     ul.appendChild(li);
   }
+  state._zones = zones;   // R12: hero "zasto" NE SME da zavisi od repa plan() lanca (na dugim rutama ume da umre)
+  try { const r = state.routes && state.routes[state.selected]; if (r) renderResultHero(r); } catch (e) {}
   return zones;
 }
 async function renderSuggestions(route, assess, departure, zones) {
@@ -2685,13 +2703,28 @@ async function renderFood(route, assess, departure) {
   const bjb = bjbAlongRoute(route);
   if (bjb.length) {
     const li = document.createElement("li");
-    li.innerHTML = `🍖 <b>Zajednica preporučuje uz rutu:</b><br>` +
-      bjb.slice(0, 5).map((e) => {
+    li.innerHTML = `🍖 <b>Zajednica preporučuje uz rutu</b> <span class="poi-dist">(dodirni za mapu)</span>` +
+      bjb.slice(0, 5).map((e, i) => {
         let why = e.details.split(";")[0];
-        if (why.length > 95) why = why.slice(0, 95).replace(/\s\S*$/, "") + "…";
-        return `${BJB_EMOJI[e.type] || "📍"} <b>${e.name}</b> <span class="poi-dist">(km ${e.km.toFixed(0)}, +${e.distKm.toFixed(1)} km)</span> - ${why}`;
-      }).join("<br>") +
-      (bjb.length > 5 ? `<br><span class="poi-dist">i još ${bjb.length - 5} - vidi slojeve Hrana / Okupljališta na mapi</span>` : "");
+        if (why.length > 60) why = why.slice(0, 60).replace(/\s\S*$/, "") + "…";
+        return `<div class="bjb-row" data-lat="${e.lat}" data-lon="${e.lon}" data-name="${(e.name || "").replace(/"/g, "&quot;")}">${BJB_EMOJI[e.type] || "📍"} <b>${e.name}</b> <span class="poi-dist">(km ${e.km.toFixed(0)})</span> - ${why}</div>`;
+      }).join("") +
+      (bjb.length > 5 ? `<button class="bjb-more" type="button">i još ${bjb.length - 5} → prikaži slojeve na mapi</button>` : "");
+    li.addEventListener("click", (ev) => {
+      const more = ev.target.closest(".bjb-more");
+      if (more) { try { openLayersSheet(); } catch (e2) {} return; }
+      const row = ev.target.closest(".bjb-row");
+      if (!row) return;
+      const lat = +row.dataset.lat, lon = +row.dataset.lon;
+      if (isNaN(lat)) return;
+      try { if (typeof setSheet === "function") setSheet(false); } catch (e2) {}   // skupi panel da se mapa vidi
+      try {
+        if (state._bjbPop) state._bjbPop.remove();
+        map.flyTo({ center: [lon, lat], zoom: 13.5, duration: 700 });
+        state._bjbPop = new maplibregl.Popup({ offset: 12, closeButton: true }).setLngLat([lon, lat])
+          .setHTML(`<b>${row.dataset.name}</b>`).addTo(map);
+      } catch (e2) {}
+    });
     ul.appendChild(li);
   }
 }
@@ -3175,10 +3208,10 @@ function hazardPopup(e, btn) {
 /* ---------------- kamere na ruti (OSM) ---------------- */
 async function renderCameras(route) {
   const out = $("camOut"); out.innerHTML = "";
-  const pts = route.samples.filter((_, i) => i % 2 === 0);
-  const clauses = pts.map((p) => `node(around:3000,${p.lat.toFixed(4)},${p.lon.toFixed(4)})[highway=speed_camera];`).join("");
+  const pts = route.samples.filter((_, i) => i % 4 === 0);   // R12: duge rute su pravile OGROMAN upit -> timeout -> prazna sekcija
+  const clauses = pts.map((p) => `node(around:4000,${p.lat.toFixed(4)},${p.lon.toFixed(4)})[highway=speed_camera];`).join("");
   const els = await overpass(`[out:json][timeout:25];(${clauses});out 60;`);
-  if (!els) return;
+  if (!els) { out.innerHTML = `📷 Kamere: provera trenutno nije moguća (izvor zauzet) - pokušaćemo opet pri sledećem planiranju.`; return; }
   const seen = new Set(); const cams = [];
   for (const e of els) {
     const k = e.lat.toFixed(4) + e.lon.toFixed(4);
