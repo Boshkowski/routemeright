@@ -346,7 +346,7 @@
   @media (max-width: 900px) {
     #bottomnav {
       display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
-      height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+      height: calc(58px + max(env(safe-area-inset-bottom), 8px)); padding-bottom: max(env(safe-area-inset-bottom), 8px);
       background: #0b1120; border-top: 1px solid rgba(148,163,184,.16);
     }
     #bottomnav a {
@@ -458,6 +458,19 @@
     #motoHead, body.planning #motoHead { display: none !important; }   /* mobilna sklopljena kartica; desktop ima prave selecte */
     #motoWrap, body.planning #motoWrap { display: block !important; }
   }
+  /* ===== R11: Ja tab - tema toggle + Moj motor ===== */
+  .jsw { appearance: none; -webkit-appearance: none; width: 46px; height: 27px; border-radius: 999px; background: #334155; position: relative; transition: background .2s; margin: 0; cursor: pointer; flex: none; vertical-align: middle; }
+  .jsw::after { content: ""; position: absolute; top: 3px; left: 3px; width: 21px; height: 21px; border-radius: 50%; background: #94a3b8; transition: transform .2s, background .2s; }
+  .jsw:checked { background: rgba(249,115,22,.9); }
+  .jsw:checked::after { transform: translateX(19px); background: #fff; }
+  .jtheme { display: inline-flex; align-items: center; gap: 8px; }
+  .jlink { background: none; border: none; color: #94a3b8; font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; font-family: inherit; padding: 2px 0 8px; display: block; }
+  #jaMotorHost #motoHead { display: flex; align-items: center; gap: 11px; width: 100%; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 13px; padding: 12px 13px; cursor: pointer; font-family: inherit; color: #fff; font-size: 14px; font-weight: 800; text-align: left; }
+  #jaMotorHost #motoHead .ms { flex: 1; color: #94a3b8; font-size: 12px; font-weight: 600; text-align: right; }
+  #jaMotorHost #motoWrap { display: none; }
+  #jaMotorHost #motoWrap.open { display: block; }
+  #jaMotorHost input, #jaMotorHost select { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 13px; padding: 11px 13px; color: #fff; font-size: 15px; font-weight: 600; font-family: inherit; width: 100%; margin-top: 8px; }
+  #jaMotorHost label { display: block; font-size: 10.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 12px 2px 2px; }
   /* ===== R7: "Jos opcija" sheet ===== */
   #optsSheet { position: fixed; inset: 0; z-index: 62; }
   #optsSheet .lsback { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
@@ -572,7 +585,7 @@
   /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
   #rideBar { display: none; }
   @media (max-width: 900px) {
-    body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: max(calc(6px + env(safe-area-inset-top)), 44px); z-index: 40; }
+    body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: max(calc(4px + env(safe-area-inset-top)), 14px); z-index: 40; }
     #rideBar .navcard { background: #166534; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
     #rideBar .nmain { padding: 12px 14px 11px; display: flex; align-items: center; gap: 12px; color: #fff; }
     #rideBar .arr { flex: none; } #rideBar .arr svg { width: 46px; height: 46px; stroke: #fff; fill: none; display: block; }
@@ -589,6 +602,8 @@
     #rideBar #rideMute.off { opacity: .55; }
     #rideBar #rideX.arm { background: #dc2626; border-color: #dc2626; border-radius: 999px; padding: 0 14px; font-size: 14px; width: auto; }
     #rideBar .navcard.acquiring, #rideBar .navcard.nosignal, #rideBar .navcard.rerouting { background: linear-gradient(160deg, #475569, #334155); }
+    #rideBar .ahead { display: none; background: rgba(180,83,9,.94); color: #fef3c7; padding: 7px 14px; font-size: 13px; font-weight: 800; border-top: 1px solid rgba(249,115,22,.5); }
+    #rideBar .ahead.on { display: block; }
     #rideBar .wx { display: none; background: rgba(153,27,27,.92); color: #fee2e2; padding: 7px 14px; font-size: 12.5px; font-weight: 600; line-height: 1.3; border-top: 1px solid rgba(239,68,68,.5); }
     #rideBar .wx.on { display: block; }
     #rideBarBottom { display: none; }
@@ -997,6 +1012,7 @@
         <div class="right"><div class="btns"><button id="rideMute" aria-label="Zvuk">🔊</button><button id="rideX" aria-label="Prekini vožnju">✕</button></div></div>
       </div>
       <div class="then" id="rideThen"></div>
+      <div class="ahead" id="rideAhead"></div>
       <div class="wx" id="rideWx"></div>
     </div>
   </div>
@@ -1060,13 +1076,18 @@
   <div class="tabscreen" id="screen-ja"><h2>Ja</h2>
     <div class="stub" style="margin-top:14px"><b>Podešavanja</b>
       <div class="jset">
-        <label class="jrow"><span>Tema mape</span>
-          <select id="jaTheme"><option value="auto">Auto (prati telefon)</option><option value="light">Svetla</option><option value="dark">Tamna</option></select></label>
-        <label class="jrow"><span>Glas navigacije</span><input type="checkbox" id="jaSound"></label>
+        <label class="jrow"><span>Tema aplikacije</span>
+          <span class="jtheme"><i>☀️</i><input type="checkbox" id="jaDark" class="jsw"><i>🌙</i></span></label>
+        <button id="jaAuto" class="jlink" type="button">prati telefon (auto)</button>
+        <label class="jrow"><span>Glas navigacije</span><input type="checkbox" id="jaSound" class="jsw"></label>
         <div class="jnote">Promena teme se primenjuje odmah (app se osveži).</div>
       </div>
     </div>
-    <div class="stub"><b>Profil</b> - moj motor, lični rekordi, sačuvane rute, poeni i bedževi stižu sa nalozima. Uskoro.</div>
+    <div class="stub"><b>Moj motor</b>
+      <div id="jaMotorHost" class="jset"></div>
+      <div class="jnote">Iz izabranog modela se vuku rezervoar i potrošnja - njih koristi računica troška puta.</div>
+    </div>
+    <div class="stub"><b>Profil</b> - lični rekordi, sačuvane rute, poeni i bedževi stižu sa nalozima. Uskoro.</div>
   </div>
 
   <nav id="bottomnav">
@@ -2138,6 +2159,7 @@ function initMap() {
     hb.title = "Uključi, pa klikni na mapu gde si video opasnost (šljunak, ulje, rupa...)";
     const hbLbl = (t) => { hb.querySelector(".lbl").textContent = t; };
     hb.onclick = () => {
+      if (Date.now() < (window._hzGuard || 0)) return;   // ghost-click posle zatvaranja sheeta
       if (state.hazardMode) { state.hazardMode = false; hb.classList.remove("on"); return; }
       // prvo probaj GPS - prijava na licu mesta, jedan klik (kao Waze)
       if (navigator.geolocation) {
@@ -3116,6 +3138,7 @@ function hazardPopup(e, btn) {
   const closeAll = () => {
     document.querySelectorAll(".hz-pop, .hz-back").forEach((n) => n.remove());
     state.hazardMode = false; btn.classList.remove("on");
+    window._hzGuard = Date.now() + 600;   // iOS ghost-click: tap na kartici "procuri" na Prijavi dugme ISPOD sheeta i ponovo ga otvori
   };
   const back = document.createElement("div");
   back.className = "hz-back";
@@ -3174,6 +3197,7 @@ async function renderCameras(route) {
   const kms = [...new Set(cams.map((c) => c.km.toFixed(0)))];   // bez "0, 0, 0, 0" za gradski klaster
   out.innerHTML = `📷 Fiksne kamere: <b>${cams.length}</b> (km ` +
     kms.slice(0, 8).join(", ") + (kms.length > 8 ? "…" : "") + `)`;
+  route._cams = cams;   // za najave u voznji
   cams.slice(0, 15).forEach((c) => emojiMarker(c.lat, c.lon, "📷", `Kamera · km ${c.km.toFixed(0)}`));
 }
 /* radovi na putu duž rute (OSM highway=construction / construction=*) */
@@ -3280,7 +3304,9 @@ async function selectRoute(departure) {
   try { renderResultHero(route); } catch (e) {}   // Faza 3: mobilni hero (svi podaci su sad na route objektu)
   try {   // "Nedavno" istorija za brzo dugme
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
-    rec.unshift({ from: state.geocode.from.name, to: state.geocode.to.name, ts: Date.now() });
+    const _tn = (state.geocode.to.name || "").trim();
+    if (_tn.length >= 3 && !/^[\d\s.,-]+$/.test(_tn))   // "10" i slicni geocode-ostaci ne idu u istoriju
+      rec.unshift({ from: state.geocode.from.name, to: _tn, ts: Date.now() });
     localStorage.setItem("rmr2_recent", JSON.stringify(rec.filter((x, i, a) => a.findIndex((y) => y.from === x.from && y.to === x.to) === i).slice(0, 10)));
     if (typeof updateQuickLabels === "function") updateQuickLabels();
   } catch (e) {}
@@ -4180,6 +4206,20 @@ function startRide() {
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
+  try {   // R11: najave ispred - kamere sa rute + lokalne prijave (km preko najblize tacke rute)
+    RIDE.ahead = (route._cams || []).map((c) => ({ km: c.km, txt: "📷 Kamera", say: "Kamera ispred" }));
+    for (const h of (typeof getHazards === "function" ? getHazards() : [])) {
+      let bi = -1, bd = 1e9;
+      for (let i = 0; i < route.coords.length; i += 4) {
+        const c = route.coords[i];
+        const d = haversine(h.v[1], h.v[0], c[1], c[0]);
+        if (d < bd) { bd = d; bi = i; }
+      }
+      if (bd <= 0.3 && bi >= 0) RIDE.ahead.push({ km: (route.cumDist[bi] || 0) / 1000, txt: "⚠ " + h.type, say: "Pažnja, " + h.type + " ispred" });
+    }
+    RIDE.ahead.sort((a, b) => a.km - b.km);
+    RIDE.announced = new Set(); RIDE.aheadHideAt = 0;
+  } catch (e) { RIDE.ahead = []; }
   if (!RIDE._freeReg) {   // registracija OVDE - na load-u je map jos null (tihi catch je gutao dragstart!)
     RIDE._freeReg = true;
     try { map.on("dragstart", rideFree); map.on("zoomstart", rideFree); map.on("rotatestart", rideFree); } catch (e) {}
@@ -4279,16 +4319,31 @@ function startRide() {
     const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total));
     document.getElementById("rideRem").textContent = "još " + (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
     document.getElementById("rideEta").textContent = new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+    try {   // najave ispred (kamera / prijava zajednice)
+      const curKm = Math.max(0, (total - remM) / 1000);
+      const ab = document.getElementById("rideAhead");
+      for (const pt of RIDE.ahead || []) {
+        const dk = pt.km - curKm;
+        if (dk > 0 && dk <= 0.6 && !RIDE.announced.has(pt.km + pt.txt)) {
+          RIDE.announced.add(pt.km + pt.txt);
+          ab.textContent = pt.txt + " za ~" + Math.max(100, Math.round(dk * 10) * 100) + " m";
+          ab.classList.add("on");
+          RIDE.aheadHideAt = Date.now() + 15000;
+          try { speakSr(pt.say); } catch (er) {}
+        }
+      }
+      if (RIDE.aheadHideAt && Date.now() > RIDE.aheadHideAt) { ab.classList.remove("on"); RIDE.aheadHideAt = 0; }
+    } catch (e) {}
     if (p.coords.speed != null) document.getElementById("rideKmh").textContent = Math.round(p.coords.speed * 3.6);
     RIDE.lastPos = [lo, la, (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : null];
     // kamera: blizi zoom pred skretanje
     try {
       if (Date.now() > (RIDE.freeCamUntil || 0)) {
         if (RIDE.freeCamUntil) { RIDE.freeCamUntil = 0; const g = document.querySelector('[data-fab="gps"].recenter'); if (g) g.classList.remove("recenter"); }
-        const z = distTo < 250 ? 17.4 : distTo < 700 ? 16.8 : 16.2;   // R10: blize (bilo 15.3-16.6 - "prilicno odzumirano")
+        const z = distTo < 250 ? 18.2 : distTo < 700 ? 17.6 : 17.0;   // R11: jos blize (Google vozi ~18)
         const hdgCam = (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading
                       : (RIDE.compassHdg != null ? RIDE.compassHdg : map.getBearing());
-        const cam = { center: [lo, la], zoom: z, pitch: 54, bearing: hdgCam };
+        const cam = { center: [lo, la], zoom: z, pitch: 56, bearing: hdgCam };
         if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) map.jumpTo(cam);
         else map.easeTo({ ...cam, duration: 900 });
       }
@@ -4405,6 +4460,7 @@ window.rideRecenter = function () {
     sync();
   }
   const rp = document.getElementById("rideRep"); if (rp) rp.addEventListener("click", () => {
+    if (Date.now() < (window._hzGuard || 0)) return;
     const hb = document.querySelector(".map-tools .hz-btn");
     if (hb) hb.click(); else alert("Prijave (gužva, policija, opasnost) stižu sa nalozima - uskoro.");
   });
@@ -4490,13 +4546,23 @@ function renderResultHero(route) {
 
 /* ---- P3: Ja podesavanja (tema mape + zvuk) ---- */
 (function(){
-  const th = document.getElementById("jaTheme"), snd = document.getElementById("jaSound");
+  const th = document.getElementById("jaDark"), snd = document.getElementById("jaSound"), ja = document.getElementById("jaAuto");
   if (!th) return;
-  try { th.value = localStorage.getItem("rmr2_theme") || "auto"; } catch (e) {}
+  try {
+    const t = localStorage.getItem("rmr2_theme") || "auto";
+    th.checked = t === "dark" || (t === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+  } catch (e) {}
   th.addEventListener("change", () => {
-    try { localStorage.setItem("rmr2_theme", th.value); } catch (e) {}
+    try { localStorage.setItem("rmr2_theme", th.checked ? "dark" : "light"); } catch (e) {}
     location.reload();   // mapa se gradi sa novim stilom
   });
+  if (ja) ja.addEventListener("click", () => { try { localStorage.setItem("rmr2_theme", "auto"); } catch (e) {} location.reload(); });
+  try {   // R11: Moj motor zivi u Ja tabu (mobilno); "Jos opcija" ga pozajmljuje i vraca
+    if (matchMedia("(max-width:900px)").matches) {
+      const host = document.getElementById("jaMotorHost"), mh = document.getElementById("motoHead"), mw = document.getElementById("motoWrap");
+      if (host && mh && mw) { host.appendChild(mh); host.appendChild(mw); }
+    }
+  } catch (e) {}
   if (snd) {
     const sync = () => { snd.checked = localStorage.getItem("rmr2_mute") !== "1"; };
     snd.addEventListener("change", () => { try { localStorage.setItem("rmr2_mute", snd.checked ? "0" : "1"); } catch (e) {}

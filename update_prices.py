@@ -83,11 +83,45 @@ def upd_hr(p, today):
     return f"HR benzin: {eur} EUR/L (medijan)"
 
 
+def upd_tolls(p, today):
+    """Auto-VERIFIKACIJA putarina i vinjeta: potvrdi da zvanicni izvor i dalje
+    prikazuje cenu koju imamo. Na poklapanje -> verified=danas. Na promenu ->
+    NE menja cifru sam, nego upise note za rucnu proveru (cena je pravna stvar)."""
+    out = []
+    checks = [
+        ("vignette", "SI", "https://www.tolls.eu/slovenia", r"8[.,]00"),
+        ("vignette", "AT", "https://www.asfinag.at/maut-vignette/vignette/", r"5[.,]10"),
+        ("vignette", "HU", "https://www.tolls.eu/hungary", [r"[Mm]otorcycle", r"5[\s.]?550"]),
+        ("tollMotoPerKm", "RS", "https://www.tolls.eu/serbia", r"1[\s.]?030"),
+        ("tollMotoPerKm", "HR", "https://www.tolls.eu/croatia", r"10[.,]8"),
+    ]
+    done = set()
+    for sect, cc, url, pat in checks:
+        key = sect + cc
+        if key in done:
+            continue
+        try:
+            html = fetch(url)
+            txt = re.sub(r"<[^>]+>", " ", html)
+            pats = pat if isinstance(pat, list) else [pat]
+            if all(re.search(x, txt) for x in pats):
+                p[sect][cc]["verified"] = today
+                p[sect][cc].pop("note", None)
+                out.append(f"{cc} {sect}: potvrdjeno ({pat})")
+                done.add(key)
+            else:
+                p[sect][cc]["note"] = f"PROVERI RUCNO: {pat} nije nadjen na {url} ({today})"
+                out.append(f"{cc} {sect}: NIJE potvrdjeno na {url}")
+        except Exception as e:
+            out.append(f"{cc} {sect}: izvor nedostupan ({e})")
+    return "; ".join(out)
+
+
 def main():
     p = json.loads(PJ.read_text(encoding="utf-8"))
     today = date.today().isoformat()
     ok, fail = [], []
-    for name, fn in [("RS", upd_rs), ("BA", upd_ba), ("ME", upd_me), ("HR", upd_hr)]:
+    for name, fn in [("RS", upd_rs), ("BA", upd_ba), ("ME", upd_me), ("HR", upd_hr), ("TOLLS", upd_tolls)]:
         try:
             ok.append(fn(p, today))
         except Exception as e:
