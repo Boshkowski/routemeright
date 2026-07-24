@@ -4156,6 +4156,27 @@ function startRide() {
   if (!route) return;
   if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
   try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
+  try {   // R10: kompas telefona - trouglic se okrece i dok stojis (GPS kurs radi tek u pokretu); iOS trazi dozvolu na gest
+    if (!RIDE._compassReg) {
+      const attach = () => {
+        RIDE._compassReg = true;
+        let lastRot = 0;
+        window.addEventListener("deviceorientation", (e) => {
+          const h = (e.webkitCompassHeading != null && !isNaN(e.webkitCompassHeading)) ? e.webkitCompassHeading
+                  : (e.absolute && e.alpha != null ? (360 - e.alpha) % 360 : null);
+          if (h == null) return;
+          RIDE.compassHdg = h;
+          const now = Date.now();
+          if (now - lastRot > 150 && document.body.classList.contains("riding") && RIDE.marker && !RIDE.gpsCourseFresh) {
+            lastRot = now; try { RIDE.marker.setRotation(h); } catch (er) {}
+          }
+        });
+      };
+      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function")
+        DeviceOrientationEvent.requestPermission().then((r) => { if (r === "granted") attach(); }).catch(() => {});
+      else attach();
+    }
+  } catch (e) {}
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
@@ -4200,7 +4221,9 @@ function startRide() {
       if (RIDE.marker) {
         RIDE.marker.setLngLat([lo, la]);
         if (!RIDE.marker._map) RIDE.marker.addTo(map);
-        if (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) RIDE.marker.setRotation(p.coords.heading);
+        RIDE.gpsCourseFresh = (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1);
+        const hdgM = RIDE.gpsCourseFresh ? p.coords.heading : RIDE.compassHdg;
+        if (hdgM != null && !isNaN(hdgM)) RIDE.marker.setRotation(hdgM);
       }
     } catch (e) {}
     const pr = navProject(route, lo, la);
@@ -4260,10 +4283,12 @@ function startRide() {
     RIDE.lastPos = [lo, la, (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : null];
     // kamera: blizi zoom pred skretanje
     try {
-      if (Date.now() > (RIDE.freeCamUntil || 0)) {   // korisnik pomerio mapu -> slobodno dok ne klikne lokaciju
-        const z = distTo < 250 ? 16.6 : distTo < 700 ? 16 : 15.3;
-        const cam = { center: [lo, la], zoom: z, pitch: 52,
-          bearing: (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : map.getBearing() };
+      if (Date.now() > (RIDE.freeCamUntil || 0)) {
+        if (RIDE.freeCamUntil) { RIDE.freeCamUntil = 0; const g = document.querySelector('[data-fab="gps"].recenter'); if (g) g.classList.remove("recenter"); }
+        const z = distTo < 250 ? 17.4 : distTo < 700 ? 16.8 : 16.2;   // R10: blize (bilo 15.3-16.6 - "prilicno odzumirano")
+        const hdgCam = (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading
+                      : (RIDE.compassHdg != null ? RIDE.compassHdg : map.getBearing());
+        const cam = { center: [lo, la], zoom: z, pitch: 54, bearing: hdgCam };
         if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) map.jumpTo(cam);
         else map.easeTo({ ...cam, duration: 900 });
       }
@@ -4359,7 +4384,7 @@ function stopRide() {
   });
 window.rideFree = function (e) {   // na window - definicija je unutar IIFE a koristi je startRide/fabMap iz drugih scope-ova
   if (e && e.originalEvent && document.body.classList.contains("riding")) {
-    RIDE.freeCamUntil = Infinity;   // R8: slobodan pregled dokle god hoces; dugme lokacije vraca pracenje
+    RIDE.freeCamUntil = Date.now() + 12000;   // R10: svaki dodir produzi; 12s posle poslednjeg sama se vrati (Waze); lokacija vraca ODMAH
     const g = document.querySelector('[data-fab="gps"]'); if (g) g.classList.add("recenter");
   }
 };
