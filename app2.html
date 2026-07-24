@@ -139,6 +139,7 @@
   #timeline .blk.l0 { background: rgba(34,197,94,.30); }
   #timeline .blk.l1 { background: rgba(245,158,11,.42); }
   #timeline .blk.l2 { background: rgba(239,68,68,.50); }
+  #timeline .blk.na { background: rgba(100,116,139,.35); }
   #tl-labels { display: flex; font-size: 10.5px; color: var(--c-muted-fg); justify-content: space-between; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
 
   ul.plain { list-style: none; }
@@ -323,7 +324,7 @@
     #peekBar {
       display: block; position: sticky; top: 0; z-index: 3;
       margin: 0 -16px 4px; padding: 8px 16px 10px;
-      background: linear-gradient(rgba(15,23,42,.99) 84%, rgba(15,23,42,.92) 95%, rgba(15,23,42,.6));
+      background: linear-gradient(#0f172a 92%, rgba(15,23,42,.96));   /* neprovidno: tekst ispod ne sme da se providi kroz header */
       touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none;
     }
     .grabber { width: 40px; height: 4.5px; border-radius: 999px; background: #475569; margin: 0 auto; }
@@ -345,6 +346,7 @@
       font-family: inherit; font-size: 14px; font-weight: 800; padding: 9px 16px; cursor: pointer;
       box-shadow: 0 6px 16px rgba(249,115,22,.35); -webkit-tap-highlight-color: transparent; }
     #peekGo:active { transform: scale(.96); }
+    body.planning #peekSum { padding-right: 44px; }   /* mesto za ✕ (plannerClose) - Kreni pill ne sme preko njega */
     .pchev { flex: none; font-size: 12px; color: var(--c-muted-fg); transition: transform 320ms var(--ease); }
     #panel.open .pchev { transform: rotate(180deg); }
     .map-tools { top: calc(10px + env(safe-area-inset-top)); }
@@ -553,7 +555,7 @@
   /* ===== P2: Slojevi sheet ===== */
   #layersSheet { position: fixed; inset: 0; z-index: 60; }
   #layersSheet .lsback { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
-  #layersSheet .lsbody { position: absolute; left: 0; right: 0; bottom: 0; background: #0f172a; border-radius: 22px 22px 0 0; border-top: 1px solid rgba(148,163,184,.16); padding: 8px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 34px rgba(0,0,0,.5); }
+  #layersSheet .lsbody { position: absolute; left: 0; right: 0; bottom: 0; background: #0f172a; border-radius: 22px 22px 0 0; border-top: 1px solid rgba(148,163,184,.16); padding: 8px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 34px rgba(0,0,0,.5); max-height: calc(84vh - env(safe-area-inset-top)); overflow-y: auto; }
   #layersSheet .grab { width: 38px; height: 4px; border-radius: 2px; background: #475569; margin: 4px auto 12px; }
   #layersSheet .lst { font-size: 16px; font-weight: 900; color: #fff; margin-bottom: 8px; }
   #layersSheet .lrow { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid rgba(148,163,184,.1); font-size: 14px; font-weight: 700; color: #e2e8f0; }
@@ -697,7 +699,7 @@
     #resHero .sevleg span { display: flex; align-items: center; gap: 5px; }
     #resHero .sevleg .d { width: 8px; height: 8px; border-radius: 2px; }
     #card-diff { display: none; }   /* zamenjuju ga hero kartice (podaci isti) */
-    #resCta { display: flex; gap: 9px; position: sticky; bottom: 0; padding: 11px 0 calc(10px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, #0f172a 30%); z-index: 5; }
+    #resCta { display: flex; gap: 9px; position: sticky; bottom: 0; padding: 11px 0 calc(10px + env(safe-area-inset-bottom)); background: #0f172a; box-shadow: 0 -14px 20px rgba(15,23,42,.85); z-index: 5; }
     #resCta .b2 { flex: 1; border-radius: 13px; padding: 13px; text-align: center; font-size: 14.5px; font-weight: 800; border: 1px solid rgba(148,163,184,.16); background: #1e293b; color: #e2e8f0; display: flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     #resCta .b2 svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
     #resCta .b2.p { flex: 1.5; background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; border: none; box-shadow: 0 8px 20px rgba(249,115,22,.3); }
@@ -1745,6 +1747,9 @@ async function fetchRoutes(from, to) {
       if (!dup) uniq.push(r);
       else if (r.label && r.label.startsWith("Najbrža")) dup.label = r.label;
     }
+    const _minT = Math.min(...uniq.map((r) => r.totalDur));   // "Najbrža" sme da pise samo ako je STVARNO najbrža (autoput ume da bude duži I sporiji)
+    for (const r of uniq) if (r.label && r.label.startsWith("Najbrža") && r.totalDur > _minT * 1.03)
+      r.label = r.hasHighway ? "Autoput" : "Alternativa";
     return uniq;
   } catch (e) {
     state.engine = "osrm";
@@ -2159,10 +2164,10 @@ function assessHour(h, i, ctx) {
 function assessRoute(route, departure, shiftHours = 0) {
   return route.samples.map((s, i) => {
     const eta = new Date(departure.getTime() + s.durSec * 1000 + shiftHours * 3600e3);
-    const h = route.weather[i];
-    const hi = hourIndex(h, eta);
+    const h = route.weather && route.weather[i];   // prognoza pala (429) → "nedostupna" umesto rusenja celog plana
+    const hi = h && h.time ? hourIndex(h, eta) : null;
     const a = hi === null
-      ? { level: 0, reasons: ["van horizonta prognoze"], outOfRange: true, km: s.km, eta, lat: s.lat, lon: s.lon, temp: null, feel: null, precip: 0, gust: 0 }
+      ? { level: 0, reasons: [h ? "van horizonta prognoze" : "prognoza nedostupna"], outOfRange: true, km: s.km, eta, lat: s.lat, lon: s.lon, temp: null, feel: null, precip: 0, gust: 0 }
       : assessHour(h, hi, { bearing: s.bearing, speedKmh: s.speedKmh, lat: s.lat, lon: s.lon, when: eta });
     return { ...a, eta, km: s.km, lat: s.lat, lon: s.lon, idx: s.idx };
   });
@@ -2467,7 +2472,8 @@ function drawRoute(route, assess) {
   const feats = [];
   for (let i = 0; i < assess.length - 1; i++) {
     const lvl = Math.max(assess[i].level, assess[i + 1].level);
-    feats.push({ type: "Feature", properties: { color: LEVEL_COLORS[lvl] },
+    const na = assess[i].outOfRange && assess[i + 1].outOfRange;   // bez prognoze = neutralna boja, ne lazno "vedro" zelena
+    feats.push({ type: "Feature", properties: { color: na ? "#64748b" : LEVEL_COLORS[lvl] },
       geometry: { type: "LineString", coordinates: route.coords.slice(assess[i].idx, assess[i + 1].idx + 1) } });
   }
   map.addSource("seg", { type: "geojson", data: { type: "FeatureCollection", features: feats } });
@@ -2541,7 +2547,13 @@ async function toggleRadar(btn) {
 function renderVerdict(assess, route, departure) {
   const worst = Math.max(...assess.map((a) => a.level));
   const v = $("verdict");
-  if (worst === 0) { v.className = "verdict ok"; v.textContent = "✓ Suvo i mirno celim putem"; }
+  if (route.wxFail) {
+    v.className = "verdict warn";
+    v.innerHTML = '⚠ Prognoza je trenutno nedostupna (server zauzet) - ruta, trošak i težina rade. ' +
+      '<button id="wxRetry" type="button" style="margin-left:6px;padding:5px 12px;border-radius:9px;border:1px solid rgba(148,163,184,.3);background:#1e293b;color:#e2e8f0;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer">Pokušaj ponovo</button>';
+    const _wr = v.querySelector("#wxRetry"); if (_wr) _wr.onclick = () => plan();
+  }
+  else if (worst === 0) { v.className = "verdict ok"; v.textContent = "✓ Suvo i mirno celim putem"; }
   else if (worst === 1) { v.className = "verdict warn"; v.textContent = "⚠ Vozivo, ali ima delova za oprez"; }
   else { v.className = "verdict bad"; v.textContent = "✖ Nevreme na ruti - pogledaj predloge"; }
   const arrive = new Date(departure.getTime() + route.totalDur * 1000);
@@ -2550,9 +2562,11 @@ function renderVerdict(assess, route, departure) {
   try { renderResultHero(route); } catch (e) {}   // pilula + hero cim su rezultati tu (nezavisno od sporednih fetch-eva)
   $("summary").innerHTML =
     `<b>${esc(routeTxt)}</b>${rt ? " (povratno)" : ""} · ${(route.totalDist / 1000).toFixed(0)} km · ` +
-    `${fmtDur(route.totalDur)}<br>Polazak ${fmtTime(departure)} → dolazak ~<b>${fmtTime(arrive)}</b> (bez pauza)`;
-  setPeek(worst, routeTxt,
-    `${(route.totalDist / 1000).toFixed(0)} km · ${fmtDur(route.totalDur)} · kreni ${fmtTime(departure)}`);
+    `${fmtDur(route.totalDur)}<br>Polazak ${fmtTime(departure)} → dolazak ~<b>${fmtTime(arrive)}</b> (bez pauza)` +
+    (state.arriveTarget ? ` · cilj: do ${fmtTime(state.arriveTarget)}` : "");
+  setPeek(route.wxFail ? 1 : worst, routeTxt,
+    `${(route.totalDist / 1000).toFixed(0)} km · ${fmtDur(route.totalDur)} · kreni ${fmtTime(departure)}` +
+    (state.arriveTarget ? ` (stižeš do ${fmtTime(state.arriveTarget)})` : ""));
   return worst;
 }
 function renderTimeline(assess) {
@@ -2560,7 +2574,7 @@ function renderTimeline(assess) {
   const lb = $("tl-labels"); lb.innerHTML = "";
   assess.forEach((a) => {
     const d = document.createElement("div");
-    d.className = "blk l" + a.level;
+    d.className = a.outOfRange ? "blk na" : "blk l" + a.level;   // bez prognoze = sivo, NE lazno zeleno
     d.title = `${fmtTime(a.eta)} · km ${a.km.toFixed(0)} · ${a.temp != null ? Math.round(a.temp) + "°C" : "van prognoze"}` +
       (a.reasons.length ? " · " + a.reasons.join(", ") : "");
     if (a.level > 0) d.innerHTML = wxIco((a.reasons || []).join(" "), a.level, 12);   // R13: ikonica po STVARNOM razlogu sata
@@ -2581,11 +2595,16 @@ function applyDeparture(dep) {
   const pad = (n) => String(n).padStart(2, "0");
   if ($("timeMode").value !== "arrive")
     $("depart").value = `${dep.getFullYear()}-${pad(dep.getMonth() + 1)}-${pad(dep.getDate())}T${pad(dep.getHours())}:${pad(dep.getMinutes())}`;
-  state.routes.forEach((r) => { if (r.weather) r.assess = assessRoute(r, dep); });
+  state.routes.forEach((r) => { r.assess = assessRoute(r, dep); });   // assessRoute je sad bezbedan i bez weather-a (wxFail)
   selectRoute(dep);
 }
 function renderWhen(route, departure) {
   const box = $("whenOut"); box.innerHTML = "";
+  if (route.wxFail) {   // bez prognoze poredjenje polazaka nema smisla - posten prazan prikaz umesto 8 redova "van horizonta"
+    box.innerHTML = '<div class="note">Poređenje polazaka stiže kad prognoza proradi - dodirni "Pokušaj ponovo" gore.</div>';
+    $("whenNote").textContent = "";
+    return;
+  }
   const arrive = $("timeMode").value === "arrive";
   let cands;
   if (arrive) {
@@ -3288,6 +3307,7 @@ function closeOptsSheet() {
     } else {
       $("timeMode").value = qm.value; qb.classList.add("timed");
       qw.value = $("depart").value || nowLocal(60);
+      if (qw.value) { $("depart").value = qw.value; plan(); }   // promena rezima ODMAH preracunava - i ako korisnik odustane od pickera, sheet ne sme da ostane prazan
       try { qw.showPicker(); } catch (er) { qw.focus(); }
     }
   });
@@ -3469,13 +3489,17 @@ function renderRouteTabs(departure) {
     const worst = Math.max(...r.assess.map((a) => a.level));
     const b = document.createElement("button");
     b.className = "rtab" + (i === state.selected ? " active" : "");
+    const wxTxt = r.wxFail ? `<span class="dot" style="background:#64748b"></span>bez prognoze` :
+      `<span class="dot l${worst}"></span>${LEVEL_NAMES[worst]}`;
     b.innerHTML = `<b>${r.label}${i === state.recommended ? " ★" : ""}</b>` +
-      `<span class="mini">${(r.totalDist / 1000).toFixed(0)} km · ${fmtDur(r.totalDur)}<br>` +
-      `<span class="dot l${worst}"></span>${LEVEL_NAMES[worst]}</span>` +
+      `<span class="mini">${(r.totalDist / 1000).toFixed(0)} km · ${fmtDur(r.totalDur)}<br>` + wxTxt + `</span>` +
       (why[i] ? `<span class="why">${why[i]}</span>` : "");
     b.onclick = () => { state.selected = i; selectRoute(departure); };
     box.appendChild(b);
   });
+  box.scrollLeft = 0;   // svez render krece od prve kartice - nikad isecen "3alans"
+  const act = box.querySelector(".active");
+  if (act && act.offsetLeft + act.offsetWidth > box.clientWidth) box.scrollLeft = Math.max(0, act.offsetLeft - 14);
 }
 async function selectRoute(departure) {
   const _seq = ++state.planSeq;   // R13: generacija - stariji async renderi ne smeju da diraju noviju rutu
@@ -3547,6 +3571,7 @@ async function plan() {
     const timeInput = $("depart").value ? new Date($("depart").value) : new Date();
     let departure = arriveMode ? new Date() : timeInput;
     if (departure < new Date()) departure = new Date();
+    state.arriveTarget = arriveMode && timeInput > new Date() ? timeInput : null;   // "Stigni do" cilj - prikaz mora da objasni zasto "kreni HH:MM" nije bas to vreme
 
     setStatus("Tražim lokacije...");
     logState({ phase: "geocode" });
@@ -3590,12 +3615,17 @@ async function plan() {
     setStatus("Proveravam prognozu po satu prolaska...");
     logState({ phase: "weather" });
     const horizon = arriveMode && timeInput > departure ? timeInput : departure;
-    await Promise.all(state.routes.map((r) => fetchWeather(r, horizon)));
+    const _wx = await Promise.allSettled(state.routes.map((r) => fetchWeather(r, horizon)));
     if (_pseq !== state.planSeq) return;   // R13v2: noviji plan je preuzeo tokom prognoze
+    state.routes.forEach((r, i) => {   // prognoza NE SME da obori rutu: 429/timeout → ruta bez vremenske ocene, sve ostalo radi
+      r.wxFail = _wx[i].status === "rejected";
+      if (r.wxFail) { r.weather = null; logState({ phase: "wx-fail", msg: String(_wx[i].reason && _wx[i].reason.message || "").slice(0, 60) }); }
+    });
     if (arriveMode) {
       // "Stigni do": nađi najmirniji polazak koji stiže do cilja (nerešeno → kasniji = manje čekanja)
       const r0 = state.routes[0];
-      const latest = timeInput.getTime() - r0.totalDur * 1000;
+      const maxDur = Math.max(...state.routes.map((r) => r.totalDur));   // najduza varijanta odredjuje krajnji polazak - SVAKA ruta mora da stigne do cilja
+      const latest = timeInput.getTime() - maxDur * 1000;
       if (latest < Date.now()) {
         departure = new Date(); // ni odmah ne stiže - vozi odmah, dolazak kasni
       } else {
@@ -3624,7 +3654,11 @@ async function plan() {
     sheetAfterPlan();
   } catch (e) {
     const raw = String(e.message || e);
-    const friendly = /failed to fetch|networkerror|load failed|timeout/i.test(raw)
+    const friendly = /HTTP 429/.test(raw)
+      ? "Servisi su trenutno zagušeni (previše zahteva odjednom). Sačekaj minut pa probaj ponovo."
+      : /HTTP 5\d\d/.test(raw)
+      ? "Server trenutno ne radi kako treba. Probaj ponovo za par minuta."
+      : /failed to fetch|networkerror|load failed|timeout|abort/i.test(raw)
       ? "Server za rute trenutno ne odgovara (mreža ili preopterećenje). Probaj ponovo za par sekundi."
       : raw;
     setStatus(friendly, true);
