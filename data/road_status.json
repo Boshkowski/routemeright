@@ -1,5 +1,5 @@
 {
- "updated": "2026-07-26T21:10+00:00",
+ "updated": "2026-07-26T22:10+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -7,22 +7,10 @@
    "ok": true,
    "items": [
     {
-     "type": "Okvara vozila",
-     "title": "A1-E57, Maribor - Ljubljana: Okvara vozila",
-     "detail": "A1, Maribor - Ljubljana, počivališče Polskava - priključek Sl. Bistrica sever v smeri Ljubljane, okvara vozila, zaprt počasni pas.",
-     "region": "A1-E57, Maribor - Ljubljana"
-    },
-    {
      "type": "Delo",
      "title": "A1-E57, Ljubljana - Maribor: Delo",
      "detail": "A1, Ljubljana - Maribor, izvoz Trojane - priključek Šempeter v smeri Maribora, dela, oviran promet.",
      "region": "A1-E57, Ljubljana - Maribor"
-    },
-    {
-     "type": "Delo",
-     "title": "H3 , Ljubljana - severna obvoznica: Delo",
-     "detail": "H3, Ljubljana - severna obvoznica, priključek Ljubljana Tomačevo - priključek Ljubljana sever v smeri Kosez, dela, pomična zapora prehitevalnega pasu.",
-     "region": "H3 , Ljubljana - severna obvoznica"
     },
     {
      "type": "Delo",
@@ -245,6 +233,18 @@
      "title": "R3-671, Šutna - Planina v Podbočju: Delo",
      "detail": "R3-671, Šutna - Planina v Podbočju, v Planini v Podbočju, izmenično enosmerni promet, ureditev odvodnjavanja, do 30. 7. 2026.",
      "region": "R3-671, Šutna - Planina v Podbočju"
+    },
+    {
+     "type": "Delo",
+     "title": "NK-219, Slovenska Bistrica - Poljčane: Delo",
+     "detail": "R1-219, Slovenska Bistrica - Poljčane, v Cigonci, izmenično enosmerni promet, pomična zapora, preplastitev vozišča, do 15. 10. 2026.",
+     "region": "NK-219, Slovenska Bistrica - Poljčane"
+    },
+    {
+     "type": "Delo",
+     "title": "G1-2, Slovenska Bistrica - Pragersko: Delo",
+     "detail": "G1-2, Slovenska Bistrica - Pragersko, pri Spodnji Polskavi, izmenično enosmerni promet, obnova vozišča, do 19. 9. 2026.",
+     "region": "G1-2, Slovenska Bistrica - Pragersko"
     }
    ]
   },
@@ -253,12 +253,6 @@
    "source": "HAK",
    "ok": true,
    "items": [
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Zbog sigurnosti i protočnosti cestovnog prometa te organiziranosti hitnih i interventnih službi za vrijeme turističke sezone 2026. godine, zatvorena je traka za spora vozila u smjeru Zagreba od 237+200 km do 232+600 km, te u smjeru Dubrovnika od 233+850 km do 237+200 km.",
-     "region": "A1"
-    },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
@@ -274,8 +268,20 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
+     "detail": "Zbog sigurnosti i protočnosti cestovnog prometa te organiziranosti hitnih i interventnih službi za vrijeme turističke sezone 2026. godine, zatvorena je traka za spora vozila u smjeru Zagreba od 237+200 km do 232+600 km, te u smjeru Dubrovnika od 233+850 km do 237+200 km.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
      "detail": "Na autocesti A1 izlaz iz tunela Sv Rok smjer Dubrovnik zbog oštećenja kolnika vozi se uz ograničenje brzine od 80 km/h po dvije prometne trake. Molimo korisnike za oprez.",
      "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3 između 135+000 km i 142+000 km, na kolniku, u smjeru Lipovca, promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "region": "A3"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
@@ -304,25 +310,19 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3 između 135+000 km i 142+000 km, na kolniku, u smjeru Lipovca, promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
-     "region": "A3"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
      "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme (odbojne ograde) na autocesti A3 na 66+500 km između čvora Ivanić Grad i čvora Križ na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Zbog oštećenja opreme (odbojne ograde) na autocesti A3 na 66+500 km između čvora Ivanić Grad i čvora Križ na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -353,6 +353,12 @@
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A4 - Izvanredni događaj",
      "detail": "Zbog oštećenja opreme na kolniku na autocesti A4 na 91+500 km između čvora Popovec i čvora Sesvete na kolniku u smjeru Zagreba promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A4"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A4 - Izvanredni događaj",
+     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A4 na 2+000 km između čvora Goričan i čvora Goričan I na kolniku u smjeru Goričana. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A4"
     },
     {
@@ -398,100 +404,94 @@
      "region": "A7"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "ŽC5117-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "ŽC5117-1"
+     "type": "radovi (Radovi)",
+     "title": "D25-1 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D25-1"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "1026 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "1026"
+     "type": "radovi (Radovi)",
+     "title": "D1-13 - Radovi",
+     "detail": "zbog radova održavanja vozi se uz ograničenje brzine",
+     "region": "D1-13"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "D29-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D29-1"
+     "type": "radovi (Radovi)",
+     "title": "D53-3 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D53-3"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "LC65080-1 - Radovi",
-     "detail": "Zbog radova zatvorena lokalna cesta LC65080 od mjesta Visoka do granice sa Splitsko-dalmatinskom županijom.",
-     "region": "LC65080-1"
+     "type": "radovi (Radovi)",
+     "title": "D55-1 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D55-1"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "LC41078-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "LC41078-1"
+     "type": "radovi (Radovi)",
+     "title": "D10-103 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D10-103"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "ŽC4094-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "ŽC4094-1"
+     "type": "radovi (Radovi)",
+     "title": "D31-2 - Radovi",
+     "detail": "zbog radova održavanja vozi se uz ograničenje brzine",
+     "region": "D31-2"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "D2-13 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D2-13"
+     "type": "radovi (Radovi)",
+     "title": "D74-1 - Radovi",
+     "detail": "zbog radova održavanja vozi se uz ograničenje brzine",
+     "region": "D74-1"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "D44-2 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D44-2"
+     "type": "radovi (Radovi)",
+     "title": "D2-9 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D2-9"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "ŽC6055-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "ŽC6055-1"
+     "type": "radovi (Radovi)",
+     "title": "D1-12 - Radovi",
+     "detail": "zbog radova održavanja vozi se uz ograničenje brzine",
+     "region": "D1-12"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "1027 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "1027"
+     "type": "radovi (Radovi)",
+     "title": "D2-11 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D2-11"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "ŽC3017-2 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "ŽC3017-2"
+     "type": "radovi (Radovi)",
+     "title": "D8-4 - Radovi",
+     "detail": "zbog radova održavanja vozi se uz ograničenje brzine",
+     "region": "D8-4"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "ŽC3234-3 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "ŽC3234-3"
+     "type": "radovi (Radovi)",
+     "title": "D1-7 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D1-7"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "D28-3 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D28-3"
+     "type": "radovi (Radovi)",
+     "title": "D6-1 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D6-1"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "D547-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D547-1"
+     "type": "radovi (Radovi)",
+     "title": "D1-7 - Radovi",
+     "detail": "zbog radova održavanja vozi se uz ograničenje brzine",
+     "region": "D1-7"
     },
     {
-     "type": "zatvaranje (Radovi)",
-     "title": "LC33169-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "LC33169-1"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "LC33048-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "LC33048-1"
+     "type": "radovi (Radovi)",
+     "title": "ŽC5217-2 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "ŽC5217-2"
     }
    ]
   },
@@ -1750,6 +1750,36 @@
   "RS": [
    {
     "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Serbia - Pomoravlje",
+    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-27T22:00 do 2026-07-28T21:59",
+    "region": "Pomoravlje"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Serbia - Southeastern Serbia",
+    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-27T22:00 do 2026-07-28T21:59",
+    "region": "Southeastern Serbia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Serbia - Sumadija",
+    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-27T22:00 do 2026-07-28T21:59",
+    "region": "Sumadija"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Serbia - Western Serbia",
+    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-27T22:00 do 2026-07-28T21:59",
+    "region": "Western Serbia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Serbia - Belgrade",
+    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-27T22:00 do 2026-07-28T21:59",
+    "region": "Belgrade"
+   },
+   {
+    "type": "meteo-upozorenje",
     "title": "Yellow High-temperature Warning issued for Serbia - Banat",
     "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-26T22:00 do 2026-07-27T21:59",
     "region": "Banat"
@@ -1774,6 +1804,30 @@
    },
    {
     "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Serbia - Eastern Serbia",
+    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-27T22:00 do 2026-07-28T21:59",
+    "region": "Eastern Serbia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Serbia - Srem",
+    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-27T22:00 do 2026-07-28T21:59",
+    "region": "Srem"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Serbia - Banat",
+    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-27T22:00 do 2026-07-28T21:59",
+    "region": "Banat"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Serbia - Backa",
+    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-27T22:00 do 2026-07-28T21:59",
+    "region": "Backa"
+   },
+   {
+    "type": "meteo-upozorenje",
     "title": "Yellow High-temperature Warning issued for Serbia - Southeastern Serbia",
     "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-26T22:00 do 2026-07-27T21:59",
     "region": "Southeastern Serbia"
@@ -1795,12 +1849,6 @@
     "title": "Yellow High-temperature Warning issued for Serbia - Backa",
     "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-26T22:00 do 2026-07-27T21:59",
     "region": "Backa"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Kosovo i Metohija",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Kosovo i Metohija"
    },
    {
     "type": "meteo-upozorenje",
@@ -1843,134 +1891,20 @@
     "title": "Yellow Thunderstorm Warning issued for Serbia - Banat",
     "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T22:00 do 2026-07-27T21:59",
     "region": "Banat"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Eastern Serbia",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Eastern Serbia"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Pomoravlje",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Pomoravlje"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Sumadija",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Sumadija"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Western Serbia",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Western Serbia"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Belgrade",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Belgrade"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Srem",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Srem"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Banat",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Banat"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Backa",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Backa"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Serbia - Southwestern Serbia",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Southwestern Serbia"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Serbia - Banat",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Banat"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Southeastern Serbia",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Southeastern Serbia"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Serbia - Western Serbia",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Western Serbia"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Serbia - Srem",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Srem"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Serbia - Backa",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
-    "region": "Backa"
    }
   ],
   "HR": [
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - South Dalmatia region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T08:00 do 2026-07-26T21:59",
-    "region": "South Dalmatia region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Middle Dalmatia region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T06:00 do 2026-07-26T21:59",
-    "region": "Middle Dalmatia region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - North Dalmatia region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T06:00 do 2026-07-26T21:59",
-    "region": "North Dalmatia region"
+    "title": "Yellow Wind Warning issued for Croatia - Velebit channel region",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-27T22:01 do 2026-07-28T10:00",
+    "region": "Velebit channel region"
    },
    {
     "type": "meteo-upozorenje",
     "title": "Yellow Wind Warning issued for Croatia - Kvarner i Kvarneric region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T04:00 do 2026-07-26T21:59",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-27T22:01 do 2026-07-28T10:00",
     "region": "Kvarner i Kvarneric region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - West Istrian coast region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T04:00 do 2026-07-26T21:59",
-    "region": "West Istrian coast region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange Thunderstorm Warning issued for Croatia - Split region",
-    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-07-26T08:00 do 2026-07-26T21:59",
-    "region": "Split region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Velebit channel region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T04:00 do 2026-07-26T21:59",
-    "region": "Velebit channel region"
    },
    {
     "type": "meteo-upozorenje",
@@ -2001,42 +1935,6 @@
     "title": "Yellow Thunderstorm Warning issued for Croatia - Gospic region",
     "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T22:01 do 2026-07-27T01:00",
     "region": "Gospic region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Dubrovnik region",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T16:00 do 2026-07-26T21:59",
-    "region": "Dubrovnik region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Gospic region",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T09:00 do 2026-07-26T21:59",
-    "region": "Gospic region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange Thunderstorm Warning issued for Croatia - Rijeka region",
-    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-07-26T07:00 do 2026-07-26T21:59",
-    "region": "Rijeka region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange Thunderstorm Warning issued for Croatia - Knin region",
-    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-07-26T12:00 do 2026-07-26T21:59",
-    "region": "Knin region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Rijeka region",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-07-26T07:00 do 2026-07-26T21:59",
-    "region": "Rijeka region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Dubrovnik region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T10:00 do 2026-07-26T21:59",
-    "region": "Dubrovnik region"
    }
   ],
   "SI": [
@@ -2072,143 +1970,47 @@
    },
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / North-East",
-    "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-26T12:00 do 2026-07-26T21:59",
-    "region": "Slovenia / North-East"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Slovenia - Slovenia / South-West",
-    "detail": "nivo: zuto | pojava: Moderate Rain | vazi: 2026-07-26T13:00 do 2026-07-26T21:59",
-    "region": "Slovenia / South-West"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Slovenia - Slovenia / North-West",
-    "detail": "nivo: zuto | pojava: Moderate Rain | vazi: 2026-07-26T13:00 do 2026-07-26T21:59",
-    "region": "Slovenia / North-West"
-   },
-   {
-    "type": "meteo-upozorenje",
     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / North-West",
     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-27T15:00 do 2026-07-27T21:59",
-    "region": "Slovenia / North-West"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / North-West",
-    "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-26T05:00 do 2026-07-26T21:59",
     "region": "Slovenia / North-West"
    }
   ],
   "BA": [
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Banja Luka",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T11:00 do 2026-07-26T21:59",
+    "title": "Yellow High-temperature Warning issued for Bosnia-Herzegovina - Mostar",
+    "detail": "nivo: zuto | pojava: High-temperature | vazi: 2026-07-28T10:00 do 2026-07-28T15:59",
+    "region": "Mostar"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Bosnia-Herzegovina - Bihac",
+    "detail": "nivo: zuto | pojava: High-temperature | vazi: 2026-07-28T10:00 do 2026-07-28T15:59",
+    "region": "Bihac"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Bosnia-Herzegovina - Livno",
+    "detail": "nivo: zuto | pojava: High-temperature | vazi: 2026-07-28T10:00 do 2026-07-28T15:59",
+    "region": "Livno"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Bosnia-Herzegovina - Banja Luka",
+    "detail": "nivo: zuto | pojava: High-temperature | vazi: 2026-07-28T11:00 do 2026-07-28T16:00",
     "region": "Banja Luka"
    },
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Prijedor",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-25T22:00 do 2026-07-26T21:59",
+    "title": "Yellow High-temperature Warning issued for Bosnia-Herzegovina - Prijedor",
+    "detail": "nivo: zuto | pojava: High-temperature | vazi: 2026-07-28T11:00 do 2026-07-28T16:00",
     "region": "Prijedor"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Foca",
-    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
-    "region": "Foca"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Foca",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
-    "region": "Foca"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Visegrad",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T18:00 do 2026-07-26T21:59",
-    "region": "Visegrad"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Trebinje",
-    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
-    "region": "Trebinje"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Trebinje",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T13:00 do 2026-07-26T21:59",
-    "region": "Trebinje"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Foca",
-    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
-    "region": "Foca"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Foca",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
-    "region": "Foca"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Trebinje",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T13:00 do 2026-07-26T21:59",
-    "region": "Trebinje"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Trebinje",
-    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
-    "region": "Trebinje"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Bosnia-Herzegovina - Mostar",
-    "detail": "nivo: zuto | pojava: Rain | vazi: 2026-07-26T16:00 do 2026-07-26T21:59",
-    "region": "Mostar"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Mostar",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T16:00 do 2026-07-26T21:59",
-    "region": "Mostar"
    },
    {
     "type": "meteo-upozorenje",
     "title": "Yellow High-temperature Warning issued for Bosnia-Herzegovina - Mostar",
     "detail": "nivo: zuto | pojava: High-temperature | vazi: 2026-07-27T10:00 do 2026-07-27T14:00",
     "region": "Mostar"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Foca",
-    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
-    "region": "Foca"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Trebinje",
-    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
-    "region": "Trebinje"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Foca",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
-    "region": "Foca"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Trebinje",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T13:00 do 2026-07-26T21:59",
-    "region": "Trebinje"
    }
   ],
   "ME": [
@@ -2259,39 +2061,15 @@
     "title": "Yellow Wind Warning issued for Montenegro - Adriatic coast",
     "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T22:01 do 2026-07-27T16:00",
     "region": "Adriatic coast"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Montenegro - Central",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T17:55 do 2026-07-26T21:59",
-    "region": "Central"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Montenegro - Adriatic coast",
-    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T17:55 do 2026-07-26T21:59",
-    "region": "Adriatic coast"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Montenegro - Continental and Mountains",
-    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T07:56 do 2026-07-26T21:59",
-    "region": "Continental and Mountains"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Montenegro - Central",
-    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T07:56 do 2026-07-26T21:59",
-    "region": "Central"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Montenegro - Adriatic coast",
-    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T07:56 do 2026-07-26T21:59",
-    "region": "Adriatic coast"
    }
   ],
   "MK": [
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Republic of North Macedonia - Southwestern region",
+    "detail": "nivo: zuto | pojava: Rain | vazi: 2026-07-26T22:01 do 2026-07-27T21:59",
+    "region": "Southwestern region"
+   },
    {
     "type": "meteo-upozorenje",
     "title": "Yellow Wind Warning issued for Republic of North Macedonia - Eastern region",
