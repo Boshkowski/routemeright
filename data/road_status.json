@@ -1,5 +1,5 @@
 {
- "updated": "2026-07-26T03:52+00:00",
+ "updated": "2026-07-26T06:47+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -8,33 +8,39 @@
    "items": [
     {
      "type": "Delo",
+     "title": "A1-E61, E70, Ljubljana - Koper: Delo",
+     "detail": "A1, Ljubljana - Koper, priključek Logatec, dela, oviran promet, košnja.",
+     "region": "A1-E61, E70, Ljubljana - Koper"
+    },
+    {
+     "type": "Delo",
+     "title": "A1-E61, E70, Koper - Ljubljana: Delo",
+     "detail": "A1, Koper - Ljubljana, izvoz 49 Črni Kal iz smeri Kopra, dela, oviran promet.",
+     "region": "A1-E61, E70, Koper - Ljubljana"
+    },
+    {
+     "type": "Delo",
+     "title": "A2-E70, Ljubljana - Obrežje: Delo",
+     "detail": "A2, Ljubljana - Obrežje, priključek Grosuplje vzhod - priključek Višnja Gora v smeri Novega mesta, dela, oviran promet.",
+     "region": "A2-E70, Ljubljana - Obrežje"
+    },
+    {
+     "type": "Delo",
+     "title": "A3-E70, E61, Fernetiči - razcep Gabrk: Delo",
+     "detail": "A3, Fernetiči - razcep Gabrk, razcep Gabrk iz smeri Fernetičev, Italije proti Ljubljani, dela, oviran promet.",
+     "region": "A3-E70, E61, Fernetiči - razcep Gabrk"
+    },
+    {
+     "type": "Delo",
      "title": "RT-927, Žibovt - Sv. Duh - Podolševa: Delo",
      "detail": "RT-927, Žibovt - Sv. Duh - Podolševa, v Logarski Dolini, oviran promet, košnja, do 17:00.",
      "region": "RT-927, Žibovt - Sv. Duh - Podolševa"
     },
     {
-     "type": "Ovire",
-     "title": "LG-211230, Samova ulica: Ovire",
-     "detail": "LG-211230, Samova ulica, popolna zapora, zaradi prometne nesreče.",
-     "region": "LG-211230, Samova ulica"
-    },
-    {
      "type": "Nesreča",
-     "title": "LG-211010, Dunajska cesta: Nesreča",
-     "detail": "Ljubljana, Dunajska cesta, prometna nesreča, popolna zapora.",
-     "region": "LG-211010, Dunajska cesta"
-    },
-    {
-     "type": "Ovire",
-     "title": "LG-211230, Topniška ulica: Ovire",
-     "detail": "Ljubljana, Topniška ulica, popolna zapora, zaradi prometne nesreče.",
+     "title": "LG-211230, Topniška ulica: Nesreča",
+     "detail": "Ljubljana, Topniška ulica, pred križiščem z Dunajsko cesto, prometna nesreča, popolna zapora.",
      "region": "LG-211230, Topniška ulica"
-    },
-    {
-     "type": "Nesreča",
-     "title": "LG-211010, Dunajska cesta: Nesreča",
-     "detail": "Ljubljana, Dunajska cesta, prometna nesreča, popolna zapora.",
-     "region": "LG-211010, Dunajska cesta"
     },
     {
      "type": "Ovire",
@@ -239,12 +245,6 @@
      "title": "R2-411, Polica - Podtabor: Delo",
      "detail": "R2-411, Kranj - Podtabor, pri Naklem, popolna zapora, rekonstrukcija ceste, do 31. 8. 2026. Obvoz: po lokalni cesti Naklo - Okroglo - Polica.",
      "region": "R2-411, Polica - Podtabor"
-    },
-    {
-     "type": "Tovornjaki",
-     "title": "H4 , Nova Gorica - Razdrto: Tovornjaki",
-     "detail": "H4, Nova Gorica - Razdrto, priključek Šempeter - razcep Nanos v smeri Razdrtega, prepoved za tovorna vozila nad 3,5 tone, dovoljeno za lokalni promet, tranzit via Fernetiči.",
-     "region": "H4 , Nova Gorica - Razdrto"
     }
    ]
   },
@@ -256,7 +256,13 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A1 između čvora Šibenik i čvora Podi na kolniku u smjeru Dubrovnika. Promet se vodi po dvije prometne trake uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "detail": "Na autocesti A1 izlaz iz tunela Sv Rok smjer Dubrovnik zbog oštećenja kolnika vozi se uz ograničenje brzine od 80 km/h po dvije prometne trake. Molimo korisnike za oprez.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Predmet na autocesti A1 na 283+000 km između čvora Vodice i čvora Benkovac na kolniku u smjeru Zagreba. Promet se vodi jednom prometnom trakom uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
      "region": "A1"
     },
     {
@@ -266,22 +272,64 @@
      "region": "A1"
     },
     {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A1 - Zastoj",
+     "detail": "Povećanje gustoće prometa na autocesti A1 između tunela Sveti Rok i tunela Čelinka na kolniku u smjeru Dubrovnika.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A1 - Zastoj",
+     "detail": "Povećanje gustoće prometa na autocesti A1 između tunela Čelinka i čvora Zadar istok na kolniku u smjeru Dubrovnika.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A1 - Zastoj",
+     "detail": "Povećanje gustoće prometa na autocesti A1 između čvora Karlovac i čvora Bosiljevo 2 na kolniku u smjeru Dubrovnika.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A1 - Zastoj",
+     "detail": "Povećanje gustoće prometa na autocesti A1 između čvora Lučko i čvora Karlovac na kolniku u smjeru Dubrovnika.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A1 - Zastoj",
+     "detail": "Povećanje gustoće prometa na autocesti A1 između čvora Gospić i tunela Sveti Rok na kolniku u smjeru Dubrovnika.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A1 - Zastoj",
+     "detail": "Povećanje gustoće prometa na autocesti A1 između čvora Otočac i čvora Gospić na kolniku u smjeru Dubrovnika.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A1 - Zastoj",
+     "detail": "Povećanje gustoće prometa na autocesti A1 između tunela Mala Kapela i čvora Otočac na kolniku u smjeru Dubrovnika.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A1 - Zastoj",
+     "detail": "Povećanje gustoće prometa na autocesti A1 između čvora Bosiljevo 2 i tunela Mala Kapela na kolniku u smjeru Dubrovnika.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A1 između čvora Šibenik i čvora Podi na kolniku u smjeru Dubrovnika. Promet se vodi po dvije prometne trake uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "region": "A1"
+    },
+    {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
      "detail": "Zbog sigurnosti i protočnosti cestovnog prometa te organiziranosti hitnih i interventnih službi za vrijeme turističke sezone 2026. godine, zatvorena je traka za spora vozila u smjeru Zagreba od 237+200 km do 232+600 km, te u smjeru Dubrovnika od 233+850 km do 237+200 km.",
      "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Na autocesti A1 izlaz iz tunela Sv Rok smjer Dubrovnik zbog oštećenja kolnika vozi se uz ograničenje brzine od 80 km/h po dvije prometne trake. Molimo korisnike za oprez.",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
@@ -308,9 +356,15 @@
      "region": "A3"
     },
     {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A3 - Zastoj",
+     "detail": "Kolona osobnih i teretnih vozila na autocesti A3 između 303+500 km i graničnog prijelaza GP Bajakovo na kolniku u smjeru Lipovca, duljine 2 km. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Kolona se povećava. Molimo korisnike za oprez i strpljenje.",
+     "region": "A3"
+    },
+    {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -320,9 +374,9 @@
      "region": "A3"
     },
     {
-     "type": "guzva/dogadjaj (Zastoj)",
-     "title": "A3 - Zastoj",
-     "detail": "Kolona osobnih i teretnih vozila na autocesti A3 između 303+500 km i graničnog prijelaza GP Bajakovo na kolniku u smjeru Lipovca, duljine 2 km. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Kolona se povećava. Molimo korisnike za oprez i strpljenje.",
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -362,12 +416,6 @@
      "region": "A4"
     },
     {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A6 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (autobus) na autocesti A6 na 14+500 km na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A6"
-    },
-    {
      "type": "guzva/dogadjaj (Radovi)",
      "title": "A6 - Radovi",
      "detail": "Radovi na održavanju na autocesti A6 između 9+000 km i 5+300 km na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Predviđeno trajanje radova je do 30.07.2026. Molimo korisnike za oprez.",
@@ -395,6 +443,12 @@
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A7 - Izvanredni događaj",
      "detail": "Oštećenje kolnika na autocesti A7 između tunela Sveti Kuzam i tunela Draga ( 33+000 km ) na kolniku u smjeru Rupe. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A7"
+    },
+    {
+     "type": "guzva/dogadjaj (Radovi)",
+     "title": "A7 - Radovi",
+     "detail": "Radovi na održavanju na autocesti A7 između 9+200 km i 8+700 km, između čvora Jurdani i čvora Permani na kolniku u smjeru Rupe. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Predviđeno trajanje radova je do 12:00 h. Molimo korisnike za oprez.",
      "region": "A7"
     },
     {
@@ -438,60 +492,6 @@
      "title": "ŽC4094-1 - Radovi",
      "detail": "radovi - cesta zatvorena",
      "region": "ŽC4094-1"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "D2-13 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D2-13"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "D44-2 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D44-2"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "ŽC6055-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "ŽC6055-1"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "1027 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "1027"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "ŽC3017-2 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "ŽC3017-2"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "ŽC3234-3 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "ŽC3234-3"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "D28-3 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D28-3"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "D547-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D547-1"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "LC33169-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "LC33169-1"
     }
    ]
   },
@@ -750,7 +750,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Velika Kladuša",
-     "detail": "Duga je kolona putničkih vozila na ulazu u Bosnu i Hercegovinu. Zadržavanja putničkih vozila na izlazu nisu duža od 30 minuta.",
+     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -774,13 +774,13 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Gradina",
-     "detail": "Duga je kolona putničkih vozila na ulazu u Bosnu i Hercegovinu. Zadržavanja putničkih vozila na izlazu nisu duža od 30 minuta.",
+     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
      "type": "granicni_prelaz",
      "title": "GP Brod",
-     "detail": "Duga je kolona putničkih vozila na ulazu u Bosnu i Hercegovinu. Zadržavanja putničkih vozila na izlazu nisu duža od 30 minuta.",
+     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -864,7 +864,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Hum",
-     "detail": "Duga je kolona putničkih vozila na izlazu iz Bosne i Hercegovine. Zadržavanja putničkih vozila na ulazu nisu duža od 30 minuta.",
+     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -918,7 +918,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Gabela Polje",
-     "detail": "Duga je kolona putničkih vozila na izlazu iz Bosne i Hercegovine. Zadržavanja putničkih vozila na ulazu nisu duža od 30 minuta.",
+     "detail": "Zadržavanja putničkih vozila na nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -954,7 +954,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Prisika",
-     "detail": "Duga je kolona putničkih vozila na izlazu iz Bosne i Hercegovine. Zadržavanja putničkih vozila na ulazu nisu duža od 30 minuta.",
+     "detail": "Zadržavanja putničkih vozila na nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -984,7 +984,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Izačić",
-     "detail": "Duga je kolona putničkih vozila u oba smjera.",
+     "detail": "Duga je kolona putničkih vozila na izlazu iz Bosne i Hercegovine. Zadržavanja putničkih vozila na ulazu nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     }
    ]
@@ -994,12 +994,6 @@
    "source": "AMSCG",
    "ok": true,
    "items": [
-    {
-     "type": "stanje",
-     "title": "U većem dijelu zemlje saobraca se uz povoljne uslove za voznju. Frekvencija vozila je umje...",
-     "detail": "U većem dijelu zemlje saobraca se uz povoljne uslove za voznju. Frekvencija vozila je umjerena,tokom dana pojačana,na prilazima gradskim sredinama i pojedinim graničnim prelazima.Na dionicama gdje se izvode radovi obavezno je poštovanje postavljene signalizacije,a na svim putnim pravcima savjetujemo",
-     "region": "Crna Gora"
-    },
     {
      "type": "radovi",
      "title": "Zbog izvođenja radova na rekonstrukcijí mosta „Đurdevića Tara“ na magistralnom putu M-6 Di...",
@@ -1020,8 +1014,8 @@
     },
     {
      "type": "radovi",
-     "title": "3.Od 10.08.2026 godine sa početkom u 06.00 sati pa do 26.10 .2026 godine do 12.00 sati odo...",
-     "detail": "3.Od 10.08.2026 godine sa početkom u 06.00 sati pa do 26.10 .2026 godine do 12.00 sati odobrava se potpuna obustava za sve vrste drumskog saobraćaja kao i za pješački saobraćaj ,zbog izvodjenja radova na rekonstrukciji mosta Djurdjevića Tara na magistralnom putu M-6 dionica Pljevlja-Žabljak,lokalite",
+     "title": "3. Od 10.08.2026 godine sa početkom u 06.00 sati pa do 26.10 .2026 godine do 12.00 sati od...",
+     "detail": "3. Od 10.08.2026 godine sa početkom u 06.00 sati pa do 26.10 .2026 godine do 12.00 sati odobrava se potpuna obustava za sve vrste drumskog saobraćaja kao i za pješački saobraćaj ,zbog izvodjenja radova na rekonstrukciji mosta Djurdjevića Tara na magistralnom putu M-6 dionica Pljevlja-Žabljak,lokalit",
      "region": "M-6 Pljevlja-Žabljak"
     },
     {
@@ -1093,15 +1087,15 @@
    "items": [
     {
      "type": "sostojba",
-     "title": "Состојба (2026-07-25 19:00)",
+     "title": "Состојба (2026-07-26 06:30)",
      "detail": "Сообраќајот на државните патишта се одвива непречено, по суви коловози.",
      "region": "cela drzava"
     },
     {
      "type": "granicni-prelazi",
      "title": "Фреквенција",
-     "detail": "Интензитетот на сообраќај на патните правци надвор од градските средини е зголемен. На граничните премини од македонска страна, нема подолги задржувања за влез и излез од државата.",
-     "region": "cela drzava"
+     "detail": "Интензитетот на сообраќај на патните правци надвор од градските средини е зголемен. Се бележи зголемена фреквенција на возила на ГП Богородица , времето на чекање за излез од државата е околу 30 минути. На останатите гранични премини од македонска страна, нема подолги задржувања за влез и излез од д",
+     "region": "GP Богородица"
     },
     {
      "type": "upozorenje",
@@ -1920,6 +1914,108 @@
   "HR": [
    {
     "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Dubrovnik region",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T22:01 do 2026-07-27T07:00",
+    "region": "Dubrovnik region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Split region",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T22:01 do 2026-07-27T05:00",
+    "region": "Split region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Dubrovnik region",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T22:01 do 2026-07-27T07:00",
+    "region": "Dubrovnik region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Rijeka region",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T22:01 do 2026-07-27T01:00",
+    "region": "Rijeka region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Gospic region",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T22:01 do 2026-07-27T01:00",
+    "region": "Gospic region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Dubrovnik region",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T16:00 do 2026-07-26T21:59",
+    "region": "Dubrovnik region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Gospic region",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T09:00 do 2026-07-26T21:59",
+    "region": "Gospic region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Karlovac region",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T12:00 do 2026-07-26T18:00",
+    "region": "Karlovac region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Zagreb region",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T13:00 do 2026-07-26T18:00",
+    "region": "Zagreb region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange Thunderstorm Warning issued for Croatia - Split region",
+    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-07-26T12:00 do 2026-07-26T21:59",
+    "region": "Split region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange Thunderstorm Warning issued for Croatia - Rijeka region",
+    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-07-26T07:00 do 2026-07-26T21:59",
+    "region": "Rijeka region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange Thunderstorm Warning issued for Croatia - Knin region",
+    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-07-26T12:00 do 2026-07-26T21:59",
+    "region": "Knin region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Rijeka region",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-07-26T07:00 do 2026-07-26T21:59",
+    "region": "Rijeka region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Split region",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T07:00 do 2026-07-26T20:00",
+    "region": "Split region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Dubrovnik region",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T10:00 do 2026-07-26T21:59",
+    "region": "Dubrovnik region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Rijeka region",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T08:00 do 2026-07-26T17:00",
+    "region": "Rijeka region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Knin region",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T09:00 do 2026-07-26T18:00",
+    "region": "Knin region"
+   },
+   {
+    "type": "meteo-upozorenje",
     "title": "Yellow Wind Warning issued for Croatia - Middle Dalmatia region",
     "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T06:00 do 2026-07-26T21:59",
     "region": "Middle Dalmatia region"
@@ -1944,84 +2040,6 @@
    },
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Zagreb region",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T14:00 do 2026-07-26T18:00",
-    "region": "Zagreb region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Split region",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T22:01 do 2026-07-27T05:00",
-    "region": "Split region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Dubrovnik region",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T22:01 do 2026-07-27T04:00",
-    "region": "Dubrovnik region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange Thunderstorm Warning issued for Croatia - Split region",
-    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-07-26T12:00 do 2026-07-26T21:59",
-    "region": "Split region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange Thunderstorm Warning issued for Croatia - Rijeka region",
-    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-07-26T07:00 do 2026-07-26T21:59",
-    "region": "Rijeka region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange Thunderstorm Warning issued for Croatia - Knin region",
-    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-07-26T11:00 do 2026-07-26T21:59",
-    "region": "Knin region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Dubrovnik region",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T16:00 do 2026-07-26T21:59",
-    "region": "Dubrovnik region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Gospic region",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T09:00 do 2026-07-26T21:59",
-    "region": "Gospic region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Karlovac region",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-07-26T12:00 do 2026-07-26T17:00",
-    "region": "Karlovac region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Split region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T07:00 do 2026-07-26T20:00",
-    "region": "Split region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Dubrovnik region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T10:00 do 2026-07-26T21:59",
-    "region": "Dubrovnik region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Rijeka region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T08:00 do 2026-07-26T17:00",
-    "region": "Rijeka region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Knin region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T09:00 do 2026-07-26T17:00",
-    "region": "Knin region"
-   },
-   {
-    "type": "meteo-upozorenje",
     "title": "Yellow Wind Warning issued for Croatia - South Dalmatia region",
     "detail": "nivo: zuto | pojava: wind | vazi: 2026-07-26T08:00 do 2026-07-26T21:59",
     "region": "South Dalmatia region"
@@ -2042,9 +2060,9 @@
   "SI": [
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / Sea",
-    "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-26T05:00 do 2026-07-26T16:59",
-    "region": "Slovenia / Sea"
+    "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / Central",
+    "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-27T15:00 do 2026-07-27T21:59",
+    "region": "Slovenia / Central"
    },
    {
     "type": "meteo-upozorenje",
@@ -2061,26 +2079,8 @@
    {
     "type": "meteo-upozorenje",
     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / Central",
-    "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-27T15:00 do 2026-07-27T21:59",
-    "region": "Slovenia / Central"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / Central",
     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-26T08:00 do 2026-07-26T19:59",
     "region": "Slovenia / Central"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Forest-fire Warning issued for Slovenia - Slovenia / South-West",
-    "detail": "nivo: zuto | pojava: Moderate Forestfire danger | vazi: 2026-07-25T23:00 do 2026-07-29T22:59",
-    "region": "Slovenia / South-West"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / South-West",
-    "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-26T05:00 do 2026-07-26T16:59",
-    "region": "Slovenia / South-West"
    },
    {
     "type": "meteo-upozorenje",
@@ -2093,6 +2093,24 @@
     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / North-East",
     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-26T12:00 do 2026-07-26T21:59",
     "region": "Slovenia / North-East"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Forest-fire Warning issued for Slovenia - Slovenia / South-West",
+    "detail": "nivo: zuto | pojava: Moderate Forestfire danger | vazi: 2026-07-25T23:00 do 2026-07-30T22:59",
+    "region": "Slovenia / South-West"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / Sea",
+    "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-26T05:00 do 2026-07-26T16:59",
+    "region": "Slovenia / Sea"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / South-West",
+    "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-07-26T05:00 do 2026-07-26T16:59",
+    "region": "Slovenia / South-West"
    },
    {
     "type": "meteo-upozorenje",
@@ -2120,6 +2138,42 @@
    }
   ],
   "BA": [
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Visegrad",
+    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T15:00 do 2026-07-26T20:00",
+    "region": "Visegrad"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Foca",
+    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
+    "region": "Foca"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Foca",
+    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
+    "region": "Foca"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Visegrad",
+    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T18:00 do 2026-07-26T21:59",
+    "region": "Visegrad"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Trebinje",
+    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-07-26T14:00 do 2026-07-26T21:59",
+    "region": "Trebinje"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Bosnia-Herzegovina - Trebinje",
+    "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-07-26T13:00 do 2026-07-26T21:59",
+    "region": "Trebinje"
+   },
    {
     "type": "meteo-upozorenje",
     "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Foca",
