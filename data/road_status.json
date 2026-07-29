@@ -1,11 +1,17 @@
 {
- "updated": "2026-07-29T21:11+00:00",
+ "updated": "2026-07-29T22:11+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
    "source": "promet.si (DARS)",
    "ok": true,
    "items": [
+    {
+     "type": "Delo",
+     "title": "A1-E57, Maribor - Ljubljana: Delo",
+     "detail": "A1, Maribor - Ljubljana, počivališče Polskava - uvoz Sl. Konjice v smeri Ljubljane, dela, pomična zapora voznega pasu.",
+     "region": "A1-E57, Maribor - Ljubljana"
+    },
     {
      "type": "Nesreča",
      "title": "G2-105, Nm  (Krka - Revoz): Nesreča",
@@ -21,7 +27,7 @@
     {
      "type": "Delo",
      "title": "A1-E61, E70, Ljubljana - Koper: Delo",
-     "detail": "A1, Ljubljana - Koper, priključek Unec - počivališče Ravbarkomanda v smeri Kopra, dela, zaprta vozni in prehitevalni pas.",
+     "detail": "A1, Ljubljana - Koper, priključek Unec - priključek Postojna v smeri Kopra, dela, promet poteka po dveh zoženih pasovih v vsako smer.",
      "region": "A1-E61, E70, Ljubljana - Koper"
     },
     {
@@ -29,24 +35,6 @@
      "title": "A1-E61, E70, Ljubljana - Koper: Delo",
      "detail": "A1, Ljubljana - Koper, priključek Logatec, dela, oviran promet.",
      "region": "A1-E61, E70, Ljubljana - Koper"
-    },
-    {
-     "type": "Delo",
-     "title": "A1-E61, E70, Ljubljana - Koper: Delo",
-     "detail": "A1, Ljubljana - Koper, pred počivališčem Studenec v smeri Kopra, dela, zaprt prehitevalni pas.",
-     "region": "A1-E61, E70, Ljubljana - Koper"
-    },
-    {
-     "type": "Delo",
-     "title": "LC-036010, Zagrad - Pečovnik - Celjska Koča - Požnica: Delo",
-     "detail": "Celje, Zagrad - Pečovnik - Celjska koča, oviran promet, sanacija brežine, dnevno med 7. in 15. uro bo popolna zapora.",
-     "region": "LC-036010, Zagrad - Pečovnik - Celjska Koča - Požnica"
-    },
-    {
-     "type": "Zastoj",
-     "title": "LG-212450, Zadobrovška cesta: Zastoj",
-     "detail": "LG-212450, Ljubljana, Zadobrovška cesta, zastoj.",
-     "region": "LG-212450, Zadobrovška cesta"
     },
     {
      "type": "Delo",
@@ -245,6 +233,18 @@
      "title": "R3-666, Sopota - Podkum - Zagorje: Delo",
      "detail": "R3-666, Sopota - Podkum - Zagorje, pri Šklendrovcu, izmenično enosmerni promet, sanacija brežin, do 10. 9. 2026.",
      "region": "R3-666, Sopota - Podkum - Zagorje"
+    },
+    {
+     "type": "Delo",
+     "title": "G1-1, Maribor  (c. Proletarskih Brigad - Tržaška cesta): Delo",
+     "detail": "G1-1, Maribor - Dravograd, v Mariboru, na Cesti Proletarskih brigad, oviran promet, preplastitve vozišča, do 31. 8. 2026.",
+     "region": "G1-1, Maribor  (c. Proletarskih Brigad - Tržaška cesta)"
+    },
+    {
+     "type": "Delo",
+     "title": "A2-E70, Ljubljana - Obrežje: Delo",
+     "detail": "A2, Ljubljana - Obrežje, uvoz Ivančna Gorica v smeri Novega mesta, dela, popolna zapora.",
+     "region": "A2-E70, Ljubljana - Obrežje"
     }
    ]
   },
@@ -262,13 +262,13 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
-     "detail": "Zbog sigurnosti i protočnosti cestovnog prometa te organiziranosti hitnih i interventnih službi za vrijeme turističke sezone 2026. godine, zatvorena je traka za spora vozila u smjeru Zagreba od 237+200 km do 232+600 km, te u smjeru Dubrovnika od 233+850 km do 237+200 km.",
+     "detail": "Na autocesti A1 izlaz iz tunela Sv Rok smjer Dubrovnik zbog oštećenja kolnika vozi se uz ograničenje brzine od 80 km/h po dvije prometne trake. Molimo korisnike za oprez.",
      "region": "A1"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
-     "detail": "Na autocesti A1 izlaz iz tunela Sv Rok smjer Dubrovnik zbog oštećenja kolnika vozi se uz ograničenje brzine od 80 km/h po dvije prometne trake. Molimo korisnike za oprez.",
+     "detail": "Zbog sigurnosti i protočnosti cestovnog prometa te organiziranosti hitnih i interventnih službi za vrijeme turističke sezone 2026. godine, zatvorena je traka za spora vozila u smjeru Zagreba od 237+200 km do 232+600 km, te u smjeru Dubrovnika od 233+850 km do 237+200 km.",
      "region": "A1"
     },
     {
@@ -322,13 +322,7 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme (odbojne ograde) na autocesti A3 na 66+500 km između čvora Ivanić Grad i čvora Križ na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -340,7 +334,13 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Zbog oštećenja opreme (odbojne ograde) na autocesti A3 na 66+500 km između čvora Ivanić Grad i čvora Križ na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -1769,6 +1769,72 @@
    {
     "type": "meteo-upozorenje",
     "title": "Orange High-temperature Warning issued for Serbia - Kosovo i Metohija",
+    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Kosovo i Metohija"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Serbia - Southwestern Serbia",
+    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Southwestern Serbia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Serbia - Southeastern Serbia",
+    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Southeastern Serbia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Serbia - Eastern Serbia",
+    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Eastern Serbia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Serbia - Sumadija",
+    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Sumadija"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Serbia - Western Serbia",
+    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Western Serbia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Serbia - Pomoravlje",
+    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Pomoravlje"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Serbia - Belgrade",
+    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Belgrade"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Red High-temperature Warning issued for Serbia - Backa",
+    "detail": "nivo: crveno | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Backa"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Serbia - Srem",
+    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Srem"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Red High-temperature Warning issued for Serbia - Banat",
+    "detail": "nivo: crveno | pojava: High temperature | vazi: 2026-07-30T22:00 do 2026-07-31T21:59",
+    "region": "Banat"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Serbia - Kosovo i Metohija",
     "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-29T22:00 do 2026-07-30T21:59",
     "region": "Kosovo i Metohija"
    },
@@ -1831,75 +1897,57 @@
     "title": "Orange High-temperature Warning issued for Serbia - Backa",
     "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-29T22:00 do 2026-07-30T21:59",
     "region": "Backa"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Southwestern Serbia",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Southwestern Serbia"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange High-temperature Warning issued for Serbia - Southeastern Serbia",
-    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Southeastern Serbia"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Kosovo i Metohija",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Kosovo i Metohija"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange High-temperature Warning issued for Serbia - Pomoravlje",
-    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Pomoravlje"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Eastern Serbia",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Eastern Serbia"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Western Serbia",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Western Serbia"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Sumadija",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Sumadija"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange High-temperature Warning issued for Serbia - Banat",
-    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Banat"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Belgrade",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Belgrade"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Serbia - Srem",
-    "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Srem"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange High-temperature Warning issued for Serbia - Backa",
-    "detail": "nivo: narandzasto | pojava: High temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Backa"
    }
   ],
   "HR": [
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Croatia - Gospic region",
+    "detail": "nivo: zuto | pojava: high temperature | vazi: 2026-07-30T22:01 do 2026-07-31T21:59",
+    "region": "Gospic region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow High-temperature Warning issued for Croatia - Osijek region",
+    "detail": "nivo: zuto | pojava: high temperature | vazi: 2026-07-30T22:01 do 2026-07-31T21:59",
+    "region": "Osijek region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Red High-temperature Warning issued for Croatia - Dubrovnik region",
+    "detail": "nivo: crveno | pojava: high temperature | vazi: 2026-07-30T22:01 do 2026-07-31T21:59",
+    "region": "Dubrovnik region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Red High-temperature Warning issued for Croatia - Rijeka region",
+    "detail": "nivo: crveno | pojava: high temperature | vazi: 2026-07-30T22:01 do 2026-07-31T21:59",
+    "region": "Rijeka region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Croatia - Split region",
+    "detail": "nivo: narandzasto | pojava: high temperature | vazi: 2026-07-30T22:01 do 2026-07-31T21:59",
+    "region": "Split region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Croatia - Karlovac region",
+    "detail": "nivo: narandzasto | pojava: high temperature | vazi: 2026-07-30T22:01 do 2026-07-31T21:59",
+    "region": "Karlovac region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Croatia - Zagreb region",
+    "detail": "nivo: narandzasto | pojava: high temperature | vazi: 2026-07-30T22:01 do 2026-07-31T21:59",
+    "region": "Zagreb region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Croatia - Knin region",
+    "detail": "nivo: narandzasto | pojava: high temperature | vazi: 2026-07-30T22:01 do 2026-07-31T21:59",
+    "region": "Knin region"
+   },
    {
     "type": "meteo-upozorenje",
     "title": "Yellow High-temperature Warning issued for Croatia - Osijek region",
@@ -1947,27 +1995,15 @@
     "title": "Orange High-temperature Warning issued for Croatia - Zagreb region",
     "detail": "nivo: narandzasto | pojava: high temperature | vazi: 2026-07-29T22:01 do 2026-07-30T21:59",
     "region": "Zagreb region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Croatia - Split region",
-    "detail": "nivo: zuto | pojava: high temperature | vazi: 2026-07-28T22:01 do 2026-07-29T21:59",
-    "region": "Split region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange High-temperature Warning issued for Croatia - Dubrovnik region",
-    "detail": "nivo: narandzasto | pojava: high temperature | vazi: 2026-07-28T22:01 do 2026-07-29T21:59",
-    "region": "Dubrovnik region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Orange High-temperature Warning issued for Croatia - Rijeka region",
-    "detail": "nivo: narandzasto | pojava: high temperature | vazi: 2026-07-28T22:01 do 2026-07-29T21:59",
-    "region": "Rijeka region"
    }
   ],
   "SI": [
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Slovenia - Slovenia / South-East",
+    "detail": "nivo: narandzasto | pojava: Severe High temperature | vazi: 2026-07-31T09:00 do 2026-07-31T21:59",
+    "region": "Slovenia / South-East"
+   },
    {
     "type": "meteo-upozorenje",
     "title": "Orange High-temperature Warning issued for Slovenia - Slovenia / South-East",
@@ -1979,6 +2015,12 @@
     "title": "Orange Forest-fire Warning issued for Slovenia - Slovenia / South-East",
     "detail": "nivo: narandzasto | pojava: Severe Forestfire danger | vazi: 2026-07-29T23:00 do 2026-08-02T22:59",
     "region": "Slovenia / South-East"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Slovenia - Slovenia / Central",
+    "detail": "nivo: narandzasto | pojava: Severe High temperature | vazi: 2026-07-31T09:00 do 2026-07-31T21:59",
+    "region": "Slovenia / Central"
    },
    {
     "type": "meteo-upozorenje",
@@ -1995,6 +2037,12 @@
    {
     "type": "meteo-upozorenje",
     "title": "Orange High-temperature Warning issued for Slovenia - Slovenia / South-West",
+    "detail": "nivo: narandzasto | pojava: Severe High temperature | vazi: 2026-07-31T09:00 do 2026-07-31T21:59",
+    "region": "Slovenia / South-West"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Slovenia - Slovenia / South-West",
     "detail": "nivo: narandzasto | pojava: Severe High temperature | vazi: 2026-07-30T10:00 do 2026-07-30T17:59",
     "region": "Slovenia / South-West"
    },
@@ -2003,6 +2051,12 @@
     "title": "Red Forest-fire Warning issued for Slovenia - Slovenia / South-West",
     "detail": "nivo: crveno | pojava: Extreme Forestfire danger | vazi: 2026-07-29T23:00 do 2026-08-02T22:59",
     "region": "Slovenia / South-West"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Slovenia - Slovenia / North-West",
+    "detail": "nivo: narandzasto | pojava: Severe High temperature | vazi: 2026-07-31T09:00 do 2026-07-31T21:59",
+    "region": "Slovenia / North-West"
    },
    {
     "type": "meteo-upozorenje",
@@ -2015,6 +2069,12 @@
     "title": "Orange Forest-fire Warning issued for Slovenia - Slovenia / North-West",
     "detail": "nivo: narandzasto | pojava: Severe Forestfire danger | vazi: 2026-07-29T23:00 do 2026-08-02T22:59",
     "region": "Slovenia / North-West"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Slovenia - Slovenia / North-East",
+    "detail": "nivo: narandzasto | pojava: Severe High temperature | vazi: 2026-07-31T09:00 do 2026-07-31T21:59",
+    "region": "Slovenia / North-East"
    },
    {
     "type": "meteo-upozorenje",
@@ -2062,6 +2122,36 @@
   "BA": [
    {
     "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Visegrad",
+    "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-07-31T09:00 do 2026-07-31T14:59",
+    "region": "Visegrad"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Foca",
+    "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-07-31T09:00 do 2026-07-31T14:59",
+    "region": "Foca"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Trebinje",
+    "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-07-31T07:00 do 2026-07-31T16:59",
+    "region": "Trebinje"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Red High-temperature Warning issued for Bosnia-Herzegovina - Prijedor",
+    "detail": "nivo: crveno | pojava: High-temperature | vazi: 2026-07-31T08:00 do 2026-07-31T15:59",
+    "region": "Prijedor"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Red High-temperature Warning issued for Bosnia-Herzegovina - Banja Luka",
+    "detail": "nivo: crveno | pojava: High-temperature | vazi: 2026-07-31T08:00 do 2026-07-31T16:59",
+    "region": "Banja Luka"
+   },
+   {
+    "type": "meteo-upozorenje",
     "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Bihac",
     "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-07-30T10:00 do 2026-07-30T15:59",
     "region": "Bihac"
@@ -2089,6 +2179,36 @@
     "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Livno",
     "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-07-30T10:00 do 2026-07-30T15:59",
     "region": "Livno"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Sarajevo",
+    "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-07-31T10:00 do 2026-07-31T15:00",
+    "region": "Sarajevo"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Red High-temperature Warning issued for Bosnia-Herzegovina - Mostar",
+    "detail": "nivo: crveno | pojava: High-temperature | vazi: 2026-07-31T11:00 do 2026-07-31T14:00",
+    "region": "Mostar"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Bihac",
+    "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-07-31T10:00 do 2026-07-31T15:00",
+    "region": "Bihac"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Livno",
+    "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-07-31T10:00 do 2026-07-31T14:00",
+    "region": "Livno"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Tuzla",
+    "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-07-31T10:00 do 2026-07-31T15:00",
+    "region": "Tuzla"
    },
    {
     "type": "meteo-upozorenje",
@@ -2149,12 +2269,6 @@
     "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Foca",
     "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-07-30T09:00 do 2026-07-30T17:00",
     "region": "Foca"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Bosnia-Herzegovina - Visegrad",
-    "detail": "nivo: zuto | pojava: High-temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Visegrad"
    }
   ],
   "ME": [
@@ -2174,24 +2288,6 @@
     "type": "meteo-upozorenje",
     "title": "Orange High-temperature Warning issued for Montenegro - Adriatic coast",
     "detail": "nivo: narandzasto | pojava: High Temperature | vazi: 2026-07-29T07:00 do 2026-07-30T20:00",
-    "region": "Adriatic coast"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Montenegro - Continental and Mountains",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Continental and Mountains"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Montenegro - Central",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
-    "region": "Central"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Montenegro - Adriatic coast",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-07-28T22:00 do 2026-07-29T21:59",
     "region": "Adriatic coast"
    }
   ],
