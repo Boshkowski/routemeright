@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RouteMeRight - pametna ruta za motor</title>
-<meta property="og:type" content="website"><meta property="og:title" content="RouteMeRight - pametna ruta za motor"><meta property="og:image" content="https://routemeright.app/data/icon-512.png"><meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='90' fill='%230f172a'/><g fill='none' stroke-linecap='butt' stroke-linejoin='round'><path d='M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430' stroke='%23f97316' stroke-width='72'/><path d='M170 407 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L333 421' stroke='white' stroke-width='8' stroke-dasharray='18 25'/></g></svg>">
 <meta name="theme-color" content="#0f172a">
 <!-- iPhone/Android "Add to Home Screen" = fullscreen app bez browser trake -->
@@ -233,6 +232,28 @@
   .lay-legend span { display: inline-block; width: 16px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
 
   .map-tools { position: absolute; top: 12px; left: 12px; z-index: 5; display: flex; gap: 8px; }
+  /* POI pin: isto stakleno telo kao alatke na mapi, ikonica iz naseg seta nosi boju kategorije */
+  .poi-pin {
+    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    background: rgba(15,23,42,.86); border: 1px solid rgba(148,163,184,.32);
+    box-shadow: 0 2px 9px rgba(0,0,0,.55); cursor: pointer;
+    -webkit-backdrop-filter: blur(7px) saturate(140%); backdrop-filter: blur(7px) saturate(140%);
+    transition: transform .16s var(--ease, ease-out);
+  }
+  .poi-pin:hover { transform: scale(1.12); }
+  .poi-pin svg { width: 17px; height: 17px; display: block; }
+  .end-pin { width: 34px; height: 34px; border-color: rgba(255,255,255,.5); }
+  .end-pin svg { width: 19px; height: 19px; stroke-width: 2.2; }
+  .end-pin.start { background: #16a34a; color: #f0fdf4; }
+  .end-pin.finish { background: #dc2626; color: #fef2f2; }
+  .end-pin.finish svg { transform: translateX(1.5px); } /* zastavica je u viewBox-u levo poravnata */
+  /* via i stanica: pune kao polazak/cilj (tacke koje je korisnik zadao), ali manje i sa brojem */
+  .via-pin {
+    width: 24px; height: 24px; color: #fff; font-size: 12px; font-weight: 700;
+    font-variant-numeric: tabular-nums; border-color: rgba(255,255,255,.5);
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  .ic-in svg { width: 15px; height: 15px; display: inline-block; vertical-align: -3px; }
   .radar-btn {
     height: 36px; padding: 0 13px; display: flex; align-items: center; gap: 6px;
     border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(15,23,42,.78); color: #e2e8f0;
@@ -558,6 +579,60 @@ const LAYER_DEFS = [["fuel", "Pumpe"], ["food", "Hrana i pauze"], ["camp", "Kamp
   ["cam", "Kamere"], ["pause", "Predlog pauze"], ["work", "Radovi"], ["hazard", "Opasnosti"],
   ["meet", "Okupljališta i polasci"]];
 const EMOJI_CAT = { "⛽": "fuel", "🍽": "food", "⛺": "camp", "📷": "cam", "☕": "pause", "🚧": "work" };
+/* Markeri na mapi: nas originalni SVG set (docs/design/icons.js) umesto emoji-ja.
+   Sistem: viewBox 24, fill none, stroke currentColor 2, linecap/linejoin round. */
+const SVG24 = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const PIN_ICONS = {
+  fuel: SVG24('<path d="M5 20.5V5.3A2.3 2.3 0 0 1 7.3 3h4.4A2.3 2.3 0 0 1 14 5.3v15.2"/><path d="M3.3 20.5h12.4"/><path d="M8 6.9h3"/><path d="M14 9.5h1.8a2 2 0 0 1 2 2v4.6a1.7 1.7 0 0 0 3.4 0V9.3a2.2 2.2 0 0 0-.65-1.56L18.4 5.6"/>'),
+  food: SVG24('<path d="M4 9.5h16a8 8 0 0 1-16 0z"/><path d="M7.8 7.6h2.8M13.4 7.6h2.8"/><path d="M8.8 16.6 7.2 20.2M15.2 16.6l1.6 3.6"/><path d="M9.8 2.4c-.7.9.7 1.5 0 2.4M14.2 2.4c-.7.9.7 1.5 0 2.4"/>'),
+  camp: SVG24('<path d="M2.9 19.8 13.1 3.6"/><path d="M10.9 3.6 21.1 19.8"/><path d="M2.9 19.8h18.2"/><path d="M8.6 19.8c0-3.2 1.5-5.6 3.4-5.6s3.4 2.4 3.4 5.6"/>'),
+  camera: SVG24('<rect x="3.5" y="5" width="12.5" height="8.5" rx="2"/><circle cx="9.75" cy="9.25" r="2.4"/><path d="M9.75 13.5v7M6.25 20.5h7"/><path d="M18.9 7a6 6 0 0 1 0 4.9"/>'),
+  roadworks: SVG24('<path d="M10.1 4.3h3.8L17 19H7z"/><path d="M9 9.7h6M8.1 13.9h7.8"/><path d="M4.5 19h15"/>'),
+  meetup: SVG24('<circle cx="9" cy="7.4" r="2.9"/><path d="M3.8 19.5v-1a5.2 5.2 0 0 1 10.4 0v1"/><path d="M15.4 4.9a2.9 2.9 0 0 1 0 5.6"/><path d="M20.2 19.5v-1a5.2 5.2 0 0 0-3.6-4.95"/>'),
+  viewpoint: SVG24('<path d="M2.5 19 8.5 8.5l4.2 7.3 2.6-4.2 6.2 7.4z"/><circle cx="17.8" cy="5.4" r="2.6"/>'),
+  /* tavern u setu je bio identican food-u - kafana dobija svoju krigl(u) */
+  tavern: SVG24('<path d="M5.2 7.4h8.4V19a2.2 2.2 0 0 1-2.2 2.2H7.4A2.2 2.2 0 0 1 5.2 19z"/><path d="M13.6 9.6h2.5a2.5 2.5 0 0 1 0 5h-2.5"/><path d="M5.2 7.4a4.2 4.2 0 0 1 8.4 0"/><path d="M8.4 11.4v5.4M10.9 11.4v5.4"/>'),
+  /* pause je falila u setu (☕ predlog pauze) */
+  pause: SVG24('<path d="M4.6 8.2h10.2v6.6a4 4 0 0 1-4 4H8.6a4 4 0 0 1-4-4z"/><path d="M14.8 9.8h1.9a2.4 2.4 0 0 1 0 4.8h-1.9"/><path d="M7.4 3.2c-.7.9.7 1.5 0 2.4M10.6 3.2c-.7.9.7 1.5 0 2.4"/><path d="M3.4 21.2h13"/>'),
+  warn: SVG24('<path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 20h16a2 2 0 0 0 1.7-2Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>'),
+  gravel: SVG24('<path d="M3 19.5h18"/><circle cx="7.4" cy="15.9" r="1.2"/><circle cx="12.3" cy="13.6" r="1.45"/><circle cx="16.7" cy="16" r="1.05"/>'),
+  oil: SVG24('<path d="M12 3.6c1.9 2.5 4.4 5.5 4.4 8a4.4 4.4 0 0 1-8.8 0c0-2.5 2.5-5.5 4.4-8z"/><path d="M5.2 20.2c2.3 1.1 4.5 1.1 6.8 0s4.5-1.1 6.8 0"/>'),
+  pothole: SVG24('<path d="M3 14.5h4.4c.3 3 2 5 4.6 5s4.3-2 4.6-5H21"/><path d="M12 4v3.6M12 10.8h.01"/>'),
+  wildlife: SVG24('<path d="M12 10c1.9 0 3.2.9 3.2 2.6 0 1.5-1 2.3-1.9 3.3-.6.7-.8 1.6-1.3 1.6s-.7-.9-1.3-1.6c-.9-1-1.9-1.8-1.9-3.3C8.8 10.9 10.1 10 12 10z"/><path d="M10.5 10 8.9 6.5 6.6 5.4M8.9 6.5l.3-3"/><path d="M13.5 10 15.1 6.5l2.3-1.1M15.1 6.5l-.3-3"/><path d="M8.9 11.6 6.6 10.8M15.1 11.6l2.3-.8"/>'),
+  crash: SVG24('<path d="M10.9 2.4 13.5 7.2 19.6 4.6 15.7 10 21.7 13.3 15.6 13.9 14.9 21.5 11.7 16.2 5.3 19.9 8.2 13.9 2.3 9.7 8.7 8.5Z"/>'),
+  start: SVG24('<circle cx="12" cy="12" r="7.2"/><circle cx="12" cy="12" r="2.4"/>'),
+  finish: SVG24('<path d="M5 3v18"/><path d="M5 4h11.6v8H5"/><path d="M8.9 4v8M12.8 4v8"/><path d="M5 8h11.6"/>'),
+};
+/* polazak i cilj: puna boja da se razlikuju od POI pinova (koji su stakleni) */
+function endpointEl(kind) {
+  const el = document.createElement("div");
+  el.className = "poi-pin end-pin " + kind;
+  el.innerHTML = PIN_ICONS[kind === "start" ? "start" : "finish"];
+  el.title = kind === "start" ? "Polazak" : "Cilj";
+  return el;
+}
+/* prijavljena opasnost dobija ikonicu po tipu, ne genericki trougao */
+const HAZARD_ICON = { "šljunak": "gravel", "ulje": "oil", "radovi": "roadworks", "rupa": "pothole", "divljač": "wildlife", "udes": "crash" };
+/* kategorija -> [ikonica, boja]; boje se ne ponavljaju da se pinovi razlikuju iz daljine */
+const PIN_STYLE = {
+  fuel: ["fuel", "#f97316"], food: ["food", "#fbbf24"], camp: ["camp", "#22c55e"],
+  cam: ["camera", "#cbd5e1"], pause: ["pause", "#22d3ee"], work: ["roadworks", "#fb923c"],
+  hazard: ["warn", "#ef4444"], meet: ["meetup", "#a78bfa"],
+};
+/* ista ikonica u tekstu (liste rezultata) - nasledjuje velicinu reda */
+function inlineIcon(name, cat) {
+  const color = (PIN_STYLE[cat] || [])[1] || "#94a3b8";
+  return `<span class="ic-in" style="color:${color}">${PIN_ICONS[name] || PIN_ICONS.viewpoint}</span>`;
+}
+function poiPinEl(cat, iconName, title) {
+  const [defIcon, color] = PIN_STYLE[cat] || ["viewpoint", "#94a3b8"];
+  const el = document.createElement("div");
+  el.className = "poi-pin";
+  el.style.color = color;
+  el.innerHTML = PIN_ICONS[iconName || defIcon] || PIN_ICONS.viewpoint;
+  if (title) el.title = title;
+  return el;
+}
 function loadLayerVis() {
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem("mr_layers") || "{}"); } catch { }
@@ -1114,12 +1189,19 @@ function bearingDeg(a, b) { // [lon,lat]
   return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
 }
 function analyzeCurves(route) {
-  const step = 40, total = route.cumDist[route.cumDist.length - 1];
+  const step = 40, cum = route.cumDist, co = route.coords, total = cum[cum.length - 1];
+  /* Uzorkuj INTERPOLACIJOM izmedju temena, ne snapovanjem na najblize teme.
+     Snapovanje je na retkim linijama (autoput ima teme na ~107 m, a korak je 40 m) davalo
+     do 65% ponovljenih tacaka; azimut izmedju dve iste tacke je 0, smer se stalno prelamao
+     i brojac je izmisljao krivine - autoput je zato ispadao vijugaviji od bosanskih serpentina. */
   const pts = [];
   let target = 0, j = 0;
   while (target <= total) {
-    while (j < route.cumDist.length - 2 && route.cumDist[j + 1] < target) j++;
-    pts.push(route.coords[Math.min(j, route.coords.length - 1)]);
+    while (j < cum.length - 2 && cum[j + 1] < target) j++;
+    const d0 = cum[j], d1 = cum[j + 1] !== undefined ? cum[j + 1] : d0;
+    const t = d1 > d0 ? Math.max(0, Math.min(1, (target - d0) / (d1 - d0))) : 0;
+    const a = co[Math.min(j, co.length - 1)], b = co[Math.min(j + 1, co.length - 1)];
+    pts.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
     target += step;
   }
   const perKm = new Array(Math.max(1, Math.ceil(total / 1000))).fill(0);
@@ -1512,12 +1594,9 @@ function markerPopup(html) {
 }
 function emojiMarker(lat, lon, emoji, title) {
   if (!map) return;
-  const el = document.createElement("div");
-  el.textContent = emoji;
-  el.style.cssText = "font-size:20px;cursor:pointer;text-shadow:0 1px 4px rgba(0,0,0,.85)";
-  el.title = title || "";
-  const m = new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(map);
   const cat = EMOJI_CAT[emoji];
+  const el = poiPinEl(cat, null, title);
+  const m = new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(map);
   m.setPopup(markerPopup(`<b>${(cat && CAT_LABELS[cat]) || "Tačka na ruti"}</b>${title ? "<br>" + title : ""}`));
   if (cat) {
     state.catMarkers[cat].push(m);
@@ -1527,7 +1606,7 @@ function emojiMarker(lat, lon, emoji, title) {
 }
 /* ---------------- editorial sloj: kafane/okupljalista iz BJBikers zajednice ----------------
    Trajni markeri (ne brisu se pri ponovnom planiranju) - zato NE idu u state.markers. */
-const BJB_EMOJI = { kafana: "🍖", okupljaliste: "🏍", upozorenje: "⚠" };
+const BJB_ICON = { kafana: "tavern", okupljaliste: "meetup", upozorenje: "warn" };
 const BJB_CAT = { kafana: "food", okupljaliste: "meet", upozorenje: "hazard" };
 async function loadEditorial() {
   try {
@@ -1544,10 +1623,8 @@ function addEditorialMarkers(route) {
   state.editorialMarkers = [];
   const near = route ? bjbAlongRoute(route, 6) : [];
   for (const e of near) {
-    const el = document.createElement("div");
-    el.textContent = BJB_EMOJI[e.type] || "📍";
-    el.style.cssText = "font-size:20px;cursor:pointer;text-shadow:0 1px 4px rgba(0,0,0,.85)";
-    el.title = e.name;
+    const bcat0 = BJB_CAT[e.type] || "meet";
+    const el = poiPinEl(bcat0, BJB_ICON[e.type], e.name);
     const m = new maplibregl.Marker({ element: el }).setLngLat([e.lon, e.lat]).addTo(map);
     m.setPopup(markerPopup(
       `<b>${e.name}</b><br>${e.details}` +
@@ -1612,9 +1689,9 @@ function drawRoute(route, assess) {
   const start = route.coords[0], end = route.coords[route.coords.length - 1];
   const fromName = (state.geocode.from && state.geocode.from.name) || "";
   const toName = (state.geocode.to && state.geocode.to.name) || "";
-  state.markers.push(new maplibregl.Marker({ color: "#16a34a" }).setLngLat(start)
+  state.markers.push(new maplibregl.Marker({ element: endpointEl("start") }).setLngLat(start)
     .setPopup(markerPopup(`<b>Polazak</b>${fromName ? "<br>" + fromName : ""}${isRoundTrip() ? "<br>ovde se i vraćaš (povratno)" : ""}`)).addTo(map));
-  state.markers.push(new maplibregl.Marker({ color: "#dc2626" }).setLngLat(end)
+  state.markers.push(new maplibregl.Marker({ element: endpointEl("finish") }).setLngLat(end)
     .setPopup(markerPopup(`<b>Cilj</b>${isRoundTrip() ? "<br>" + fromName + " (povratno preko " + toName + ")" : toName ? "<br>" + toName : ""}`)).addTo(map));
 
   const b = new maplibregl.LngLatBounds();
@@ -1838,7 +1915,7 @@ async function renderSuggestions(route, assess, departure, zones) {
       const place = await reverseName(pauseA.lat, pauseA.lon);
       const d = document.createElement("div");
       d.className = "sugg";
-      d.innerHTML = `☕ <b>Pauza oko km ${pauseA.km.toFixed(0)}${place ? " (" + place + ")" : ""} u ~${fmtTime(pauseA.eta)}</b>, ` +
+      d.innerHTML = `${inlineIcon('pause','pause')} <b>Pauza oko km ${pauseA.km.toFixed(0)}${place ? " (" + place + ")" : ""} u ~${fmtTime(pauseA.eta)}</b>, ` +
         `sačekaj ~${waitH * 60} min da front prođe, pa nastavi suvim putem.`;
       box.appendChild(d);
       const pois = await poisNear([pauseA], `[amenity~"cafe|restaurant|fast_food|fuel"]`, 6000, 30);
@@ -1892,11 +1969,11 @@ async function renderFuel(route, assess, departure) {
     const li = document.createElement("li");
     if (best.length) {
       const names = best.map((p) => `${p.name || "pumpa"} <span class="poi-dist">(+${p.distKm.toFixed(1)} km)</span>`).join(" · ");
-      li.innerHTML = `⛽ <b>${i + 1}. točenje</b> oko km ${t.km.toFixed(0)} (~${fmtTime(t.eta)}): ${names}`;
+      li.innerHTML = `${inlineIcon('fuel','fuel')} <b>${i + 1}. točenje</b> oko km ${t.km.toFixed(0)} (~${fmtTime(t.eta)}): ${names}`;
       emojiMarker(best[0].lat, best[0].lon, "⛽", best[0].name || "Pumpa");
     } else {
       li.className = "warn-li";
-      li.innerHTML = `⛽ <b>${i + 1}. točenje</b> oko km ${t.km.toFixed(0)}: nema pumpe u krugu 12 km - natoči ranije!`;
+      li.innerHTML = `${inlineIcon('fuel','fuel')} <b>${i + 1}. točenje</b> oko km ${t.km.toFixed(0)}: nema pumpe u krugu 12 km - natoči ranije!`;
     }
     ul.appendChild(li);
   });
@@ -1922,7 +1999,7 @@ async function renderFood(route, assess, departure) {
         const best = nearestTo(pois, t, 8, 3).filter((p) => p.name);
         const place = await reverseName(t.lat, t.lon);
         const li = document.createElement("li");
-        li.innerHTML = `🍽 <b>Pauza ${i + 1}</b> posle ~${(2.5 * (i + 1)).toFixed(1).replace(".0", "")} h vožnje, ` +
+        li.innerHTML = `${inlineIcon('food','food')} <b>Pauza ${i + 1}</b> posle ~${(2.5 * (i + 1)).toFixed(1).replace(".0", "")} h vožnje, ` +
           `~${fmtTime(t.eta)}${place ? " kod: " + place : ""}` +
           (best.length ? `<br><span class="poi-dist">${best.map((p) => `${p.name} (+${p.distKm.toFixed(1)} km)`).join(" · ")}</span>` : "");
         if (best.length) emojiMarker(best[0].lat, best[0].lon, "🍽", best[0].name);
@@ -1949,7 +2026,7 @@ async function renderFood(route, assess, departure) {
       }
     if (rows.length) {
       const li = document.createElement("li");
-      li.innerHTML = `⛺ <b>Kampovi uz rutu:</b> ` +
+      li.innerHTML = `${inlineIcon('camp','camp')} <b>Kampovi uz rutu:</b> ` +
         rows.slice(0, 4).map((p) => `${p.name} <span class="poi-dist">(km ${p.km.toFixed(0)}, +${p.distKm.toFixed(1)} km)</span>`).join(" · ");
       ul.appendChild(li);
       rows.slice(0, 4).forEach((p) => emojiMarker(p.lat, p.lon, "⛺", p.name));
@@ -1959,11 +2036,11 @@ async function renderFood(route, assess, departure) {
   const bjb = bjbAlongRoute(route);
   if (bjb.length) {
     const li = document.createElement("li");
-    li.innerHTML = `🍖 <b>Zajednica preporučuje uz rutu:</b><br>` +
+    li.innerHTML = `${inlineIcon("tavern", "food")} <b>Zajednica preporučuje uz rutu:</b><br>` +
       bjb.slice(0, 5).map((e) => {
         let why = e.details.split(";")[0];
         if (why.length > 95) why = why.slice(0, 95).replace(/\s\S*$/, "") + "…";
-        return `${BJB_EMOJI[e.type] || "📍"} <b>${e.name}</b> <span class="poi-dist">(km ${e.km.toFixed(0)}, +${e.distKm.toFixed(1)} km)</span> - ${why}`;
+        return `${inlineIcon(BJB_ICON[e.type] || "viewpoint", BJB_CAT[e.type])} <b>${e.name}</b> <span class="poi-dist">(km ${e.km.toFixed(0)}, +${e.distKm.toFixed(1)} km)</span> - ${why}`;
       }).join("<br>") +
       (bjb.length > 5 ? `<br><span class="poi-dist">i još ${bjb.length - 5} - vidi slojeve Hrana / Okupljališta na mapi</span>` : "");
     ul.appendChild(li);
@@ -2179,10 +2256,9 @@ function renderViaChips() {
   };
   if (map) state.vias.forEach((it, i) => {
     const d = document.createElement("div");
+    d.className = "poi-pin via-pin";
     d.textContent = it.t === "stop" ? "S" : i + 1;
-    d.style.cssText = `width:20px;height:20px;border-radius:50%;background:${it.t === "stop" ? "#0891b2" : "#f97316"};` +
-      "color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;" +
-      "border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4);cursor:pointer";
+    d.style.background = it.t === "stop" ? "#0891b2" : "#f97316";
     d.title = it.name || "";
     const fam = state.famousApplied ? FAMOUS_ROUTES.find((f) => f.id === state.famousApplied) : null;
     const html = it.t === "stop"
@@ -2301,10 +2377,8 @@ const HAZARD_TYPES = ["šljunak", "ulje", "radovi", "rupa", "divljač", "udes"];
 function getHazards() { try { return JSON.parse(localStorage.getItem("mr_hazards") || "[]"); } catch { return []; } }
 function saveHazards(h) { localStorage.setItem("mr_hazards", JSON.stringify(h)); }
 function hazardMarker(h) {
-  const d = document.createElement("div");
-  d.textContent = "⚠";
-  d.style.cssText = "font-size:19px;cursor:pointer;text-shadow:0 1px 4px rgba(0,0,0,.85)";
-  d.title = `${h.type} · prijavljeno ${new Date(h.ts).toLocaleDateString("sr-RS")} (klik za brisanje)`;
+  const d = poiPinEl("hazard", HAZARD_ICON[h.type],
+    `${h.type} · prijavljeno ${new Date(h.ts).toLocaleDateString("sr-RS")} (klik za brisanje)`);
   const m = new maplibregl.Marker({ element: d }).setLngLat(h.v).addTo(map);
   state.catMarkers.hazard.push(m);
   if (!state.layerVis.hazard) d.style.display = "none";
@@ -2365,8 +2439,8 @@ async function renderCameras(route) {
     if (bd <= 3) cams.push({ lat: e.lat, lon: e.lon, km: best.km });
   }
   cams.sort((a, b) => a.km - b.km);
-  if (!cams.length) { out.innerHTML = `📷 Fiksne kamere na ruti: nema u OSM bazi.`; return; }
-  out.innerHTML = `📷 Fiksne kamere: <b>${cams.length}</b> (km ` +
+  if (!cams.length) { out.innerHTML = `${inlineIcon('camera','cam')} Fiksne kamere na ruti: nema u OSM bazi.`; return; }
+  out.innerHTML = `${inlineIcon('camera','cam')} Fiksne kamere: <b>${cams.length}</b> (km ` +
     cams.slice(0, 8).map((c) => c.km.toFixed(0)).join(", ") + (cams.length > 8 ? "…" : "") + `)`;
   cams.slice(0, 15).forEach((c) => emojiMarker(c.lat, c.lon, "📷", `Kamera · km ${c.km.toFixed(0)}`));
 }
@@ -2393,8 +2467,8 @@ async function renderRoadworks(route) {
     if (bd <= 2.5) works.push({ lat: e.center.lat, lon: e.center.lon, km: best.km, name: (e.tags && e.tags.name) || "" });
   }
   works.sort((a, b) => a.km - b.km);
-  if (!works.length) { out.innerHTML = `🚧 Radovi na putu (OSM): nema označenih uz rutu.`; return; }
-  out.innerHTML = `🚧 Radovi na putu (OSM): <b>${works.length}</b> (km ${works.slice(0, 6).map((w) => w.km.toFixed(0)).join(", ")}` +
+  if (!works.length) { out.innerHTML = `${inlineIcon('roadworks','work')} Radovi na putu (OSM): nema označenih uz rutu.`; return; }
+  out.innerHTML = `${inlineIcon('roadworks','work')} Radovi na putu (OSM): <b>${works.length}</b> (km ${works.slice(0, 6).map((w) => w.km.toFixed(0)).join(", ")}` +
     `${works.length > 6 ? "…" : ""}) - <span class="warn-inline">mogući zastoji ili obilasci</span>`;
   works.slice(0, 12).forEach((w) => emojiMarker(w.lat, w.lon, "🚧", `Radovi${w.name ? " · " + w.name : ""} · km ${w.km.toFixed(0)}`));
 }
@@ -2674,7 +2748,7 @@ function previewFill() {
     `<li class="warn-li">🌧 11:40-12:10, kod: Zvornik (km 148-170): moguća kiša (65%)</li>` +
     `<li class="bad-li">⛈ 14:20-15:00, kod: Jablanica (km 320-350): grmljavina, jaka kiša (3,1 mm/h)</li>`;
   $("suggestions").innerHTML =
-    `<div class="sugg">☕ <b>Pauza oko km 305 (Konjic) u ~14:05</b>, sačekaj ~40 min da front prođe, pa nastavi suvim putem.<div class="note">Gde: Caffe Behar (+0.4 km) · Restoran Neretva (+0.6 km)</div></div>` +
+    `<div class="sugg">${inlineIcon('pause','pause')} <b>Pauza oko km 305 (Konjic) u ~14:05</b>, sačekaj ~40 min da front prođe, pa nastavi suvim putem.<div class="note">Gde: Caffe Behar (+0.4 km) · Restoran Neretva (+0.6 km)</div></div>` +
     `<div class="sugg">💚 U koridoru je <b>Kanjon Neretve</b> - M-17 uz smaragdnu Neretvu. <button>Vozi baš tuda</button></div>`;
   $("whenOut").innerHTML =
     `<button class="when-row active" type="button"><span class="dot l1"></span><span class="wr-time">09:00 → 18:40</span><span class="wr-sum">🌧 oprez na 4 deonice</span></button>` +
@@ -2697,13 +2771,13 @@ function previewFill() {
   const pts = elev.map((e, i) => `${(i / (elev.length - 1) * W).toFixed(1)},${(H - pad - (e - mn) / (mx - mn) * (H - 2 * pad)).toFixed(1)}`).join(" ");
   $("elevSvg").innerHTML = `<polygon points="0,${H} ${pts} ${W},${H}" fill="rgba(249,115,22,.22)"/><polyline points="${pts}" fill="none" stroke="#f97316" stroke-width="1.8"/>`;
   $("elevLbl").textContent = "Najviša tačka 910 m (km 255) · ukupan uspon ~4.150 m · najstrmije ~6% (km 240)";
-  $("camOut").innerHTML = `📷 Fiksne kamere: <b>3</b> (km 12, 88, 361)`;
-  $("workOut").innerHTML = `🚧 Radovi na putu (OSM): <b>1</b> (km 214) - <span class="warn-inline">mogući zastoji ili obilasci</span>`;
+  $("camOut").innerHTML = `${inlineIcon('camera','cam')} Fiksne kamere: <b>3</b> (km 12, 88, 361)`;
+  $("workOut").innerHTML = `${inlineIcon('roadworks','work')} Radovi na putu (OSM): <b>1</b> (km 214) - <span class="warn-inline">mogući zastoji ili obilasci</span>`;
   $("fuelList").innerHTML =
-    `<li>⛽ <b>1. točenje</b> oko km 313 (~14:20): Gazprom <span class="poi-dist">(+0.8 km)</span> · NIS Petrol <span class="poi-dist">(+2.1 km)</span></li>`;
+    `<li>${inlineIcon('fuel','fuel')} <b>1. točenje</b> oko km 313 (~14:20): Gazprom <span class="poi-dist">(+0.8 km)</span> · NIS Petrol <span class="poi-dist">(+2.1 km)</span></li>`;
   $("foodList").innerHTML =
-    `<li>🍽 <b>Pauza 1</b> posle ~2,5 h vožnje, ~11:30 kod: Zvornik<br><span class="poi-dist">Restoran Most (+0.5 km) · Konoba Drina (+0.9 km)</span></li>` +
-    `<li>⛺ <b>Kampovi uz rutu:</b> Kamp Boračko jezero <span class="poi-dist">(km 330, +4.2 km)</span> · Auto-kamp Split <span class="poi-dist">(km 550, +3.1 km)</span></li>`;
+    `<li>${inlineIcon('food','food')} <b>Pauza 1</b> posle ~2,5 h vožnje, ~11:30 kod: Zvornik<br><span class="poi-dist">Restoran Most (+0.5 km) · Konoba Drina (+0.9 km)</span></li>` +
+    `<li>${inlineIcon('camp','camp')} <b>Kampovi uz rutu:</b> Kamp Boračko jezero <span class="poi-dist">(km 330, +4.2 km)</span> · Auto-kamp Split <span class="poi-dist">(km 550, +3.1 km)</span></li>`;
   setPeek(1, "Beograd → Split", "553 km · 9 h 40 min · kreni 09:00");
   sheetAfterPlan();
   logState({ phase: "preview" });
