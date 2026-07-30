@@ -616,6 +616,24 @@
     #rideBar .then { background: rgba(0,0,0,.26); color: #d9fbe5; padding: 8px 16px; font-size: 13.5px; font-weight: 800; border-top: 1px solid rgba(255,255,255,.09); }
     #rideBar .then::before { content: "zatim  "; font-weight: 600; opacity: .75; }
     #rideBar .then:empty { display: none; }
+    /* Tablice puteva i izlaza - podaci dolaze iz Valhalla polja "sign" (broj izlaza, oznake, ka cemu vodi).
+       Boje po znakovima na terenu: evropski put i autoput zeleno, drzavni put zuto, izlaz beli okvir. */
+    #rideBar .shields { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+    #rideBar .shields:empty { display: none; }
+    #rideBar .sh { font-style: normal; font-size: 14px; font-weight: 900; line-height: 1;
+      padding: 4px 7px; border-radius: 5px; letter-spacing: .01em; white-space: nowrap;
+      font-variant-numeric: tabular-nums; }
+    #rideBar .sh.e, #rideBar .sh.a { background: #15803d; color: #fff; border: 2px solid #fff; }
+    #rideBar .sh.n { background: #facc15; color: #1c1917; border: 2px solid #fff; }
+    #rideBar .sh.x { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.75); }
+    /* Ogranicenje brzine: prikazuje se SAMO kad OSM zna podatak, nikad se ne pogadja */
+    #rideBarBottom .lim { display: none; margin-left: 11px; width: 46px; height: 46px; border-radius: 50%;
+      background: #fff; border: 5px solid #dc2626; align-items: center; justify-content: center; }
+    #rideBarBottom .lim.on { display: flex; }
+    #rideBarBottom .lim span { font-size: 19px; font-weight: 900; color: #111827; line-height: 1;
+      font-variant-numeric: tabular-nums; }
+    #rideBarBottom .pill.over { border-color: rgba(239,68,68,.85); }
+    #rideBarBottom .pill.over .v { color: #fca5a5; }
     #rideBar .btns { display: flex; gap: 7px; }
     #rideBar #rideX, #rideBar #rideMute { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); color: #fff; min-width: 48px; height: 48px; border-radius: 50%; font-size: 17px; font-weight: 900; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; align-items: center; justify-content: center; }
     #rideBar #rideMute svg { width: 22px; height: 22px; stroke: #fff; fill: none; }
@@ -1032,7 +1050,7 @@
     <div class="navcard">
       <div class="nmain">
         <span class="arr" id="rideArr"></span>
-        <div class="nt"><b id="rideDist">-</b><span id="rideInstr">Krećemo</span><span class="sub" id="rideStreet"></span></div>
+        <div class="nt"><b id="rideDist">-</b><span id="rideInstr">Krećemo</span><span class="shields" id="rideShields"></span><span class="sub" id="rideStreet"></span></div>
         <div class="right"><div class="btns"><button id="rideMute" aria-label="Zvuk">🔊</button><button id="rideX" aria-label="Prekini vožnju">✕</button></div></div>
       </div>
       <div class="then" id="rideThen"></div>
@@ -1041,7 +1059,7 @@
     </div>
   </div>
   <div id="rideBarBottom">
-    <div class="pill"><div><div class="v" id="rideKmh">0</div><div class="u">km/h</div></div></div>
+    <div class="pill"><div><div class="v" id="rideKmh">0</div><div class="u">km/h</div></div><div class="lim" id="rideLim"><span></span></div></div>
     <button class="rep" id="rideRep"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3L13.7 4a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Prijavi</button>
     <div class="eta"><div class="t" id="rideEta">-</div><div class="d" id="rideRem">-</div></div>
   </div>
@@ -4379,6 +4397,83 @@ function srMan(m) {
   return { arr: base[0], t, street, arrive: m.type >= 4 && m.type <= 6 };
 }
 function fmtM(d) { return d >= 950 ? (d / 1000).toFixed(1).replace(".", ",") + " km" : Math.max(0, Math.round(d / 10) * 10) + " m"; }
+/* ---------- tablice puteva (Valhalla "sign") ----------
+   Valhalla uz manevar vraca broj izlaza, oznake puteva na koje se izlazi i ka cemu vode.
+   To je isti sadrzaj kao zeleni i zuti znaci na putu, samo ga do sada nismo koristili. */
+function destText(t) {
+  const parts = String(t || "").split("/").map((x) => cyr2lat(x).trim()).filter(Boolean);
+  const vid = [];
+  for (const p of parts) if (!vid.some((v) => v.toLowerCase() === p.toLowerCase())) vid.push(p);
+  return vid.join(" / ");
+}
+function shieldCls(ref) {
+  if (/^E[\s.-]?\d/i.test(ref)) return "e";              // evropski put, E-763
+  if (/^A[\s.-]?\d/i.test(ref)) return "a";              // autoput, A1
+  return "n";                                            // drzavni/regionalni broj, 26 ili M11
+}
+function signHtml(m) {
+  const s = m && m.sign; if (!s) return "";
+  const out = [];
+  const ex = (s.exit_number_elements || [])[0];
+  if (ex) out.push(`<i class="sh x">izlaz ${esc(destText(ex.text))}</i>`);
+  const maxRef = ex ? 2 : 3;   // sa brojem izlaza staju dve oznake, bez njega tri (u kacigi se ne cita vise)
+  const seen = new Set();
+  for (const b of (s.exit_branch_elements || [])) {
+    const ref = destText(b.text).replace(/\s+/g, " ");
+    if (!ref || seen.has(ref)) continue;
+    seen.add(ref);
+    out.push(`<i class="sh ${shieldCls(ref)}">${esc(ref)}</i>`);
+    if (seen.size >= maxRef) break;
+  }
+  return out.join("");
+}
+function signToward(m) {
+  const s = m && m.sign; if (!s) return "";
+  const els = (s.exit_toward_elements || []).concat(s.exit_name_elements || []);
+  const seen = [];
+  for (const e of els) {
+    const t = destText(e.text);
+    if (t && !seen.some((x) => x.toLowerCase() === t.toLowerCase())) seen.push(t);
+    if (seen.length >= 2) break;
+  }
+  return seen.length ? "ka " + seen.join(" / ") : "";
+}
+/* ---------- ogranicenje brzine ----------
+   Jedan poziv na Valhalla /trace_attributes daje ogranicenje po deonici za celu rutu.
+   OSM ga nema svuda (na testu 14 od 75 deonica u Beogradu), pa se prikazuje samo gde se zna. */
+async function loadSpeedLimits(route) {
+  try {
+    const total = route.cumDist[route.cumDist.length - 1];
+    const stepM = Math.max(60, total / 4000);            // do ~4000 tacaka, dovoljno gusto i za grad
+    const shape = [], km = [];
+    for (let dm = 0; dm <= total; dm += stepM) {
+      let i = route.cumDist.findIndex((x) => x >= dm);
+      if (i < 0) i = route.coords.length - 1;
+      shape.push({ lat: +route.coords[i][1].toFixed(6), lon: +route.coords[i][0].toFixed(6) });
+      km.push(dm);
+    }
+    const r = await fetch("https://valhalla1.openstreetmap.de/trace_attributes", {
+      // walk_or_snap, ne edge_walk: nasa linija je proredjena pa tacan edge-walk pada sa 443
+      method: "POST", body: JSON.stringify({ shape, costing: "motorcycle", shape_match: "walk_or_snap",
+        filters: { attributes: ["edge.speed_limit", "edge.begin_shape_index", "edge.end_shape_index"], action: "include" } }) });
+    if (!r.ok) throw new Error("trace " + r.status);
+    const j = await r.json();
+    const segs = [];
+    for (const e of (j.edges || [])) {
+      if (!e.speed_limit) continue;
+      const a = km[Math.min(e.begin_shape_index || 0, km.length - 1)];
+      const b = km[Math.min(e.end_shape_index || 0, km.length - 1)];
+      segs.push({ a, b, v: e.speed_limit });
+    }
+    route._limits = segs;
+  } catch (e) { route._limits = []; }
+}
+function limitAt(route, dMeters) {
+  const segs = route && route._limits;
+  if (!segs || !segs.length) return 0;
+  for (const s of segs) if (dMeters >= s.a && dMeters <= s.b) return s.v;
+  return 0;
+}
 function speakSr(text) {
   try {
     if (!window.speechSynthesis) return;
@@ -4440,6 +4535,7 @@ async function rideReroute(route, lo, la) {
     document.getElementById("rideDist").textContent = "";
     document.getElementById("rideInstr").textContent = "Menjam rutu…";
     document.getElementById("rideStreet").textContent = "";
+    document.getElementById("rideShields").innerHTML = "";
     speakSr("Menjam rutu.");
     const to = state.geocode && state.geocode.to; if (!to) return;
     const style = ROUTE_STYLES.find((x) => route.label && route.label.startsWith(x.label.split(" ")[0])) || ROUTE_STYLES[1];
@@ -4449,6 +4545,7 @@ async function rideReroute(route, lo, la) {
     Object.assign(route, nr);   // mutiraj isti objekat (ostatak app-a drzi referencu)
     RIDE.nav = buildNav(route);
     RIDE.total = route.cumDist[route.cumDist.length - 1];   // R13: ETA/preostalo/"Stigao si" po NOVOJ ruti
+    route._limits = []; loadSpeedLimits(route);   // ogranicenja su bila na km stare rute
     route._cams = [];   // kamere su imale km stare rute - bolje bez najave nego pogresna
     buildAhead(route);
     state._zones = [];   // wx zone imale km stare rute - traka se gasi umesto da laze
@@ -4487,6 +4584,7 @@ function startRide() {
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
+  loadSpeedLimits(route);   // u pozadini: dok stigne, roundel je prazan umesto da lazе
   buildAhead(route);   // R13: izdvojeno - i reroute mora da rebuild-uje najave na novoj geometriji
   RIDE.announced = new Set(); RIDE.aheadHideAt = 0;
   if (!RIDE._freeReg) {   // registracija OVDE - na load-u je map jos null (tihi catch je gutao dragstart!)
@@ -4502,6 +4600,7 @@ function startRide() {
   document.getElementById("rideDist").textContent = "";
   document.getElementById("rideInstr").textContent = "Tražim GPS signal…";
   document.getElementById("rideStreet").textContent = "";
+    document.getElementById("rideShields").innerHTML = "";
   document.getElementById("rideThen").textContent = "";
   document.getElementById("rideWx").classList.remove("on");
   document.getElementById("rideKmh").textContent = "0";
@@ -4555,7 +4654,10 @@ function startRide() {
         (nx && distTo < 900) ? (MAN_SR[nx.type] ? MAN_SR[nx.type][1].toLowerCase().split(" ")[0] === "skreni" ? (nx.type === 15 ? "↰" : "↱") : "→" : "→") + " " + fmtM(Math.max(0, nx.d - m.d)) : "";
       document.getElementById("rideDist").textContent = fmtM(distTo);
       document.getElementById("rideInstr").textContent = m.sr.t;
-      document.getElementById("rideStreet").textContent = (m.sr.street || "").replace(/^(Bulevar|Ulica|Put|Trg|Šetalište|Setaliste)\s+/i, "");
+      document.getElementById("rideShields").innerHTML = signHtml(m);
+      const ulica = (m.sr.street || "").replace(/^(Bulevar|Ulica|Put|Trg|Šetalište|Setaliste)\s+/i, "");
+      const kaCemu = signToward(m);   // na izlazima ime ulice cesto ne postoji, ali "ka Novom Sadu" postoji
+      document.getElementById("rideStreet").textContent = ulica || kaCemu;
       const spd = p.coords.speed != null ? p.coords.speed * 3.6 : 0;
       if (!m.spoke400 && distTo < (spd > 22 ? 600 : 400) && distTo > 120) { m.spoke400 = true;
         speakSr("Za " + Math.round(distTo / 50) * 50 + " metara " + m.sr.t.toLowerCase() + (m.sr.street ? " na " + m.sr.street : "")); }
@@ -4604,6 +4706,13 @@ function startRide() {
       if (RIDE.aheadHideAt && Date.now() > RIDE.aheadHideAt) { ab.classList.remove("on"); RIDE.aheadHideAt = 0; }
     } catch (e) {}
     if (p.coords.speed != null) document.getElementById("rideKmh").textContent = Math.round(p.coords.speed * 3.6);
+    try {   // ogranicenje brzine: samo gde OSM zna; preko 7 km/h iznad -> brojka pocrveni
+      const lim = limitAt(route, d), limEl = document.getElementById("rideLim");
+      if (lim) { limEl.firstElementChild.textContent = lim; limEl.classList.add("on"); }
+      else limEl.classList.remove("on");
+      const kmh = p.coords.speed != null ? p.coords.speed * 3.6 : 0;
+      document.querySelector("#rideBarBottom .pill").classList.toggle("over", !!lim && kmh > lim + 7);
+    } catch (e) {}
     RIDE.lastPos = [lo, la, (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : null];
     // kamera: blizi zoom pred skretanje
     try {
