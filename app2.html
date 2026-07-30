@@ -634,6 +634,42 @@
       font-variant-numeric: tabular-nums; }
     #rideBarBottom .pill.over { border-color: rgba(239,68,68,.85); }
     #rideBarBottom .pill.over .v { color: #fca5a5; }
+    #rideBarBottom .alt { flex: none; width: 46px; height: 46px; border-radius: 50%; align-self: center;
+      background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; }
+    #rideBarBottom .alt svg { width: 22px; height: 22px; stroke: #e2e8f0; fill: none; }
+    /* Etiketa puta na kome si (kao "Route 26" kod Google-a). Zakacena na body, ne u mapu -
+       #map je position:fixed pa pravi svoj stacking context i z-index unutra ne vazi. */
+    #rideRoad { display: none; position: fixed; z-index: 39; transform: translate(-50%, 0);
+      background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.22); border-radius: 999px;
+      padding: 4px 10px; align-items: center; gap: 6px; pointer-events: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,.5); white-space: nowrap; }
+    body.riding #rideRoad.on { display: flex; }
+    #rideRoad b { font-size: 13px; font-weight: 900; color: #f1f5f9; letter-spacing: .01em; }
+    #rideRoad i { font-style: normal; font-size: 12px; font-weight: 900; padding: 2px 6px; border-radius: 4px;
+      border: 2px solid #fff; font-variant-numeric: tabular-nums; }
+    #rideRoad i.e, #rideRoad i.a { background: #15803d; color: #fff; }
+    #rideRoad i.n { background: #facc15; color: #1c1917; }
+    /* Izmena rute usred voznje: pola ekrana, tap van zatvara, Otkazi uvek vidljiv */
+    #altSheet { position: fixed; inset: 0; z-index: 64; }
+    #altSheet .back { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+    #altSheet .body { position: absolute; left: 0; right: 0; bottom: 0; background: #0f172a;
+      border-radius: 22px 22px 0 0; border-top: 1px solid rgba(148,163,184,.16);
+      padding: 8px 16px calc(18px + env(safe-area-inset-bottom)); max-height: 62vh; overflow-y: auto; }
+    #altSheet .grab { width: 38px; height: 4px; border-radius: 2px; background: #475569; margin: 4px auto 12px; }
+    #altSheet .ttl { font-size: 16px; font-weight: 900; color: #fff; margin-bottom: 10px; }
+    #altSheet .lst { display: flex; flex-direction: column; gap: 9px; }
+    #altSheet .card { display: flex; align-items: center; gap: 12px; background: #1e293b;
+      border: 1px solid rgba(148,163,184,.16); border-radius: 14px; padding: 12px 13px; cursor: pointer;
+      color: #e2e8f0; font-family: inherit; text-align: left; width: 100%; }
+    #altSheet .card.now { border-color: rgba(249,115,22,.7); }
+    #altSheet .card .n { font-size: 14.5px; font-weight: 900; color: #fff; }
+    #altSheet .card .s { font-size: 12.5px; color: #94a3b8; font-weight: 700; margin-top: 3px; }
+    #altSheet .card .r { margin-left: auto; font-size: 13px; font-weight: 900; color: #fdba74; white-space: nowrap; }
+    #altSheet .cancel { width: 100%; margin-top: 12px; background: transparent; border: 1px solid rgba(148,163,184,.3);
+      color: #cbd5e1; border-radius: 13px; padding: 12px; font-size: 14.5px; font-weight: 800;
+      font-family: inherit; cursor: pointer; }
+    #altSheet .prazno { color: #94a3b8; font-size: 13.5px; font-weight: 700; padding: 6px 2px; }
     #rideBar .btns { display: flex; gap: 7px; }
     #rideBar #rideX, #rideBar #rideMute { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); color: #fff; min-width: 48px; height: 48px; border-radius: 50%; font-size: 17px; font-weight: 900; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; align-items: center; justify-content: center; }
     #rideBar #rideMute svg { width: 22px; height: 22px; stroke: #fff; fill: none; }
@@ -1061,7 +1097,18 @@
   <div id="rideBarBottom">
     <div class="pill"><div><div class="v" id="rideKmh">0</div><div class="u">km/h</div></div><div class="lim" id="rideLim"><span></span></div></div>
     <button class="rep" id="rideRep"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.3 3.9l-8 14A2 2 0 004 21h16a2 2 0 001.7-3L13.7 4a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>Prijavi</button>
+    <button class="alt" id="rideAlt" aria-label="Druga ruta"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 20V9a5 5 0 015-5h6"/><path d="M12 7l3-3-3-3"/><path d="M20 20v-5a5 5 0 00-5-5h-3"/></svg></button>
     <div class="eta"><div class="t" id="rideEta">-</div><div class="d" id="rideRem">-</div></div>
+  </div>
+  <div id="rideRoad"></div>
+  <div id="altSheet" hidden>
+    <div class="back" id="altBack"></div>
+    <div class="body">
+      <div class="grab"></div>
+      <div class="ttl">Druga ruta odavde</div>
+      <div class="lst" id="altList"></div>
+      <button class="cancel" id="altCancel">Otkaži</button>
+    </div>
   </div>
   <div id="homeFabs">
     <button data-fab="layers" aria-label="Slojevi"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></button>
@@ -4468,6 +4515,34 @@ async function loadSpeedLimits(route) {
     route._limits = segs;
   } catch (e) { route._limits = []; }
 }
+/* ---------- etiketa puta na kome si ----------
+   Valhalla u street_names daje i oznaku puta ("A1", "E 75", "M11"), ne samo ime ulice.
+   Put na kome smo = poslednji manevar ciji je pocetak iza nas. */
+function roadNow(route, dMeters) {
+  const mans = (RIDE.nav && RIDE.nav.mans) || [];
+  let cur = null;
+  for (const m of mans) { if (m.d <= dMeters + 5) cur = m; else break; }
+  const imena = (cur && cur.street_names) || (mans[0] && mans[0].street_names) || [];
+  if (!imena.length) return null;
+  const jeRef = (x) => /^[A-ZŠĐČĆŽ]{0,2}[\s.-]?\d+[A-Za-z]?$/.test(x);
+  const svi = imena.map((x) => cyr2lat(String(x)).trim()).filter(Boolean);
+  return { refs: svi.filter(jeRef).slice(0, 2), ime: svi.find((x) => !jeRef(x)) || "" };
+}
+function drawRoadLabel(route, dMeters, lo, la) {
+  const el = document.getElementById("rideRoad");
+  if (!el || !map) return;
+  const r = roadNow(route, dMeters);
+  if (!r || (!r.refs.length && !r.ime)) { el.classList.remove("on"); return; }
+  const html = r.refs.map((x) => `<i class="${shieldCls(x)}">${esc(x)}</i>`).join("") +
+    (r.ime ? `<b>${esc(r.ime)}</b>` : "");
+  if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; }
+  try {   // ispod strelice vozila, u ekranskim koordinatama
+    const p = map.project([lo, la]);
+    el.style.left = Math.round(p.x) + "px";
+    el.style.top = Math.round(p.y + 40) + "px";
+    el.classList.add("on");
+  } catch (e) { el.classList.remove("on"); }
+}
 function limitAt(route, dMeters) {
   const segs = route && route._limits;
   if (!segs || !segs.length) return 0;
@@ -4525,6 +4600,60 @@ function buildAhead(route) {   // najave ispred: kamere sa rute + lokalne prijav
     }
     RIDE.ahead.sort((a, b) => a.km - b.km);
   } catch (e) { RIDE.ahead = []; }
+}
+/* ---------- druga ruta usred voznje ----------
+   Google ima dugme sa viljuskom u traci; isto radimo: racunamo preostale stilove OD TRENUTNE
+   pozicije do cilja i nudimo ih. Tap van lista i dugme Otkazi oba zatvaraju (nikad zarobljen sheet). */
+function altClose() { const s = document.getElementById("altSheet"); if (s) s.hidden = true; }
+async function altOpen() {
+  const s = document.getElementById("altSheet"), lst = document.getElementById("altList");
+  const route = RIDE.route, pos = RIDE.pos, to = state.geocode && state.geocode.to;
+  if (!s || !route) return;
+  s.hidden = false;
+  if (!pos || !to) { lst.innerHTML = '<div class="prazno">Nemam GPS ili cilj, ne mogu da računam odavde.</div>'; return; }
+  lst.innerHTML = '<div class="prazno">Računam rutu odavde…</div>';
+  const sada = ROUTE_STYLES.find((x) => route.label && route.label.startsWith(x.label.split(" ")[0]));
+  const savedVias = state.vias; state.vias = [];   // odavde do cilja, bez starih stanica
+  let res = [];
+  try {
+    res = await Promise.all(ROUTE_STYLES.map(async (st) => {
+      try { return await valhallaRoute({ lat: pos.la, lon: pos.lo }, to, st); } catch (e) { return null; }
+    }));
+  } finally { state.vias = savedVias; }
+  if (s.hidden) return;   // korisnik je u medjuvremenu zatvorio
+  const dobre = res.filter(Boolean);
+  if (!dobre.length) { lst.innerHTML = '<div class="prazno">Server ruta trenutno ne odgovara. Probaj za minut.</div>'; return; }
+  const najkrace = Math.min(...dobre.map((r) => r.totalDur));
+  lst.innerHTML = "";
+  dobre.forEach((r) => {
+    const km = (r.totalDist / 1000).toFixed(0);
+    const min = Math.round(r.totalDur / 60);
+    const h = Math.floor(min / 60), mm = min % 60;
+    const sada2 = sada && r.label && r.label.startsWith(sada.label.split(" ")[0]);
+    const razlika = Math.round((r.totalDur - najkrace) / 60);
+    const b = document.createElement("button");
+    b.className = "card" + (sada2 ? " now" : "");
+    b.innerHTML = `<div><div class="n">${esc(r.label)}${sada2 ? " · sada" : ""}</div>` +
+      `<div class="s">${km} km · ${h ? h + " h " : ""}${mm} min</div></div>` +
+      `<div class="r">${razlika <= 0 ? "najbrža" : "+" + razlika + " min"}</div>`;
+    b.onclick = () => { altClose(); if (!sada2) altApply(r); };
+    lst.appendChild(b);
+  });
+}
+function altApply(nr) {
+  const route = RIDE.route; if (!route) return;
+  Object.assign(route, nr);                       // isti objekat - ostatak app-a drzi referencu
+  RIDE.nav = buildNav(route);
+  RIDE.total = route.cumDist[route.cumDist.length - 1];
+  route._limits = []; loadSpeedLimits(route);
+  route._cams = []; buildAhead(route);
+  state._zones = [];                              // vremenske zone su bile na km stare rute
+  try {
+    const src = map.getSource("seg");
+    if (src) src.setData({ type: "FeatureCollection", features: [{ type: "Feature",
+      properties: { color: "#22c55e" }, geometry: { type: "LineString", coordinates: route.coords } }] });
+  } catch (e) {}
+  speakSr("Prelazim na drugu rutu.");
 }
 async function rideReroute(route, lo, la) {
   const now = Date.now();
@@ -4620,12 +4749,22 @@ function startRide() {
     RIDE.marker = new maplibregl.Marker({ element: rel, rotationAlignment: "map", pitchAlignment: "map" });
   } catch (e) {}
   RIDE.total = route.cumDist[route.cumDist.length - 1];   // R13: na RIDE - reroute ga azurira (closure je lagao ETA/dolazak)
+  RIDE.route = route;   // sheet "druga ruta" je van ovog scope-a
+  if (!RIDE._altReg) {  // registracija ovde, na load-u dugmad jos ne postoje u DOM-u
+    RIDE._altReg = 1;
+    const ab = document.getElementById("rideAlt"), bk = document.getElementById("altBack"),
+      cx = document.getElementById("altCancel");
+    if (ab) ab.onclick = () => altOpen();
+    if (bk) bk.onclick = () => altClose();
+    if (cx) cx.onclick = () => altClose();
+  }
   RIDE.watch = navigator.geolocation.watchPosition((p) => {
     const total = RIDE.total;
     const la = p.coords.latitude, lo = p.coords.longitude;
     const nc = document.querySelector("#rideBar .navcard");
     if (nc) nc.classList.remove("acquiring", "nosignal");
     RIDE.gotFix = true;
+    RIDE.pos = { lo, la };   // sheet "druga ruta" racuna od trenutne tacke
     try {   // chevron na poziciji, rotiran u pravcu kretanja
       if (RIDE.marker) {
         RIDE.marker.setLngLat([lo, la]);
@@ -4706,6 +4845,7 @@ function startRide() {
       if (RIDE.aheadHideAt && Date.now() > RIDE.aheadHideAt) { ab.classList.remove("on"); RIDE.aheadHideAt = 0; }
     } catch (e) {}
     if (p.coords.speed != null) document.getElementById("rideKmh").textContent = Math.round(p.coords.speed * 3.6);
+    try { drawRoadLabel(route, d, lo, la); } catch (e) {}
     try {   // ogranicenje brzine: samo gde OSM zna; preko 7 km/h iznad -> brojka pocrveni
       const lim = limitAt(route, d), limEl = document.getElementById("rideLim");
       if (lim) { limEl.firstElementChild.textContent = lim; limEl.classList.add("on"); }
@@ -4737,6 +4877,7 @@ function startRide() {
 function stopRide() {
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
   try { if (RIDE.marker) { RIDE.marker.remove(); RIDE.marker = null; } } catch (e) {}
+  try { document.getElementById("rideRoad").classList.remove("on"); altClose(); } catch (e) {}
   try { if (map && map.getSource("terr") && !map.getTerrain()) map.setTerrain({ source: "terr", exaggeration: 1.2 }); } catch (e) {}
   if (state.routes && state.routes.length) {   // nazad na REZULTATE (izbor varijanti), ne na pocetni
     document.body.classList.add("planning");
