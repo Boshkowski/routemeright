@@ -1242,15 +1242,59 @@ function analyzeCurves(route) {
     perKmAvg > 0.3 ? "umereno vijugava" : "pretežno prava";
   return { L, R, sharp, perKmAvg, klasa, bestWin, bestCnt, totalKm };
 }
+/* Visina na FIKSNOM razmaku od 500 m, da uspon i nagib budu uporedivi izmedju ruta.
+   Ranije je bilo 100 tacaka bez obzira na duzinu (za 550 km to je uzorak na 5,5 km,
+   za 50 km na 500 m) pa je kratka ruta uvek ispadala strmija od duge.
+   Izvor je Valhalla /height: prima 1000 tacaka po pozivu. Open-Meteo ostaje rezerva,
+   ali njihov minutni limit racuna svaku tacku pa gusto uzorkovanje kod njih pada na 429. */
+const ELEV_STEP_KM = 0.5;
 async function fetchElevation(route) {
-  const n = 100, totalKm = route.cumDist[route.cumDist.length - 1] / 1000;
-  const pts = [];
-  for (let k = 0; k < n; k++) pts.push(coordAtKm(route, totalKm * k / (n - 1)));
-  const url = `https://api.open-meteo.com/v1/elevation?latitude=${pts.map((p) => p.lat.toFixed(4)).join(",")}` +
-    `&longitude=${pts.map((p) => p.lon.toFixed(4)).join(",")}`;
-  const r = await fetch(url);
-  const j = await r.json();
-  return j.elevation;
+  const totalKm = route.cumDist[route.cumDist.length - 1] / 1000;
+  const n = Math.max(4, Math.round(totalKm / ELEV_STEP_KM));
+  const shape = [];
+  for (let k = 0; k <= n; k++) {
+    const c = coordAtKm(route, Math.min(totalKm * k / n, totalKm - 0.001));
+    shape.push({ lat: +c.lat.toFixed(6), lon: +c.lon.toFixed(6) });
+  }
+  try {
+    const out = [];
+    for (let i = 0; i < shape.length; i += 1000) {
+      const r = await fetch("https://valhalla1.openstreetmap.de/height", {
+        method: "POST", body: JSON.stringify({ range: false, shape: shape.slice(i, i + 1000) }) });
+      if (!r.ok) throw new Error("height " + r.status);
+      const j = await r.json();
+      if (!j.height) throw new Error("height: prazan odgovor");
+      out.push(...j.height);
+    }
+    return { elev: out, dKm: totalKm / n };
+  } catch {
+    // rezerva: Open-Meteo, 100 tacaka (grublje, ali bolje nego prazna kartica)
+    const m = 100, pts = [];
+    for (let k = 0; k < m; k++) pts.push(coordAtKm(route, totalKm * k / (m - 1)));
+    const url = `https://api.open-meteo.com/v1/elevation?latitude=${pts.map((p) => p.lat.toFixed(4)).join(",")}` +
+      `&longitude=${pts.map((p) => p.lon.toFixed(4)).join(",")}`;
+    const j = await (await fetch(url)).json();
+    return { elev: j.elevation, dKm: totalKm / (m - 1) };
+  }
+}
+/* Ocena tezine: sve mere su GUSTINE (po kilometru), inace duga ruta pobedi kratku i ljutu.
+   Pragovi su kalibrisani 30.7.2026 na osam ruta sa poznatom ocenom - tabela je u docs/TEZINA.md. */
+function difficultyScore(sharpPer100, ascentPerKm, gradP95, totalKm) {
+  const band = (v, a, b, c) => v > c ? 3 : v > b ? 2 : v > a ? 1 : 0;
+  const t = band(sharpPer100, 10, 35, 80);   // vijugavost: ostre krivine na 100 km
+  const c = band(ascentPerKm, 4, 10, 20);    // penjanje: metara uspona po kilometru
+  const s = band(gradP95, 4, 7, 9);          // strmina: nagib koji se stvarno vozi (95. percentil)
+  const d = totalKm >= 350 ? 1 : 0;          // izdrzljivost: ceo dan u sedlu je sam po sebi teret
+  const pts = t + c + s + d;
+  const label = pts >= 6 ? "vrlo zahtevna" : pts >= 4 ? "zahtevna" : pts >= 2 ? "srednja" : "laka";
+  const zasto = [];
+  if (t >= 2) zasto.push(`${sharpPer100.toFixed(0)} oštrih krivina na 100 km`);
+  else if (t === 1) zasto.push("dosta krivina");
+  if (c >= 2) zasto.push(`uspon ${ascentPerKm.toFixed(0)} m po kilometru`);
+  if (s >= 2) zasto.push(`strmi delovi ~${gradP95.toFixed(0)}%`);
+  if (d) zasto.push(`${totalKm.toFixed(0)} km u jednom danu`);
+  if (!zasto.length) zasto.push(pts === 0 ? "pretežno prav i ravan put" : "blagi usponi i poneka krivina");
+  return { label, pts, zasto };
 }
 function drawElev(elev) {
   const W = 380, H = 74, pad = 5;
@@ -1274,23 +1318,28 @@ async function renderDifficulty(route) {
   $("diffOut").innerHTML = html;
   $("elevSvg").innerHTML = ""; $("elevLbl").textContent = "";
   try {
-    const elev = await fetchElevation(route);
+    const { elev, dKm } = await fetchElevation(route);
     drawElev(elev);
-    const dKm = c.totalKm / (elev.length - 1);
-    let ascent = 0, maxG = 0, maxGkm = 0;
-    for (let i = 1; i < elev.length; i++) {
-      const d = elev[i] - elev[i - 1];
+    /* Medijan filter 3: DEM daje visinu BRDA iznad tunela, pa sirov niz ume da pokaze
+       nagib od 40% tamo gde je put ravan. Za "najstrmije" uzimamo 95. percentil, ne maksimum. */
+    const sm = elev.map((v, i) => (i === 0 || i === elev.length - 1) ? v
+      : [elev[i - 1], v, elev[i + 1]].sort((a, b) => a - b)[1]);
+    const grads = [];
+    let ascent = 0;
+    for (let i = 1; i < sm.length; i++) {
+      const d = sm[i] - sm[i - 1];
       if (d > 0) ascent += d;
-      const g = Math.abs(d) / (dKm * 1000) * 100;
-      if (g > maxG) { maxG = g; maxGkm = i * dKm; }
+      grads.push({ g: Math.abs(d) / (dKm * 1000) * 100, km: i * dKm });
     }
+    const sorted = grads.map((x) => x.g).sort((a, b) => a - b);
+    const gradP95 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] || 0;
+    const strmo = grads.filter((x) => x.g >= gradP95).sort((a, b) => b.g - a.g)[0];
     const mxI = elev.indexOf(Math.max(...elev));
     $("elevLbl").textContent = `Najviša tačka ${Math.round(Math.max(...elev))} m (km ${(mxI * dKm).toFixed(0)}) · ` +
-      `ukupan uspon ~${Math.round(ascent / 50) * 50} m · najstrmije ~${maxG.toFixed(0)}% (km ${maxGkm.toFixed(0)})`;
-    const hard = (c.perKmAvg > 1.2 && ascent > 3000) || c.sharp > 80 || maxG >= 9 ? "vrlo zahtevna" :
-      c.perKmAvg > 0.8 || ascent > 2000 || maxG >= 7 ? "zahtevna" :
-      c.perKmAvg > 0.35 || ascent > 800 ? "srednja" : "laka";
-    $("diffOut").innerHTML += `<br>Za početnike: <b>${hard}</b>`;
+      `ukupan uspon ~${Math.round(ascent / 50) * 50} m · najstrmije ~${gradP95.toFixed(0)}%` +
+      (strmo ? ` (oko km ${strmo.km.toFixed(0)})` : "");
+    const d = difficultyScore(c.sharp / c.totalKm * 100, ascent / c.totalKm, gradP95, c.totalKm);
+    $("diffOut").innerHTML += `<br>Za početnike: <b>${d.label}</b> - ${d.zasto.join(", ")}`;
   } catch { /* profil visine nije kritičan */ }
 }
 function coordAtKm(route, km) {
@@ -2765,7 +2814,8 @@ function previewFill() {
     `<br><span class="note">Cene ažurirane 2026-07-18</span>`;
   $("diffOut").innerHTML =
     `Krivine: <b>412</b> (198 levo / 214 desno), oštrih 36 · 0,75 krivina/km - <b>vijugava</b>` +
-    `<br>Najvijugavije: km 300-320 (48 krivina)<br>Za početnike: <b>zahtevna</b>`;
+    `<br>Najvijugavije: km 300-320 (48 krivina)` +
+    `<br>Za početnike: <b>zahtevna</b> - 23 oštrih krivina na 100 km, 552 km u jednom danu`;
   const elev = [80,95,120,180,260,340,420,510,640,720,830,910,870,760,690,610,540,470,390,310,240,180,120,60,10];
   const W = 380, H = 74, pad = 5, mn = Math.min(...elev), mx = Math.max(...elev);
   const pts = elev.map((e, i) => `${(i / (elev.length - 1) * W).toFixed(1)},${(H - pad - (e - mn) / (mx - mn) * (H - 2 * pad)).toFixed(1)}`).join(" ");
