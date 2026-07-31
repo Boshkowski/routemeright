@@ -277,6 +277,14 @@
   }
   @keyframes pop { from { opacity: 0; transform: scale(.95); } }
   #elevSvg { display: block; background: rgba(255,255,255,.03); border: 1px solid var(--c-border); border-radius: 8px; }
+  /* Grafici duz rute: kisa, temperatura, vetar. Isti jezik kao profil visine. */
+  #wxCharts { display: flex; flex-direction: column; gap: 9px; margin: 2px 0 10px; }
+  #wxCharts .wxc { background: rgba(255,255,255,.03); border: 1px solid var(--c-border); border-radius: 8px; padding: 7px 9px 5px; }
+  #wxCharts .wxc .hd { display: flex; align-items: baseline; gap: 7px; margin-bottom: 3px; }
+  #wxCharts .wxc .hd b { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--c-muted-fg); font-weight: 700; }
+  #wxCharts .wxc .hd span { font-size: 11.5px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+  #wxCharts .wxc svg { display: block; width: 100%; height: 54px; }
+  #wxCharts .ax { display: flex; justify-content: space-between; font-size: 10px; color: #64748b; margin-top: 1px; font-variant-numeric: tabular-nums; }
 
   /* popup na markerima - tamna verzija */
   .maplibregl-popup-content {
@@ -1009,6 +1017,7 @@
         <div id="timeline"></div>
         <div id="tl-labels"></div>
         <div id="consensusOut" class="note" style="margin:0 0 6px"></div>
+        <div id="wxCharts"></div>
         <ul class="plain" id="warnList"></ul>
         <div id="suggestions"></div>
       </div>
@@ -2111,6 +2120,64 @@ function difficultyScore(curvesPerKm, serpPer100, ascentPerKm, gradP95, totalKm)
   if (!zasto.length) zasto.push(pts === 0 ? "pretežno prav i ravan put" : "blagi usponi i poneka krivina");
   return { label, pts, zasto };
 }
+/* ---------- grafici duz rute (kisa, temperatura, vetar) ----------
+   Podaci vec postoje u assess: po uzorku imamo km, precip, temp, wind i gust u satu prolaska.
+   Crta se inline SVG, bez ijedne biblioteke, isto kao profil visine. */
+function wxChart(naslov, sazetak, tacke, opcije) {
+  const W = 340, H = 54, pad = 4;
+  const vals = tacke.map((t) => t.v).filter((v) => v !== null && v !== undefined);
+  if (!vals.length) return "";
+  const mx = Math.max(opcije.min || 0, ...vals), mn = Math.min(0, ...vals);
+  const raspon = Math.max(opcije.minRaspon || 1, mx - mn);
+  const x = (i) => (tacke.length < 2 ? W / 2 : (i / (tacke.length - 1)) * W);
+  const y = (v) => H - pad - ((v - mn) / raspon) * (H - 2 * pad);
+  let telo = "";
+  if (opcije.tip === "trake") {
+    const w = Math.max(2, W / Math.max(1, tacke.length) - 1.5);
+    telo = tacke.map((t, i) => (t.v > 0
+      ? `<rect x="${(x(i) - w / 2).toFixed(1)}" y="${y(t.v).toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(1, H - pad - y(t.v)).toFixed(1)}" fill="${opcije.boja}" rx="1"/>`
+      : "")).join("");
+  } else {
+    const tacke2 = tacke.map((t, i) => `${x(i).toFixed(1)},${y(t.v ?? mn).toFixed(1)}`).join(" ");
+    telo = `<polygon points="0,${H} ${tacke2} ${W},${H}" fill="${opcije.boja}22"/>` +
+           `<polyline points="${tacke2}" fill="none" stroke="${opcije.boja}" stroke-width="1.8"/>`;
+    if (opcije.druga) {
+      const t3 = opcije.druga.map((v, i) => `${x(i).toFixed(1)},${y(v ?? mn).toFixed(1)}`).join(" ");
+      telo += `<polyline points="${t3}" fill="none" stroke="${opcije.boja}" stroke-width="1.4" stroke-dasharray="4 3" opacity=".75"/>`;
+    }
+  }
+  return `<div class="wxc"><div class="hd"><b>${esc(naslov)}</b><span>${esc(sazetak)}</span></div>` +
+    `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${telo}</svg></div>`;
+}
+function renderWxCharts(assess) {
+  const el = $("wxCharts");
+  if (!el) return;
+  const a = (assess || []).filter((x) => !x.outOfRange);
+  if (a.length < 3) { el.innerHTML = ""; return; }
+  const km0 = Math.round(a[0].km), km1 = Math.round(a[a.length - 1].km);
+  const kisa = a.map((x) => ({ v: x.precip ?? 0 }));
+  const temp = a.map((x) => ({ v: x.temp }));
+  const udari = a.map((x) => ({ v: x.gust ?? 0 }));
+  const vetar = a.map((x) => x.wind ?? 0);
+  const ukupnoKise = a.reduce((m, x) => m + (x.precip || 0), 0);
+  const vrhKise = Math.max(...a.map((x) => x.precip || 0));
+  const temps = a.map((x) => x.temp).filter((v) => v !== null && v !== undefined);
+  const maxUdar = Math.max(...a.map((x) => x.gust || 0));
+  let html = "";
+  // prazan grafik kise je samo prazna kutija - kad kise nema, to se kaze recenicom
+  if (vrhKise > 0)
+    html += wxChart("Kiša", `ukupno ${ukupnoKise.toFixed(1)} mm · najjače ${vrhKise.toFixed(1)} mm/h`,
+      kisa, { tip: "trake", boja: "#60a5fa", minRaspon: 1 });
+  else
+    html += `<div class="wxc"><div class="hd"><b>Kiša</b><span>nema je nigde na ruti</span></div></div>`;
+  if (temps.length)
+    html += wxChart("Temperatura", `${Math.round(Math.min(...temps))} do ${Math.round(Math.max(...temps))} °C`,
+      temp, { boja: "#f97316", minRaspon: 6 });
+  html += wxChart("Vetar", `udari do ${Math.round(maxUdar)} km/h · isprekidano je prosek`,
+    udari, { boja: "#22d3ee", druga: vetar, minRaspon: 10 });
+  html += `<div class="ax"><span>km ${km0}</span><span>km ${km1}</span></div>`;
+  el.innerHTML = html;
+}
 function drawElev(elev) {
   const W = 380, H = 74, pad = 5;
   const mn = Math.min(...elev), mx = Math.max(...elev), span = Math.max(1, mx - mn);
@@ -2370,7 +2437,7 @@ function assessHour(h, i, ctx) {
     for (let k = i - 6; k < i; k++) recent += h.precipitation[k] ?? 0;
     if (recent >= 0.5) { level = Math.max(level, 1); reasons.push(`mokar kolovoz na ${Math.round(t)}°C - oprez u senci i na mostovima`); }
   }
-  return { level, reasons, temp: t, precip: p, feel, gust: g };
+  return { level, reasons, temp: t, precip: p, feel, gust: g, wind: ws };
 }
 function assessRoute(route, departure, shiftHours = 0) {
   return route.samples.map((s, i) => {
@@ -3720,6 +3787,7 @@ async function selectRoute(departure) {
   renderRouteTabs(departure);
   const worst = renderVerdict(assess, route, departure);
   renderTimeline(assess);
+  renderWxCharts(assess);
   renderWhen(route, departure);
   renderGear(assess);
   drawRoute(route, assess);
