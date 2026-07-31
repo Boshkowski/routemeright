@@ -1068,7 +1068,7 @@
     </div>
 
     <div class="note" style="margin-top:16px" id="engineNote">
-      Podaci: OpenStreetMap (rute, pumpe, restorani), Open-Meteo (prognoza). Rutiranje: Valhalla moto profil - "Vijugava" izbegava autoputeve i naplatu. Procena vremena na planinskim putevima je konzervativna.
+      Podaci: OpenStreetMap (rute, pumpe, restorani), Open-Meteo (prognoza), based on data from MET Norway (presuda). Rutiranje: Valhalla moto profil - "Vijugava" izbegava autoputeve i naplatu. Procena vremena na planinskim putevima je konzervativna.
     </div>
     <div id="applog"></div>
   </aside>
@@ -2226,6 +2226,49 @@ async function fetchWeather(route, departure) {
   if (!Array.isArray(j)) j = [j];
   route.weather = j.map((w) => w.hourly);
 }
+/* ---------- MET Norway (Yr.no) kao cetvrti, NEZAVISAN glas u presudi ----------
+   Jedini besplatan meteo izvor koji IZRICITO dozvoljava komercijalnu upotrebu:
+   norveska licenca za javne podatke + CC BY 4.0 ("even commercially").
+   Trazi pripisivanje "Based on data from MET Norway" - stoji u fusnoti aplikacije.
+   Njihovi uslovi traze i identifikaciju aplikacije kroz User-Agent, ali pregledac ne da
+   JavaScript-u da menja to zaglavlje; njihov tekst to i predvidja recima "if possible".
+   Nema paketni poziv kao Open-Meteo - jedna tacka po zahtevu, zato uzimamo do 12 tacaka.
+   Provereno 31.07.2026: CORS je otvoren (access-control-allow-origin: *), vraca 200. */
+const METNO_MAX = 12;
+async function fetchMetNo(route) {
+  try {
+    const s = route.samples || [];
+    if (!s.length) return null;
+    const korak = Math.max(1, Math.ceil(s.length / METNO_MAX));
+    const idxs = [];
+    for (let i = 0; i < s.length; i += korak) idxs.push(i);
+    const out = {};
+    for (let i = 0; i < idxs.length; i += 4) {   // po cetiri odjednom, njihov limit je 20 u sekundi
+      await Promise.all(idxs.slice(i, i + 4).map(async (gi) => {
+        const p = s[gi];
+        const u = "https://api.met.no/weatherapi/locationforecast/2.0/complete" +
+          `?lat=${p.lat.toFixed(4)}&lon=${p.lon.toFixed(4)}`;   // 4 decimale su njihov uslov
+        try {
+          const j = await fetchJSON(u, { timeoutMs: 9000, retries: 0 });
+          const ts = j && j.properties && j.properties.timeseries;
+          if (!ts) return;
+          const mapa = {};
+          for (const t of ts) {
+            const d1 = t.data && t.data.next_1_hours, d6 = t.data && t.data.next_6_hours;
+            const mm1 = d1 && d1.details && d1.details.precipitation_amount;
+            const mm6 = d6 && d6.details && d6.details.precipitation_amount;
+            const mm = (mm1 !== undefined && mm1 !== null) ? mm1
+              : ((mm6 !== undefined && mm6 !== null) ? mm6 / 6 : null);   // sesticasovni na sat
+            if (mm === null) continue;
+            mapa[t.time.slice(0, 13)] = mm;   // kljuc "2026-07-31T09" po UTC-u, kao i njihova vremena
+          }
+          if (Object.keys(mapa).length) out[gi] = mapa;
+        } catch (e) { /* jedna tacka manje nije razlog da padne presuda */ }
+      }));
+    }
+    return Object.keys(out).length ? out : null;
+  } catch { return null; }
+}
 /* multi-model "presuda": ista tačka/sat kroz 3 nezavisna modela - slaganje = pouzdanost */
 const CONSENSUS_MODELS = ["icon_seamless", "gfs_seamless", "ecmwf_ifs025"];
 async function fetchConsensus(route, departure) {
@@ -2248,6 +2291,7 @@ function renderConsensus(route, departure) {
   el.innerHTML = "";
   if (!route.consensus) return;
   const disagree = [];
+  let metCount = 0;
   route.samples.forEach((smp, i) => {
     const h = route.consensus[i];
     if (!h || !h.time) return;
@@ -2257,14 +2301,21 @@ function renderConsensus(route, departure) {
     const vals = CONSENSUS_MODELS
       .map((m) => (h["precipitation_" + m] ? h["precipitation_" + m][idx] : null))
       .filter((v) => v !== null && v !== undefined);
+    // cetvrti glas: MET Norway, nezavisan provajder a ne jos jedan model iz istog izvora
+    const mn = route.metno && route.metno[i];
+    if (mn) {
+      const v = mn[eta.toISOString().slice(0, 13)];
+      if (v !== undefined) { vals.push(v); metCount++; }
+    }
     if (vals.length < 2) return;
     const wet = vals.filter((v) => v >= 0.2).length;
     if (wet > 0 && wet < vals.length) disagree.push(Math.round(smp.km));
   });
+  const ko = metCount ? "3 modela + MET Norway" : "3 modela (ICON · GFS · ECMWF)";
   if (!disagree.length)
-    el.innerHTML = "Presuda 3 modela (ICON · GFS · ECMWF): <b>slažu se</b> - prognoza pouzdana.";
+    el.innerHTML = `Presuda ${ko}: <b>slažu se</b> - prognoza pouzdana.`;
   else
-    el.innerHTML = `Presuda 3 modela: <span class="warn-inline"><b>razilaze se oko kiše</b></span> kod km ` +
+    el.innerHTML = `Presuda ${ko}: <span class="warn-inline"><b>razilaze se oko kiše</b></span> kod km ` +
       `${disagree.slice(0, 5).join(", ")}${disagree.length > 5 ? "…" : ""} - proveri radar pred polazak.`;
 }
 function hourIndex(hourly, when) {
@@ -3683,6 +3734,7 @@ async function selectRoute(departure) {
     renderDifficulty(route), renderCameras(route), renderRoadworks(route), renderRoadStatus(route),
     (async () => {
       if (route.consensus === undefined) route.consensus = await fetchConsensus(route, departure);
+      if (route.metno === undefined) route.metno = await fetchMetNo(route);   // cetvrti glas
       if (_seq !== state.planSeq) return;
       renderConsensus(route, departure);
     })()]);   // allSettled: jedan pali servis vise ne rusi trosak/tezinu/hero
