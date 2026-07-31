@@ -116,6 +116,30 @@
   .verdict.ok  { background: var(--c-ok-bg); color: var(--c-ok-fg); }
   .verdict.warn { background: var(--c-warn-bg); color: var(--c-warn-fg); }
   .verdict.bad { background: var(--c-bad-bg); color: var(--c-bad-fg); }
+  .scoreline { display: flex; align-items: center; gap: 12px; margin: 10px 2px 4px; }
+  .scoreline b { font-size: 30px; font-weight: 900; line-height: 1; letter-spacing: -.02em; }
+  .scoreline .sw { font-size: 12.5px; line-height: 1.35; color: var(--c-fg); font-weight: 600; min-width: 0; }
+  .scoreline .sk { display: block; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--c-muted-fg); margin-bottom: 2px; }
+  #ptBrowse { display: flex; align-items: center; gap: 10px; margin: 9px 0 12px; }
+  #ptBrowse .ptb { flex: none; width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--c-border-strong);
+    background: var(--c-card); color: var(--c-fg); font-size: 20px; font-weight: 800; cursor: pointer; line-height: 1; font-family: inherit; }
+  #ptBrowse .ptb:disabled { opacity: .35; cursor: default; }
+  #ptBrowse .ptinfo { flex: 1; min-width: 0; text-align: center; }
+  #ptBrowse .ptk { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--c-muted-fg); margin-bottom: 3px; }
+  #ptBrowse .ptv { font-size: 14.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; line-height: 1.3; }
+  #ptBrowse .ptv .lvl1 { color: var(--c-warn-fg); }
+  #ptBrowse .ptv .lvl2 { color: var(--c-bad-fg); }
+  #timeline .blk.ptsel { box-shadow: 0 0 0 2px #f97316 inset; }
+  .sharemini { display: flex; align-items: center; gap: 7px; margin-top: 10px; padding: 9px 13px; border-radius: 11px;
+    border: 1px solid var(--c-border-strong); background: var(--c-card); color: var(--c-fg);
+    font: 700 12.5px Archivo, sans-serif; cursor: pointer; }
+  .sharemini svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+  #whenWin { margin: 2px 0 12px; }
+  #whenWin .ww-lab { font-size: 12.5px; color: var(--c-muted-fg); font-weight: 700; margin-bottom: 4px; }
+  #whenWin .ww-lab b { color: var(--c-fg); }
+  #whenWin .wwrow { display: flex; align-items: center; gap: 9px; margin: 2px 0; }
+  #whenWin .wwrow span { flex: none; width: 20px; font-size: 11px; color: var(--c-muted-fg); font-weight: 700; }
+  #whenWin input[type=range] { flex: 1; accent-color: var(--c-primary); height: 26px; margin: 0; }
   .summary-line { font-size: 13.5px; color: #cbd5e1; line-height: 1.55; font-variant-numeric: tabular-nums; }
 
   .routes-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -528,6 +552,9 @@
     body.qplan.planning:not(.qdetails) #resCta { position: static; padding: 6px 0 10px; background: none; }
     body.qplan.planning:not(.qdetails) #resHero .rslide { height: 158px; }
     body.qplan.planning:not(.qdetails) #resHero .rslide .rcard { height: calc(100% - 25px); overflow: hidden; }
+    body.qplan.planning:not(.qdetails) #resHero #rhScoreSlide .rcard { height: 100%; }
+    body.qplan.planning:not(.qdetails) #resHero .rscore .sc-num { font-size: 40px; min-width: 64px; }
+    body.qplan.planning:not(.qdetails) #resHero .rscore .why { font-size: 12px; }
     body.qplan.planning:not(.qdetails) #resHero .rcurv .top { margin-bottom: 7px; }
     body.qplan.planning:not(.qdetails) #resHero .rcurv .lr .b svg { display: none; }
     body.qplan.planning:not(.qdetails) #resHero .rcurv .sevbar, body.qplan.planning:not(.qdetails) #resHero .rcurv .sevleg { display: none; }
@@ -759,6 +786,13 @@
     #resHero .m .v { font-size: 17px; }
     #resHero .m .bkn { font-size: 9.5px; color: #fdba74; font-weight: 700; margin-top: 2px; line-height: 1.2; }
     #resHero .rslide .rcard { height: calc(100% - 25px); box-sizing: border-box; }
+    #resHero #rhScoreSlide .rcard { height: 100%; }
+    #resHero .rscore { display: flex; align-items: center; gap: 14px; padding: 12px 15px; }
+    #resHero .rscore .sc-num { font-size: 47px; font-weight: 900; line-height: 1; min-width: 76px; text-align: center; letter-spacing: -.02em; }
+    #resHero .rscore .sc-txt { min-width: 0; }
+    #resHero .rscore .k { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--c-muted-fg); margin-bottom: 5px; }
+    #resHero .rscore .why { font-size: 13px; line-height: 1.35; color: var(--c-fg); font-weight: 600;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     #resHero .m { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 12px; padding: 9px 6px; text-align: center; }
     #resHero .m .k { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: .03em; font-weight: 700; }
     #resHero .m .v { font-size: 15px; font-weight: 900; color: #fff; margin-top: 3px; font-variant-numeric: tabular-nums; }
@@ -967,6 +1001,12 @@
     <div id="results" class="hidden">
       <!-- Faza 3: mobilni rezultat kao maketa (hero + metrike + krivine); desktop ga ne vidi -->
       <div id="resHero">
+        <div class="rslide" id="rhScoreSlide" style="display:none">
+          <div class="rcard rscore">
+            <div class="sc-num" id="rhScoreN">-</div>
+            <div class="sc-txt"><div class="k">Ocena vožnje</div><div class="why" id="rhScoreWhy"></div></div>
+          </div>
+        </div>
         <div class="rslide">
           <div class="rhero">
             <div class="hx wx" id="rhWx"><div class="k">Vreme na ruti</div><div class="v" id="rhWxV">-</div><div class="sub" id="rhWxS"></div></div>
@@ -1003,7 +1043,9 @@
       </div>
       <div class="card" id="card-summary">
         <div id="verdict" class="verdict"></div>
+        <div class="scoreline" id="scoreLine" style="display:none"></div>
         <div class="summary-line" id="summary"></div>
+        <button id="shareBtn" type="button" class="sharemini" style="display:none"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Podeli sažetak (slika ili link)</button>
       </div>
 
       <div class="card" id="card-routes">
@@ -1016,6 +1058,14 @@
         <h3>Vreme duž rute</h3>
         <div id="timeline"></div>
         <div id="tl-labels"></div>
+        <div id="ptBrowse" style="display:none">
+          <button class="ptb" id="ptPrev" type="button" aria-label="Prethodna tačka">‹</button>
+          <div class="ptinfo">
+            <div class="ptk"><span id="ptCount">-</span> · km <span id="ptKm">-</span></div>
+            <div class="ptv" id="ptVal">-</div>
+          </div>
+          <button class="ptb" id="ptNext" type="button" aria-label="Sledeća tačka">›</button>
+        </div>
         <div id="consensusOut" class="note" style="margin:0 0 6px"></div>
         <div id="wxCharts"></div>
         <ul class="plain" id="warnList"></ul>
@@ -1024,6 +1074,11 @@
 
       <div class="card" id="card-when">
         <h3>Kad krenuti</h3>
+        <div id="whenWin" style="display:none">
+          <div class="ww-lab">Prozor polaska: <b id="wwTxt">-</b></div>
+          <div class="wwrow"><span>od</span><input type="range" id="wwOd" min="0" max="47" step="1" aria-label="Najraniji polazak"></div>
+          <div class="wwrow"><span>do</span><input type="range" id="wwDo" min="1" max="48" step="1" aria-label="Najkasniji polazak"></div>
+        </div>
         <div id="whenOut"></div>
         <div class="note" id="whenNote"></div>
       </div>
@@ -1073,6 +1128,7 @@
       <div id="resCta">
         <button class="b2 p" id="ctaKreni"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>Kreni</button>
         <button class="b2" id="ctaCuvaj"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Čuvaj</button>
+        <button class="b2" id="ctaDeli" aria-label="Podeli sažetak vožnje"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Deli</button>
       </div>
     </div>
 
@@ -2461,6 +2517,30 @@ function groupZones(assess) {
   }
   return zones;
 }
+/* ---------------- ocena voznje 0-100 (iz assess nivoa po tacki) ----------------
+   Pravilo: broj IDE SAMO uz "zasto" u jednoj recenici - bez objasnjenja vraca null
+   i ocena se ne prikazuje (npr. prognoza ne pokriva dovoljno rute). */
+function rideScore(route) {
+  const a = route && route.assess;
+  if (!a || !a.length) return null;
+  const usable = a.filter((x) => !x.outOfRange);
+  if (usable.length < a.length * 0.6) return null;   // prognoza ne pokriva rutu - postenije je ne oceniti
+  const n1 = usable.filter((x) => x.level === 1).length, n2 = usable.filter((x) => x.level >= 2).length;
+  let score = 100 - (n1 ? 10 : 0) - (n2 ? 45 : 0) - 35 * (n1 / usable.length) - 55 * (n2 / usable.length);
+  score = Math.max(3, Math.min(100, Math.round(score)));
+  const zones = groupZones(a);
+  const kmT = (z) => z.from.km.toFixed(0) === z.to.km.toFixed(0) ? `km ${z.from.km.toFixed(0)}` : `km ${z.from.km.toFixed(0)}-${z.to.km.toFixed(0)}`;
+  let why;
+  if (!zones.length) why = `Suvo i mirno na svih ${Math.round(route.totalDist / 1000)} km, u satima kad tuda prolaziš.`;
+  else {
+    const worst = zones.reduce((b, z) => (z.level > b.level ? z : b), zones[0]);
+    const rest = zones.length - 1;
+    why = `${worst.reasons[0]} · ${kmT(worst)} · ~${fmtTime(worst.from.eta)}` +
+      (rest > 0 ? `, uz još ${rest} ${rest === 1 ? "upozorenje" : "upozorenja"}` : "") +
+      ((n1 + n2) / usable.length < 0.25 ? " - ostatak rute čist." : ".");
+  }
+  return { score, why };
+}
 
 /* ---------------- Overpass POI ---------------- */
 async function overpass(query) {
@@ -2837,6 +2917,18 @@ function renderVerdict(assess, route, departure) {
   const arrive = new Date(departure.getTime() + route.totalDur * 1000);
   const rt = isRoundTrip();
   const routeTxt = `${state.geocode.from.name} → ${state.geocode.to.name}${rt ? " → " + state.geocode.from.name : ""}`;
+  try {   // ocena voznje i u kartici rezultata (desktop/detalji); bez "zasto" nema ni broja
+    const sc = rideScore(route), el = $("scoreLine");
+    if (el) {
+      if (!sc || route.wxFail) el.style.display = "none";
+      else {
+        el.style.display = "";
+        const col = sc.score >= 85 ? "#4ade80" : sc.score >= 60 ? "#fcd34d" : "#fca5a5";
+        el.innerHTML = `<b style="color:${col}">${sc.score}</b><span class="sw"><span class="sk">Ocena vožnje</span>${esc(sc.why)}</span>`;
+      }
+    }
+  } catch (e) {}
+  try { const sb = $("shareBtn"); if (sb) sb.style.display = ""; } catch (e) {}
   try { renderResultHero(route); } catch (e) {}   // pilula + hero cim su rezultati tu (nezavisno od sporednih fetch-eva)
   $("summary").innerHTML =
     `<b>${esc(routeTxt)}</b>${rt ? " (povratno)" : ""} · ${(route.totalDist / 1000).toFixed(0)} km · ` +
@@ -2863,6 +2955,41 @@ function renderTimeline(assess) {
     s.textContent = `${fmtTime(a.eta)} (km ${a.km.toFixed(0)})`;
     lb.appendChild(s);
   });
+  try { renderPointBrowser(assess); } catch (e) {}
+}
+/* klizanje kroz tacke rute ("3 od 8"): vreme na svakoj tacki pojedinacno,
+   strelicama napred-nazad; izabrana tacka se uokviri i na traci iznad */
+function renderPointBrowser(assess) {
+  const box = $("ptBrowse");
+  if (!box) return;
+  if (!assess || assess.length < 2) { box.style.display = "none"; return; }
+  const n = assess.length;
+  const step = Math.max(1, Math.round((n - 1) / 7));   // do ~8 reprezentativnih tacaka, uvek start i cilj
+  const idxs = [];
+  for (let i = 0; i < n; i += step) idxs.push(i);
+  if (idxs[idxs.length - 1] !== n - 1) idxs.push(n - 1);
+  state._pt = { idxs, cur: 0 };
+  box.style.display = "";
+  const show = () => {
+    const p = state._pt, a = assess[p.idxs[p.cur]];
+    $("ptCount").textContent = `${p.cur + 1} od ${p.idxs.length}`;
+    $("ptKm").textContent = a.km.toFixed(0);
+    const cond = a.outOfRange ? "van prognoze"
+      : a.level === 0 ? "čisto"
+      : a.reasons[0] + (a.reasons.length > 1 ? " +" + (a.reasons.length - 1) : "");
+    $("ptVal").innerHTML =
+      (a.level > 0 ? wxIco((a.reasons || []).join(" "), a.level, 15) + " " : "") +
+      `<b>${fmtTime(a.eta)}</b>` +
+      (a.temp != null ? ` · ${Math.round(a.temp)}°C` : "") +
+      ` · <span class="${a.level >= 2 ? "lvl2" : a.level === 1 ? "lvl1" : ""}">${esc(cond)}</span>`;
+    $("ptPrev").disabled = p.cur === 0;
+    $("ptNext").disabled = p.cur === p.idxs.length - 1;
+    const tl = $("timeline");
+    [...tl.children].forEach((c, i) => c.classList.toggle("ptsel", i === p.idxs[p.cur]));
+  };
+  $("ptPrev").onclick = () => { if (state._pt.cur > 0) { state._pt.cur--; show(); } };
+  $("ptNext").onclick = () => { if (state._pt.cur < state._pt.idxs.length - 1) { state._pt.cur++; show(); } };
+  show();
 }
 function scoreAssess(assess) {
   let s = 0;
@@ -2884,8 +3011,10 @@ function renderWhen(route, departure) {
     return;
   }
   const arrive = $("timeMode").value === "arrive";
+  const winBox = $("whenWin");
   let cands;
   if (arrive) {
+    if (winBox) winBox.style.display = "none";   // kod "stižem do" prozor nema smisla
     const target = new Date($("depart").value);
     const latest = new Date(target.getTime() - route.totalDur * 1000);
     cands = [];
@@ -2897,7 +3026,41 @@ function renderWhen(route, departure) {
       return;
     }
   } else {
-    cands = [0, 1, 2, 3, 4, 6].map((hh) => new Date(departure.getTime() + hh * 3600e3));
+    // prozor sa klizacima (od-do, polusatni koraci) umesto fiksnih termina
+    if (!state._whenWin) {
+      const h = Math.floor((departure.getHours() + departure.getMinutes() / 60) * 2);
+      state._whenWin = { od: h, do: Math.min(48, h + 12) };   // podrazumevano: od izabranog polaska + 6 h
+    }
+    const win = state._whenWin;
+    const hhTxt = (u) => `${String(Math.floor(u / 2)).padStart(2, "0")}:${u % 2 ? "30" : "00"}`;
+    if (winBox) {
+      winBox.style.display = "";
+      const so = $("wwOd"), sd = $("wwDo");
+      so.value = win.od; sd.value = win.do;
+      $("wwTxt").textContent = `${hhTxt(win.od)} - ${hhTxt(win.do)}`;
+      if (!winBox._wired) {   // jednom: klizaci samo ponovo crtaju listu, ne diraju izabran polazak
+        winBox._wired = true;
+        const rerun = () => {
+          const r2 = state.routes && state.routes[state.selected];
+          if (r2) renderWhen(r2, new Date($("depart").value));
+        };
+        so.addEventListener("input", () => { const v = +so.value; state._whenWin.od = v; if (state._whenWin.do <= v) state._whenWin.do = Math.min(48, v + 1); rerun(); });
+        sd.addEventListener("input", () => { const v = +sd.value; state._whenWin.do = v; if (state._whenWin.od >= v) state._whenWin.od = Math.max(0, v - 1); rerun(); });
+      }
+    }
+    const day0 = new Date(departure); day0.setHours(0, 0, 0, 0);
+    const spanMin = (win.do - win.od) * 30;
+    const stepMin = Math.max(30, Math.ceil(spanMin / 8 / 30) * 30);   // najvise ~9 redova, koraci na pola sata
+    cands = [];
+    for (let m = win.od * 30; m <= win.do * 30; m += stepMin) {
+      const d = new Date(day0.getTime() + m * 60000);
+      if (d.getTime() >= Date.now() - 60000) cands.push(d);
+    }
+    if (!cands.length) {
+      box.innerHTML = '<div class="note">Ceo prozor je u prošlosti - pomeri klizače udesno.</div>';
+      $("whenNote").textContent = "";
+      return;
+    }
   }
   const scored = cands.map((dep) => {
     const a = assessRoute(route, dep);
@@ -2921,7 +3084,7 @@ function renderWhen(route, departure) {
   }
   $("whenNote").textContent = arrive
     ? "Polasci koji stižu do zadatog vremena - ★ = najmirnija prognoza (kod nerešenog pobedjuje kasniji)."
-    : "Ista ruta, pomeren polazak - klikni red da primeniš.";
+    : "Pomeri klizače da zadaš prozor - ★ je najmirniji polazak u njemu. Klikni red da primeniš.";
 }
 function renderGear(assess) {
   const ul = $("gearList"); ul.innerHTML = "";
@@ -4115,8 +4278,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.1";
+const APP_VERSION = "0.9.2";
 const CHANGELOG = [
+  { v: "0.9.2", d: "31.07.2026.", stavke: [
+    "<b>Ocena vožnje 0-100</b> u kartici rezultata, izvedena iz prognoze po tačkama rute. Uz broj uvek stoji i zašto - ocena bez objašnjenja se ne prikazuje.",
+    "<b>Klizanje kroz tačke rute</b> u kartici vremena: strelicama napred-nazad (\"3 od 8\") vidiš sat, temperaturu i uslove na svakoj tački, a tačka se označi i na traci.",
+    "<b>Deljenje sažetka vožnje</b>: dugme Deli pravi sliku sa ocenom, kilometrima, trajanjem i troškom, ili link koji drugar otvori pa mu se ista ruta izračuna.",
+    "<b>Prozor polaska sa klizačima</b> umesto fiksnih termina u \"Kad krenuti\": zadaš od-do, aplikacija oceni polaske u prozoru i označi najmirniji.",
+  ] },
   { v: "0.9.1", d: "30.07.2026.", stavke: [
     "<b>Tablice puteva i izlaza</b> u navigaciji: broj izlaza, oznaka puta i ka čemu vodi. Vide se samo na autoputskim izlazima, jer ih server drugde ne šalje.",
     "<b>Ograničenje brzine</b> pored brzinomera. Prikazuje se samo gde podatak postoji, nikad se ne pogađa. Brojka pocrveni preko 7 km/h iznad.",
@@ -4349,8 +4518,12 @@ function init() {
   if (params.has("demo")) {
     $("from").value = params.get("from") || "Beograd";
     $("to").value = params.get("to") || "Zlatibor";
-    const t = new Date(Date.now() + 24 * 3600e3);
-    $("depart").value = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}T09:00`;
+    const dp = params.get("depart");   // podeljeni link nosi i polazak; istekao (prošlost) -> sutra 09:00
+    if (dp && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(dp) && new Date(dp) > new Date()) $("depart").value = dp.slice(0, 16);
+    else {
+      const t = new Date(Date.now() + 24 * 3600e3);
+      $("depart").value = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}T09:00`;
+    }
     setTimeout(plan, 300); // ne zavisi od mape
   }
 }
@@ -5244,6 +5417,20 @@ function renderResultHero(route) {
     document.getElementById("rpTxt").textContent = ((g.from && g.from.name) || "?") + " → " + ((g.to && g.to.name) || "?");
     document.getElementById("rpSub").textContent = Math.round(route.totalDist / 1000) + " km · tap za detalje i varijante";
   } catch (e) {}
+  try {   // ocena voznje 0-100: broj ide ISKLJUCIVO uz "zasto" (bez toga se slajd krije)
+    const sc = rideScore(route);
+    const sl = document.getElementById("rhScoreSlide");
+    if (sl) {
+      if (!sc) sl.style.display = "none";
+      else {
+        sl.style.display = "";
+        const n = document.getElementById("rhScoreN");
+        n.textContent = sc.score;
+        n.style.color = sc.score >= 85 ? "#4ade80" : sc.score >= 60 ? "#fcd34d" : "#fca5a5";
+        document.getElementById("rhScoreWhy").textContent = sc.why;
+      }
+    }
+  } catch (e) {}
   // vreme: preslikaj postojeći verdict (uvek sinhronizovano sa card-summary)
   const v = document.getElementById("verdict");
   const cls = v && /bad/.test(v.className) ? "bad" : v && /warn/.test(v.className) ? "warn" : "ok";
@@ -5301,8 +5488,166 @@ function renderResultHero(route) {
       `<span><span class="d" style="background:#ef4444"></span>serpentine ${c.sharp}</span>`;
   }
 }
+/* ---- deljenje sazetka voznje: slika (canvas u brend stilu) ili link ---- */
+function shareLink() {
+  const g = state.geocode || {};
+  const from = (($("from") && $("from").value) || (g.from && g.from.name) || "").trim();
+  const to = (($("to") && $("to").value) || (g.to && g.to.name) || "").trim();
+  const dep = ($("depart") && $("depart").value) || "";
+  return `${location.origin}${location.pathname}?demo=1&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}` +
+    (dep ? `&depart=${encodeURIComponent(dep.slice(0, 16))}` : "");
+}
+function buildShareCanvas(route) {
+  const W = 1080, H = 1350, P = 72;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const x = cv.getContext("2d");
+  const F = (w, s) => `${w} ${s}px Archivo, -apple-system, sans-serif`;
+  const g = x.createRadialGradient(W / 2, H * 0.22, 80, W / 2, H * 0.3, H);
+  g.addColorStop(0, "#16223c"); g.addColorStop(1, "#0f172a");
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  // wordmark
+  x.textBaseline = "alphabetic";
+  x.font = F(800, 44);
+  let wx = P;
+  for (const [t, c] of [["Route", "#f8fafc"], ["Me", "#f97316"], ["Right", "#f8fafc"]]) {
+    x.fillStyle = c; x.fillText(t, wx, 118); wx += x.measureText(t).width;
+  }
+  x.fillStyle = "#94a3b8"; x.font = F(600, 26);
+  const tag = "sažetak vožnje";
+  x.fillText(tag, W - P - x.measureText(tag).width, 118);
+  // naslov: relacija (skupljaj font dok ne stane)
+  const gg = state.geocode || {};
+  const title = `${(gg.from && gg.from.name) || "?"} → ${(gg.to && gg.to.name) || "?"}`;
+  let fs = 68;
+  x.font = F(800, fs);
+  while (x.measureText(title).width > W - 2 * P && fs > 30) { fs -= 2; x.font = F(800, fs); }
+  x.fillStyle = "#f8fafc"; x.fillText(title, P, 230);
+  // meta linija
+  const dep = $("depart") && $("depart").value ? new Date($("depart").value) : new Date();
+  const arr = new Date(dep.getTime() + route.totalDur * 1000);
+  const p2 = (n) => String(n).padStart(2, "0");
+  const dTxt = `${p2(dep.getDate())}.${p2(dep.getMonth() + 1)}.${dep.getFullYear()}.`;
+  x.fillStyle = "#94a3b8"; x.font = F(600, 31);
+  x.fillText(`${dTxt} · kreni ${fmtTime(dep)} → dolazak ~${fmtTime(arr)} (bez pauza)`, P, 288);
+  x.strokeStyle = "rgba(148,163,184,.22)"; x.lineWidth = 2;
+  x.beginPath(); x.moveTo(P, 336); x.lineTo(W - P, 336); x.stroke();
+  // ocena + zasto
+  const sc = rideScore(route);
+  let y = 420;
+  if (sc) {
+    const col = sc.score >= 85 ? "#4ade80" : sc.score >= 60 ? "#fcd34d" : "#fca5a5";
+    x.fillStyle = col; x.font = F(900, 150); x.fillText(String(sc.score), P, y + 118);
+    const tx = P + x.measureText(String(sc.score)).width + 44;
+    x.fillStyle = "#94a3b8"; x.font = F(800, 26);
+    x.fillText("OCENA VOŽNJE", tx, y + 8);
+    x.fillStyle = "#e2e8f0"; x.font = F(600, 33);
+    const words = sc.why.split(" "); let line = "", ln = 0;
+    for (let i = 0; i < words.length && ln < 3; i++) {
+      const t = line ? line + " " + words[i] : words[i];
+      if (x.measureText(t).width > W - P - tx) { x.fillText(line, tx, y + 56 + ln * 44); ln++; line = words[i]; }
+      else line = t;
+    }
+    if (ln < 3 && line) x.fillText(line, tx, y + 56 + ln * 44);
+    y += 210;
+  }
+  // metrike
+  const c = route._curves;
+  const cost = route._fuelCost != null ? Math.round(route._fuelCost + (route._tollCost || 0)) + " €" : "-";
+  const stats = [[`${Math.round(route.totalDist / 1000)} km`, "dužina"], [fmtDur(route.totalDur), "trajanje"],
+    [c ? String(c.L + c.R) : "-", "krivina"], [cost, "gorivo + putarine"]];
+  const cw = (W - 2 * P) / 4;
+  stats.forEach(([v, l], i) => {
+    let vs = 42; x.font = F(800, vs);   // vrednost ne sme da pregazi susednu kolonu
+    while (x.measureText(v).width > cw - 26 && vs > 24) { vs -= 2; x.font = F(800, vs); }
+    x.fillStyle = "#f8fafc"; x.fillText(v, P + i * cw, y + 42);
+    x.fillStyle = "#94a3b8"; x.font = F(600, 24); x.fillText(l, P + i * cw, y + 78);
+  });
+  y += 128;
+  const ex = [];   // druga linija: karakter puta (samo ono sto je izracunato)
+  if (c && c.sharp) {
+    const n = c.sharp, m10 = n % 10, m100 = n % 100;   // srpska mnozina: 1 serpentina, 2-4 serpentine, 5+ serpentina
+    ex.push(`${n} serpentin${m10 === 1 && m100 !== 11 ? "a" : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? "e" : "a"}`);
+  }
+  if (route._elevStats) { ex.push(`uspon ${route._elevStats.ascent.toLocaleString("sr-RS")} m`); ex.push(`najviša tačka ${route._elevStats.max.toLocaleString("sr-RS")} m`); }
+  if (ex.length) {
+    x.fillStyle = "#94a3b8"; x.font = F(600, 28);
+    x.fillText(ex.join(" · "), P, y + 28);
+    y += 76;
+  } else y += 22;
+  // zone upozorenja (najgore prvo), max 3; jedina zona je vec ispricana u "zasto" uz ocenu
+  let zones = groupZones(route.assess || []).sort((a, b) => b.level - a.level).slice(0, 3);
+  const hadZones = zones.length > 0;
+  if (zones.length === 1 && sc) zones = [];
+  x.font = F(700, 31);
+  if (!hadZones) {
+    x.fillStyle = "#4ade80"; x.fillText("✓ Suvo i mirno celim putem", P, y + 31);
+    y += 56;
+  } else {
+    for (const z of zones) {
+      x.fillStyle = z.level >= 2 ? "#fca5a5" : "#fcd34d";
+      const kmTxt = z.from.km.toFixed(0) === z.to.km.toFixed(0) ? `km ${z.from.km.toFixed(0)}` : `km ${z.from.km.toFixed(0)}-${z.to.km.toFixed(0)}`;
+      let t = `● ${z.reasons[0]} · ${kmTxt} · ~${fmtTime(z.from.eta)}`;
+      while (x.measureText(t).width > W - 2 * P && t.length > 8) t = t.slice(0, -2);
+      x.fillText(t, P, y + 31);
+      y += 52;
+    }
+  }
+  // futer
+  x.strokeStyle = "rgba(148,163,184,.22)";
+  x.beginPath(); x.moveTo(P, H - 118); x.lineTo(W - P, H - 118); x.stroke();
+  x.fillStyle = "#94a3b8"; x.font = F(600, 26);
+  x.fillText("Vreme po kilometru, u sat prolaska · trošak za tvoj motor", P, H - 66);
+  x.fillStyle = "#f97316"; x.font = F(800, 30);
+  const site = "routemeright.app";
+  x.fillText(site, W - P - x.measureText(site).width, H - 66);
+  return cv;
+}
+function shareToast(msg) {
+  let t = document.getElementById("shareToast");
+  if (!t) {
+    t = document.createElement("div"); t.id = "shareToast";
+    t.style.cssText = "position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));z-index:400;background:#1e293b;color:#f1f5f9;border:1px solid rgba(148,163,184,.3);border-radius:12px;padding:10px 16px;font:700 13px Archivo,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:opacity .3s;max-width:86%;text-align:center";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity = "1";
+  clearTimeout(t._h); t._h = setTimeout(() => { t.style.opacity = "0"; }, 2600);
+}
+async function shareRide() {
+  const route = state.routes && state.routes[state.selected];
+  if (!route) return;
+  const url = shareLink();
+  const gg = state.geocode || {};
+  const sc = rideScore(route);
+  const txt = `${(gg.from && gg.from.name) || "?"} → ${(gg.to && gg.to.name) || "?"} · ${Math.round(route.totalDist / 1000)} km · ${fmtDur(route.totalDur)}` +
+    (sc ? ` · ocena vožnje ${sc.score}/100` : "") + `\n${url}`;
+  try {
+    const blob = await new Promise((res) => buildShareCanvas(route).toBlob(res, "image/png"));
+    const file = blob ? new File([blob], "routemeright-voznja.png", { type: "image/png" }) : null;
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], text: txt });   // nativni share sheet: slika + tekst sa linkom
+      return;
+    }
+    if (navigator.share) { await navigator.share({ title: "RouteMeRight", text: txt }); return; }
+    // desktop / bez Web Share: preuzmi sliku + kopiraj link
+    if (file) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = "routemeright-voznja.png"; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+    let copied = false;
+    try { await navigator.clipboard.writeText(url); copied = true; } catch (e) {}
+    shareToast(copied ? "Slika je preuzeta, link je kopiran." : "Slika je preuzeta.");
+  } catch (e) {
+    if (e && e.name === "AbortError") return;   // korisnik odustao od share sheet-a - nije greska
+    try { await navigator.clipboard.writeText(url); shareToast("Deljenje slike nije uspelo - link je kopiran."); }
+    catch (e2) { shareToast("Deljenje nije uspelo."); }
+  }
+}
 (function(){
   const k = document.getElementById("ctaKreni"), s = document.getElementById("ctaCuvaj");
+  const d = document.getElementById("ctaDeli"), sb = document.getElementById("shareBtn");
+  if (d) d.addEventListener("click", () => shareRide());
+  if (sb) sb.addEventListener("click", () => shareRide());
   if (k) k.addEventListener("click", () => startRide());   // Kreni = prava vožnja: GPS praćenje + preostalo km + ETA
   if (s) s.addEventListener("click", () => {   // Čuvaj = sačuvaj relaciju lokalno
     try {
