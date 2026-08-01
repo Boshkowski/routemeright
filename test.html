@@ -1229,7 +1229,7 @@
 
   <!-- Faza 1a: tab ekrani (za sad stub; pune se u kasnijim fazama) -->
   <div class="tabscreen" id="screen-rute">
-    <div class="rhd"><h2>Rute</h2><div class="sub" id="ruteSub">76 kuriranih balkanskih ruta</div></div>
+    <div class="rhd"><h2>Rute</h2><div class="sub" id="ruteSub">76 probranih balkanskih ruta</div></div>
     <div class="rseg" id="ruteSeg"><button class="on" data-seg="rute">Rute</button><button data-seg="mesta">Mesta</button><button data-seg="kruzna">Kružna tura</button></div>
     <div class="rsrch"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4-4"/></svg><input id="ruteSearch" placeholder="Traži rutu, zemlju, prevoj..." autocomplete="off"></div>
     <div class="rgeo" id="ruteGeo">
@@ -5890,7 +5890,7 @@ function openLayersSheet() {
   function render(){
     const rows = visible();
     document.getElementById("ruteSub").textContent = rows.length === FAMOUS_ROUTES.length
-      ? FAMOUS_ROUTES.length + " kuriranih balkanskih ruta" : rows.length + " od " + FAMOUS_ROUTES.length + " ruta";
+      ? FAMOUS_ROUTES.length + " probranih balkanskih ruta" : rows.length + " od " + FAMOUS_ROUTES.length + " ruta";
     if (!rows.length){
       L.innerHTML = st.diff === "off"
         ? '<div class="rempty"><b>Offroad kolekcija stiže.</b><br>TET i makadam ture su u pripremi - biće poseban paket sa GPX tragovima i weather-at-ETA za blato posle kiše.</div>'
