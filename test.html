@@ -1801,6 +1801,11 @@ function fmtDur(sec) {
   const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
   return h > 0 ? `${h} h ${String(m).padStart(2, "0")} min` : `${m} min`;
 }
+/* srpska mnozina za serpentine: 1 serpentina, 2-4 serpentine, 5+ serpentina (11-14 izuzetak) */
+function plSerp(n) {
+  const m10 = n % 10, m100 = n % 100;
+  return "serpentin" + (m10 === 1 && m100 !== 11 ? "a" : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? "e" : "a");
+}
 function setStatus(msg, isErr) {
   const el = $("status");
   el.textContent = msg;
@@ -4317,6 +4322,7 @@ const CHANGELOG = [
     "<b>Pretraga i u Mestima</b>: isto polje sad traži kafane, vidikovce i okupljališta po imenu i mestu.",
     "<b>Nivo goriva na polasku</b> (pun / pola / rezerva) u kartici Gorivo - točenje se planira od stvarnog stanja, ne pretpostavke da si pun. Sa rezervom dobiješ pumpu i na kratkoj ruti.",
     "<b>Za aplikaciju na telefonu</b>: isključeno iOS \"protresi za poništavanje\" koje je zbog vibracija motora izbacivalo Undo Paste usred vožnje - važi od sledeće instalacije.",
+    "<b>Sitne ispravke</b>: tap na pilulu rute sad otvara polu-sheet sa rezultatima (ne stari pun formular), i množina \"6 serpentina\" umesto \"6 serpentine\".",
   ] },
   { v: "0.9.2", d: "31.07.2026.", stavke: [
     "<b>Ocena vožnje 0-100</b> u kartici rezultata, izvedena iz prognoze po tačkama rute. Uz broj uvek stoji i zašto - ocena bez objašnjenja se ne prikazuje.",
@@ -5493,7 +5499,7 @@ function renderResultHero(route) {
   const c = route._curves;
   document.getElementById("rhDifV").textContent = route._hard ? (route._hard[0].toUpperCase() + route._hard.slice(1)) : "…";
   document.getElementById("rhDifS").textContent = c
-    ? `${c.L + c.R} krivina · ${c.sharp} serpentina${route._elevStats ? " · uspon " + route._elevStats.ascent + " m" : ""} · ${c.klasa}`
+    ? `${c.L + c.R} krivina · ${c.sharp} ${plSerp(c.sharp)}${route._elevStats ? " · uspon " + route._elevStats.ascent + " m" : ""} · ${c.klasa}`
     : "";
   // metrike
   document.getElementById("rhKm").innerHTML = Math.round(route.totalDist / 1000) + "<small>km</small>";
@@ -5517,7 +5523,7 @@ function renderResultHero(route) {
   // krivine
   if (c) {
     document.getElementById("rhCurvN").innerHTML = (c.L + c.R) + " <small>krivina · otvoren put</small>";
-    document.getElementById("rhSharp").innerHTML = c.sharp ? c.sharp + (c.sharp === 1 ? " serpentina" : " serpentine") + "<span>ukosnice, van naselja</span>" : "";
+    document.getElementById("rhSharp").innerHTML = c.sharp ? c.sharp + " " + plSerp(c.sharp) + "<span>ukosnice, van naselja</span>" : "";
     document.getElementById("rhL").textContent = c.L;
     document.getElementById("rhR").textContent = c.R;
     const tot = Math.max(1, c.mild + c.med + c.sharp);
@@ -5607,10 +5613,7 @@ function buildShareCanvas(route) {
   });
   y += 128;
   const ex = [];   // druga linija: karakter puta (samo ono sto je izracunato)
-  if (c && c.sharp) {
-    const n = c.sharp, m10 = n % 10, m100 = n % 100;   // srpska mnozina: 1 serpentina, 2-4 serpentine, 5+ serpentina
-    ex.push(`${n} serpentin${m10 === 1 && m100 !== 11 ? "a" : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? "e" : "a"}`);
-  }
+  if (c && c.sharp) ex.push(`${c.sharp} ${plSerp(c.sharp)}`);
   if (route._elevStats) { ex.push(`uspon ${route._elevStats.ascent.toLocaleString("sr-RS")} m`); ex.push(`najviša tačka ${route._elevStats.max.toLocaleString("sr-RS")} m`); }
   if (ex.length) {
     x.fillStyle = "#94a3b8"; x.font = F(600, 28);
@@ -5816,6 +5819,8 @@ function renderMesta(ftype) {
       const t = document.getElementById("to"); if (t) t.value = "";
       return;
     }
+    // na mobilnom pilula vraca na polu-sheet sa rezultatima (qplan), ne na stari pun formular
+    if (matchMedia("(max-width:900px)").matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e2) {} }
     document.body.classList.add("planning");
     try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e2) {}
   });
