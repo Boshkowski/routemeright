@@ -3847,6 +3847,100 @@ function hazardMarker(h) {
   };
 }
 function loadHazards() { getHazards().forEach(hazardMarker); }
+
+/* ---------------- zajednicke prijave (Supabase, Faza 1) ----------------
+   Anon/publishable kljuc je JAVNI po dizajnu - sta se sme radi u bazi cuvaju
+   pravila pristupa (RLS), ne tajnost kljuca: citaju se samo neistekle prijave,
+   ubacivanje ide kroz trigger (rok po tipu + anti-spam 1/min i 20/dan po uredjaju),
+   menjanje iskljucivo kroz glasaj() funkciju. Sema: docs/supabase-prijave.sql */
+const SUPA_URL = "https://sankrmswthypvwevzdwz.supabase.co";
+const SUPA_KEY = "sb_publishable_RTYwIJ1CuNB9xCSoMAyWtA_Y89-QXiI";
+async function supa(path, opts = {}) {
+  const r = await fetch(SUPA_URL + "/rest/v1/" + path, { ...opts,
+    headers: { apikey: SUPA_KEY, Authorization: "Bearer " + SUPA_KEY,
+      "Content-Type": "application/json", ...(opts.headers || {}) } });
+  if (!r.ok) { let t = ""; try { t = (await r.json()).message || ""; } catch (e) {} throw new Error(t || ("HTTP " + r.status)); }
+  const ct = r.headers.get("content-type") || "";
+  return ct.includes("json") ? r.json() : null;
+}
+function deviceId() {
+  let d = null; try { d = localStorage.getItem("rmr2_device"); } catch (e) {}
+  if (!d) { d = "d" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    try { localStorage.setItem("rmr2_device", d); } catch (e) {} }
+  return d;
+}
+/* slanje sa redom za cekanje: bez mreze prijava ne propada nego saceka */
+function prijaveQueue() { try { return JSON.parse(localStorage.getItem("rmr2_prijave_out") || "[]"); } catch (e) { return []; } }
+async function posaljiPrijavu(h) {
+  const row = { tip: h.type, lat: h.v[1], lon: h.v[0], device_id: deviceId() };
+  try {
+    await supa("prijave", { method: "POST", body: JSON.stringify(row) });
+    shareToast("Prijava poslata - vide je i drugi vozači.");
+  } catch (e) {
+    const msg = String(e.message || e);
+    if (/Polako|limit/i.test(msg)) { shareToast(msg); return; }   // namerno odbijena (anti-spam) - ne cuvamo je
+    try { localStorage.setItem("rmr2_prijave_out", JSON.stringify([...prijaveQueue(), row].slice(-10))); } catch (er) {}
+    shareToast("Nema mreže - prijava će otići čim je bude.");
+  }
+}
+async function flushPrijave() {
+  const q = prijaveQueue();
+  if (!q.length) return;
+  const ostaju = [];
+  for (const row of q) {
+    try { await supa("prijave", { method: "POST", body: JSON.stringify(row) }); }
+    catch (e) { if (!/Polako|limit/i.test(String(e.message || e))) ostaju.push(row); }
+  }
+  try { localStorage.setItem("rmr2_prijave_out", JSON.stringify(ostaju)); } catch (e) {}
+}
+function prijavaStarost(ts) {
+  const min = Math.max(0, Math.round((Date.now() - new Date(ts).getTime()) / 60000));
+  return min < 1 ? "upravo prijavljeno" : min < 60 ? "pre " + min + " min" : "pre " + Math.round(min / 60) + " h";
+}
+/* tudje prijave duz rute: bbox upit pa filter na ~1,5 km od linije */
+async function loadPrijave(route, force) {
+  if (!route || !route.coords || !map) return;
+  const now = Date.now();
+  if (!force && state._prijaveTs && now - state._prijaveTs < 60000 && state._prijaveRoute === route) return;
+  state._prijaveTs = now; state._prijaveRoute = route;
+  let miLa = 90, maLa = -90, miLo = 180, maLo = -180;
+  for (const c of route.coords) {
+    if (c[1] < miLa) miLa = c[1]; if (c[1] > maLa) maLa = c[1];
+    if (c[0] < miLo) miLo = c[0]; if (c[0] > maLo) maLo = c[0];
+  }
+  const pad = 0.03;
+  let rows = [];
+  try {
+    rows = await supa(`prijave?select=id,tip,lat,lon,created_at,istice_at,potvrde,negacije` +
+      `&lat=gte.${(miLa - pad).toFixed(4)}&lat=lte.${(maLa + pad).toFixed(4)}` +
+      `&lon=gte.${(miLo - pad).toFixed(4)}&lon=lte.${(maLo + pad).toFixed(4)}&limit=200`);
+  } catch (e) { return; }   // bez mreze - tiho, bez prijava
+  const blizu = [];
+  const step = Math.max(1, Math.floor(route.coords.length / 500));
+  for (const p of rows || []) {
+    let bd = 1e9;
+    for (let i = 0; i < route.coords.length; i += step) {
+      const c = route.coords[i];
+      const d = haversine(p.lat, p.lon, c[1], c[0]);
+      if (d < bd) bd = d;
+    }
+    if (bd <= 1.5) blizu.push({ id: p.id, type: p.tip === "kamera_mobilna" ? "kamera" : p.tip, v: [p.lon, p.lat], ts: p.created_at, srv: true });
+  }
+  state.prijave = blizu;
+  try {   // markeri: obrisi stare pa nacrtaj svezе (poseban registar, clearMap ih ne zna)
+    for (const m of state.prijaveMarkers || []) m.remove();
+    state.prijaveMarkers = [];
+    for (const p of blizu) {
+      const d = markerBadge(HZ2ICON[p.type] || "warning", "danger");
+      d.title = `${p.type} · ${prijavaStarost(p.ts)} · prijava zajednice`;
+      const m = new maplibregl.Marker({ element: d }).setLngLat(p.v).addTo(map);
+      if (!state.layerVis.hazard) d.style.display = "none";
+      state.prijaveMarkers.push(m);
+    }
+  } catch (e) {}
+  try { if (document.body.classList.contains("riding") && RIDE.route === route) buildAhead(route); } catch (e) {}
+}
+try { setTimeout(flushPrijave, 4000); } catch (e) {}   // zaostale prijave iz reda posalji po ucitavanju
 /* R7: "Jos opcija" = mali sheet (kruzna, stanica, motor) - stari formular vise ne postoji na mobilnom */
 let _optsAnchors = null;
 function openOptsSheet() {
@@ -3970,6 +4064,7 @@ function hazardPopup(e, btn) {
       saveHazards([...getHazards(), h]);
       hazardMarker(h);
       closeAll();
+      try { flushPrijave().finally(() => posaljiPrijavu(h)); } catch (er) {}   // ide i u zajednicku bazu (Faza 1)
     };
     grid.appendChild(b);
   }
@@ -4109,6 +4204,7 @@ async function selectRoute(departure) {
   renderWhen(route, departure);
   renderGear(assess);
   drawRoute(route, assess);
+  try { loadPrijave(route); } catch (e) {}   // prijave zajednice duz rute (tiho, u pozadini)
   $("planBtn").disabled = false; setStatus("");   // RUTA je gotova - dugme se otkljucava; pumpe/kafane stizu u pozadini
   let zones = [];   // sporedni koraci NE SMEJU da obore plan (Overpass/mreza umeju da zakazu)
   try { zones = await renderWarnings(assess) || []; } catch (e) { logState({ phase: "warn-fail", msg: String(e).slice(0, 120) }); }
@@ -4434,8 +4530,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.4";
+const APP_VERSION = "0.9.5";
 const CHANGELOG = [
+  { v: "0.9.5", d: "03.08.2026.", stavke: [
+    "<b>Prijave vide svi</b>: policija, udes, radovi i ostalo sad idu u zajedničku bazu - kad jedan vozač prijavi, drugi na toj deonici dobiju marker na mapi i glasovnu najavu \"Pažnja, policija ispred\" u vožnji. Prijave se osvežavaju na 45 s tokom vožnje i same ističu (policija 45 min, udes 90).",
+    "<b>Bez mreže prijava ne propada</b> - sačeka i ode čim signala bude. Zaštita od spama: jedna prijava u minutu, 20 dnevno po uređaju.",
+  ] },
   { v: "0.9.4", d: "03.08.2026.", stavke: [
     "<b>Uvoz GPX rute</b>: dugme \"Uvezi GPX\" u ekranu Rute. Tvoj fajl (Garmin, Kurviger, forum...) se zalepi na puteve i dobije SVE: prognozu po satu prolaska, ocenu vožnje, trošak, težinu i navigaciju sa skretanjima. Ako trag nije na mapiranim putevima, pošteno piše da je vreme procena i vodi te bez uputstava skretanja.",
   ] },
@@ -5175,7 +5275,8 @@ function navProject(route, lo, la) {   // najbliza tacka rute: grubi sken pa fin
 function buildAhead(route) {   // najave ispred: kamere sa rute + lokalne prijave (km preko najblize tacke NOVE geometrije)
   try {
     RIDE.ahead = (route._cams || []).map((c) => ({ km: c.km, txt: rIco("camera", 15) + " Kamera", say: "Kamera ispred" }));
-    for (const h of (typeof getHazards === "function" ? getHazards() : [])) {
+    const lokalne = (typeof getHazards === "function" ? getHazards() : []);
+    for (const h of [...lokalne, ...(state.prijave || [])]) {
       let bi = -1, bd = 1e9;
       for (let i = 0; i < route.coords.length; i += 4) {
         const c = route.coords[i];
@@ -5300,6 +5401,11 @@ function startRide() {
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
   loadSpeedLimits(route);   // u pozadini: dok stigne, roundel je prazan umesto da lazе
+  try {   // svezе prijave zajednice na start + osvezavanje na 45 s tokom voznje
+    loadPrijave(route, true);
+    clearInterval(RIDE.prijInt);
+    RIDE.prijInt = setInterval(() => { try { loadPrijave(RIDE.route || route, true); } catch (e2) {} }, 45000);
+  } catch (e) {}
   buildAhead(route);   // R13: izdvojeno - i reroute mora da rebuild-uje najave na novoj geometriji
   RIDE.announced = new Set(); RIDE.aheadHideAt = 0;
   if (!RIDE._freeReg) {   // registracija OVDE - na load-u je map jos null (tihi catch je gutao dragstart!)
@@ -5466,6 +5572,7 @@ function startRide() {
 }
 function stopRide() {
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
+  try { clearInterval(RIDE.prijInt); RIDE.prijInt = null; } catch (e) {}
   try { map.setPadding({ top: 0, bottom: 0, left: 0, right: 0 }); } catch (e) {}   // vrati kameru na centriranje van voznje
   try { if (RIDE.marker) { RIDE.marker.remove(); RIDE.marker = null; } } catch (e) {}
   try { document.getElementById("rideRoad").classList.remove("on"); altClose(); } catch (e) {}
@@ -5950,6 +6057,7 @@ function renderMesta(ftype) {
       e.stopPropagation();
       try { clearMap(); } catch (er) {}
       try { for (const em of state.editorialMarkers || []) em.m.remove(); state.editorialMarkers = []; } catch (er) {}
+      try { for (const m of state.prijaveMarkers || []) m.remove(); state.prijaveMarkers = []; state.prijave = []; } catch (er) {}
       state.routes = []; state.searchTo = null;
       document.body.classList.remove("hasroute", "planning");
       document.getElementById("results").classList.add("hidden");
