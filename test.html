@@ -140,6 +140,11 @@
   #whenWin .wwrow { display: flex; align-items: center; gap: 9px; margin: 2px 0; }
   #whenWin .wwrow span { flex: none; width: 20px; font-size: 11px; color: var(--c-muted-fg); font-weight: 700; }
   #whenWin input[type=range] { flex: 1; accent-color: var(--c-primary); height: 26px; margin: 0; }
+  .fuellvl { display: flex; align-items: center; gap: 7px; margin: 2px 0 10px; flex-wrap: wrap; }
+  .fuellvl span { font-size: 12px; font-weight: 700; color: var(--c-muted-fg); }
+  .fuellvl button { background: var(--c-card); border: 1px solid var(--c-border-strong); border-radius: 999px;
+    color: var(--c-fg); font: 800 12px Archivo, sans-serif; padding: 7px 13px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .fuellvl button.on { border-color: var(--c-primary); background: rgba(249,115,22,.12); color: var(--c-primary); }
   .summary-line { font-size: 13.5px; color: #cbd5e1; line-height: 1.55; font-variant-numeric: tabular-nums; }
 
   .routes-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -1109,8 +1114,11 @@
 
       <div class="card" id="card-fuel">
         <h3>Gorivo</h3>
+        <div class="fuellvl" id="fuelLvl"><span>U rezervoaru:</span>
+          <button type="button" data-lv="1">Pun</button><button type="button" data-lv="0.5">Pola</button><button type="button" data-lv="0.15">Rezerva</button>
+        </div>
         <ul class="plain" id="fuelList"></ul>
-        <div class="note">Račun: pun rezervoar na polasku, točenje na ~75% dometa. Prosečna fabrička potrošnja - realna zavisi od stila vožnje.</div>
+        <div class="note">Račun kreće od nivoa goriva koji izabereš (ne pretpostavlja pun rezervoar), točenje na ~75% dometa. Prosečna fabrička potrošnja - realna zavisi od stila vožnje.</div>
       </div>
 
       <div class="card" id="card-food">
@@ -1754,7 +1762,7 @@ function markerBadge(key, variant) {   // R13: map marker - ikonica u zaobljenom
   return el;
 }
 const EMOJI2ICON = { "⛽": "fuel", "🍽": "food", "⛺": "camp", "📷": "camera", "☕": "tavern", "🚧": "roadworks", "🍖": "tavern", "🌄": "viewpoint", "🏍": "meetup" };
-const HZ2ICON = { "šljunak": "gravel", "ulje": "oil", "radovi": "roadworks", "rupa": "pothole", "divljač": "wildlife", "udes": "crash" };
+const HZ2ICON = { "policija": "police", "šljunak": "gravel", "ulje": "oil", "radovi": "roadworks", "rupa": "pothole", "divljač": "wildlife", "udes": "crash" };
 function _seqGuard(mySeq, route) {   // R13v2: true = render pripada staroj generaciji (mySeq = planSeq uhvacen na ULASKU u render)
   return mySeq !== state.planSeq || (route && state.routes && route !== state.routes[state.selected]);
 }
@@ -3227,16 +3235,26 @@ async function renderFuel(route, assess, departure) {
   const rangeKm = (tank / cons) * 100;
   const stopEvery = rangeKm * 0.75;
   const totalKm = route.totalDist / 1000;
-  if (totalKm <= stopEvery) {
-    ul.innerHTML = `<li>Nema potrebe za točenjem - domet ~${rangeKm.toFixed(0)} km, ruta ${totalKm.toFixed(0)} km. ` +
-      `Kreni sa punim rezervoarom.</li>`;
+  // nivo goriva na polasku (Boskova voznja 1.8.: krenuo skoro prazan, app cutao o pumpama)
+  let lvl = 1; try { lvl = parseFloat(localStorage.getItem("rmr2_fuellvl") || "1") || 1; } catch (e) {}
+  try { document.querySelectorAll("#fuelLvl button").forEach((b) => b.classList.toggle("on", parseFloat(b.dataset.lv) === lvl)); } catch (e) {}
+  const usable = rangeKm * lvl;
+  // prvo tocenje: sa punim na 75% dometa; sa manje goriva ranije (60% raspolozivog) i
+  // obavezno ako do cilja ostaje manje od 15 km rezerve
+  const firstStop = lvl >= 0.99 ? stopEvery : Math.max(8, usable * 0.6);
+  if (totalKm <= firstStop && usable - totalKm >= 15) {
+    ul.innerHTML = lvl >= 0.99
+      ? `<li>Nema potrebe za točenjem - domet ~${rangeKm.toFixed(0)} km, ruta ${totalKm.toFixed(0)} km. Kreni sa punim rezervoarom.</li>`
+      : `<li>Sa ${lvl === 0.5 ? "pola rezervoara" : "rezervom"} stižeš (~${usable.toFixed(0)} km dometa, ruta ${totalKm.toFixed(0)} km) - ali natoči kad naiđeš na pumpu.</li>`;
     return;
   }
   const targets = [];
-  for (let km = stopEvery; km < totalKm - 15; km += stopEvery) {
+  const addT = (km) => {
     const c = coordAtKm(route, km);
     targets.push({ km, lat: c.lat, lon: c.lon, eta: new Date(departure.getTime() + c.durSec * 1000) });
-  }
+  };
+  for (let km = firstStop; km < totalKm - 15 && targets.length < 8; km += stopEvery) addT(km);
+  if (!targets.length) addT(Math.max(4, Math.min(firstStop, totalKm * 0.5)));   // kratka ruta a malo goriva: bar jedno tocenje na pola puta
   const pois = await poisNear(targets, `[amenity=fuel]`, 12000, 80);
   if (_seqGuard(_mySeq, route)) return;
   if (pois === null) {
@@ -3258,6 +3276,19 @@ async function renderFuel(route, assess, departure) {
     ul.appendChild(li);
   });
 }
+(function(){   // izbor nivoa goriva: pamti se i odmah preracuna tocenja
+  const fl = document.getElementById("fuelLvl");
+  if (!fl) return;
+  let lvl = "1"; try { lvl = localStorage.getItem("rmr2_fuellvl") || "1"; } catch (e) {}
+  fl.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.lv === lvl));
+  fl.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    try { localStorage.setItem("rmr2_fuellvl", b.dataset.lv); } catch (er) {}
+    fl.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+    const r = state.routes && state.routes[state.selected];
+    if (r) { try { renderFuel(r, r.assess, new Date($("depart").value)); } catch (er) {} }
+  });
+})();
 async function renderFood(route, assess, departure) {
   const _mySeq = state.planSeq;
   const ul = $("foodList"); ul.innerHTML = "";
@@ -3673,7 +3704,7 @@ function renderViaChips() {
 }
 
 /* ---------------- prijave opasnosti (lokalno, do servera) ---------------- */
-const HAZARD_TYPES = ["šljunak", "ulje", "radovi", "rupa", "divljač", "udes"];
+const HAZARD_TYPES = ["policija", "šljunak", "ulje", "radovi", "rupa", "divljač", "udes"];   // policija prva - najkoriscenija prijava (Waze navika)
 function getHazards() { try { return JSON.parse(localStorage.getItem("mr_hazards") || "[]"); } catch { return []; } }
 function saveHazards(h) { localStorage.setItem("mr_hazards", JSON.stringify(h)); }
 function hazardMarker(h) {
@@ -4278,8 +4309,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.2";
+const APP_VERSION = "0.9.3";
 const CHANGELOG = [
+  { v: "0.9.3", d: "03.08.2026.", stavke: [
+    "<b>Vozač u donjoj trećini ekrana</b> u navigaciji, kao Google/Waze - napred se vidi duplo više puta i skretanja.",
+    "<b>Prijava policije</b> u \"Šta si video na putu?\" - prva u listi; glasovna najava \"policija ispred\" radi kao i za ostale prijave.",
+    "<b>Pretraga i u Mestima</b>: isto polje sad traži kafane, vidikovce i okupljališta po imenu i mestu.",
+    "<b>Nivo goriva na polasku</b> (pun / pola / rezerva) u kartici Gorivo - točenje se planira od stvarnog stanja, ne pretpostavke da si pun. Sa rezervom dobiješ pumpu i na kratkoj ruti.",
+    "<b>Za aplikaciju na telefonu</b>: isključeno iOS \"protresi za poništavanje\" koje je zbog vibracija motora izbacivalo Undo Paste usred vožnje - važi od sledeće instalacije.",
+  ] },
   { v: "0.9.2", d: "31.07.2026.", stavke: [
     "<b>Ocena vožnje 0-100</b> u kartici rezultata, izvedena iz prognoze po tačkama rute. Uz broj uvek stoji i zašto - ocena bez objašnjenja se ne prikazuje.",
     "<b>Klizanje kroz tačke rute</b> u kartici vremena: strelicama napred-nazad (\"3 od 8\") vidiš sat, temperaturu i uslove na svakoj tački, a tačka se označi i na traci.",
@@ -5141,6 +5179,10 @@ function startRide() {
   }
   const gfab = document.querySelector('[data-fab="gps"]'); if (gfab) gfab.classList.remove("recenter");
   try { map.setTerrain(null); } catch (e) {}   // teren OFF u navigaciji (sece pitch/zoom na strminama - lekcija iz 3D demoa)
+  try {   // kao Google/Waze: vozac u DONJOJ TRECINI ekrana, napred se vidi vise puta (Boskova voznja 1.8.)
+    const H = (map.getContainer() && map.getContainer().clientHeight) || window.innerHeight || 800;
+    map.setPadding({ top: Math.round(H * 0.36), bottom: 0, left: 0, right: 0 });
+  } catch (e) {}
   // reset banera (druga voznja ne sme da krene sa tekstom prosle) + "trazim GPS" stanje
   const _nc = document.querySelector("#rideBar .navcard");
   if (_nc) { _nc.classList.remove("nosignal", "rerouting"); _nc.classList.add("acquiring"); }
@@ -5295,6 +5337,7 @@ function startRide() {
 }
 function stopRide() {
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
+  try { map.setPadding({ top: 0, bottom: 0, left: 0, right: 0 }); } catch (e) {}   // vrati kameru na centriranje van voznje
   try { if (RIDE.marker) { RIDE.marker.remove(); RIDE.marker = null; } } catch (e) {}
   try { document.getElementById("rideRoad").classList.remove("on"); altClose(); } catch (e) {}
   try { if (map && map.getSource("terr") && !map.getTerrain()) map.setTerrain({ source: "terr", exaggeration: 1.2 }); } catch (e) {}
@@ -5696,9 +5739,20 @@ function renderMesta(ftype) {
   if (!L) return;
   let items = (state.editorial || []).filter((e) => e.type !== "ruta" && e.type !== "upozorenje" && e.lat != null);
   if (ftype) items = items.filter((e) => e.type === ftype);
+  const _rs = document.getElementById("ruteSearch");
+  const q = _rs ? _rs.value.trim() : "";
+  if (q) {
+    const fold = (t) => (t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const fq = fold(q);
+    items = items.filter((e) => fold(e.name + " " + (e.where || "") + " " + e.type).includes(fq));
+  }
   const g = state.gpsFrom;
   if (g) items = items.map((e) => ({ ...e, _d: haversine(g.lat, g.lon, e.lat, e.lon) })).sort((a, b) => a._d - b._d);
-  if (!items.length) { L.innerHTML = '<div class="rempty">Mesta zajednice se učitavaju…</div>'; return; }
+  if (!items.length) {
+    L.innerHTML = q ? '<div class="rempty">Nema mesta za ovu pretragu.<br><b>Probaj kraći pojam.</b></div>'
+      : '<div class="rempty">Mesta zajednice se učitavaju…</div>';
+    return;
+  }
   L.innerHTML = items.slice(0, 60).map((e, i) =>
     `<div class="mc"><div class="ic">${rIco(MESTA_ICO[e.type] || "route", 22)}</div>
       <div class="in"><div class="nm">${esc(e.name)}</div><div class="wh">${esc((e.where || "").slice(0, 70))}</div>
@@ -5714,7 +5768,10 @@ function renderMesta(ftype) {
     const b = e.target.closest("button"); if (!b) return;
     seg.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
     const which = b.dataset.seg;
-    ruteParts.forEach((id) => { const el = document.getElementById(id); if (el) (el.closest(".rsrch") || el).style.display = which === "rute" ? "" : "none"; });
+    // pretraga vazi i za Mesta (Boskova voznja 1.8.: "trebalo bi da moze search"), krije se samo za Kruznu
+    ruteParts.forEach((id) => { const el = document.getElementById(id); if (el) (el.closest(".rsrch") || el).style.display = (which === "rute" || (id === "ruteSearch" && which === "mesta")) ? "" : "none"; });
+    const rs = document.getElementById("ruteSearch");
+    if (rs) rs.placeholder = which === "mesta" ? "Traži mesto, kafanu, vidikovac..." : "Traži rutu, zemlju, prevoj...";
     document.getElementById("mestaPanel").style.display = which === "mesta" ? "" : "none";
     document.getElementById("kruznaPanel").style.display = which === "kruzna" ? "" : "none";
     if (which === "mesta") {
@@ -5933,7 +5990,9 @@ function openLayersSheet() {
     document.querySelectorAll("#ruteDiff .dchip").forEach(x=>x.classList.toggle("on", x===t));
     render();
   });
-  document.getElementById("ruteSearch").addEventListener("input",(e)=>{ st.q = e.target.value; render(); });
+  document.getElementById("ruteSearch").addEventListener("input",(e)=>{ st.q = e.target.value;
+    const mp = document.getElementById("mestaPanel");   // isto polje pretrazuje i Mesta kad je taj tab aktivan
+    if (mp && mp.style.display !== "none") { try { renderMesta(); } catch (er) {} } else render(); });
   /* Blizu tebe: GPS -> sortiranje po udaljenosti + najbliži grad u labeli */
   const geoCard = document.getElementById("ruteGeo");
   function geoOk(pos){
