@@ -832,7 +832,11 @@
   /* ===== app2 Faza 2: RUTE ekran (kao rute2 maketa: blizu tebe + težina) ===== */
   @media (max-width: 900px) {
     #screen-rute { padding: 0; }
-    #screen-rute .rhd { padding: calc(14px + env(safe-area-inset-top)) 16px 6px; }
+    #screen-rute .rhd { padding: calc(14px + env(safe-area-inset-top)) 16px 6px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    #screen-rute .rhd #gpxBtn { flex: none; display: flex; align-items: center; gap: 6px; background: #1e293b;
+      border: 1px solid rgba(148,163,184,.25); border-radius: 999px; color: #e2e8f0; font: 800 12.5px Archivo, sans-serif;
+      padding: 9px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    #screen-rute .rhd #gpxBtn svg { width: 15px; height: 15px; stroke: #f97316; fill: none; }
     #screen-rute .rhd h2 { font-size: 23px; font-weight: 900; color: #fff; letter-spacing: -.01em; }
     #screen-rute .rseg { display: flex; gap: 8px; margin: 10px 16px 0; }
     #screen-rute .rseg button { flex: 1; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 12px; padding: 9px 6px; font-size: 13px; font-weight: 800; color: #e2e8f0; cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; }
@@ -1237,7 +1241,10 @@
 
   <!-- Faza 1a: tab ekrani (za sad stub; pune se u kasnijim fazama) -->
   <div class="tabscreen" id="screen-rute">
-    <div class="rhd"><h2>Rute</h2><div class="sub" id="ruteSub">76 probranih balkanskih ruta</div></div>
+    <div class="rhd"><div><h2>Rute</h2><div class="sub" id="ruteSub">76 probranih balkanskih ruta</div></div>
+      <button id="gpxBtn" type="button" aria-label="Uvezi GPX rutu"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Uvezi GPX</button>
+    </div>
+    <input type="file" id="gpxFile" accept=".gpx,application/gpx+xml,application/octet-stream" style="display:none">
     <div class="rseg" id="ruteSeg"><button class="on" data-seg="rute">Rute</button><button data-seg="mesta">Mesta</button><button data-seg="kruzna">Kružna tura</button></div>
     <div class="rsrch"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4-4"/></svg><input id="ruteSearch" placeholder="Traži rutu, zemlju, prevoj..." autocomplete="off"></div>
     <div class="rgeo" id="ruteGeo">
@@ -1953,6 +1960,118 @@ async function fetchRoutesOSRM(from, to) {
     return { coords, cumDist, cumDur, totalDist: rt.distance, totalDur: rt.duration, label: `Ruta ${idx + 1}`,
       tollKm: null, roughKm: 0, roughAt: [], hasFerry: false, tollSegs: [] };
   });
+}
+
+/* ---------------- GPX uvoz: vozacev fajl -> nas ceo cevovod ----------------
+   Pravno cisto bas zato sto je NJEGOV fajl. Trag se zalepi na puteve kroz
+   Valhalla /trace_route (isti trip format kao /route -> tripToRoute radi,
+   dobijamo i manevre za navigaciju). Ako lepljenje ne uspe (staza van puteva),
+   posten fallback: sirova linija + procena vremena, bez izmisljanja. */
+function parseGpx(text) {
+  const doc = new DOMParser().parseFromString(text, "application/xml");
+  if (doc.querySelector("parsererror")) throw new Error("Ovo ne liči na ispravan GPX fajl.");
+  const nameEl = doc.querySelector("trk > name") || doc.querySelector("metadata > name") || doc.querySelector("rte > name");
+  let pts = [...doc.querySelectorAll("trkpt")];
+  if (!pts.length) pts = [...doc.querySelectorAll("rtept")];
+  if (!pts.length) pts = [...doc.querySelectorAll("wpt")];
+  const coords = pts.map((p) => [+p.getAttribute("lon"), +p.getAttribute("lat")])
+    .filter((c) => isFinite(c[0]) && isFinite(c[1]) && Math.abs(c[1]) <= 90 && Math.abs(c[0]) <= 180);
+  if (coords.length < 2) throw new Error("U GPX fajlu nema traga (trk/rte/wpt) sa bar 2 tačke.");
+  return { name: ((nameEl && nameEl.textContent) || "").trim(), coords };
+}
+function resampleCoords(coords, maxN) {
+  if (coords.length <= maxN) return coords;
+  const cum = [0];
+  for (let i = 1; i < coords.length; i++)
+    cum.push(cum[i - 1] + haversine(coords[i - 1][1], coords[i - 1][0], coords[i][1], coords[i][0]));
+  const total = cum[cum.length - 1], out = [coords[0]];
+  let next = total / (maxN - 1);
+  for (let i = 1; i < coords.length - 1; i++)
+    if (cum[i] >= next) { out.push(coords[i]); next += total / (maxN - 1); }
+  out.push(coords[coords.length - 1]);
+  return out;
+}
+async function traceGpxRoute(coords, label) {
+  const pts = resampleCoords(coords, 900);
+  const shape = pts.map((c) => ({ lat: +c[1].toFixed(6), lon: +c[0].toFixed(6) }));
+  const j = await fetchJSON("https://valhalla1.openstreetmap.de/trace_route", {
+    method: "POST", timeoutMs: 20000, retries: 0,
+    body: JSON.stringify({ shape, costing: "motorcycle", shape_match: "map_snap",
+      // bez exclude_unpaved: ako je covek namerno ucrtao makadam, postujemo njegov trag
+      units: "kilometers" }),
+  });
+  if (!j.trip || !j.trip.legs || !j.trip.legs.length) throw new Error("trace prazan");
+  return tripToRoute(j.trip, label);
+}
+function rawGpxRoute(coords, label) {
+  const pts = resampleCoords(coords, 3000);
+  const cumDist = [0], cumDur = [0];
+  const V = 50 / 3.6;   // procena 50 km/h kad trag nije na putevima - jasno pise u napomeni
+  for (let i = 0; i < pts.length - 1; i++) {
+    const d = haversine(pts[i][1], pts[i][0], pts[i + 1][1], pts[i + 1][0]) * 1000;
+    cumDist.push(cumDist[i] + d); cumDur.push(cumDur[i] + d / V);
+  }
+  return { coords: pts, cumDist, cumDur, totalDist: cumDist[cumDist.length - 1], totalDur: cumDur[cumDur.length - 1],
+    label, tollKm: null, roughKm: 0, roughAt: [], hasFerry: false, tollSegs: [], maneuvers: [], gpxRaw: true };
+}
+async function importGpx(file) {
+  const _pseq = ++state.planSeq;
+  try {
+    shareToast("Čitam GPX fajl…");
+    const text = await file.text();
+    const g = parseGpx(text);
+    const gpxName = g.name || (file.name || "GPX ruta").replace(/\.gpx$/i, "");
+    shareToast("Lepim trag na puteve…");
+    let route;
+    try { route = await traceGpxRoute(g.coords, "GPX · " + gpxName); }
+    catch (e) { route = rawGpxRoute(g.coords, "GPX · " + gpxName); }
+    if (_pseq !== state.planSeq) return;
+    // polazak: "sada" u qplan rezimu, inace vrednost iz polja
+    try {
+      const qmEl = document.getElementById("qMode");
+      if (qmEl && qmEl.value === "now") {
+        const dnow = new Date(Date.now() + 3 * 60000), p2 = (n) => String(n).padStart(2, "0");
+        $("depart").value = `${dnow.getFullYear()}-${p2(dnow.getMonth() + 1)}-${p2(dnow.getDate())}T${p2(dnow.getHours())}:${p2(dnow.getMinutes())}`;
+      }
+    } catch (e) {}
+    let departure = $("depart").value ? new Date($("depart").value) : new Date();
+    if (departure < new Date()) departure = new Date();
+    state.arriveTarget = null;
+    // imena za naslov: reverse geocode pocetka i kraja, uz posten fallback
+    const c0 = route.coords[0], c1 = route.coords[route.coords.length - 1];
+    let fromName = "", toName = "";
+    try { [fromName, toName] = await Promise.all([reverseName(c0[1], c0[0], 10), reverseName(c1[1], c1[0], 10)]); } catch (e) {}
+    state.geocode = { from: { lat: c0[1], lon: c0[0], name: fromName || "Start" },
+                      to: { lat: c1[1], lon: c1[0], name: toName || (gpxName || "Cilj") } };
+    if (_pseq !== state.planSeq) return;
+    // dalje IDENTICNO repu plan()-a: uzorci -> prognoza -> ocena -> prikaz
+    state.routes = [route];
+    state.routes.forEach(buildSamples);
+    shareToast("Proveravam prognozu po satu prolaska…");
+    const _wx = await Promise.allSettled(state.routes.map((r) => fetchWeather(r, departure)));
+    if (_pseq !== state.planSeq) return;
+    state.routes.forEach((r, i) => {
+      r.wxFail = _wx[i].status === "rejected";
+      if (r.wxFail) r.weather = null;
+    });
+    state.routes.forEach((r) => { r.assess = assessRoute(r, departure); });
+    state.recommended = 0; state.selected = 0;
+    $("results").classList.remove("hidden");
+    await selectRoute(departure);
+    const note = $("engineNote");
+    if (note) {
+      if (!note.dataset.def) note.dataset.def = note.textContent;   // zapamti podrazumevani tekst da ga sledeci plan moze vratiti
+      note.textContent = route.gpxRaw
+        ? "GPX trag nije na mapiranim putevima, pa je vreme procena (50 km/h) i nema uputstava skretanja - prognoza, trošak i težina rade nad tvojim tragom."
+        : note.dataset.def;
+    }
+    sheetAfterPlan();
+    shareToast(`GPX učitan: ${Math.round(route.totalDist / 1000)} km` + (route.gpxRaw ? " (van puteva - procena vremena)" : ""));
+    logState({ phase: "done", route: 0, gpx: 1, km: Math.round(route.totalDist / 1000), raw: !!route.gpxRaw });
+  } catch (e) {
+    if (_pseq === state.planSeq) shareToast("GPX nije učitan: " + String(e.message || e));
+    logState({ phase: "error", msg: "gpx: " + String(e.message || e) });
+  }
 }
 
 /* ---------------- trošak, krivine, uspon ---------------- */
@@ -4090,6 +4209,7 @@ async function plan() {
     state.routes.forEach(buildSamples);
     if (state.engine === "osrm")
       $("engineNote").textContent = "Pažnja: moto profil (Valhalla) trenutno nedostupan - prikazane rute su auto profil (OSRM).";
+    else { const _en = $("engineNote"); if (_en && _en.dataset.def) _en.textContent = _en.dataset.def; }   // ocisti eventualnu GPX/OSRM napomenu od ranije
 
     setStatus("Proveravam prognozu po satu prolaska...");
     logState({ phase: "weather" });
@@ -4314,8 +4434,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.3";
+const APP_VERSION = "0.9.4";
 const CHANGELOG = [
+  { v: "0.9.4", d: "03.08.2026.", stavke: [
+    "<b>Uvoz GPX rute</b>: dugme \"Uvezi GPX\" u ekranu Rute. Tvoj fajl (Garmin, Kurviger, forum...) se zalepi na puteve i dobije SVE: prognozu po satu prolaska, ocenu vožnje, trošak, težinu i navigaciju sa skretanjima. Ako trag nije na mapiranim putevima, pošteno piše da je vreme procena i vodi te bez uputstava skretanja.",
+  ] },
   { v: "0.9.3", d: "03.08.2026.", stavke: [
     "<b>Vozač u donjoj trećini ekrana</b> u navigaciji, kao Google/Waze - napred se vidi duplo više puta i skretanja.",
     "<b>Prijava policije</b> u \"Šta si video na putu?\" - prva u listi; glasovna najava \"policija ispred\" radi kao i za ostale prijave.",
@@ -5194,7 +5317,7 @@ function startRide() {
   if (_nc) { _nc.classList.remove("nosignal", "rerouting"); _nc.classList.add("acquiring"); }
   document.getElementById("rideArr").innerHTML = arrSvg("up");
   document.getElementById("rideDist").textContent = "";
-  document.getElementById("rideInstr").textContent = "Tražim GPS signal…";
+  document.getElementById("rideInstr").textContent = route.gpxRaw ? "Prati GPX trag" : "Tražim GPS signal…";   // sirov GPX nema uputstva skretanja - posteno pise sta se prati
   document.getElementById("rideStreet").textContent = "";
     document.getElementById("rideShields").innerHTML = "";
   document.getElementById("rideThen").textContent = "";
@@ -5788,6 +5911,20 @@ function renderMesta(ftype) {
     const it = document.getElementById("mestaList")._items[+b.dataset.mi];
     if (it) pickDestination({ n: it.name, lat: it.lat, lon: it.lon });
   });
+  // GPX uvoz: dugme u zaglavlju Rute -> file picker -> planer sa polu-sheetom
+  const gb = document.getElementById("gpxBtn"), gf = document.getElementById("gpxFile");
+  if (gb && gf) {
+    gb.addEventListener("click", () => { gf.value = ""; gf.click(); });
+    gf.addEventListener("change", () => {
+      const f = gf.files && gf.files[0];
+      if (!f) return;
+      const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
+      if (matchMedia("(max-width:900px)").matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e) {} }
+      document.body.classList.add("planning");
+      try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
+      importGpx(f);
+    });
+  }
   const kr = document.getElementById("kruznaKm");
   if (kr) kr.addEventListener("input", () => { document.getElementById("kruznaKmV").textContent = kr.value + " km"; });
   const kg = document.getElementById("kruznaGo");
