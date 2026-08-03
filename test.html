@@ -442,7 +442,10 @@
     #homeSheet .quick, #planCta, #homeSheet { display: none !important; }   /* R5: cist pocetni; R7: chips (Kafane/Vidikovci/Legendarne) vraceni kao Google */
     body.planning #homeChips, body.riding #homeChips, body.searching #homeChips, body.hasroute #homeChips { display: none !important; }
     #homeChrome > * { pointer-events: auto; }
-    body.planning #homeChrome, body.planning #homeSheet, body.planning #homeFabs { display: none; }
+    body.planning #homeChrome, body.planning #homeSheet { display: none; }
+    /* Slojevi ostaju dostupni i uz polu-sheet (Boskova zamerka 3.8. "slojevi su sakriveni");
+       z-index ispod panela (10) pa ih pun sheet prirodno pokrije */
+    body.planning:not(.riding) #homeFabs { display: flex; z-index: 9; }
 
     #homeSearch { display: flex; align-items: center; gap: 11px; background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); border-radius: 16px; padding: 11px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.4); cursor: text; }
     #homeSearch .lg { width: 32px; height: 32px; border-radius: 9px; overflow: hidden; flex: none; }
@@ -887,6 +890,11 @@
     #screen-rute .d-beg { background: #22c55e; } #screen-rute .d-mid { background: #f59e0b; }
     #screen-rute .d-adv { background: #ef4444; } #screen-rute .d-off { background: #8b5cf6; }
     #screen-rute .rlist { padding: 8px 16px calc(14px + env(safe-area-inset-bottom)); }
+    #screen-rute .rc .rmore { display: none; }
+    #screen-rute .rc.open .rmore { display: block; margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(148,163,184,.14); }
+    #screen-rute .rc .rmore p { font-size: 12.5px; line-height: 1.45; color: #cbd5e1; font-weight: 500; margin: 0 0 9px; }
+    #screen-rute .rc .rmore .rgo { background: linear-gradient(135deg, #f97316, #ea580c); border: none; border-radius: 11px;
+      color: #fff; font: 800 13px Archivo, sans-serif; padding: 10px 18px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     #screen-rute .rc { display: flex; gap: 12px; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 15px; padding: 11px; margin-bottom: 9px; align-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     #screen-rute .rc:active { background: #253449; }
     #screen-rute .rc .th { width: 60px; height: 60px; border-radius: 11px; flex: none; background: radial-gradient(120% 100% at 40% 20%, #1c2c4a, #0d1626); position: relative; overflow: hidden; }
@@ -1810,11 +1818,12 @@ function fmtDur(sec) {
   const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
   return h > 0 ? `${h} h ${String(m).padStart(2, "0")} min` : `${m} min`;
 }
-/* srpska mnozina za serpentine: 1 serpentina, 2-4 serpentine, 5+ serpentina (11-14 izuzetak) */
-function plSerp(n) {
+/* srpska mnozina: plSrp(2,"tačka","tačke","tačaka") -> "tačke" (11-14 izuzetak) */
+function plSrp(n, jed, mala, velika) {
   const m10 = n % 10, m100 = n % 100;
-  return "serpentin" + (m10 === 1 && m100 !== 11 ? "a" : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? "e" : "a");
+  return m10 === 1 && m100 !== 11 ? jed : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? mala : velika;
 }
+function plSerp(n) { return plSrp(n, "serpentina", "serpentine", "serpentina"); }
 function setStatus(msg, isErr) {
   const el = $("status");
   el.textContent = msg;
@@ -2090,7 +2099,7 @@ function loadPrices() {
   if (pricesPromise) return pricesPromise;
   pricesPromise = (async () => {
     try {
-      const p = await fetchJSON("data/prices.json", { timeoutMs: 6000 });
+      const p = await fetchData("data/prices.json?v=" + new Date().toISOString().slice(0, 10), { timeoutMs: 6000 });   // dnevni cache-bust (robot osvezava cene svaki sat)
       PRICES_META = p.meta;
       for (const [cc, o] of Object.entries(p.fuel || {})) { FUEL_PRICES[cc] = o.eur; PRICE_VERIFIED.fuel[cc] = !!o.verified; }
       for (const [cc, o] of Object.entries(p.tollMotoPerKm || {})) { TOLL_MOTO[cc] = o.eur; PRICE_VERIFIED.toll[cc] = !!o.verified; }
@@ -2712,8 +2721,39 @@ function nearestTo(pois, point, maxKm, topN) {
     .slice(0, topN);
 }
 
+/* nativna aplikacija nosi ZAPAKOVANE data fajlove (stari koliko i bundle) - zato
+   u njoj prvo probamo sveze podatke sa sajta (robot ih osvezava svaki sat),
+   a zapakovani ostaju kao rezerva bez mreze. U browseru je relativno = sajt. */
+const NATIVE_APP = location.protocol !== "http:" && location.protocol !== "https:";
+async function fetchData(path, opts = {}) {
+  if (NATIVE_APP) {
+    try { return await fetchJSON("https://routemeright.app/" + path, { ...opts, timeoutMs: 6000, retries: 0 }); }
+    catch (e) { /* bez mreze - padni na zapakovanu kopiju */ }
+  }
+  return fetchJSON(path, opts);
+}
+
 /* ---------------- mapa ---------------- */
 let map = null;
+/* svetlina tamne mape (Boskova zamerka 3.8: "pretamna, posebno u navigaciji"):
+   putevi dobiju jasnu hijerarhiju boja, u voznji jos jedan stepen svetlije */
+function nightRoads(boost) {
+  if (!map || state.mapTheme !== "dark") return;
+  try { map.setPaintProperty("background", "background-color", boost ? "#2a3a58" : "#223047"); } catch (e) {}
+  let layers = [];
+  try { layers = map.getStyle().layers; } catch (e) { return; }
+  for (const l of layers) {
+    if (l.type !== "line" || !/road|street|highway|bridge|tunnel/i.test(l.id)) continue;
+    if (/rail|path/.test(l.id)) continue;   // sine i staze ostaju prigusene, nisu za voznju
+    try {
+      map.setPaintProperty(l.id, "line-opacity", 1);
+      if (/case/.test(l.id)) map.setPaintProperty(l.id, "line-color", "#141d2e");
+      else if (/mot|trunk|pri/.test(l.id)) map.setPaintProperty(l.id, "line-color", boost ? "#7386ad" : "#5d6d8f");
+      else if (/sec|minor/.test(l.id)) map.setPaintProperty(l.id, "line-color", boost ? "#5f7092" : "#4a5878");
+      else map.setPaintProperty(l.id, "line-color", boost ? "#4a5878" : "#3a4560");
+    } catch (e) {}
+  }
+}
 function initMap() {
   try {
     // vektorski stil (kao 3D demo): svetliji putevi, 3D zgrade, teren, teme
@@ -2731,11 +2771,8 @@ function initMap() {
     map.on("load", () => {
       try {   // citljiviji putevi na tamnoj mapi + 3D zgrade + teren u pregledu
         if (state.mapTheme === "dark") {
-          try { map.setPaintProperty("background", "background-color", "#1a2333"); } catch (e2) {}
+          nightRoads(false);
           for (const l of map.getStyle().layers) {
-            if (l.type === "line" && /road|street|highway|bridge|tunnel/i.test(l.id)) {
-              try { map.setPaintProperty(l.id, "line-opacity", 1); } catch (e2) {}
-            }
             if (l.type === "fill" && /landcover|landuse|park|wood|residential/i.test(l.id)) {
               try { map.setPaintProperty(l.id, "fill-opacity", 0.45); } catch (e2) {}
             }
@@ -2863,7 +2900,7 @@ const BJB_CAT = { kafana: "food", okupljaliste: "meet", upozorenje: "hazard", vi
 /* ---- stanje na putevima + meteo upozorenja (robot puni data/road_status.json 5x dnevno) ---- */
 async function loadRoadStatus() {
   if (state.roadStatus !== undefined) return state.roadStatus;
-  try { state.roadStatus = await fetchJSON("data/road_status.json?v=" + new Date().toISOString().slice(0, 13), { timeoutMs: 6000 }); }   // satni cache-bust (robot osvezava svaki sat)
+  try { state.roadStatus = await fetchData("data/road_status.json?v=" + new Date().toISOString().slice(0, 13), { timeoutMs: 6000 }); }   // satni cache-bust (robot osvezava svaki sat)
   catch { state.roadStatus = null; }
   return state.roadStatus;
 }
@@ -2896,7 +2933,7 @@ async function renderRoadStatus(route) {
 }
 async function loadEditorial() {
   try {
-    const d = await fetchJSON("data/editorial_bjbikers.json?v=" + new Date().toISOString().slice(0, 10), { timeoutMs: 8000 });   // dnevni cache-bust
+    const d = await fetchData("data/editorial_bjbikers.json?v=" + new Date().toISOString().slice(0, 10), { timeoutMs: 8000 });   // dnevni cache-bust
     state.editorial = (d.entries || []).filter((e) => e.lat !== undefined);
   } catch { /* editorial sloj je opcion - bez fajla nema pinova */ }
 }
@@ -3651,7 +3688,7 @@ function renderViaChips() {
     row.dataset.gi = gi;
     const it = g.run ? null : state.vias[g.idx];
     const label = g.run
-      ? `${famous ? famous.name : "deonica rute"} <span class="poi-dist">(${g.idxs.length} ${g.idxs.length === 1 ? "tačka" : "tačaka"})</span>`
+      ? `${famous ? famous.name : "deonica rute"} <span class="poi-dist">(${g.idxs.length} ${plSrp(g.idxs.length, "tačka", "tačke", "tačaka")})</span>`
       : `${esc(it.name || "stanica")}`;
     row.innerHTML = `<span class="grip" aria-hidden="true" title="Prevuci za redosled ili na Od/Do polje">⠿</span><span class="stop-name">${gi + 1}. ${label}</span><span class="stop-acts"></span>`;
     row.querySelector(".grip").onpointerdown = (ev) => startRowDrag(ev, row, gi, g, it);
@@ -4545,7 +4582,7 @@ function previewFill() {
    Redovi bez potvrđenog rezervoara/potrošnje se preskaču - bolje bez modela nego odokativno. */
 async function loadBikes() {
   try {
-    const d = await fetchJSON("data/bikes.json", { timeoutMs: 4000, retries: 0 });
+    const d = await fetchData("data/bikes.json", { timeoutMs: 4000, retries: 0 });
     const rows = (d.bikes || []).filter((b) => b.tank_l > 0 && b.cons_l100 > 0);
     if (rows.length) {
       BIKES.length = 0;
@@ -4557,8 +4594,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.6";
+const APP_VERSION = "0.9.7";
 const CHANGELOG = [
+  { v: "0.9.7", d: "03.08.2026.", stavke: [
+    "<b>Svetlija mapa</b>: putevi dobili jasnu hijerarhiju boja na tamnoj podlozi, a u navigaciji mapa pređe na još svetliji režim - kraj \"crnog ekrana\" u vožnji.",
+    "<b>Kartica rute više ne otima ekran</b>: tap na rutu otvara opis i dugme \"Vodi me\" na licu mesta - u planer ideš tek kad ti kažeš.",
+    "<b>Promena teme te vraća na Ja</b>, ne na početni ekran.",
+    "<b>Slojevi dostupni i uz polu-panel</b> - dugme više nije sakriveno čim počne planiranje.",
+    "<b>Telefonska aplikacija sad vuče SVEŽE podatke sa sajta</b> (cene goriva, stanje na putevima, mesta zajednice) umesto zapakovanih od dana instalacije - bez mreže i dalje radi sa zapakovanom rezervom. Nema više \"cene zastarele\".",
+  ] },
   { v: "0.9.6", d: "03.08.2026.", stavke: [
     "<b>Dve prijave istog događaja se spajaju u jednu</b>: kad drugi vozač prijavi isto (policija/udes/kamera u krugu 300 m, ostalo 100 m), ne nastaje duplikat nego se prva prijava potvrdi i produži joj se rok. Najave više ne stižu duplo.",
     "<b>Mobilni radar (kamera)</b> dodat u prijave - odmah posle policije.",
@@ -5456,6 +5500,7 @@ function startRide() {
   }
   const gfab = document.querySelector('[data-fab="gps"]'); if (gfab) gfab.classList.remove("recenter");
   try { map.setTerrain(null); } catch (e) {}   // teren OFF u navigaciji (sece pitch/zoom na strminama - lekcija iz 3D demoa)
+  try { nightRoads(true); } catch (e) {}   // u voznji mapa svetlija (kontrast za brzi pogled)
   try {   // kao Google/Waze: vozac u DONJOJ TRECINI ekrana, napred se vidi vise puta (Boskova voznja 1.8.)
     const H = (map.getContainer() && map.getContainer().clientHeight) || window.innerHeight || 800;
     map.setPadding({ top: Math.round(H * 0.36), bottom: 0, left: 0, right: 0 });
@@ -5618,6 +5663,7 @@ function startRide() {
 function stopRide() {
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
   try { clearInterval(RIDE.prijInt); RIDE.prijInt = null; } catch (e) {}
+  try { nightRoads(false); } catch (e) {}   // svetlina mape nazad na pregledni nivo
   try { map.setPadding({ top: 0, bottom: 0, left: 0, right: 0 }); } catch (e) {}   // vrati kameru na centriranje van voznje
   try { if (RIDE.marker) { RIDE.marker.remove(); RIDE.marker = null; } } catch (e) {}
   try { document.getElementById("rideRoad").classList.remove("on"); altClose(); } catch (e) {}
@@ -5991,11 +6037,15 @@ async function shareRide() {
     const t = localStorage.getItem("rmr2_theme") || "auto";
     th.checked = t === "dark" || (t === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
   } catch (e) {}
+  const reloadNaJa = () => {   // reload je nuzan (mapa se gradi sa novim stilom), ali vrati coveka na Ja tab, ne na pocetni
+    try { sessionStorage.setItem("rmr2_ret", "ja"); } catch (e) {}
+    location.reload();
+  };
   th.addEventListener("change", () => {
     try { localStorage.setItem("rmr2_theme", th.checked ? "dark" : "light"); } catch (e) {}
-    location.reload();   // mapa se gradi sa novim stilom
+    reloadNaJa();
   });
-  if (ja) ja.addEventListener("click", () => { try { localStorage.setItem("rmr2_theme", "auto"); } catch (e) {} location.reload(); });
+  if (ja) ja.addEventListener("click", () => { try { localStorage.setItem("rmr2_theme", "auto"); } catch (e) {} reloadNaJa(); });
   try {   // R11: Moj motor zivi u Ja tabu (mobilno); "Jos opcija" ga pozajmljuje i vraca
     if (matchMedia("(max-width:900px)").matches) {
       const host = document.getElementById("jaMotorHost"), mh = document.getElementById("motoHead"), mw = document.getElementById("motoWrap");
@@ -6261,7 +6311,10 @@ function openLayersSheet() {
         + '<div class="meta">'+near+'<span>'+rel+'</span></div>'
         + '<div class="tags"><span class="tg '+meta.d+'"><span class="dot d-'+meta.d+'"></span>'+DIFF_LBL[meta.d]+'</span>'
         + (meta.t ? '<span class="tg plain">'+meta.t+'</span>' : "")
-        + '</div></div></div>';
+        + '</div>'
+        + '<div class="rmore">' + (f.desc ? '<p>'+esc(f.desc)+'</p>' : '')
+        + '<button class="rgo" type="button">Vodi me</button></div>'
+        + '</div></div>';
     }).join("");
   }
   /* filter čipovi (zemlje + kategorije) */
@@ -6316,6 +6369,14 @@ function openLayersSheet() {
   /* klik na karticu -> otvori tu rutu u Planeru (postojeći tok preko #famous) */
   L.addEventListener("click",(e)=>{
     const card = e.target.closest(".rc"); if (!card) return;
+    // Google princip: tap na karticu OTVARA OPIS na licu mesta; tek "Vodi me" nosi u planer
+    // (ranije je svaki tap otimao na Planer - Boskova zamerka 3.8. "sam me vrati na planer")
+    if (!e.target.closest(".rgo")) {
+      const bio = card.classList.contains("open");
+      L.querySelectorAll(".rc.open").forEach((c)=>c.classList.remove("open"));
+      if (!bio) card.classList.add("open");
+      return;
+    }
     const nav = document.getElementById("bottomnav");
     const planerA = nav && nav.querySelector('a[data-tab="planer"]');
     if (planerA) planerA.click();
@@ -6330,6 +6391,14 @@ function openLayersSheet() {
   });
   render();
 })();
+
+try {   // povratak posle reload-a zbog promene teme: nazad na Ja tab (ne na pocetni)
+  if (sessionStorage.getItem("rmr2_ret") === "ja") {
+    sessionStorage.removeItem("rmr2_ret");
+    const a = document.querySelector('#bottomnav a[data-tab="ja"]');
+    if (a) setTimeout(() => a.click(), 80);
+  }
+} catch (e) {}
 
 init();   // R13: app zivi ODMAH - bikes.json (nekritican) stize naknadno i osvezi selecte
 loadBikes().then(() => { try { if (window.refreshBikeSelects) refreshBikeSelects(); } catch (e) {} });
