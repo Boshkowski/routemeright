@@ -21,6 +21,13 @@ jobs:
           python-version: "3.12"
       - name: Sakupi podatke
         run: python3 tools/collect_road_status.py
+      - name: Supabase ping (besplatna baza zaspi posle 7 dana bez saobracaja)
+        run: |
+          curl -s -o /dev/null --max-time 20 \
+            "https://sankrmswthypvwevzdwz.supabase.co/rest/v1/prijave?select=id&limit=1" \
+            -H "apikey: sb_publishable_RTYwIJ1CuNB9xCSoMAyWtA_Y89-QXiI" \
+            -H "Authorization: Bearer sb_publishable_RTYwIJ1CuNB9xCSoMAyWtA_Y89-QXiI" || true
+        continue-on-error: true
       - name: Osvezi cene goriva (benzin BMB95 po zemljama)
         run: python3 update_prices.py || true
         continue-on-error: true
