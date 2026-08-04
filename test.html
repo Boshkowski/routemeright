@@ -421,6 +421,27 @@
     .tabscreen.on { display: block; }
     .tabscreen h2 { font-size: 23px; font-weight: 900; color: #fff; letter-spacing: -.01em; margin: 0; }
     .tabscreen .stub { margin-top: 14px; background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 16px; padding: 18px 16px; color: #94a3b8; font-size: 14px; line-height: 1.55; }
+    /* feed zajednice: sta je ko prijavio, koliko je staro, je l' jos tu */
+    #screen-zajednica .zhd { display: flex; align-items: center; gap: 10px; margin: 12px 0 10px; }
+    #screen-zajednica .zstat { flex: 1; font-size: 12.5px; color: #94a3b8; font-weight: 700; }
+    #screen-zajednica #zOsvezi { flex: none; width: 34px; height: 34px; border-radius: 10px; background: #1e293b;
+      border: 1px solid rgba(148,163,184,.2); color: #e2e8f0; font-size: 16px; cursor: pointer; }
+    #screen-zajednica .zrow { display: flex; gap: 11px; background: #1e293b; border: 1px solid rgba(148,163,184,.16);
+      border-radius: 15px; padding: 11px 12px; margin-bottom: 9px; align-items: flex-start; }
+    #screen-zajednica .zrow.isteklo { opacity: .55; }
+    #screen-zajednica .zic { width: 38px; height: 38px; border-radius: 11px; flex: none; background: rgba(239,68,68,.14);
+      display: flex; align-items: center; justify-content: center; }
+    #screen-zajednica .zic svg { width: 19px; height: 19px; stroke: #fca5a5; fill: none; }
+    #screen-zajednica .zin { flex: 1; min-width: 0; }
+    #screen-zajednica .znm { font-size: 14.5px; font-weight: 800; color: #fff; text-transform: capitalize; }
+    #screen-zajednica .zsub { font-size: 11.5px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+    #screen-zajednica .zsub b { color: #fdba74; }
+    #screen-zajednica .zbtns { display: flex; gap: 7px; margin-top: 9px; flex-wrap: wrap; }
+    #screen-zajednica .zbtns button { background: #0f172a; border: 1px solid rgba(148,163,184,.22); border-radius: 999px;
+      color: #e2e8f0; font: 800 11.5px Archivo, sans-serif; padding: 7px 13px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    #screen-zajednica .zbtns button.ok { border-color: rgba(34,197,94,.5); color: #4ade80; }
+    #screen-zajednica .zbtns button.ne { border-color: rgba(239,68,68,.45); color: #fca5a5; }
+    #screen-zajednica .zbtns button:disabled { opacity: .45; cursor: default; }
     .tabscreen .stub b { color: #e2e8f0; font-weight: 800; }
     .jset { margin-top: 12px; }
     .jrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid rgba(148,163,184,.1); color: #e2e8f0; font-size: 14px; font-weight: 700; }
@@ -1282,7 +1303,10 @@
       </div>
     </div>
   </div>
-  <div class="tabscreen" id="screen-zajednica"><h2>Zajednica</h2><div class="stub"><b>Zajednica</b> - feed prijava, "nađimo se tamo", prijatelji na mapi i rang. Uskoro.</div></div>
+  <div class="tabscreen" id="screen-zajednica"><h2>Zajednica</h2>
+    <div class="zhd"><div class="zstat" id="zStat">učitavam…</div><button id="zOsvezi" type="button" aria-label="Osveži">↻</button></div>
+    <div id="zFeed"><div class="stub">Učitavam prijave zajednice…</div></div>
+  </div>
   <div class="tabscreen" id="screen-ja"><h2>Ja</h2>
     <div class="stub" style="margin-top:14px"><b>Podešavanja</b>
       <div class="jset">
@@ -3972,16 +3996,18 @@ async function loadPrijave(route, force) {
   const pad = 0.03;
   let rows = [];
   try {
-    rows = await supa(`prijave?select=id,tip,lat,lon,created_at,device_id` +
+    rows = await supa(`prijave?select=id,tip,lat,lon,created_at,istice_at,device_id` +
       `&lat=gte.${(miLa - pad).toFixed(4)}&lat=lte.${(maLa + pad).toFixed(4)}` +
       `&lon=gte.${(miLo - pad).toFixed(4)}&lon=lte.${(maLo + pad).toFixed(4)}&limit=200`);
   } catch (e) { state._prijaveTs = 0; return; }   // greska - bez 60 s blokade sledeceg pokusaja
   if (mySeq !== state._prijaveSeq) return;        // u medjuvremenu je krenuo noviji fetch ili je ruta ponistena
   const moj = deviceId();
   const blizu = [];
+  const sadaMs = Date.now();
   const step = Math.max(1, Math.floor(route.coords.length / 500));
   for (const p of rows || []) {
     if (p.device_id === moj) continue;   // svoju prijavu vec imam kao lokalni marker
+    if (p.istice_at && new Date(p.istice_at).getTime() <= sadaMs) continue;   // feed politika pusta i istekle - mapa i najave prikazuju SAMO aktivne
     let bd = 1e9;
     for (let i = 0; i < route.coords.length; i += step) {
       const c = route.coords[i];
@@ -4005,6 +4031,86 @@ async function loadPrijave(route, force) {
   try { if (document.body.classList.contains("riding") && RIDE.route === route) buildAhead(route); } catch (e) {}
 }
 try { setTimeout(flushPrijave, 4000); } catch (e) {}   // zaostale prijave iz reda posalji po ucitavanju
+
+/* ---------------- feed zajednice (tab Zajednica) ----------------
+   Sta je ko prijavio u poslednjih 7 dana, koliko je staro, i "Je l' jos tu".
+   Glasanje ide kroz RPC glasaj() koji je vec u bazi (dopuna #1). */
+async function glasajPrijava(id, tuJe) {
+  try {
+    await supa("rpc/glasaj", { method: "POST", body: JSON.stringify({ p_id: id, p_tu: !!tuJe }) });
+    let dat = {}; try { dat = JSON.parse(localStorage.getItem("rmr2_glasovi") || "{}"); } catch (e) {}
+    dat[id] = tuJe ? "tu" : "ne";
+    try { localStorage.setItem("rmr2_glasovi", JSON.stringify(dat)); } catch (e) {}
+    shareToast(tuJe ? "Hvala - prijava produžena." : "Hvala - prijava označena da je nema.");
+    return true;
+  } catch (e) { shareToast("Glas nije poslat: " + String(e.message || e)); return false; }
+}
+function mojiGlasovi() { try { return JSON.parse(localStorage.getItem("rmr2_glasovi") || "{}"); } catch (e) { return {}; } }
+async function renderFeed() {
+  const box = document.getElementById("zFeed"), st = document.getElementById("zStat");
+  if (!box) return;
+  let rows = [];
+  try {
+    rows = await supa("prijave?select=id,tip,lat,lon,created_at,istice_at,potvrde,negacije" +
+                      "&order=created_at.desc&limit=60");
+  } catch (e) {
+    box.innerHTML = '<div class="stub">Nema mreže - feed zajednice stiže čim se povežeš.</div>';
+    st.textContent = ""; return;
+  }
+  const g = state.gpsFrom;   // ako znamo gde je vozac, dodajemo udaljenost
+  const sad = Date.now();
+  const aktivnih = rows.filter((r) => new Date(r.istice_at).getTime() > sad).length;
+  st.textContent = rows.length
+    ? `${aktivnih} aktivnih sada · ${rows.length} u poslednjih 7 dana`
+    : "još nema prijava u tvom regionu";
+  if (!rows.length) {
+    box.innerHTML = '<div class="stub"><b>Budi prvi.</b> Kad prijaviš policiju, udes ili rupu, ' +
+      'vozači iza tebe to čuju u kacigi. Prijava se pravi dugmetom na mapi ili u vožnji.</div>';
+    return;
+  }
+  const glasovi = mojiGlasovi();
+  box.innerHTML = rows.map((r) => {
+    const tip = DB2TIP[r.tip] || r.tip;
+    const isteklo = new Date(r.istice_at).getTime() <= sad;
+    const d = g ? haversine(g.lat, g.lon, r.lat, r.lon) : null;
+    const moj = glasovi[r.id];
+    return `<div class="zrow${isteklo ? " isteklo" : ""}" data-id="${r.id}" data-lat="${r.lat}" data-lon="${r.lon}">
+      <div class="zic">${rIco(HZ2ICON[tip] || "warning", 19)}</div>
+      <div class="zin">
+        <div class="znm">${esc(tip)}</div>
+        <div class="zsub">${esc(prijavaStarost(r.created_at))}${d != null ? " · <b>" + Math.round(d) + " km od tebe</b>" : ""}${r.potvrde ? " · potvrdilo " + r.potvrde : ""}${isteklo ? " · isteklo" : ""}</div>
+        <div class="zbtns">
+          <button data-a="mapa">Na mapi</button>
+          ${isteklo ? "" : `<button class="ok" data-a="tu" ${moj ? "disabled" : ""}>${moj === "tu" ? "✓ glasao si" : "Tu je"}</button>
+          <button class="ne" data-a="ne" ${moj ? "disabled" : ""}>${moj === "ne" ? "✓ glasao si" : "Nema je"}</button>`}
+        </div>
+      </div></div>`;
+  }).join("");
+}
+(function(){
+  const feed = document.getElementById("zFeed");
+  if (!feed) return;
+  feed.addEventListener("click", async (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const row = b.closest(".zrow"); if (!row) return;
+    const a = b.dataset.a;
+    if (a === "mapa") {   // prikazi prijavu na mapi (planer tab)
+      const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
+      try { map.flyTo({ center: [+row.dataset.lon, +row.dataset.lat], zoom: 13.5, duration: 900 }); } catch (er) {}
+      return;
+    }
+    b.disabled = true;
+    const ok = await glasajPrijava(row.dataset.id, a === "tu");
+    if (ok) renderFeed(); else b.disabled = false;
+  });
+  const os = document.getElementById("zOsvezi");
+  if (os) os.addEventListener("click", () => { document.getElementById("zStat").textContent = "osvežavam…"; renderFeed(); });
+  // otvaranje taba Zajednica puni feed (i osvezava ako je stariji od minuta)
+  const link = document.querySelector('#bottomnav a[data-tab="zajednica"]');
+  if (link) link.addEventListener("click", () => {
+    if (!window._feedTs || Date.now() - window._feedTs > 60000) { window._feedTs = Date.now(); renderFeed(); }
+  });
+})();
 /* R7: "Jos opcija" = mali sheet (kruzna, stanica, motor) - stari formular vise ne postoji na mobilnom */
 let _optsAnchors = null;
 function openOptsSheet() {
@@ -4594,8 +4700,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.7";
+const APP_VERSION = "0.9.8";
 const CHANGELOG = [
+  { v: "0.9.8", d: "04.08.2026.", stavke: [
+    "<b>Zajednica više nije prazan ekran</b>: feed pokazuje šta je ko prijavio u poslednjih 7 dana - tip, starost, koliko je km od tebe i koliko ih je potvrdilo.",
+    "<b>\"Je l' još tu?\"</b> - na svakoj prijavi dugmad Tu je / Nema je. Potvrda produžava rok, dva \"nema je\" gase prijavu. Tvoj glas se pamti da ne glasaš dvaput.",
+    "<b>\"Na mapi\"</b> vodi pravo na mesto prijave u planeru.",
+    "<b>Istekle prijave se vide u feedu</b> (označene), ali NE na mapi ni u glasovnim najavama - tamo idu samo aktivne.",
+  ] },
   { v: "0.9.7", d: "03.08.2026.", stavke: [
     "<b>Svetlija mapa</b>: putevi dobili jasnu hijerarhiju boja na tamnoj podlozi, a u navigaciji mapa pređe na još svetliji režim - kraj \"crnog ekrana\" u vožnji.",
     "<b>Kartica rute više ne otima ekran</b>: tap na rutu otvara opis i dugme \"Vodi me\" na licu mesta - u planer ideš tek kad ti kažeš.",
