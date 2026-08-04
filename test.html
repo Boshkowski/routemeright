@@ -1334,11 +1334,11 @@
   <div class="tabscreen" id="screen-zajednica"><h2>Zajednica</h2>
     <div class="zseg"><button class="on" type="button" data-zseg="oko">Oko tebe</button><button type="button" data-zseg="ljudi">Prijatelji</button></div>
     <div id="zsegOko">
-      <div class="zsec"><span class="dot"></span>Na putu<small id="zStat">učitavam…</small><button id="zOsvezi" type="button" aria-label="Osveži">↻</button></div>
-      <button id="zNaMapi" type="button" class="zmapbtn"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Pogledaj na mapi - odalji i vidi celu sliku</button>
-      <div id="zFeed"><div class="stub">Učitavam prijave zajednice…</div></div>
-      <div class="zsec">Zajednica preporučuje oko tebe<small id="zPrepNap"></small></div>
+      <div class="zsec">Zajednica preporučuje<span id="zPrepOko"> oko tebe</span><small id="zPrepNap"></small></div>
       <div id="zPreporuke"></div>
+      <div class="zsec"><span class="dot"></span>Na putu<small id="zStat">učitavam…</small><button id="zOsvezi" type="button" aria-label="Osveži">↻</button></div>
+      <button id="zNaMapi" type="button" class="zmapbtn"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Prikaži na mapi</button>
+      <div id="zFeed"><div class="stub">Učitavam prijave zajednice…</div></div>
       <div class="zsec">Tvoja nedelja</div>
       <div id="zNedelja" class="zpts"></div>
     </div>
@@ -3024,6 +3024,7 @@ async function loadEditorial() {
        se izgradi samo od FAMOUS_ROUTES i takav ostane celu sesiju - pretraga mesta
        izgleda mrtvo. Zato se kes ponistava cim baza stigne. */
     searchIndex._c = null;
+    try { renderPreporuke(); } catch (e) {}   // 280 KB stize posle prvog rendera - sekcija ne sme ostati na stub-u
   } catch { /* editorial sloj je opcion - bez fajla nema pinova */ }
 }
 /* Pinovi zajednice se dodaju TEK posle prvog planiranja rute (default ekran ostaje cist)
@@ -4119,7 +4120,7 @@ async function renderFeed() {
   if (!box) return;
   let rows = [];
   try {
-    rows = await supa("prijave?select=id,tip,lat,lon,created_at,istice_at,potvrde,negacije" +
+    rows = await supa("prijave?select=id,tip,lat,lon,created_at,istice_at,potvrde,negacije,device_id" +
                       "&order=created_at.desc&limit=60");
   } catch (e) {
     box.innerHTML = '<div class="stub">Nema mreže - feed zajednice stiže čim se povežeš.</div>';
@@ -4134,7 +4135,7 @@ async function renderFeed() {
   st.textContent = rows.length
     ? (aktivnih ? `${aktivnih} aktivnih sada · ${rows.length} u poslednjih 7 dana`
                 : `mirno je trenutno · ${rows.length} u poslednjih 7 dana`)   // nula se ne istice (ghost-town lekcija)
-    : "još nema prijava u tvom regionu";
+    : "još nema prijava u poslednjih 7 dana";
   if (!rows.length) {
     box.innerHTML = '<div class="stub"><b>Budi prvi.</b> Kad prijaviš policiju, udes ili rupu, ' +
       'vozači iza tebe to čuju u kacigi. Prijava se pravi dugmetom na mapi ili u vožnji.</div>';
@@ -4155,7 +4156,8 @@ async function renderFeed() {
         <div class="zsub">${esc(prijavaStarost(r.created_at))}${d != null ? " · <b>" + Math.round(d) + " km od tebe</b>" : ""}${r.potvrde ? " · potvrdilo " + r.potvrde : ""}${isteklo ? " · isteklo" : ""}</div>
         <div class="zbtns">
           <button data-a="mapa">Na mapi</button>
-          ${isteklo ? "" : `<button class="ok" data-a="tu" ${moj ? "disabled" : ""}>${moj === "tu" ? "✓ glasao si" : "Tu je"}</button>
+          ${r.device_id === deviceId() ? '<span style="font-size:11px;color:#94a3b8;font-weight:700;align-self:center">tvoja prijava</span>'
+            : isteklo ? "" : `<button class="ok" data-a="tu" ${moj ? "disabled" : ""}>${moj === "tu" ? "✓ glasao si" : "Tu je"}</button>
           <button class="ne" data-a="ne" ${moj ? "disabled" : ""}>${moj === "ne" ? "✓ glasao si" : "Nema je"}</button>`}
         </div>
       </div></div>`;
@@ -4171,6 +4173,14 @@ async function renderFeed() {
     if (a === "mapa") {   // prikazi prijavu na mapi (planer tab)
       const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
       try { map.flyTo({ center: [+row.dataset.lon, +row.dataset.lat], zoom: 13.5, duration: 900 }); } catch (er) {}
+      if (row.classList.contains("isteklo")) {   // istekla nema pin - privremeni, da skok ne pokaze praznu mapu
+        try {
+          const d = markerBadge("warning", "danger"); d.style.opacity = ".55";
+          d.title = "istekla prijava";
+          const tm = new maplibregl.Marker({ element: d }).setLngLat([+row.dataset.lon, +row.dataset.lat]).addTo(map);
+          setTimeout(() => { try { tm.remove(); } catch (er2) {} }, 15000);
+        } catch (er) {}
+      }
       return;
     }
     b.disabled = true;
@@ -4240,7 +4250,9 @@ function dodeliPriznanje(id) {
   p[id] = new Date().toISOString().slice(0, 10);
   _zajPisi("mr_priznanja", p);
   poeniDodaj(240);
-  shareToast("Priznanje: " + PRIZNANJA[id] + " (+240p)");
+  const tekst = "Priznanje: " + PRIZNANJA[id] + " (+240p)";
+  if (document.body.classList.contains("riding")) (RIDE.kolProslave = RIDE.kolProslave || []).push(tekst);
+  else shareToast(tekst);
   return true;
 }
 /* provera prolaska kroz tacke kolekcija - zove je GPS petlja voznje, najvise na 4 s */
@@ -4260,11 +4272,14 @@ function kolTikni(lo, la) {
         st[kljuc] = new Date().toISOString().slice(0, 10);
         novo = true;
         RIDE.kolCnt = (RIDE.kolCnt || 0) + 1;
+        RIDE.kolProslave = RIDE.kolProslave || [];
         poeniDodaj(40);
+        // u voznji SAMO glas (kratko, sporedni red) - toast bi mamio pogled na ekran
+        // bas na prevoju/mostu; puna proslava stize na kraju voznje (zabeleziVoznju)
         try { speakSr("Kolekcija: " + t.n, true); } catch (e) {}
-        shareToast("Kolekcija " + k.ime + ": " + t.n + " ✓ (+40p)");
+        RIDE.kolProslave.push("Kolekcija " + k.ime + ": " + t.n + " ✓ (+40p)");
         if (k.id === "kanjoni") dodeliPriznanje("prviKanjon");
-        if (k.tacke.every((x) => st[k.id + ":" + x.n])) { poeniDodaj(500); shareToast("Kolekcija " + k.ime + " KOMPLETNA! (+500p)"); }
+        if (k.tacke.every((x) => st[k.id + ":" + x.n])) { poeniDodaj(500); RIDE.kolProslave.push("Kolekcija " + k.ime + " KOMPLETNA! (+500p)"); }
       }
     }
   }
@@ -4273,28 +4288,35 @@ function kolTikni(lo, la) {
 /* dnevnik voznji: stopRide ga zove PRE ciscenja RIDE stanja; probe ispod 2 km se ne broje */
 function zabeleziVoznju() {
   try {
-    if (!RIDE.t0 || !RIDE.route || !(RIDE.maxD > 2000)) return;
-    const km = RIDE.maxD / 1000;
+    const ukupnoD = (RIDE.baseD || 0) + (RIDE.maxD || 0);   // zbir etapa preko reroute-ova
+    if (!RIDE.t0 || !RIDE.route || !(ukupnoD > 2000)) return;
+    const km = ukupnoD / 1000;
     const min = Math.max(1, Math.round((Date.now() - RIDE.t0) / 60000));
-    const c = RIDE.route._curves;
-    const serp = c ? Math.round((c.sharp || 0) * Math.min(1, RIDE.maxD / Math.max(1, RIDE.total))) : 0;
+    const c = RIDE.route._curves;   // sveze posle reroute-a; serpentine ranijih etapa se ne broje (posten minimum)
+    const serp = c ? Math.round((c.sharp || 0) * Math.min(1, (RIDE.maxD || 0) / Math.max(1, RIDE.total))) : 0;
     const g = state.geocode || {};
     const naz = (g.from && g.from.name && g.to && g.to.name)
       ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` : "Vožnja";
     const poeni = Math.round(km + serp * 4);
-    const v = _zajCitaj("mr_voznje", []);
+    const v0 = _zajCitaj("mr_voznje", []);
+    const v = Array.isArray(v0) ? v0 : [];
     v.unshift({ ts: Date.now(), naz, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa });
     _zajPisi("mr_voznje", v.slice(0, 20));
     poeniDodaj(poeni);
+    const ag = _zajCitaj("mr_poeni", { ukupno: 0, nedelje: {} });   // dozivotni agregat (lista se sece na 20)
+    ag.voznje = (ag.voznje || 0) + 1;
+    ag.km = Math.round(((ag.km || 0) + km) * 10) / 10;
+    _zajPisi("mr_poeni", ag);
     if (serp) {   // brojac serpentina za kolekciju "1.000 serpentina"
       const st = kolStanje();
       st.serpentine = (st.serpentine || 0) + serp;
       _zajPisi("mr_kolekcije", st);
     }
     if (RIDE.kisa) dodeliPriznanje("kisa");
-    shareToast(`Vožnja upisana: ${v[0].km} km, +${poeni}p`);
+    shareToast(`Vožnja upisana: ${v[0].km} km, +${poeni}p` + (RIDE.kolCnt ? ` · kolekcije: ${RIDE.kolCnt} ${RIDE.kolCnt === 1 ? "nova tačka" : "nove tačke"}` : ""));
+    for (const t of RIDE.kolProslave || []) shareToast(t);   // proslave odlozene sa voznje (pogled ne ide na ekran u krivini)
   } catch (e) {}
-  RIDE.t0 = null; RIDE.maxD = 0; RIDE.kolCnt = 0; RIDE.kisa = false;
+  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = [];
 }
 /* ---- render sekcija taba Zajednica ---- */
 const ZAJ_PREVIEW = new URLSearchParams(location.search).has("preview");
@@ -4338,41 +4360,14 @@ function renderKolekcije() {
         <div class="zbar"><i style="width:${Math.min(100, ima / cilj * 100).toFixed(0)}%"></i></div></div></div>`;
   }).join("");
 }
-/* SKUPOVI: sekcija uklonjena iz taba 4.8.2026 (Boskova odluka "nije bitno");
-   funkcija i data/skupovi.json ostaju netaknuti za eventualni povratak. */
-async function renderSkupovi() {
-  const box = document.getElementById("zSkupovi"), iz = document.getElementById("zSkupIzvor");
-  if (!box || box.dataset.ok) return;
-  try {
-    const d = await fetchData("data/skupovi.json?v=" + new Date().toISOString().slice(0, 10), { timeoutMs: 8000 });
-    const danas = new Date().toISOString().slice(0, 10);
-    const bud = (d.skupovi || []).filter((s) => (s.do || s.od) >= danas).sort((a, b) => (a.od || "").localeCompare(b.od || ""));
-    if (iz) iz.textContent = "kalendar zajednice";
-    if (!bud.length) {
-      box.innerHTML = '<div class="stub">Nema najavljenih skupova u kalendaru - sezona se dopunjava.</div>';
-    } else {
-      box.innerHTML = bud.slice(0, 4).map((s) => `<div class="zcard" data-lat="${s.lat}" data-lon="${s.lon}">
-        <div class="zth">🏍</div>
-        <div class="zb"><div class="zt">${esc(s.klub)}</div><div class="zs">${esc(s.mesto)}, ${esc(s.drzava)} · ${esc(s.datum_tekst || s.od)}</div></div>
-        <button class="zbtns-btn" data-a="skmapa" style="background:#0f172a;border:1px solid rgba(148,163,184,.22);border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;color:#e2e8f0">Na mapi</button></div>`).join("");
-      box.addEventListener("click", (e) => {
-        const b = e.target.closest('[data-a="skmapa"]'); if (!b) return;
-        const c = b.closest(".zcard");
-        const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
-        try { map.flyTo({ center: [+c.dataset.lon, +c.dataset.lat], zoom: 11, duration: 900 }); } catch (er) {}
-      });
-    }
-    box.dataset.ok = "1";
-  } catch (e) {
-    box.innerHTML = '<div class="stub">Kalendar skupova stiže čim se povežeš.</div>';
-  }
-}
+/* SKUPOVI: sekcija uklonjena 4.8.2026 (Boskova odluka); data/skupovi.json ostaje za povratak. */
 /* GPS za "Oko tebe": jednom po sesiji, tiho; bez dozvole sve i dalje radi (sort po vremenu) */
 function zajGpsAcquire() {
   if (window._zajGps || window._zajGpsTried || !navigator.geolocation) return;
   window._zajGpsTried = true;
   navigator.geolocation.getCurrentPosition((p) => {
     window._zajGps = { lat: p.coords.latitude, lon: p.coords.longitude };
+    window._feedTs = Date.now();   // re-render sa sortom po blizini vazi kao svez fetch
     try { renderFeed(); renderPreporuke(); } catch (e) {}
   }, () => {}, { timeout: 6000, maximumAge: 120000 });
 }
@@ -4384,13 +4379,19 @@ function renderPreporuke() {
   const ed = (state.editorial || []).filter((e) => e.lat != null && e.type !== "ruta" && e.type !== "upozorenje");
   if (!ed.length) { box.innerHTML = '<div class="stub">Baza mesta se učitava…</div>'; return; }
   const g = window._zajGps || state.gpsFrom || (ZAJ_PREVIEW ? { lat: 44.8125, lon: 20.4612 } : null);
+  const oko = document.getElementById("zPrepOko");
   let top;
   if (g) {
     top = ed.map((e) => ({ e, d: haversine(g.lat, g.lon, e.lat, e.lon) })).sort((a, b) => a.d - b.d).slice(0, 5);
     if (nap) nap.textContent = "najbliže tebi";
+    if (oko) oko.style.display = "";
   } else {
-    top = ed.slice().sort((a, b) => (b.pominjanja || 0) - (a.pominjanja || 0)).slice(0, 5).map((e) => ({ e, d: null }));
+    // bez lokacije naslov NE sme da kaze "oko tebe"; prednost lokalima (kafane/vidikovci),
+    // ne velikim destinacijama po broju pomena (Stelvio nije "preporuka oko tebe")
+    const lok = ed.filter((e) => e.type === "kafana" || e.type === "vidikovac" || e.type === "okupljaliste");
+    top = (lok.length >= 5 ? lok : ed).slice().sort((a, b) => (b.pominjanja || 0) - (a.pominjanja || 0)).slice(0, 5).map((e) => ({ e, d: null }));
     if (nap) nap.textContent = "uključi lokaciju za sort po blizini";
+    if (oko) oko.style.display = "none";
   }
   box.innerHTML = top.map(({ e, d }) => `<div class="zcard" data-lat="${e.lat}" data-lon="${e.lon}">
     <div class="zth">${PREP_IKONA[e.type] || "📍"}</div>
@@ -4442,22 +4443,43 @@ function renderJaProfil() {
 /* priznanje "5 prijava potvrdili drugi vozaci" - kvalitet, ne kolicina (Boskova odluka) */
 async function proveriPotvrde() {
   if (priznanjaStanje().potvrdjen) return;
+  if (window._potvTs && Date.now() - window._potvTs < 600000) return;   // najvise na 10 min, ne na svaki klik taba
+  window._potvTs = Date.now();
   try {
     const rows = await supa(`prijave?select=id&device_id=eq.${deviceId()}&potvrde=gte.1&limit=10`);
     if ((rows || []).length >= 5) { dodeliPriznanje("potvrdjen"); renderJaProfil(); }
   } catch (e) {}
 }
-/* pod-tabovi: Feed / Mapa uzivo / Prijatelji */
-function zajMapaUzivo() {
+/* pod-tabovi: Oko tebe / Prijatelji */
+/* bez isplanirane rute markeri prijava ne postoje (crtaju se duz rute) - dugme je
+   vodilo na PRAZNU mapu (PM nalaz 4.8). Zato: povuci SVE aktivne i nacrtaj ih. */
+async function zajSveAktivne() {
+  const rows = await supa(`prijave?select=id,tip,lat,lon,created_at,istice_at` +
+    `&istice_at=gt.${encodeURIComponent(new Date().toISOString())}&limit=200`);
+  for (const m of state.prijaveMarkers || []) m.remove();
+  state.prijaveMarkers = [];
+  for (const p of rows || []) {
+    const tip = DB2TIP[p.tip] || p.tip;
+    const d = markerBadge(HZ2ICON[tip] || "warning", "danger");
+    d.title = `${tip} · ${prijavaStarost(p.created_at)} · prijava zajednice`;
+    const m = new maplibregl.Marker({ element: d }).setLngLat([p.lon, p.lat]).addTo(map);
+    if (!state.layerVis.hazard) d.style.display = "none";
+    state.prijaveMarkers.push(m);
+  }
+}
+async function zajMapaUzivo() {
   const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
   try { state.layerVis.hazard = true; applyLayerVis(); } catch (e) {}
   try {
+    if (!(state.prijaveMarkers || []).length) await zajSveAktivne();
     const ms = state.prijaveMarkers || [];
+    const g = window._zajGps || state.gpsFrom;
     if (ms.length) {
       const b = new maplibregl.LngLatBounds();
       ms.forEach((m) => b.extend(m.getLngLat()));
+      if (g) b.extend([g.lon, g.lat]);   // i ti si na slici - vidi se koliko je sta daleko
       map.fitBounds(b, { padding: 70, maxZoom: 11, duration: 800 });
-    } else if (state.gpsFrom) map.flyTo({ center: [state.gpsFrom.lon, state.gpsFrom.lat], zoom: 9, duration: 800 });
+    } else if (g) map.flyTo({ center: [g.lon, g.lat], zoom: 9, duration: 800 });
   } catch (e) {}
 }
 (function () {
@@ -5065,8 +5087,25 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.11";
+const APP_VERSION = "0.9.12";
 const CHANGELOG = [
+  { v: "0.9.12", d: "04.08.2026.", stavke: [
+    "<b>Preporuke zajednice su sada prve</b> u \"Oko tebe\", a bez lokacije naslov više ne tvrdi \"oko tebe\".",
+    "<b>\"Prikaži na mapi\" više nikad ne vodi na praznu mapu</b> - povlači sve aktivne prijave i pokazuje i tvoju poziciju.",
+    "<b>Dnevnik vožnji je pošten i posle promene rute</b> (kilometri se sabiraju po etapama), a proslave kolekcija stižu na kraju vožnje - u krivini samo glas, bez mamljenja pogleda na ekran.",
+    "<b>Ne možeš da potvrdiš sopstvenu prijavu</b> - na svojoj piše \"tvoja prijava\".",
+  ] },
+  { v: "0.9.11", d: "04.08.2026.", stavke: [
+    "<b>Zajednica je sad \"Oko tebe\"</b>: prijave sa puta sortirane po udaljenosti od tebe, preporuke zajednice (najbliže kafane i vidikovci) i tvoja nedelja poena. Prijatelji stižu sa nalozima - pošteno piše šta i kada.",
+    "<b>Kolekcije, dnevnik vožnji, poeni i priznanja su na Ja tabu</b> - to je tvoja priča, pa stoji kod tebe.",
+    "<b>\"Prikaži na mapi\"</b> pokazuje sve aktivne prijave i tvoju poziciju - odalji i vidi celu sliku.",
+  ] },
+  { v: "0.9.10", d: "04.08.2026.", stavke: [
+    "<b>Kolekcije - bez roka, tvojim tempom</b>: Kanjoni, Jadranska magistrala, Prevoji i 1.000 serpentina. Tačka se osvaja prolaskom u vožnji sa navigacijom; app je najavi glasom.",
+    "<b>Dnevnik vožnji</b>: svaka vožnja sa navigacijom preko 2 km ostaje zapisana - relacija, kilometri, serpentine, poeni.",
+    "<b>Priznanja</b>: \"Prvi kanjon\", \"Istrpeo kišu\" i \"5 prijava potvrdili drugi vozači\". Sve lokalno, na tvom telefonu.",
+    "<b>85 kafana, kampova i vidikovaca</b> koje je moto zajednica stvarno preporučila - od restorana Vrelo na Perućcu do Franz-Josefs-Höhe na Grossglockneru.",
+  ] },
   { v: "0.9.9", d: "04.08.2026.", stavke: [
     "<b>161 mesto sa foruma</b> u bazi: prevoji, planine, kanjoni i gradovi koje moto zajednica stvarno pominje. Izvučeno iz 2.712 tema sa BJBikers-a, motori.hr i evropskih putopisa.",
     "<b>Pretraga ih zna</b>: ukucaj Stelvio, Furka, Nordkapp ili Kanjon Tare i planer ide pravo tamo. Radi i po tipu - upiši \"prevoj\" i dobiješ prevoje.",
@@ -5900,6 +5939,9 @@ async function altOpen() {
 function altApply(nr) {
   const route = RIDE.route; if (!route) return;
   Object.assign(route, nr);                       // isti objekat - ostatak app-a drzi referencu
+
+  RIDE.baseD = (RIDE.baseD || 0) + (RIDE.maxD || 0); RIDE.maxD = 0;   // nova ruta = nova cumDist skala (dnevnik sabira etape)
+  try { route._curves = analyzeCurves(route); } catch (e) { delete route._curves; }   // serpentine sa SVEZE geometrije
   RIDE.nav = buildNav(route);
   RIDE.total = route.cumDist[route.cumDist.length - 1];
   route._limits = []; loadSpeedLimits(route);
@@ -5929,6 +5971,9 @@ async function rideReroute(route, lo, la) {
     const nr = await valhallaRoute({ lat: la, lon: lo }, to, style);
     state.vias = savedVias;
     Object.assign(route, nr);   // mutiraj isti objekat (ostatak app-a drzi referencu)
+
+    RIDE.baseD = (RIDE.baseD || 0) + (RIDE.maxD || 0); RIDE.maxD = 0;   // nova ruta = nova cumDist skala (dnevnik sabira etape)
+    try { route._curves = analyzeCurves(route); } catch (e) { delete route._curves; }   // serpentine sa SVEZE geometrije
     RIDE.nav = buildNav(route);
     RIDE.total = route.cumDist[route.cumDist.length - 1];   // R13: ETA/preostalo/"Stigao si" po NOVOJ ruti
     route._limits = []; loadSpeedLimits(route);   // ogranicenja su bila na km stare rute
@@ -5970,7 +6015,8 @@ function startRide() {
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
-  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.kolCnt = 0; RIDE.kisa = false;   // dnevnik voznje + kolekcije
+  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = [];   // dnevnik voznje + kolekcije
+  try { clearTimeout(RIDE.arrTo); } catch (e) {} RIDE.arrTo = null;   // zaostali auto-stop prosle voznje
   loadSpeedLimits(route);   // u pozadini: dok stigne, roundel je prazan umesto da lazе
   try {   // svezе prijave zajednice na start + osvezavanje na 45 s tokom voznje
     loadPrijave(route, true);
@@ -6044,7 +6090,8 @@ function startRide() {
     } catch (e) {}
     const pr = navProject(route, lo, la);
     const d = route.cumDist[pr.i];
-    RIDE.maxD = Math.max(RIDE.maxD || 0, d);   // predjeno po ruti - za dnevnik voznje
+    const accFix = p.coords.accuracy || 0;     // dnevnik: samo pouzdan fiks NA ruti (los GPS/kruzna ruta bi naduvali km)
+    if (accFix < 80 && pr.offM < 60) RIDE.maxD = Math.max(RIDE.maxD || 0, d);
     try { kolTikni(lo, la); } catch (e) {}     // prolazak kroz tacke kolekcija (throttle unutra)
     if (RIDE.rerouting) return;   // dok se racuna nova ruta, ne prepisuj "Menjam rutu…" baner
     // van rute? (2 uzastopna fiksa >60 m; ignorisi nepouzdane fikseve - hladan GPS/urbani kanjon)
@@ -6094,7 +6141,7 @@ function startRide() {
       document.getElementById("rideStreet").textContent = (state.geocode && state.geocode.to && state.geocode.to.name) || "";
       document.getElementById("rideThen").textContent = "";
       document.getElementById("rideRem").textContent = "";
-      setTimeout(stopRide, 8000);
+      if (!RIDE.arrTo) RIDE.arrTo = setTimeout(stopRide, 8000);   // jednom, ne na svaki fiks - stale timeout je ubijao SLEDECU voznju
     }
     // meta traka
     const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total));
@@ -6149,6 +6196,7 @@ function startRide() {
   { enableHighAccuracy: true, maximumAge: 1500, timeout: 15000 });
 }
 function stopRide() {
+  try { clearTimeout(RIDE.arrTo); } catch (e) {} RIDE.arrTo = null;
   try { zabeleziVoznju(); } catch (e) {}   // dnevnik + poeni PRE ciscenja RIDE stanja
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
   try { clearInterval(RIDE.prijInt); RIDE.prijInt = null; } catch (e) {}
