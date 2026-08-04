@@ -2,7 +2,7 @@
 # KLJUCNO: server vraca 404 bez gzip Accept-Encodinga (CDN sluzi samo gzip varijantu)
 # PAZNJA: ne pisi "Accept-Encoding: gzip" u komentaru u prve 2 linije fajla -
 #         Pythonov coding-cookie regex to protumaci kao encoding deklaraciju!
-import urllib.request, urllib.error, json, gzip, re, html, time
+import urllib.request, urllib.error, json, gzip, re, html, time, http.client
 
 BASE = "https://www.hak.hr/info/stanje-na-cestama-novo/events?subCategoryKey="
 CATS = {  # subCategoryKey -> nas "type"
@@ -21,10 +21,19 @@ def _get(url, tries=4):
             "User-Agent": "Mozilla/5.0", "Accept-Encoding": "gzip"})
         try:
             raw = urllib.request.urlopen(req, timeout=30).read()
+        except http.client.IncompleteRead as e:
+            # origin povremeno posalje Content-Length veci od tela; ono sto je stiglo
+            # je najcesce ispravan gzip/JSON pa probamo sa delimicnim odgovorom
+            raw = e.partial
+        except (urllib.error.HTTPError, urllib.error.URLError, OSError):
+            if i < tries - 1:
+                time.sleep(3 * (i + 1))
+            continue
+        try:
             if raw[:2] == b"\x1f\x8b":
                 raw = gzip.decompress(raw)
             return json.loads(raw.decode("utf-8"))
-        except (urllib.error.HTTPError, urllib.error.URLError):
+        except Exception:
             if i < tries - 1:
                 time.sleep(3 * (i + 1))
     return None
@@ -45,11 +54,20 @@ def fetch_hak_items():
                     m = re.search(
                         r'gpime[^>]*><strong>\s*' + re.escape(ev["Title"]) +
                         r'.*?</tr>', ev.get("InfoboxContent") or "", re.S)
-                    waits = re.findall(r'class="gpUnos"[^>]*>([^<]*)<', m.group(0)) if m else []
-                    detail = ("cekanje ulaz auto/teretno: %s/%s, izlaz: %s/%s" % tuple(
-                        w.strip() or "-" for w in (waits + ["-"] * 4)[:4]))
+                    blok = m.group(0) if m else ""
+                    waits = re.findall(r'class="gpUnos"[^>]*>([^<]*)<', blok)
+                    w4 = [w.strip() or "-" for w in (waits + ["-"] * 4)[:4]]
+                    detail = "cekanje ulaz auto/teretno: %s/%s, izlaz: %s/%s" % tuple(w4)
+                    # KLJUCNO: starost se cita PO CELIJI ("T: 4.8.2026. 7:45:55"), ne po
+                    # vremenu feeda - u istoj tabeli razlika ume da bude 4 sata.
+                    stamps = re.findall(r"T:\s*([\d.]+\s*[\d:]+)", blok)
                     items.append({"type": typ, "title": ev["Title"],
-                                  "detail": detail, "region": "granica"})
+                                  "detail": detail, "region": "granica",
+                                  "border": {"ulaz_auto": w4[0], "ulaz_teretno": w4[1],
+                                             "izlaz_auto": w4[2], "izlaz_teretno": w4[3],
+                                             "ocitano": stamps[0] if stamps else None,
+                                             "lat": ev.get("CoordinateY"), "lon": ev.get("CoordinateX"),
+                                             "izvor": "HAK/MUP-HR", "za": "putnicka vozila"}})
                 else:
                     kind = _clean(ev.get("Title"))  # npr. Zastoj / Radovi / Nesreca
                     detail = _clean(ev.get("Description") or ev.get("Details") or
