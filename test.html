@@ -454,15 +454,16 @@
     #screen-zajednica .zsec { font-size: 12px; font-weight: 800; color: #e2e8f0; text-transform: uppercase; letter-spacing: .06em; margin: 20px 0 9px; display: flex; align-items: center; gap: 7px; }
     #screen-zajednica .zsec .dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 0 4px rgba(239,68,68,.2); flex: none; }
     #screen-zajednica .zsec small { margin-left: auto; color: #94a3b8; font-weight: 600; text-transform: none; letter-spacing: 0; font-size: 11.5px; text-align: right; }
-    #screen-zajednica .zcard { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 15px; padding: 12px 14px; margin-bottom: 9px; display: flex; gap: 12px; align-items: center; }
-    #screen-zajednica .zcard .zth { width: 40px; height: 40px; border-radius: 11px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 19px; background: #0f172a; }
-    #screen-zajednica .zcard .zb { flex: 1; min-width: 0; }
-    #screen-zajednica .zcard .zt { font-size: 14px; color: #fff; font-weight: 700; line-height: 1.25; }
-    #screen-zajednica .zcard .zs { font-size: 11.5px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
-    #screen-zajednica .zcard .zs b { color: #f97316; }
-    #screen-zajednica .zcard .ztag { flex: none; font-size: 10.5px; font-weight: 800; border-radius: 999px; padding: 5px 9px; background: rgba(34,197,94,.14); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
-    #screen-zajednica .zbar { height: 6px; border-radius: 999px; background: #0f172a; overflow: hidden; margin-top: 7px; }
-    #screen-zajednica .zbar i { display: block; height: 100%; background: #f97316; border-radius: 999px; }
+    .tabscreen .zcard { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 15px; padding: 12px 14px; margin-bottom: 9px; display: flex; gap: 12px; align-items: center; }
+    .tabscreen .zcard .zth { width: 40px; height: 40px; border-radius: 11px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 19px; background: #0f172a; }
+    .tabscreen .zcard .zb { flex: 1; min-width: 0; }
+    .tabscreen .zcard .zt { font-size: 14px; color: #fff; font-weight: 700; line-height: 1.25; }
+    .tabscreen .zcard .zs { font-size: 11.5px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+    .tabscreen .zcard .zs b { color: #f97316; }
+    .tabscreen .zcard .ztag { flex: none; font-size: 10.5px; font-weight: 800; border-radius: 999px; padding: 5px 9px; background: rgba(34,197,94,.14); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
+    .tabscreen .zbar { height: 6px; border-radius: 999px; background: #0f172a; overflow: hidden; margin-top: 7px; }
+    .tabscreen .zbar i { display: block; height: 100%; background: #f97316; border-radius: 999px; }
+    #screen-zajednica .zmapbtn { display: block; width: 100%; background: #1e293b; border: 1px solid rgba(148,163,184,.22); border-radius: 13px; padding: 11px; font-size: 13px; font-weight: 700; color: #e2e8f0; margin: 0 0 10px; text-align: center; }
     #screen-zajednica .zpts { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 15px; padding: 13px 14px; margin-bottom: 12px; }
     #screen-zajednica .zpts .big { font-size: 26px; font-weight: 900; color: #f97316; font-variant-numeric: tabular-nums; }
     #screen-zajednica .zpts .note { font-size: 11.5px; color: #94a3b8; font-weight: 600; margin-top: 3px; }
@@ -1330,22 +1331,17 @@
     </div>
   </div>
   <div class="tabscreen" id="screen-zajednica"><h2>Zajednica</h2>
-    <div class="zseg"><button class="on" type="button" data-zseg="feed">Feed</button><button type="button" data-zseg="mapa">Mapa uživo</button><button type="button" data-zseg="ljudi">Prijatelji</button></div>
-    <div id="zsegFeed">
-      <div class="zmeet"><div class="mic">📍</div><div style="flex:1;min-width:0"><div class="n">Nađimo se tamo</div><div class="d">Pozovi ekipu i podeli živu lokaciju</div></div><span class="soon">stiže sa nalozima</span></div>
-      <div class="zsec"><span class="dot"></span>Uživo na mapi<small id="zStat">učitavam…</small><button id="zOsvezi" type="button" aria-label="Osveži">↻</button></div>
+    <div class="zseg"><button class="on" type="button" data-zseg="oko">Oko tebe</button><button type="button" data-zseg="ljudi">Prijatelji</button></div>
+    <div id="zsegOko">
+      <div class="zsec"><span class="dot"></span>Na putu<small id="zStat">učitavam…</small><button id="zOsvezi" type="button" aria-label="Osveži">↻</button></div>
+      <button id="zNaMapi" type="button" class="zmapbtn">🗺 Pogledaj na mapi - odalji i vidi celu sliku</button>
       <div id="zFeed"><div class="stub">Učitavam prijave zajednice…</div></div>
-      <div class="zsec">Nedavne vožnje<small>tvoje, sa navigacijom</small></div>
-      <div id="zVoznje"></div>
-      <div class="zsec">Kolekcije<small>bez roka - tvojim tempom</small></div>
-      <div id="zKolekcije"></div>
-      <div class="zsec">Moto skupovi<small id="zSkupIzvor"></small></div>
-      <div id="zSkupovi"></div>
-      <div class="zsec">Tvoji poeni</div>
-      <div id="zPoeni" class="zpts"></div>
+      <div class="zsec">Zajednica preporučuje oko tebe<small id="zPrepNap"></small></div>
+      <div id="zPreporuke"></div>
     </div>
     <div id="zsegLjudi" style="display:none">
-      <div class="stub" style="margin-top:14px"><b>Prijatelji stižu sa nalozima.</b> Tada dolaze deljene vožnje, rang sa ekipom i "Nađimo se tamo" sa živom lokacijom. Do tada je sve u Feedu tvoje i lokalno - vidiš ga samo ti.</div>
+      <div class="zmeet"><div class="mic">📍</div><div style="flex:1;min-width:0"><div class="n">Nađimo se tamo</div><div class="d">Pozovi ekipu i podeli živu lokaciju</div></div><span class="soon">stiže sa nalozima</span></div>
+      <div class="stub" style="margin-top:14px"><b>Prijatelji stižu sa nalozima.</b> Tada dolaze vozači koje pratiš, deljene vožnje i "Nađimo se tamo" sa živom lokacijom. Do tada, sve pod "Oko tebe" radi i bez ijednog naloga - to su tragovi vozača koji su stvarno prošli tuda.</div>
     </div>
   </div>
   <div class="tabscreen" id="screen-ja"><h2>Ja</h2>
@@ -1362,9 +1358,15 @@
       <div id="jaMotorHost" class="jset"></div>
       <div class="jnote">Iz izabranog modela se vuku rezervoar i potrošnja - njih koristi računica troška puta.</div>
     </div>
-    <div class="stub"><b>Profil</b>
+    <div class="stub"><b>Moj profil</b>
       <div id="jaProfil" class="jset"></div>
       <div class="jnote">Sve je lokalno na ovom telefonu. Deljenje sa drugima i rang stižu sa nalozima.</div>
+    </div>
+    <div class="stub"><b>Kolekcije</b> - bez roka, tvojim tempom
+      <div id="jaKolekcije" style="margin-top:10px"></div>
+    </div>
+    <div class="stub"><b>Dnevnik vožnji</b>
+      <div id="jaVoznje" style="margin-top:10px"></div>
     </div>
   </div>
 
@@ -3009,7 +3011,7 @@ async function renderRoadStatus(route) {
 }
 async function loadEditorial() {
   try {
-    const d = await fetchData("data/editorial_bjbikers.json?v=" + new Date().toISOString().slice(0, 10), { timeoutMs: 8000 });   // dnevni cache-bust
+    const d = await fetchData("data/editorial_bjbikers.json?v=" + APP_VERSION + "-" + new Date().toISOString().slice(0, 10), { timeoutMs: 8000 });   // cache-bust: dnevni + verzija (fix podataka u toku dana stigne uz update)
     state.editorial = (d.entries || []).filter((e) => e.lat !== undefined);
     /* searchIndex() kesira rezultat u _c pri prvom pozivu. Ako korisnik kucne u
        pretragu pre nego sto ovaj fajl stigne (na mobilnoj mrezi je 280 KB), indeks
@@ -4117,9 +4119,12 @@ async function renderFeed() {
     box.innerHTML = '<div class="stub">Nema mreže - feed zajednice stiže čim se povežeš.</div>';
     st.textContent = ""; return;
   }
-  const g = state.gpsFrom;   // ako znamo gde je vozac, dodajemo udaljenost
+  const g = window._zajGps || state.gpsFrom;   // ako znamo gde je vozac: udaljenost + sort po blizini
   const sad = Date.now();
   const aktivnih = rows.filter((r) => new Date(r.istice_at).getTime() > sad).length;
+  if (g) rows.sort((a, b) =>   // aktivne pre isteklih, pa najbliza prva (Boskova odluka 4.8.)
+    ((new Date(a.istice_at).getTime() > sad ? 0 : 1) - (new Date(b.istice_at).getTime() > sad ? 0 : 1))
+    || (haversine(g.lat, g.lon, a.lat, a.lon) - haversine(g.lat, g.lon, b.lat, b.lon)));
   st.textContent = rows.length
     ? `${aktivnih} aktivnih sada · ${rows.length} u poslednjih 7 dana`
     : "još nema prijava u tvom regionu";
@@ -4284,12 +4289,13 @@ function zabeleziVoznju() {
 }
 /* ---- render sekcija taba Zajednica ---- */
 const ZAJ_PREVIEW = new URLSearchParams(location.search).has("preview");
+if (ZAJ_PREVIEW) window._zajGps = { lat: 44.8125, lon: 20.4612 };   // preview: centar BG, da sort po blizini i "km od tebe" rade
 function _vozUzorak() {   // preview=1: primer da dizajn ima sta da pokaze (nikad u localStorage)
   return [{ ts: Date.now() - 36e5, naz: "Kotor → Cetinje", km: 69, min: 118, serp: 25, poeni: 169, kol: 1, kisa: false },
           { ts: Date.now() - 864e5, naz: "Beograd → Zlatibor", km: 192, min: 205, serp: 6, poeni: 216, kol: 0, kisa: false }];
 }
-function renderVoznje() {
-  const box = document.getElementById("zVoznje");
+function renderVoznje(targetId, limit) {
+  const box = document.getElementById(targetId || "jaVoznje");
   if (!box) return;
   let v = _zajCitaj("mr_voznje", []);
   if (!v.length && ZAJ_PREVIEW) v = _vozUzorak();
@@ -4297,14 +4303,14 @@ function renderVoznje() {
     box.innerHTML = '<div class="stub">Završi prvu vožnju sa navigacijom i ovde ostaje zapis: kilometri, serpentine, poeni.</div>';
     return;
   }
-  box.innerHTML = v.slice(0, 3).map((r) => `<div class="zcard">
+  box.innerHTML = v.slice(0, limit || 10).map((r) => `<div class="zcard">
     <div class="zth"><svg viewBox="0 0 40 40" width="26" height="26"><path d="M7 33 C15 26, 13 17, 21 14 C28 12, 27 7, 33 6" stroke="#f97316" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="7" cy="33" r="2.5" fill="#22c55e"/></svg></div>
     <div class="zb"><div class="zt">${esc(r.naz)}</div>
       <div class="zs"><b>+${r.poeni}p</b> · ${r.km} km${r.serp ? " · " + r.serp + " " + plSerp(r.serp) : ""}${r.kisa ? " · 🌧" : ""}</div></div>
     ${r.kol ? '<span class="ztag">Kolekcija</span>' : ""}</div>`).join("");
 }
 function renderKolekcije() {
-  const box = document.getElementById("zKolekcije");
+  const box = document.getElementById("jaKolekcije");
   if (!box) return;
   const st = ZAJ_PREVIEW && !Object.keys(kolStanje()).length
     ? { "kanjoni:Kanjon Tare (most)": "2026-08-01", "prevoji:Sedlo (Durmitor)": "2026-08-01", serpentine: 137 } : kolStanje();
@@ -4323,6 +4329,8 @@ function renderKolekcije() {
         <div class="zbar"><i style="width:${Math.min(100, ima / cilj * 100).toFixed(0)}%"></i></div></div></div>`;
   }).join("");
 }
+/* SKUPOVI: sekcija uklonjena iz taba 4.8.2026 (Boskova odluka "nije bitno");
+   funkcija i data/skupovi.json ostaju netaknuti za eventualni povratak. */
 async function renderSkupovi() {
   const box = document.getElementById("zSkupovi"), iz = document.getElementById("zSkupIzvor");
   if (!box || box.dataset.ok) return;
@@ -4350,14 +4358,43 @@ async function renderSkupovi() {
     box.innerHTML = '<div class="stub">Kalendar skupova stiže čim se povežeš.</div>';
   }
 }
-function renderPoeni() {
-  const box = document.getElementById("zPoeni");
+/* GPS za "Oko tebe": jednom po sesiji, tiho; bez dozvole sve i dalje radi (sort po vremenu) */
+function zajGpsAcquire() {
+  if (window._zajGps || window._zajGpsTried || !navigator.geolocation) return;
+  window._zajGpsTried = true;
+  navigator.geolocation.getCurrentPosition((p) => {
+    window._zajGps = { lat: p.coords.latitude, lon: p.coords.longitude };
+    try { renderFeed(); renderPreporuke(); } catch (e) {}
+  }, () => {}, { timeout: 6000, maximumAge: 120000 });
+}
+/* "Zajednica preporucuje oko tebe": najblizih 5 kuriranih mesta (kafane/vidikovci/mesta) */
+const PREP_IKONA = { kafana: "🍴", vidikovac: "👁", okupljaliste: "🤝", mesto: "🏔" };
+function renderPreporuke() {
+  const box = document.getElementById("zPreporuke"), nap = document.getElementById("zPrepNap");
   if (!box) return;
-  let p = _zajCitaj("mr_poeni", { ukupno: 0, nedelje: {} });
-  if (!p.ukupno && ZAJ_PREVIEW) p = { ukupno: 840, nedelje: { [isoNedelja(Date.now())]: 385 } };
-  const ove = p.nedelje[isoNedelja(Date.now())] || 0;
-  box.innerHTML = `<div class="big">${p.ukupno.toLocaleString("sr-RS")}</div>
-    <div class="note">${ove ? "+" + ove + " ove nedelje · " : ""}vožnje + kolekcije + priznanja. Rang sa drugima stiže sa nalozima.</div>`;
+  const ed = (state.editorial || []).filter((e) => e.lat != null && e.type !== "ruta" && e.type !== "upozorenje");
+  if (!ed.length) { box.innerHTML = '<div class="stub">Baza mesta se učitava…</div>'; return; }
+  const g = window._zajGps || state.gpsFrom || (ZAJ_PREVIEW ? { lat: 44.8125, lon: 20.4612 } : null);
+  let top;
+  if (g) {
+    top = ed.map((e) => ({ e, d: haversine(g.lat, g.lon, e.lat, e.lon) })).sort((a, b) => a.d - b.d).slice(0, 5);
+    if (nap) nap.textContent = "najbliže tebi";
+  } else {
+    top = ed.slice().sort((a, b) => (b.pominjanja || 0) - (a.pominjanja || 0)).slice(0, 5).map((e) => ({ e, d: null }));
+    if (nap) nap.textContent = "uključi lokaciju za sort po blizini";
+  }
+  box.innerHTML = top.map(({ e, d }) => `<div class="zcard" data-lat="${e.lat}" data-lon="${e.lon}">
+    <div class="zth">${PREP_IKONA[e.type] || "📍"}</div>
+    <div class="zb"><div class="zt">${esc(e.name)}</div>
+      <div class="zs">${esc((e.where || "").split("·")[0].trim())}${d != null ? " · <b>" + Math.round(d) + " km od tebe</b>" : ""}</div></div></div>`).join("");
+  if (!box._reg) {
+    box._reg = 1;
+    box.addEventListener("click", (ev) => {
+      const c = ev.target.closest(".zcard"); if (!c) return;
+      const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
+      try { map.flyTo({ center: [+c.dataset.lon, +c.dataset.lat], zoom: 12, duration: 900 }); } catch (er) {}
+    });
+  }
 }
 function renderJaProfil() {
   const box = document.getElementById("jaProfil");
@@ -4367,7 +4404,8 @@ function renderJaProfil() {
   const ukKm = Math.round(v.reduce((s, r) => s + (r.km || 0), 0));
   const pr = priznanjaStanje();
   const ima = Object.keys(pr).filter((k) => PRIZNANJA[k]);
-  box.innerHTML = `<div class="jrow"><span>Poeni</span><b>${p.ukupno.toLocaleString("sr-RS")}</b></div>
+  const oveN = p.nedelje[isoNedelja(Date.now())] || 0;
+  box.innerHTML = `<div class="jrow"><span>Poeni</span><b>${p.ukupno.toLocaleString("sr-RS")}${oveN ? " (+" + oveN + " ove nedelje)" : ""}</b></div>
     <div class="jrow"><span>Vožnje sa navigacijom</span><b>${v.length}${ukKm ? " · " + ukKm + " km" : ""}</b></div>
     ${ima.length ? '<div class="jpriz">' + ima.map((k) => `<span>🏅 ${esc(PRIZNANJA[k])}</span>`).join("") + "</div>"
                  : '<div class="jnote" style="margin-top:8px">Priznanja se otključavaju vožnjom - sama će se pojaviti ovde.</div>'}`;
@@ -4399,15 +4437,16 @@ function zajMapaUzivo() {
   if (!seg) return;
   seg.addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return;
-    if (b.dataset.zseg === "mapa") { zajMapaUzivo(); return; }   // mapa je akcija, ne panel - seg ostaje gde je bio
     seg.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
-    document.getElementById("zsegFeed").style.display = b.dataset.zseg === "feed" ? "" : "none";
+    document.getElementById("zsegOko").style.display = b.dataset.zseg === "oko" ? "" : "none";
     document.getElementById("zsegLjudi").style.display = b.dataset.zseg === "ljudi" ? "" : "none";
   });
+  const nm = document.getElementById("zNaMapi");
+  if (nm) nm.addEventListener("click", zajMapaUzivo);
   const link = document.querySelector('#bottomnav a[data-tab="zajednica"]');
-  if (link) link.addEventListener("click", () => { renderVoznje(); renderKolekcije(); renderSkupovi(); renderPoeni(); });
+  if (link) link.addEventListener("click", () => { zajGpsAcquire(); renderPreporuke(); });
   const ja = document.querySelector('#bottomnav a[data-tab="ja"]');
-  if (ja) ja.addEventListener("click", () => renderJaProfil());
+  if (ja) ja.addEventListener("click", () => { renderJaProfil(); renderKolekcije(); renderVoznje("jaVoznje", 10); });
 })();
 /* R7: "Jos opcija" = mali sheet (kruzna, stanica, motor) - stari formular vise ne postoji na mobilnom */
 let _optsAnchors = null;
@@ -4998,7 +5037,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.10";
+const APP_VERSION = "0.9.11";
 const CHANGELOG = [
   { v: "0.9.9", d: "04.08.2026.", stavke: [
     "<b>161 mesto sa foruma</b> u bazi: prevoji, planine, kanjoni i gradovi koje moto zajednica stvarno pominje. Izvučeno iz 2.712 tema sa BJBikers-a, motori.hr i evropskih putopisa.",
