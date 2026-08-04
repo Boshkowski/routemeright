@@ -464,6 +464,7 @@
     .tabscreen .zbar { height: 6px; border-radius: 999px; background: #0f172a; overflow: hidden; margin-top: 7px; }
     .tabscreen .zbar i { display: block; height: 100%; background: #f97316; border-radius: 999px; }
     #screen-zajednica .zmapbtn { display: block; width: 100%; background: #1e293b; border: 1px solid rgba(148,163,184,.22); border-radius: 13px; padding: 11px; font-size: 13px; font-weight: 700; color: #e2e8f0; margin: 0 0 10px; text-align: center; }
+    #screen-zajednica .zmapbtn svg { width: 16px; height: 16px; stroke: #e2e8f0; fill: none; vertical-align: -3px; margin-right: 7px; }
     #screen-zajednica .zpts { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 15px; padding: 13px 14px; margin-bottom: 12px; }
     #screen-zajednica .zpts .big { font-size: 26px; font-weight: 900; color: #f97316; font-variant-numeric: tabular-nums; }
     #screen-zajednica .zpts .note { font-size: 11.5px; color: #94a3b8; font-weight: 600; margin-top: 3px; }
@@ -1334,14 +1335,19 @@
     <div class="zseg"><button class="on" type="button" data-zseg="oko">Oko tebe</button><button type="button" data-zseg="ljudi">Prijatelji</button></div>
     <div id="zsegOko">
       <div class="zsec"><span class="dot"></span>Na putu<small id="zStat">učitavam…</small><button id="zOsvezi" type="button" aria-label="Osveži">↻</button></div>
-      <button id="zNaMapi" type="button" class="zmapbtn">🗺 Pogledaj na mapi - odalji i vidi celu sliku</button>
+      <button id="zNaMapi" type="button" class="zmapbtn"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Pogledaj na mapi - odalji i vidi celu sliku</button>
       <div id="zFeed"><div class="stub">Učitavam prijave zajednice…</div></div>
       <div class="zsec">Zajednica preporučuje oko tebe<small id="zPrepNap"></small></div>
       <div id="zPreporuke"></div>
+      <div class="zsec">Tvoja nedelja</div>
+      <div id="zNedelja" class="zpts"></div>
     </div>
     <div id="zsegLjudi" style="display:none">
       <div class="zmeet"><div class="mic">📍</div><div style="flex:1;min-width:0"><div class="n">Nađimo se tamo</div><div class="d">Pozovi ekipu i podeli živu lokaciju</div></div><span class="soon">stiže sa nalozima</span></div>
-      <div class="stub" style="margin-top:14px"><b>Prijatelji stižu sa nalozima.</b> Tada dolaze vozači koje pratiš, deljene vožnje i "Nađimo se tamo" sa živom lokacijom. Do tada, sve pod "Oko tebe" radi i bez ijednog naloga - to su tragovi vozača koji su stvarno prošli tuda.</div>
+      <div class="zsec">Stiže sa nalozima</div>
+      <div class="zcard"><div class="zth">👥</div><div class="zb"><div class="zt">Vozači koje pratiš</div><div class="zs">njihove vožnje, kolekcije i prijave</div></div></div>
+      <div class="zcard"><div class="zth">🏁</div><div class="zb"><div class="zt">Deljene vožnje i rang sa ekipom</div><div class="zs">poeni se mere sa društvom, ne sa strancima</div></div></div>
+      <div class="stub">Do tada, sve pod "Oko tebe" radi bez naloga - to su tragovi vozača koji su stvarno prošli tuda.</div>
     </div>
   </div>
   <div class="tabscreen" id="screen-ja"><h2>Ja</h2>
@@ -4126,7 +4132,8 @@ async function renderFeed() {
     ((new Date(a.istice_at).getTime() > sad ? 0 : 1) - (new Date(b.istice_at).getTime() > sad ? 0 : 1))
     || (haversine(g.lat, g.lon, a.lat, a.lon) - haversine(g.lat, g.lon, b.lat, b.lon)));
   st.textContent = rows.length
-    ? `${aktivnih} aktivnih sada · ${rows.length} u poslednjih 7 dana`
+    ? (aktivnih ? `${aktivnih} aktivnih sada · ${rows.length} u poslednjih 7 dana`
+                : `mirno je trenutno · ${rows.length} u poslednjih 7 dana`)   // nula se ne istice (ghost-town lekcija)
     : "još nema prijava u tvom regionu";
   if (!rows.length) {
     box.innerHTML = '<div class="stub"><b>Budi prvi.</b> Kad prijaviš policiju, udes ili rupu, ' +
@@ -4134,7 +4141,9 @@ async function renderFeed() {
     return;
   }
   const glasovi = mojiGlasovi();
-  box.innerHTML = rows.map((r) => {
+  // bez aktivnih: niz sivih isteklih kartica izgleda kao mrtva app - 3 najskorije su dovoljan dokaz zivota
+  const prikaz = aktivnih ? rows : rows.slice(0, 3);
+  box.innerHTML = prikaz.map((r) => {
     const tip = DB2TIP[r.tip] || r.tip;
     const isteklo = new Date(r.istice_at).getTime() <= sad;
     const d = g ? haversine(g.lat, g.lon, r.lat, r.lon) : null;
@@ -4396,6 +4405,20 @@ function renderPreporuke() {
     });
   }
 }
+/* "Tvoja nedelja" u Zajednici: licni rang-lite (juris svoj rekord) dok pravi rang
+   sa drugima ne stigne uz naloge i dovoljno korisnika - nikad rang po brzini */
+function renderNedelja() {
+  const box = document.getElementById("zNedelja");
+  if (!box) return;
+  let p = _zajCitaj("mr_poeni", { ukupno: 0, nedelje: {} });
+  if (!p.ukupno && ZAJ_PREVIEW) p = { ukupno: 840, nedelje: { [isoNedelja(Date.now())]: 385, "2026-W31": 455 } };
+  const ova = p.nedelje[isoNedelja(Date.now())] || 0;
+  const naj = Math.max(0, ...Object.values(p.nedelje));
+  box.innerHTML = (ova || naj)
+    ? `<div class="big">${ova}<span style="font-size:13px;color:#94a3b8;font-weight:700"> poena ove nedelje</span></div>
+       <div class="note">tvoja najbolja nedelja: ${naj} · rang sa drugima stiže sa nalozima</div>`
+    : '<div class="note">Prva vožnja otvara tvoju tabelu - poeni po nedeljama, pa rang sa društvom kad stignu nalozi.</div>';
+}
 function renderJaProfil() {
   const box = document.getElementById("jaProfil");
   if (!box) return;
@@ -4404,6 +4427,11 @@ function renderJaProfil() {
   const ukKm = Math.round(v.reduce((s, r) => s + (r.km || 0), 0));
   const pr = priznanjaStanje();
   const ima = Object.keys(pr).filter((k) => PRIZNANJA[k]);
+  if (!p.ukupno && !v.length && !ima.length) {   // prazan profil: poziv umesto isticanja nula
+    box.innerHTML = '<div class="jnote" style="margin-top:2px">Prva vožnja sa navigacijom puni profil: kilometri, poeni, priznanja. Kolekcije ispod već čekaju.</div>';
+    proveriPotvrde();
+    return;
+  }
   const oveN = p.nedelje[isoNedelja(Date.now())] || 0;
   box.innerHTML = `<div class="jrow"><span>Poeni</span><b>${p.ukupno.toLocaleString("sr-RS")}${oveN ? " (+" + oveN + " ove nedelje)" : ""}</b></div>
     <div class="jrow"><span>Vožnje sa navigacijom</span><b>${v.length}${ukKm ? " · " + ukKm + " km" : ""}</b></div>
@@ -4444,7 +4472,7 @@ function zajMapaUzivo() {
   const nm = document.getElementById("zNaMapi");
   if (nm) nm.addEventListener("click", zajMapaUzivo);
   const link = document.querySelector('#bottomnav a[data-tab="zajednica"]');
-  if (link) link.addEventListener("click", () => { zajGpsAcquire(); renderPreporuke(); });
+  if (link) link.addEventListener("click", () => { zajGpsAcquire(); renderPreporuke(); renderNedelja(); });
   const ja = document.querySelector('#bottomnav a[data-tab="ja"]');
   if (ja) ja.addEventListener("click", () => { renderJaProfil(); renderKolekcije(); renderVoznje("jaVoznje", 10); });
 })();
