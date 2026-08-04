@@ -1401,12 +1401,12 @@ const LEVEL_NAMES = ["vedro/suvo", "oprez", "nevreme"];
 const $ = (id) => document.getElementById(id);
 const state = { planSeq: 0, _activeSeq: 0, routes: [], selected: 0, markers: [], geocode: {}, revCache: {},
   vias: [], viaMarkers: [], hazardMode: false, famousApplied: null, pendingFamous: null,
-  catMarkers: { fuel: [], food: [], camp: [], cam: [], pause: [], work: [], hazard: [], meet: [] }, editorialMarkers: [], layerVis: {} };
+  catMarkers: { fuel: [], food: [], camp: [], cam: [], pause: [], work: [], hazard: [], meet: [], mesto: [] }, editorialMarkers: [], layerVis: {} };
 
 /* slojevi mape: koje kategorije markera se prikazuju (pamti se u localStorage) */
 const LAYER_DEFS = [["fuel", "Pumpe"], ["food", "Hrana i pauze"], ["camp", "Kampovi"],
   ["cam", "Kamere"], ["pause", "Predlog pauze"], ["work", "Radovi"], ["hazard", "Opasnosti"],
-  ["meet", "Okupljališta i polasci"]];
+  ["meet", "Okupljališta i polasci"], ["mesto", "Mesta sa foruma"]];
 const EMOJI_CAT = { "⛽": "fuel", "🍽": "food", "⛺": "camp", "📷": "cam", "☕": "pause", "🚧": "work" };
 function loadLayerVis() {
   let saved = {};
@@ -1857,6 +1857,14 @@ function logState(obj) { $("applog").textContent = JSON.stringify(obj); }
 
 /* ---------------- geokodiranje ---------------- */
 async function geocode(q) {
+  /* Nasa baza ima prednost kad se ime poklapa U CELOSTI. Nominatim za golo lokalno ime
+     cesto vrati ulicu: "Šarganska" je vodila na ulicu u Beogradu umesto na Šargansku
+     osmicu kod Mokre Gore. Nasi unosi su kurirani i geokodirani upitom sa zemljom, pa
+     su na tim imenima tacniji. Delimicna poklapanja i dalje idu na Nominatim - on zna
+     ceo svet, a nasa baza ima 553 unosa. */
+  const _f = (t) => (t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const _nas = (state.editorial || []).find((x) => x.lat != null && _f(x.name) === _f(q.trim()));
+  if (_nas) return { lat: _nas.lat, lon: _nas.lon, name: _nas.name };
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&accept-language=hr,sr-Latn,en`;
   const j = await fetchJSON(url, { timeoutMs: 8000 });
   if (!j.length) {
@@ -2920,7 +2928,7 @@ function emojiMarker(lat, lon, emoji, title) {
 }
 /* ---------------- editorial sloj: kafane/okupljalista iz BJBikers zajednice ----------------
    Trajni markeri (ne brisu se pri ponovnom planiranju) - zato NE idu u state.markers. */
-const BJB_CAT = { kafana: "food", okupljaliste: "meet", upozorenje: "hazard", vidikovac: "pause" };
+const BJB_CAT = { kafana: "food", okupljaliste: "meet", upozorenje: "hazard", vidikovac: "pause", mesto: "mesto" };
 /* ---- stanje na putevima + meteo upozorenja (robot puni data/road_status.json 5x dnevno) ---- */
 async function loadRoadStatus() {
   if (state.roadStatus !== undefined) return state.roadStatus;
@@ -2959,6 +2967,11 @@ async function loadEditorial() {
   try {
     const d = await fetchData("data/editorial_bjbikers.json?v=" + new Date().toISOString().slice(0, 10), { timeoutMs: 8000 });   // dnevni cache-bust
     state.editorial = (d.entries || []).filter((e) => e.lat !== undefined);
+    /* searchIndex() kesira rezultat u _c pri prvom pozivu. Ako korisnik kucne u
+       pretragu pre nego sto ovaj fajl stigne (na mobilnoj mrezi je 280 KB), indeks
+       se izgradi samo od FAMOUS_ROUTES i takav ostane celu sesiju - pretraga mesta
+       izgleda mrtvo. Zato se kes ponistava cim baza stigne. */
+    searchIndex._c = null;
   } catch { /* editorial sloj je opcion - bez fajla nema pinova */ }
 }
 /* Pinovi zajednice se dodaju TEK posle prvog planiranja rute (default ekran ostaje cist)
@@ -2971,7 +2984,10 @@ function addEditorialMarkers(route) {
   const near = route ? bjbAlongRoute(route, 6) : [];
   for (const e of near) {
     if (e.type === "ruta") continue;   // preporuke ruta iz zajednice nisu pinovi - idu u Rute tab (backlog)
-    const BJB2ICON = { kafana: "tavern", vidikovac: "viewpoint", okupljaliste: "meetup", upozorenje: "warning" };
+    // forumsko mesto koje ne kaze nista o podlozi/putevima ne zasluzuje pin uz rutu
+    // (broj pomena sam po sebi nije informacija za vozaca); ostaje u pretrazi i tabu Mesta
+    if (e.source_kind === "forum-mesto" && !/Podloga|Putevi/.test(e.details || "")) continue;
+    const BJB2ICON = { kafana: "tavern", vidikovac: "viewpoint", okupljaliste: "meetup", upozorenje: "warning", mesto: "curves" };
     const el = markerBadge(BJB2ICON[e.type] || "route", e.type === "upozorenje" ? "danger" : undefined);
     el.title = e.name;
     const m = new maplibregl.Marker({ element: el }).setLngLat([e.lon, e.lat]).addTo(map);
@@ -4700,8 +4716,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.8";
+const APP_VERSION = "0.9.9";
 const CHANGELOG = [
+  { v: "0.9.9", d: "04.08.2026.", stavke: [
+    "<b>161 mesto sa foruma</b> u bazi: prevoji, planine, kanjoni i gradovi koje moto zajednica stvarno pominje. Izvučeno iz 2.712 tema sa BJBikers-a, motori.hr i evropskih putopisa.",
+    "<b>Pretraga ih zna</b>: ukucaj Stelvio, Furka, Nordkapp ili Kanjon Tare i planer ide pravo tamo. Radi i po tipu - upiši \"prevoj\" i dobiješ prevoje.",
+    "<b>Pinovi uz rutu</b> pokazuju koliko puta je mesto pomenuto i kakva je podloga (asfalt, makadam, rupe, odroni). Gase se u Slojevima pod \"Mesta sa foruma\".",
+    "<b>Naša baza sad ima prednost kod tačnog imena.</b> Ranije je \"Šarganska\" vodila na ulicu u Beogradu umesto na Šargansku osmicu kod Mokre Gore.",
+    "<b>Tara je razdvojena</b>: Tara je planina u Srbiji, Kanjon Tare je most i kanjon u Crnoj Gori. Do sada je jedno ime pokrivalo dve različite destinacije.",
+  ] },
   { v: "0.9.8", d: "04.08.2026.", stavke: [
     "<b>Zajednica više nije prazan ekran</b>: feed pokazuje šta je ko prijavio u poslednjih 7 dana - tip, starost, koliko je km od tebe i koliko ih je potvrdilo.",
     "<b>\"Je l' još tu?\"</b> - na svakoj prijavi dugmad Tu je / Nema je. Potvrda produžava rok, dva \"nema je\" gase prijavu. Tvoj glas se pamti da ne glasaš dvaput.",
@@ -6173,7 +6196,27 @@ async function shareRide() {
 })();
 
 /* ---- P2: Rute segmenti (Rute|Mesta|Kruzna) + Slojevi sheet + pilula rute ---- */
-const MESTA_ICO = { kafana: "tavern", vidikovac: "viewpoint", okupljaliste: "meetup", upozorenje: "warning" };   // R13: RMR ikonice
+const MESTA_ICO = { kafana: "tavern", vidikovac: "viewpoint", okupljaliste: "meetup", upozorenje: "warning", mesto: "curves" };   // R13: RMR ikonice
+/* Bez GPS-a lista je u redosledu fajla, pa bi 161 forumsko mesto (dodato na kraj)
+   ispalo iz prvih 60 i korisnik ih ne bi video bez pretrage. Naizmenicno po tipu:
+   svaki tip daje po jedan unos u krug, unutar tipa jaci signal ide prvi
+   (forumska mesta po broju pomena, kurirani unosi zadrzavaju svoj redosled). */
+function izmesajPoTipu(items) {
+  const grupe = new Map();
+  for (const e of items) {
+    if (!grupe.has(e.type)) grupe.set(e.type, []);
+    grupe.get(e.type).push(e);
+  }
+  for (const [t, arr] of grupe)
+    if (t === "mesto") arr.sort((a, b) => (b.pominjanja || 0) - (a.pominjanja || 0));
+  const redovi = [...grupe.values()], out = [];
+  for (let i = 0; out.length < items.length; i++) {
+    let dodao = false;
+    for (const r of redovi) if (i < r.length) { out.push(r[i]); dodao = true; }
+    if (!dodao) break;
+  }
+  return out;
+}
 function renderMesta(ftype) {
   const L = document.getElementById("mestaList");
   if (!L) return;
@@ -6188,6 +6231,7 @@ function renderMesta(ftype) {
   }
   const g = state.gpsFrom;
   if (g) items = items.map((e) => ({ ...e, _d: haversine(g.lat, g.lon, e.lat, e.lon) })).sort((a, b) => a._d - b._d);
+  else if (!ftype && !q) items = izmesajPoTipu(items);   // bez GPS-a i filtera: da se svaki tip vidi u prvih 60
   if (!items.length) {
     L.innerHTML = q ? '<div class="rempty">Nema mesta za ovu pretragu.<br><b>Probaj kraći pojam.</b></div>'
       : '<div class="rempty">Mesta zajednice se učitavaju…</div>';
