@@ -455,7 +455,8 @@
     #screen-zajednica .zsec .dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 0 4px rgba(239,68,68,.2); flex: none; }
     #screen-zajednica .zsec small { margin-left: auto; color: #94a3b8; font-weight: 600; text-transform: none; letter-spacing: 0; font-size: 11.5px; text-align: right; }
     .tabscreen .zcard { background: #1e293b; border: 1px solid rgba(148,163,184,.16); border-radius: 15px; padding: 12px 14px; margin-bottom: 9px; display: flex; gap: 12px; align-items: center; }
-    .tabscreen .zcard .zth { width: 40px; height: 40px; border-radius: 11px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 19px; background: #0f172a; }
+    .tabscreen .zcard .zth { width: 40px; height: 40px; border-radius: 11px; flex: none; display: flex; align-items: center; justify-content: center; background: rgba(249,115,22,.12); color: #f97316; }
+    .tabscreen .zcard .zth .ri { display: flex; }
     .tabscreen .zcard .zb { flex: 1; min-width: 0; }
     .tabscreen .zcard .zt { font-size: 14px; color: #fff; font-weight: 700; line-height: 1.25; }
     .tabscreen .zcard .zs { font-size: 11.5px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
@@ -1102,7 +1103,7 @@
     <div id="peekBar" role="button" tabindex="0" aria-label="Prikaži ili sakrij planer">
       <div class="grabber" aria-hidden="true"></div>
       <div id="peekSum" class="hidden">
-        <span class="pbadge warn" id="peekBadge">⚠</span>
+        <span class="pbadge warn" id="peekBadge">⚠︎</span>
         <div class="ptxt"><b id="peekRoute"></b><span id="peekMeta"></span></div>
         <button id="peekGo" type="button" aria-label="Kreni u vožnju">Kreni</button>
         <span class="pchev" aria-hidden="true">▲</span>
@@ -1383,7 +1384,7 @@
       <div class="nmain">
         <span class="arr" id="rideArr"></span>
         <div class="nt"><b id="rideDist">-</b><span id="rideInstr">Krećemo</span><span class="shields" id="rideShields"></span><span class="sub" id="rideStreet"></span></div>
-        <div class="right"><div class="btns"><button id="rideMute" aria-label="Zvuk">🔊</button><button id="rideX" aria-label="Prekini vožnju">✕</button></div></div>
+        <div class="right"><div class="btns"><button id="rideMute" aria-label="Zvuk"></button><button id="rideX" aria-label="Prekini vožnju">✕</button></div></div>
       </div>
       <div class="then" id="rideThen"></div>
       <div class="ahead" id="rideAhead"></div>
@@ -1478,14 +1479,14 @@
       <div class="zsec">Tvoja nedelja</div>
       <div id="zNedelja" class="zpts"></div>
       <div class="zsec">Prijatelji</div>
-      <div class="zmeet"><div class="mic">📍</div><div style="flex:1;min-width:0"><div class="n">Prijatelji i "Nađimo se tamo"</div><div class="d">Vozači koje pratiš, deljene vožnje i živa lokacija ekipe - stižu sa nalozima. Sve iznad radi i bez njih.</div></div><span class="soon">uskoro</span></div>
+      <div class="zmeet"><div class="mic"></div><div style="flex:1;min-width:0"><div class="n">Prijatelji i "Nađimo se tamo"</div><div class="d">Vozači koje pratiš, deljene vožnje i živa lokacija ekipe - stižu sa nalozima. Sve iznad radi i bez njih.</div></div><span class="soon">uskoro</span></div>
     </div>
   </div>
   <div class="tabscreen" id="screen-ja"><h2>Ja</h2>
     <div class="stub" style="margin-top:14px"><b>Podešavanja</b>
       <div class="jset">
         <label class="jrow"><span>Tema aplikacije</span>
-          <span class="jtheme"><i>☀️</i><input type="checkbox" id="jaDark" class="jsw"><i>🌙</i></span></label>
+          <span class="jtheme"><i></i><input type="checkbox" id="jaDark" class="jsw"><i></i></span></label>
         <button id="jaAuto" class="jlink" type="button">prati telefon (auto)</button>
         <label class="jrow"><span>Glas navigacije</span><input type="checkbox" id="jaSound" class="jsw"></label>
         <div class="jnote">Promena teme se primenjuje odmah (app se osveži).</div>
@@ -1971,6 +1972,20 @@ const RMR_ICONS = {
 
   "saved": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.2 21V5.6a2.1 2.1 0 0 1 2.1-2.1h5.4a2.1 2.1 0 0 1 2.1 2.1V21L12 16.6z"/></svg>'
 };
+RMR_ICONS["mountain"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 9.5 6l3 6 3-3.5L21 20z"/></svg>';
+RMR_ICONS["pin"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6.2-8 11.5-8 11.5S4 16.2 4 10a8 8 0 0 1 16 0z"/><path d="M15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/></svg>';
+RMR_ICONS["canyon"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h5.8v11.5"/><path d="M21 5h-5.8v11.5"/><path d="M8.6 20c1.1-.9 2.3-.9 3.4 0s2.3.9 3.4 0"/></svg>';
+RMR_ICONS["wave"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9c.6.5 1.2 1 2.5 1C7 10 7 8 9.5 8c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 15c.6.5 1.2 1 2.5 1C7 16 7 14 9.5 14c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg>';
+RMR_ICONS["pass"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 16 6.8 7l2.2 4a3 3 0 0 0 6 0l2.2-4L21.5 16"/><path d="M12 21.5v-1.8m0-3.2v-1.8"/></svg>';
+RMR_ICONS["medal"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 8.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/><path d="m15.4 13 1.6 8.5-5-3-5 3L8.6 13"/></svg>';
+RMR_ICONS["moto"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.4 17.6a3.2 3.2 0 1 1-6.4 0 3.2 3.2 0 0 1 6.4 0z"/><path d="M22 17.6a3.2 3.2 0 1 1-6.4 0 3.2 3.2 0 0 1 6.4 0z"/><path d="M5.2 17.6h6.9l4.2-9.1h-3.6M5.9 13.4h3.5l2 4.2"/><path d="M16.3 8.5c1.9 1.7 2.2 4.6 2.5 9.1"/></svg>';
+RMR_ICONS["sun"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M17.3 6.7l1.4-1.4M6.7 17.3l-1.4 1.4"/></svg>';
+RMR_ICONS["moon"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+RMR_ICONS["jacket"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/><path d="M12 6.5V22"/></svg>';
+RMR_ICONS["visor"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 14.3a3.4 3.4 0 1 1-6.8 0 3.4 3.4 0 0 1 6.8 0z"/><path d="M20.5 14.3a3.4 3.4 0 1 1-6.8 0 3.4 3.4 0 0 1 6.8 0z"/><path d="M2.5 10.5l2 1.4M21.5 10.5l-2 1.4M10.3 13.3a2.3 2.3 0 0 1 3.4 0"/></svg>';
+RMR_ICONS["sound"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>';
+RMR_ICONS["soundoff"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>';
+RMR_ICONS["check"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
 RMR_ICONS["warning"] = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 4.2 2.7 17.4a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0z"/><path d="M12 9.5v4"/><path d="M12 17h.01"/></svg>';
 function rIco(key, size) {   // R13: inline ikonica u tekstu (zamena za emoji)
   const sv = RMR_ICONS[key];
@@ -3307,13 +3322,13 @@ function renderVerdict(assess, route, departure) {
   const v = $("verdict");
   if (route.wxFail) {
     v.className = "verdict warn";
-    v.innerHTML = '⚠ Prognoza je trenutno nedostupna (server zauzet) - ruta, trošak i težina rade. ' +
+    v.innerHTML = '⚠︎ Prognoza je trenutno nedostupna (server zauzet) - ruta, trošak i težina rade. ' +
       '<button id="wxRetry" type="button" style="margin-left:6px;padding:5px 12px;border-radius:9px;border:1px solid rgba(148,163,184,.3);background:#1e293b;color:#e2e8f0;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer">Pokušaj ponovo</button>';
     const _wr = v.querySelector("#wxRetry"); if (_wr) _wr.onclick = () => plan();
   }
   else if (worst === 0) { v.className = "verdict ok"; v.textContent = "✓ Suvo i mirno celim putem"; }
-  else if (worst === 1) { v.className = "verdict warn"; v.textContent = "⚠ Vozivo, ali ima delova za oprez"; }
-  else { v.className = "verdict bad"; v.textContent = "✖ Nevreme na ruti - pogledaj predloge"; }
+  else if (worst === 1) { v.className = "verdict warn"; v.textContent = "⚠︎ Vozivo, ali ima delova za oprez"; }
+  else { v.className = "verdict bad"; v.textContent = "✖︎ Nevreme na ruti - pogledaj predloge"; }
   const arrive = new Date(departure.getTime() + route.totalDur * 1000);
   const rt = isRoundTrip();
   const routeTxt = `${state.geocode.from.name} → ${state.geocode.to.name}${rt ? " → " + state.geocode.from.name : ""}`;
@@ -3499,17 +3514,17 @@ function renderGear(assess) {
   const glare = assess.some((a) => a.reasons.some((r) => r.includes("sunce")));
   const rows = [];
   const feelTxt = minFeel !== null ? ` (osećaj u vožnji ~${Math.round(minFeel)}°C)` : "";
-  if (minT <= 5) rows.push(`🥶 Zimska oprema: termo sloj, zimske rukavice, grejači ako imaš${feelTxt}`);
-  else if (minT <= 12) rows.push(`🧥 Topliji sloj ispod jakne, zatvori ventilacije${feelTxt}`);
-  else if (maxT >= 28) rows.push(`☀️ Letnja/mrežasta oprema i dosta vode - do ${Math.round(maxT)}°C na ruti`);
-  else rows.push(`👍 Standardna oprema - raspon ${Math.round(minT)}-${Math.round(maxT)}°C${feelTxt}`);
-  if (heavy) rows.push("🌧 Kišno odelo OBAVEZNO + vodootporne rukavice - jaka kiša na ruti");
-  else if (wet) rows.push("🌦 Ponesi kišno odelo u koferu - moguća kiša");
-  if (windy) rows.push("💨 Jaki udari vetra - opuštene ruke, računaj na bočne udare");
-  if (glare) rows.push("🕶 Tamni vizir ili naočare - nisko sunce na delu rute");
-  for (const r of rows) {
+  if (minT <= 5) rows.push(["cold", `Zimska oprema: termo sloj, zimske rukavice, grejači ako imaš${feelTxt}`]);
+  else if (minT <= 12) rows.push(["jacket", `Topliji sloj ispod jakne, zatvori ventilacije${feelTxt}`]);
+  else if (maxT >= 28) rows.push(["hot", `Letnja/mrežasta oprema i dosta vode - do ${Math.round(maxT)}°C na ruti`]);
+  else rows.push(["check", `Standardna oprema - raspon ${Math.round(minT)}-${Math.round(maxT)}°C${feelTxt}`]);
+  if (heavy) rows.push(["rain", "Kišno odelo OBAVEZNO + vodootporne rukavice - jaka kiša na ruti"]);
+  else if (wet) rows.push(["rain", "Ponesi kišno odelo u koferu - moguća kiša"]);
+  if (windy) rows.push(["wind", "Jaki udari vetra - opuštene ruke, računaj na bočne udare"]);
+  if (glare) rows.push(["visor", "Tamni vizir ili naočare - nisko sunce na delu rute"]);
+  for (const [ik, r] of rows) {
     const li = document.createElement("li");
-    li.textContent = r;
+    li.innerHTML = rIco(ik, 14) + " " + r;   // tekst je nas staticki string, ne korisnicki unos
     ul.appendChild(li);
   }
 }
@@ -3616,7 +3631,7 @@ async function renderSuggestions(route, assess, departure, zones) {
   if (altBetter >= 0) {
     const d = document.createElement("div");
     d.className = "sugg";
-    d.innerHTML = `🛣 <b>${state.routes[altBetter].label}</b> ima mirniju prognozu - klikni na nju gore u "Rute".`;
+    d.innerHTML = `${rIco("route", 14)} <b>${state.routes[altBetter].label}</b> ima mirniju prognozu - klikni na nju gore u "Rute".`;
     box.appendChild(d);
   }
 }
@@ -4379,13 +4394,13 @@ async function renderFeed() {
    Poeni: km voznje x1 + serpentina x4 + tacka kolekcije 40 + priznanje 240 + cela kolekcija 500. */
 const KOLEKCIJE = [
   // koordinate iz verifikovane baze (audit 4.8.2026); r = radijus prolaska u metrima
-  { id: "kanjoni", ime: "Kanjoni", ikona: "🏞", opis: "najlepši kanjoni Balkana", tacke: [
+  { id: "kanjoni", ime: "Kanjoni", ikona: "canyon", opis: "najlepši kanjoni Balkana", tacke: [
       { n: "Kanjon Tare (most)", lat: 43.14946, lon: 19.29412 },
       { n: "Platije (Morača)", lat: 42.67172, lon: 19.36511, r: 800 },
       { n: "Kanjon Uvca (Molitva)", lat: 43.36319, lon: 19.96407, r: 800 },
       { n: "Kanjon Pive (Plužine)", lat: 43.21806, lon: 18.84871, r: 1500 },
       { n: "Kanjon Radike", lat: 41.76962, lon: 20.65747, r: 1200 }] },
-  { id: "jadranska", ime: "Jadranska magistrala", ikona: "🌊", opis: "u koliko god etapa hoćeš", tacke: [
+  { id: "jadranska", ime: "Jadranska magistrala", ikona: "wave", opis: "u koliko god etapa hoćeš", tacke: [
       { n: "Rijeka", lat: 45.3271, lon: 14.4422, r: 2500 },
       { n: "Senj", lat: 44.9894, lon: 14.9058, r: 2500 },
       { n: "Zadar", lat: 44.1194, lon: 15.2314, r: 2500 },
@@ -4393,13 +4408,13 @@ const KOLEKCIJE = [
       { n: "Makarska", lat: 43.2969, lon: 17.0178, r: 2500 },
       { n: "Neum", lat: 42.9236, lon: 17.6150, r: 2500 },
       { n: "Dubrovnik", lat: 42.6507, lon: 18.0944, r: 2500 }] },
-  { id: "prevoji", ime: "Prevoji", ikona: "⛰", opis: "legendarni usponi", tacke: [
+  { id: "prevoji", ime: "Prevoji", ikona: "pass", opis: "legendarni usponi", tacke: [
       { n: "Sedlo (Durmitor)", lat: 43.09852, lon: 19.05054, r: 600 },
       { n: "Lovćen (serpentine)", lat: 42.37137, lon: 18.85571, r: 1500 },
       { n: "Llogara", lat: 40.19819, lon: 19.59241, r: 1200 },
       { n: "Vršič", lat: 46.43478, lon: 13.74371, r: 600 },
       { n: "Grossglockner (F. J. Höhe)", lat: 47.07516, lon: 12.75178, r: 800 }] },
-  { id: "serpentine", ime: "1.000 serpentina", ikona: "🐍", opis: "broje se same, iz svake vožnje", brojac: true, cilj: 1000 },
+  { id: "serpentine", ime: "1.000 serpentina", ikona: "curves", opis: "broje se same, iz svake vožnje", brojac: true, cilj: 1000 },
 ];
 const PRIZNANJA = { prviKanjon: "Prvi kanjon", kisa: "Istrpeo kišu", potvrdjen: "5 prijava potvrdili drugi vozači" };
 function _zajCitaj(k, def) { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch (e) { return def; } }
@@ -4523,7 +4538,7 @@ function renderVoznje(targetId, limit) {
   box.innerHTML = v.slice(0, limit || 10).map((r) => `<div class="zcard">
     <div class="zth"><svg viewBox="0 0 40 40" width="26" height="26"><path d="M7 33 C15 26, 13 17, 21 14 C28 12, 27 7, 33 6" stroke="#f97316" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="7" cy="33" r="2.5" fill="#22c55e"/></svg></div>
     <div class="zb"><div class="zt">${esc(r.naz)}</div>
-      <div class="zs"><b>+${r.poeni}p</b> · ${r.km} km${r.serp ? " · " + r.serp + " " + plSerp(r.serp) : ""}${r.lnL != null && (r.lnL || r.lnR) ? " · nagib " + Math.max(r.lnL, r.lnR) + "°" : ""}${r.kisa ? " · 🌧" : ""}</div></div>
+      <div class="zs"><b>+${r.poeni}p</b> · ${r.km} km${r.serp ? " · " + r.serp + " " + plSerp(r.serp) : ""}${r.lnL != null && (r.lnL || r.lnR) ? " · nagib " + Math.max(r.lnL, r.lnR) + "°" : ""}${r.kisa ? " · " + rIco("rain", 12) : ""}</div></div>
     ${r.kol ? '<span class="ztag">Kolekcija</span>' : ""}</div>`).join("");
 }
 function renderKolekcije() {
@@ -4541,7 +4556,7 @@ function renderKolekcije() {
       const sled = k.tacke.find((t) => !st[k.id + ":" + t.n]);
       sub = `${ima} od ${cilj}` + (sled ? ` · sledeća: ${sled.n}` : " · KOMPLETNA ✓");
     }
-    return `<div class="zcard"><div class="zth">${k.ikona}</div>
+    return `<div class="zcard"><div class="zth">${rIco(k.ikona, 21)}</div>
       <div class="zb"><div class="zt">${esc(k.ime)}</div><div class="zs">${esc(sub)}</div>
         <div class="zbar"><i style="width:${Math.min(100, ima / cilj * 100).toFixed(0)}%"></i></div></div></div>`;
   }).join("");
@@ -4558,7 +4573,7 @@ function zajGpsAcquire() {
   }, () => {}, { timeout: 6000, maximumAge: 120000 });
 }
 /* "Zajednica preporucuje oko tebe": najblizih 5 kuriranih mesta (kafane/vidikovci/mesta) */
-const PREP_IKONA = { kafana: "🍴", vidikovac: "👁", okupljaliste: "🤝", mesto: "🏔" };
+const PREP_IKONA = { kafana: "tavern", vidikovac: "viewpoint", okupljaliste: "meetup", mesto: "mountain" };   // RMR ikonice, ne emoji (premium)
 function renderPreporuke() {
   const box = document.getElementById("zPreporuke"), nap = document.getElementById("zPrepNap");
   if (!box) return;
@@ -4580,7 +4595,7 @@ function renderPreporuke() {
     if (oko) oko.style.display = "none";
   }
   box.innerHTML = top.map(({ e, d }) => `<div class="zcard" data-lat="${e.lat}" data-lon="${e.lon}">
-    <div class="zth">${PREP_IKONA[e.type] || "📍"}</div>
+    <div class="zth">${rIco(PREP_IKONA[e.type] || "pin", 21)}</div>
     <div class="zb"><div class="zt">${esc(e.name)}</div>
       <div class="zs">${esc((e.where || "").split("·")[0].trim())}${d != null ? " · <b>" + Math.round(d) + " km od tebe</b>" : ""}</div></div></div>`).join("");
   if (!box._reg) {
@@ -4622,7 +4637,7 @@ function renderJaProfil() {
   const oveN = p.nedelje[isoNedelja(Date.now())] || 0;
   box.innerHTML = `<div class="jrow"><span>Poeni</span><b>${p.ukupno.toLocaleString("sr-RS")}${oveN ? " (+" + oveN + " ove nedelje)" : ""}</b></div>
     <div class="jrow"><span>Vožnje sa navigacijom</span><b>${v.length}${ukKm ? " · " + ukKm + " km" : ""}</b></div>
-    ${ima.length ? '<div class="jpriz">' + ima.map((k) => `<span>🏅 ${esc(PRIZNANJA[k])}</span>`).join("") + "</div>"
+    ${ima.length ? '<div class="jpriz">' + ima.map((k) => `<span>${rIco("medal", 13)} ${esc(PRIZNANJA[k])}</span>`).join("") + "</div>"
                  : '<div class="jnote" style="margin-top:8px">Priznanja se otključavaju vožnjom - sama će se pojaviti ovde.</div>'}`;
   proveriPotvrde();
 }
@@ -4632,7 +4647,11 @@ async function proveriPotvrde() {
   if (window._potvTs && Date.now() - window._potvTs < 600000) return;   // najvise na 10 min, ne na svaki klik taba
   window._potvTs = Date.now();
   try {
-    const rows = await supa(`prijave?select=id&device_id=eq.${deviceId()}&potvrde=gte.1&limit=10`);
+    // dopuna #3 je zabranila citanje tabele po device_id (privatnost!) - zato svoje prijave
+    // gadjamo kroz javni view po ID-jevima koje cuvamo lokalno (mr_moje_prijave)
+    const mojeIds = mojePrijave().slice(0, 40);   // najnovije prve (unshift), uzmi njih
+    if (!mojeIds.length) return;
+    const rows = await supa(`prijave_javno?select=id&id=in.(${mojeIds.join(",")})&potvrde=gte.1&limit=10`);
     if ((rows || []).length >= 5) { dodeliPriznanje("potvrdjen"); renderJaProfil(); }
   } catch (e) {}
 }
@@ -5194,7 +5213,7 @@ function initSheet() {
 function setPeek(worst, routeTxt, metaTxt) {
   const cls = worst === 0 ? "ok" : worst === 1 ? "warn" : "bad";
   $("peekBadge").className = "pbadge " + cls;
-  $("peekBadge").textContent = worst === 0 ? "✓" : worst === 1 ? "⚠" : "✖";
+  $("peekBadge").textContent = worst === 0 ? "✓" : worst === 1 ? "⚠︎" : "✖︎";
   $("peekRoute").textContent = routeTxt;
   $("peekMeta").textContent = metaTxt;
   $("peekSum").classList.remove("hidden");
@@ -5222,7 +5241,7 @@ function previewFill() {
   renderViaChips();
   $("results").classList.remove("hidden");
   $("verdict").className = "verdict warn";
-  $("verdict").textContent = "⚠ Vozivo, ali ima delova za oprez";
+  $("verdict").textContent = "⚠︎ Vozivo, ali ima delova za oprez";
   try {   // R13: `route` ovde nikad nije postojao (ReferenceError gutan praznim catch-em) - preview mock
     renderResultHero({ totalDist: 553000, totalDur: 34800, _fuelCost: 41, _tollCost: 4, _hard: "vrlo zahtevna",
       _curves: { L: 198, R: 214, sharp: 36, mild: 240, med: 136, klasa: "vijugava" }, _elevStats: { ascent: 4150, descent: 4090, max: 910 },
@@ -5236,23 +5255,23 @@ function previewFill() {
     `<button class="rtab"><b>Najbrža · autoput</b><span class="mini">798 km · 7 h 54 min<br><span class="dot l0"></span>vedro/suvo</span></button>`;
   $("consensusOut").innerHTML = "Presuda 3 modela (ICON · GFS · ECMWF): <b>slažu se</b> - prognoza pouzdana.";
   const lv = [0,0,0,0,1,1,0,0,0,0,0,1,2,2,1,0,0,0,0,0,0,0,0,0];
-  $("timeline").innerHTML = lv.map((l) => `<div class="blk l${l}">${l === 2 ? "⛈" : l === 1 ? "🌧" : ""}</div>`).join("");
+  $("timeline").innerHTML = lv.map((l) => `<div class="blk l${l}">${l === 2 ? rIco("storm", 11) : l === 1 ? rIco("rain", 11) : ""}</div>`).join("");
   $("tl-labels").innerHTML = `<span>09:00 (km 0)</span><span>13:50 (km 276)</span><span>18:40 (km 553)</span>`;
   $("warnList").innerHTML =
-    `<li class="warn-li">🌧 11:40-12:10, kod: Zvornik (km 148-170): moguća kiša (65%)</li>` +
-    `<li class="bad-li">⛈ 14:20-15:00, kod: Jablanica (km 320-350): grmljavina, jaka kiša (3,1 mm/h)</li>`;
+    `<li class="warn-li">${rIco("rain", 13)} 11:40-12:10, kod: Zvornik (km 148-170): moguća kiša (65%)</li>` +
+    `<li class="bad-li">${rIco("storm", 13)} 14:20-15:00, kod: Jablanica (km 320-350): grmljavina, jaka kiša (3,1 mm/h)</li>`;
   $("suggestions").innerHTML =
-    `<div class="sugg">☕ <b>Pauza oko km 305 (Konjic) u ~14:05</b>, sačekaj ~40 min da front prođe, pa nastavi suvim putem.<div class="note">Gde: Caffe Behar (+0.4 km) · Restoran Neretva (+0.6 km)</div></div>` +
-    `<div class="sugg">💚 U koridoru je <b>Kanjon Neretve</b> - M-17 uz smaragdnu Neretvu. <button>Vozi baš tuda</button></div>`;
+    `<div class="sugg">${rIco("tavern", 14)} <b>Pauza oko km 305 (Konjic) u ~14:05</b>, sačekaj ~40 min da front prođe, pa nastavi suvim putem.<div class="note">Gde: Caffe Behar (+0.4 km) · Restoran Neretva (+0.6 km)</div></div>` +
+    `<div class="sugg">${rIco("route", 14)} U koridoru je <b>Kanjon Neretve</b> - M-17 uz smaragdnu Neretvu. <button>Vozi baš tuda</button></div>`;
   $("whenOut").innerHTML =
     `<button class="when-row active" type="button"><span class="dot l1"></span><span class="wr-time">09:00 → 18:40</span><span class="wr-sum">🌧 oprez na 4 deonice</span></button>` +
     `<button class="when-row best" type="button"><span class="dot l0"></span><span class="wr-time">11:00 → 20:40</span><span class="wr-sum">✓ suvo celim putem</span><b>★</b></button>` +
     `<button class="when-row" type="button"><span class="dot l1"></span><span class="wr-time">13:00 → 22:40</span><span class="wr-sum">🌧 oprez na 2 deonice</span></button>`;
   $("whenNote").textContent = "Ista ruta, pomeren polazak - klikni red da primeniš.";
   $("gearList").innerHTML =
-    `<li>🧥 Topliji sloj ispod jakne, zatvori ventilacije (osećaj u vožnji ~9°C)</li>` +
-    `<li>🌦 Ponesi kišno odelo u koferu - moguća kiša</li>` +
-    `<li>🕶 Tamni vizir ili naočare - nisko sunce na delu rute</li>`;
+    `<li>${rIco("jacket", 14)} Topliji sloj ispod jakne, zatvori ventilacije (osećaj u vožnji ~9°C)</li>` +
+    `<li>${rIco("rain", 14)} Ponesi kišno odelo u koferu - moguća kiša</li>` +
+    `<li>${rIco("visor", 14)} Tamni vizir ili naočare - nisko sunce na delu rute</li>`;
   $("costOut").innerHTML =
     `Gorivo: ~26,6 L ≈ <b>41 €</b> <span class="poi-dist">(RS 92 km ≈ 7 € · BA 361 km ≈ 25 € · HR 100 km ≈ 9 €)</span>` +
     `<br>Putarina (moto klasa): 118 km naplate ≈ <b>4 €</b><br>Ukupno: ≈ <b>45 €</b> u jednom smeru` +
@@ -5265,13 +5284,13 @@ function previewFill() {
   const pts = elev.map((e, i) => `${(i / (elev.length - 1) * W).toFixed(1)},${(H - pad - (e - mn) / (mx - mn) * (H - 2 * pad)).toFixed(1)}`).join(" ");
   $("elevSvg").innerHTML = `<polygon points="0,${H} ${pts} ${W},${H}" fill="rgba(249,115,22,.22)"/><polyline points="${pts}" fill="none" stroke="#f97316" stroke-width="1.8"/>`;
   $("elevLbl").textContent = "Najviša tačka 910 m (km 255) · ukupan uspon ~4.150 m · najstrmije ~6% (km 240)";
-  $("camOut").innerHTML = `📷 Fiksne kamere: <b>3</b> (km 12, 88, 361)`;
+  $("camOut").innerHTML = `${rIco("camera", 14)} Fiksne kamere: <b>3</b> (km 12, 88, 361)`;
   $("workOut").innerHTML = `${rIco("roadworks", 15)} Radovi na putu (OSM): <b>1</b> (km 214) - <span class="warn-inline">mogući zastoji ili obilasci</span>`;
   $("fuelList").innerHTML =
-    `<li>⛽ <b>1. točenje</b> oko km 313 (~14:20): Gazprom <span class="poi-dist">(+0.8 km)</span> · NIS Petrol <span class="poi-dist">(+2.1 km)</span></li>`;
+    `<li>${rIco("fuel", 14)} <b>1. točenje</b> oko km 313 (~14:20): Gazprom <span class="poi-dist">(+0.8 km)</span> · NIS Petrol <span class="poi-dist">(+2.1 km)</span></li>`;
   $("foodList").innerHTML =
-    `<li>🍽 <b>Pauza 1</b> posle ~2,5 h vožnje, ~11:30 kod: Zvornik<br><span class="poi-dist">Restoran Most (+0.5 km) · Konoba Drina (+0.9 km)</span></li>` +
-    `<li>⛺ <b>Kampovi uz rutu:</b> Kamp Boračko jezero <span class="poi-dist">(km 330, +4.2 km)</span> · Auto-kamp Split <span class="poi-dist">(km 550, +3.1 km)</span></li>`;
+    `<li>${rIco("food", 14)} <b>Pauza 1</b> posle ~2,5 h vožnje, ~11:30 kod: Zvornik<br><span class="poi-dist">Restoran Most (+0.5 km) · Konoba Drina (+0.9 km)</span></li>` +
+    `<li>${rIco("camp", 14)} <b>Kampovi uz rutu:</b> Kamp Boračko jezero <span class="poi-dist">(km 330, +4.2 km)</span> · Auto-kamp Split <span class="poi-dist">(km 550, +3.1 km)</span></li>`;
   setPeek(1, "Beograd → Split", "553 km · 9 h 40 min · kreni 09:00");
   sheetAfterPlan();
   logState({ phase: "preview" });
@@ -5293,8 +5312,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.14";
+const APP_VERSION = "0.9.15";
 const CHANGELOG = [
+  { v: "0.9.15", d: "05.08.2026.", stavke: [
+    "<b>Zbogom emoji</b>: sve sličice u aplikaciji (Zajednica, kolekcije, priznanja, oprema, Moj motor, tema) su sada naše ikonice u istom stilu kao na mapi - 13 novih nacrtano za ovo izdanje, uključujući pravi motocikl.",
+  ] },
   { v: "0.9.14", d: "05.08.2026.", stavke: [
     "<b>Merenje nagiba motora</b>: telefon na nosaču meri ugao naginjanja - nula se uzima na \"Kreni\" i sama se doteruje na pravcima. Živi ugao stoji uz brzinu, max levo/desno ide u dnevnik. Lični podatak, nikad na server.",
     "<b>Sažetak vožnje na kraju</b>: kilometri, trajanje, prosek u pokretu, max brzina, krivine, serpentine, nagib, kolekcije - i dugme Podeli sa karticom stvarne vožnje.",
@@ -5704,7 +5726,7 @@ async function homeWxPeek() {
   if (start && planBtn && start.parentNode === planBtn.parentNode) {
     const wrap = document.createElement("div"); wrap.id = "motoWrap";
     const head = document.createElement("button"); head.type = "button"; head.id = "motoHead";
-    head.innerHTML = '🏍 Moj motor <span class="ms" id="motoSum"></span><span class="chev">▾</span>';
+    head.innerHTML = rIco("moto", 16) + ' Moj motor <span class="ms" id="motoSum"></span><span class="chev">▾</span>';
     start.parentNode.insertBefore(head, start);
     const nodes = [];
     for (let n = start; n && n !== planBtn; ) { const nx = n.nextSibling; nodes.push(n); n = nx; }
@@ -6587,7 +6609,7 @@ function rideSumShow() {
   const tg = [];
   if (s.poeni) tg.push(`<span class="pts">+${s.poeni} poena</span>`);
   if (s.kol) tg.push(`<span>${s.kol} ${s.kol === 1 ? "nova tačka kolekcije" : "nove tačke kolekcija"}</span>`);
-  if (s.kisa) tg.push("<span>🌧 istrpeo kišu</span>");
+  if (s.kisa) tg.push("<span>" + rIco("rain", 12) + " istrpeo kišu</span>");
   if (s.lnL == null) tg.push("<span>nagib: senzor nije bio dostupan</span>");
   document.getElementById("rsTags").innerHTML = tg.join("");
   el._sum = s;
@@ -6768,10 +6790,14 @@ window.rideRecenter = function () {
     else map.easeTo({ ...cam, duration: 700 });
   }
 };
+  try {   // staticki emoji u markup-u -> RMR ikonice (Boskovo pravilo 5.8.: bez emojija, premium)
+    const mic = document.querySelector(".zmeet .mic"); if (mic) mic.innerHTML = rIco("pin", 18);
+    const th = document.querySelectorAll(".jtheme i");
+    if (th.length === 2) { th[0].innerHTML = rIco("sun", 14); th[1].innerHTML = rIco("moon", 14); }
+  } catch (e) {}
   const rm = document.getElementById("rideMute");
   if (rm) {
-    const SND_ON = '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
-    const SND_OFF = '<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6M16 9l6 6"/></svg>';
+    const SND_ON = RMR_ICONS["sound"], SND_OFF = RMR_ICONS["soundoff"];   // isti par kao ostatak sistema
     const sync = () => { const off = localStorage.getItem("rmr2_mute") === "1"; rm.innerHTML = off ? SND_OFF : SND_ON; rm.classList.toggle("off", off); };
     rm.addEventListener("click", () => { try { localStorage.setItem("rmr2_mute", localStorage.getItem("rmr2_mute") === "1" ? "0" : "1"); } catch (e) {} sync(); });
     rm.addEventListener("resync", sync);   // R13v2: Ja tab prekidac salje resync - listener je falio
