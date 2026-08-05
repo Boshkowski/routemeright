@@ -1489,6 +1489,7 @@
           <span class="jtheme"><i></i><input type="checkbox" id="jaDark" class="jsw"><i></i></span></label>
         <button id="jaAuto" class="jlink" type="button">prati telefon (auto)</button>
         <label class="jrow"><span>Glas navigacije</span><input type="checkbox" id="jaSound" class="jsw"></label>
+        <label class="jrow"><span>Živi nagib u vožnji</span><input type="checkbox" id="jaLean" class="jsw"></label>
         <div class="jnote">Promena teme se primenjuje odmah (app se osveži).</div>
       </div>
     </div>
@@ -5312,8 +5313,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.15";
+const APP_VERSION = "0.9.16";
 const CHANGELOG = [
+  { v: "0.9.16", d: "05.08.2026.", stavke: [
+    "<b>Prekidač \"Živi nagib u vožnji\"</b> u Ja podešavanjima (preporuka saveta): merenje i dnevnik rade uvek, a broj na ekranu možeš da ugasiš - za prvu test vožnju ili kad nećeš da te mami da gledaš.",
+  ] },
   { v: "0.9.15", d: "05.08.2026.", stavke: [
     "<b>Zbogom emoji</b>: sve sličice u aplikaciji (Zajednica, kolekcije, priznanja, oprema, Moj motor, tema) su sada naše ikonice u istom stilu kao na mapi - 13 novih nacrtano za ovo izdanje, uključujući pravi motocikl.",
   ] },
@@ -5960,7 +5964,7 @@ function leanTick(e) {
       LEAN.uB0 = LEAN.uB;
       const fr = _lFrame(LEAN.uB); LEAN.fB = fr.fB; LEAN.rB = fr.rB;
       LEAN.on = true;
-      try { document.querySelector("#rideBarBottom .pill").classList.add("lon"); } catch (er) {}   // senzor ziv - pokazi uz brzinu
+      try { if (localStorage.getItem("rmr2_leanui") !== "0") document.querySelector("#rideBarBottom .pill").classList.add("lon"); } catch (er) {}   // senzor ziv - pokazi uz brzinu (sem ako je zivi prikaz iskljucen u Ja)
     }
     return;
   }
@@ -5976,8 +5980,9 @@ function leanTick(e) {
     if (med < 0 && -med > LEAN.maxL) LEAN.maxL = -med;
     if (med > 0 && med > LEAN.maxR) LEAN.maxR = med;
   }
-  if (now - LEAN.lastUi > 300) {   // zivi prikaz uz brzinu, throttle da ne trepce
+  if (now - LEAN.lastUi > 300) {   // zivi prikaz uz brzinu, throttle da ne trepce; prekidac u Ja moze da ga ugasi (merenje radi dalje)
     LEAN.lastUi = now;
+    if (localStorage.getItem("rmr2_leanui") === "0") return;
     const el = document.getElementById("rideLean");
     if (el) { el.textContent = Math.round(Math.abs(med)) + "°"; el.parentElement.parentElement.classList.toggle("lact", Math.abs(med) >= 8); }
   }
@@ -7086,6 +7091,14 @@ async function shareRide() {
       if (host && mh && mw) { host.appendChild(mh); host.appendChild(mw); }
     }
   } catch (e) {}
+  const ln = document.getElementById("jaLean");
+  if (ln) {   // council 5.8.: prekidac za zivi prikaz nagiba - merenje i dnevnik rade uvek, samo se broj na ekranu gasi
+    ln.checked = localStorage.getItem("rmr2_leanui") !== "0";
+    ln.addEventListener("change", () => {
+      try { localStorage.setItem("rmr2_leanui", ln.checked ? "1" : "0"); } catch (e) {}
+      try { const pl = document.querySelector("#rideBarBottom .pill"); if (pl && !ln.checked) pl.classList.remove("lon", "lact"); } catch (e) {}
+    });
+  }
   if (snd) {
     const sync = () => { snd.checked = localStorage.getItem("rmr2_mute") !== "1"; };
     snd.addEventListener("change", () => { try { localStorage.setItem("rmr2_mute", snd.checked ? "0" : "1"); } catch (e) {}
