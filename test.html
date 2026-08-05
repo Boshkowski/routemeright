@@ -298,7 +298,7 @@
   .bjb-row:active { opacity: .65; }
   .bjb-more { background: none; border: none; color: var(--c-muted-fg, #94a3b8); text-decoration: underline; cursor: pointer; font: inherit; font-size: .92em; padding: 4px 0 0; display: block; }
   .hz-back { position: fixed; inset: 0; z-index: 238; background: rgba(2,6,23,.45); }
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     .hz-pop { position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important;
       bottom: 0 !important; width: 100% !important; border-radius: 22px 22px 0 0; border-left: none; border-right: none; border-bottom: none;
       padding: 16px 18px calc(26px + env(safe-area-inset-bottom)); z-index: 240;
@@ -341,7 +341,7 @@
   }
   /* == mobilni "app mode": mapa fullscreen + bottom sheet (Kurviger obrazac, apple-design mehanika) == */
   #peekBar { display: none; }
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     #app { display: block; }
     #map { position: fixed; inset: 0; height: 100vh; height: 100dvh; }
     #panel {
@@ -398,7 +398,7 @@
   /* ===== app2 Faza 1a: donji meni (Planer/Rute/Zajednica/Ja) + tab ekrani ===== */
   #bottomnav { display: none; }
   .tabscreen { display: none; }
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     #bottomnav {
       display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
       height: calc(58px + max(env(safe-area-inset-bottom), 8px)); padding-bottom: max(env(safe-area-inset-bottom), 8px);
@@ -482,7 +482,7 @@
   }
   /* ===== app2 Faza 1b: HOME kao maketa (pretraga + chipovi + FAB + čist sheet) ===== */
   #homeChrome, #homeFabs, #homeSheet, #plannerClose { display: none; }
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     /* stare top kontrole zamenjuje home chrome */
     .map-tools { display: none !important; }
     .maplibregl-ctrl-top-right { display: none; }
@@ -541,7 +541,7 @@
     body.planning #plannerClose { display: flex; }
   }
   /* ===== app2 Faza 4.1: reskin naprednog planera (mobilno) ===== */
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     body.planning #panel h1, body.planning #panel > .sub { display: none; }   /* logo+marketing ne pripadaju alatu; > da NE sakrije hero .sub razloge */
     body.planning #panel label:not(.chk) { font-size: 10.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 14px 2px 7px; display: block; }
     body.planning #panel .chk { text-transform: none; letter-spacing: 0; }
@@ -596,12 +596,12 @@
   #optsSheet .row2 > div { flex: 1; }
   #optsSheet .apply { width: 100%; margin-top: 14px; border: none; cursor: pointer; font-family: inherit; background: linear-gradient(135deg,#f97316,#ea580c); color: #fff; font-size: 15.5px; font-weight: 800; padding: 14px; border-radius: 14px; }
   #optsSheet label:not(.chk) { display: block; font-size: 10.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: .05em; margin: 14px 2px 7px; }
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     label[for="famous"], #famous { display: none !important; }   /* legendarne zive u Rute tabu */
   }
   /* ===== R6: brzi planer - destinacija iz pretrage vodi PRAVO na rezultat ===== */
   #qbar { display: none; }
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     body.qplan.planning #panel > *:not(#peekBar):not(#plannerClose):not(#qbar):not(#status):not(#results) { display: none !important; }
     body.qplan.planning #panel { height: 54vh; height: 54dvh; }   /* do pola kao Google; detalji sire */
     body.qplan.planning.qdetails #panel { height: 86vh; height: 86dvh; }
@@ -636,7 +636,7 @@
     #qbar.timed #qWhen { display: block; }
   }
   /* ===== R5: varijante rute = horizontalne kartice (kao Google Directions red) ===== */
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     body.planning #routeTabs { display: flex; flex-wrap: nowrap; gap: 9px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding: 2px 0 6px; scroll-snap-type: x proximity;
       -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent); mask-image: linear-gradient(90deg, #000 92%, transparent); }
     body.planning #routeTabs::-webkit-scrollbar { display: none; }
@@ -660,7 +660,7 @@
   #layersSheet .lsleg i { display: inline-block; width: 14px; height: 5px; border-radius: 3px; vertical-align: middle; margin: 0 2px; }
   /* ===== P2: pilula aktivne rute ===== */
   #routePill { display: none; }
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     body.hasroute:not(.planning):not(.riding):not(.searching) #routePill { display: flex; align-items: center; gap: 10px; position: fixed; left: 50%; transform: translateX(-50%); top: calc(74px + env(safe-area-inset-top)); z-index: 13; background: rgba(15,23,42,.95); border: 1.5px solid rgba(249,115,22,.5); border-radius: 999px; padding: 8px 16px; cursor: pointer; box-shadow: 0 8px 22px rgba(0,0,0,.4); max-width: 78%; }
     #routePill .rpin { display: flex; flex-direction: column; min-width: 0; }
     #routePill b { color: #fff; font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -669,7 +669,7 @@
   }
   /* ===== app2 Faza 4: cist ekran pretrage ===== */
   #searchOverlay { display: none; }
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     body.searching #searchOverlay { display: flex; flex-direction: column; position: fixed; inset: 0; z-index: 50; background: #0f172a; }
     #searchOverlay .shead { display: flex; align-items: center; gap: 10px; padding: calc(12px + env(safe-area-inset-top)) 14px 12px; }
     #searchOverlay .sback { width: 42px; height: 42px; border-radius: 13px; background: #1e293b; border: 1px solid rgba(148,163,184,.16); display: flex; align-items: center; justify-content: center; cursor: pointer; flex: none; }
@@ -694,7 +694,7 @@
   }
   /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
   #rideBar { display: none; }
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: max(calc(4px + env(safe-area-inset-top)), 14px); z-index: 40; }
     #rideBar .navcard { background: #166534; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
     #rideBar .nmain { padding: 12px 14px 11px; display: flex; align-items: center; gap: 12px; color: #fff; }
@@ -726,6 +726,13 @@
       font-variant-numeric: tabular-nums; }
     #rideBarBottom .pill.over { border-color: rgba(239,68,68,.85); }
     #rideBarBottom .pill.over .v { color: #fca5a5; }
+    /* Nagib uzivo: pojavi se tek kad senzor radi (LEAN.on), narandzast kad se stvarno naginje */
+    #rideBarBottom .pill .ln { display: none; margin-left: 11px; padding-left: 11px; border-left: 1px solid rgba(148,163,184,.25); text-align: center; }
+    #rideBarBottom .pill.lon .ln { display: block; }
+    #rideBarBottom .pill .ln .v { font-size: 21px; }
+    #rideBarBottom .pill.lact .ln .v { color: #f97316; }
+    /* (#rideSum stilovi su na top-levelu, van media bloka - review 5.8. nasao da bi na desktopu
+       markup bez baznog display:none ispao vidljiv u toku dokumenta) */
     #rideBarBottom .alt { flex: none; width: 46px; height: 46px; border-radius: 50%; align-self: center;
       background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); cursor: pointer;
       display: flex; align-items: center; justify-content: center; }
@@ -818,7 +825,7 @@
   }
   /* ===== app2 Faza 3: REZULTAT ekran (kao result2 maketa: hero + metrike + krivine) ===== */
   #resHero, #resCta { display: none; }
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     #resHero { display: flex; overflow-x: auto; gap: 10px; scroll-snap-type: x mandatory; scrollbar-width: none;
       margin: 0 -16px 12px; padding: 2px 16px 6px;
       -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent); mask-image: linear-gradient(90deg, #000 94%, transparent); }
@@ -882,7 +889,7 @@
     #resCta .b2.p { flex: 1.5; background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; border: none; box-shadow: 0 8px 20px rgba(249,115,22,.3); }
   }
   /* ===== app2 Faza 2: RUTE ekran (kao rute2 maketa: blizu tebe + težina) ===== */
-  @media (max-width: 900px) {
+  @media (max-width: 900px), (max-height: 520px) {
     #screen-rute { padding: 0; }
     #screen-rute .rhd { padding: calc(14px + env(safe-area-inset-top)) 16px 6px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     #screen-rute .rhd #gpxBtn { flex: none; display: flex; align-items: center; gap: 6px; background: #1e293b;
@@ -964,6 +971,128 @@
     #screen-rute .tg.plain { background: rgba(148,163,184,.1); color: #e2e8f0; }
     #screen-rute .rempty { margin: 14px 0; background: #1e293b; border: 1px dashed rgba(148,163,184,.3); border-radius: 15px; padding: 20px 16px; color: #94a3b8; font-size: 13.5px; line-height: 1.5; text-align: center; }
     #screen-rute .rempty b { color: #e2e8f0; }
+  }
+  /* Summary voznje: pun ekran preko svega na kraju, flow layout (bez sticky - lekcija 660px).
+     TOP LEVEL namerno (review 5.8.): stilovi ne zavise od sirine ekrana, a bez baznog
+     display:none markup bi na desktopu ispao vidljiv u toku dokumenta. */
+  #rideSum { display: none; position: fixed; inset: 0; z-index: 320; background: rgba(4,8,18,.72);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); overflow-y: auto; overscroll-behavior: contain; }
+  #rideSum.on { display: block; }
+  #rideSum .card { max-width: 430px; margin: max(24px, env(safe-area-inset-top)) auto 24px; background: #16223c;
+    border: 1px solid rgba(148,163,184,.22); border-radius: 20px; padding: 22px 20px calc(18px + env(safe-area-inset-bottom));
+    box-shadow: 0 24px 70px rgba(0,0,0,.6); animation: sumIn .32s cubic-bezier(.23,1,.32,1); }
+  @media (prefers-reduced-motion: reduce) { #rideSum .card { animation: none; } }
+  @keyframes sumIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  #rideSum h3 { margin: 0 0 2px; font-size: 13px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: #f97316; }
+  #rideSum .rel { font-size: 21px; font-weight: 800; color: #f8fafc; margin-bottom: 2px; }
+  #rideSum .dt { font-size: 12.5px; color: #94a3b8; margin-bottom: 14px; }
+  #rideSum .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  #rideSum .m { background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.14); border-radius: 12px; padding: 10px 6px 8px; text-align: center; }
+  #rideSum .m .v { font-size: 21px; font-weight: 800; color: #f8fafc; font-variant-numeric: tabular-nums; }
+  #rideSum .m .v small { font-size: 12px; font-weight: 700; color: #94a3b8; }
+  #rideSum .m .l { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #94a3b8; margin-top: 2px; }
+  #rideSum .m.hi .v { color: #f97316; }
+  #rideSum .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+  #rideSum .tags span { font-size: 12px; font-weight: 700; color: #e2e8f0; background: rgba(148,163,184,.12); border-radius: 999px; padding: 5px 11px; }
+  #rideSum .tags span.pts { color: #0f172a; background: #f97316; }
+  #rideSum .btns { display: flex; gap: 10px; margin-top: 16px; }
+  #rideSum .btns button { flex: 1; height: 48px; border-radius: 13px; font: 800 15px Archivo, sans-serif; cursor: pointer; }
+  #rideSum .btns .shr { background: linear-gradient(135deg, #f97316, #fb923c); color: #0f172a; border: none; }
+  #rideSum .btns .cls { background: transparent; color: #e2e8f0; border: 1px solid rgba(148,163,184,.35); }
+  /* niski ekran (landscape telefon): siri red metrika, uze margine */
+  @media (max-height: 520px) { #rideSum .card { margin: 12px auto; max-width: 560px; } #rideSum .grid { grid-template-columns: repeat(4, 1fr); } }
+
+  /* ===== LANDSCAPE telefon (npr. 844x390): mapa desno, alat u levom stubu (Google Maps obrazac).
+     Ceo blok zatvoren u orientation+max-height pa portret CSS ostaje netaknut. Mobilni mod
+     na landscape sirinama drze ", (max-height: 520px)" dodaci na 900px blokovima iznad.
+     Notch je u landscape-u SA STRANE: env(safe-area-inset-left/right) je ovde obavezan. ===== */
+  @media (orientation: landscape) and (max-height: 520px) {
+    :root { --sl: env(safe-area-inset-left); --sr: env(safe-area-inset-right); --sb: env(safe-area-inset-bottom);
+            --rail: 64px; --col: min(46vw, 380px); }
+
+    /* --- donji meni postaje levi vertikalni rail --- */
+    #bottomnav { top: 0; bottom: 0; right: auto; left: 0;
+      width: calc(var(--rail) + var(--sl)); height: 100dvh;
+      flex-direction: column; justify-content: center; gap: 2px;
+      padding: 0 0 var(--sb) var(--sl);
+      border-top: none; border-right: 1px solid rgba(148,163,184,.16); }
+    #bottomnav a { flex: none; height: 58px; font-size: 9.5px; gap: 2px; }
+    #bottomnav a svg { width: 20px; height: 20px; }
+
+    /* --- planer: donji sheet postaje levi stub pune visine --- */
+    #panel,
+    body.qplan.planning #panel,
+    body.qplan.planning.qdetails #panel {
+      left: calc(var(--rail) + var(--sl)); right: auto; top: 0; bottom: 0;
+      width: var(--col); height: 100dvh;
+      border-radius: 0 20px 20px 0; border-top: none;
+      border-right: 1px solid rgba(255,255,255,.12);
+      padding: 0 14px calc(10px + var(--sb));
+      box-shadow: 10px 0 34px rgba(0,0,0,.5);
+      transition: transform 320ms var(--ease); }
+    #peekBar { position: static; margin: 0 -14px 6px; padding: 8px 14px; }
+    #peekBar .grabber { width: 4.5px; height: 34px; margin: 0 0 0 auto; }   /* handle uspravan: sheet se povlaci U STRANU */
+    #resCta { padding-bottom: calc(8px + var(--sb)); }
+    body.qplan.planning:not(.qdetails) #resHero .rslide { height: 176px; }
+    #resHero .rslide { flex: 0 0 92%; }
+
+    /* --- tab ekrani desno od rail-a, liste u 2 kolone (844px sirine to nosi) --- */
+    .tabscreen { left: calc(var(--rail) + var(--sl)); right: var(--sr); top: 0; bottom: 0;
+      padding: 12px 14px calc(10px + var(--sb)); }
+    .tabscreen h2 { font-size: 19px; }
+    #screen-rute .rlist, #zFeed, #zPreporuke, #mestaList, #jaVoznje, #jaKolekcije {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; align-items: start; }
+
+    /* --- pocetni ekran: chrome u levu kolonu, FAB-ovi uz desnu ivicu --- */
+    #homeChrome { left: calc(var(--rail) + var(--sl)); right: auto; width: min(52vw, 420px); padding: 8px 12px 0 10px; }   /* levo od raila, ne ispod njega */
+    #homeFabs { right: calc(14px + var(--sr)); top: 8px; }
+    #homeFabs button[data-fab="gps"] { position: fixed; right: calc(14px + var(--sr)); bottom: calc(10px + var(--sb)); top: auto; }
+    body.riding #homeFabs button[data-fab="gps"] { bottom: calc(78px + var(--sb)); }
+    .compass-btn { right: calc(14px + var(--sr)); top: auto; bottom: calc(64px + var(--sb)); }
+    body.riding .compass-btn { bottom: calc(132px + var(--sb)); }
+    body.hasroute:not(.planning):not(.riding):not(.searching) #routePill,
+    #routePill { left: auto; right: calc(70px + var(--sr)); top: 8px; transform: none; max-width: 42vw; }
+    #verBadge { left: auto; right: calc(64px + var(--sr)); bottom: calc(6px + var(--sb)); }
+    .lay-pop { top: 10px; left: auto; right: calc(64px + var(--sr)); }
+    .maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right { bottom: calc(2px + var(--sb)); opacity: .6; }
+
+    /* --- VOZNJA: baner levo-gore, brzina/ETA levo-dole, Prijavi kao FAB desno-dole --- */
+    body.riding #rideBar { left: calc(10px + var(--sl)); right: auto; top: 8px; width: var(--col); }
+    #rideBar .nmain { padding: 9px 12px 8px; gap: 10px; }
+    #rideBar .arr svg { width: 36px; height: 36px; }
+    #rideBar .nt b { font-size: 26px; }
+    #rideBar .nt span, #rideBar .nt .sub { font-size: 14px; }
+    #rideBar .then { padding: 5px 12px; font-size: 12px; }
+    #rideBar .ahead, #rideBar .wx { padding: 5px 12px; font-size: 11.5px; }
+    body.riding #rideBarBottom { left: calc(10px + var(--sl)); right: auto; width: var(--col);
+      bottom: calc(8px + var(--sb)); gap: 8px; }
+    #rideBarBottom .pill { padding: 6px 11px; }
+    #rideBarBottom .pill .v { font-size: 22px; }
+    #rideBarBottom .pill .ln .v { font-size: 18px; }
+    #rideBarBottom .lim { width: 40px; height: 40px; border-width: 4px; margin-left: 8px; }
+    #rideBarBottom .eta .t { font-size: 18px; }
+    #rideBarBottom .rep { position: fixed; right: calc(14px + var(--sr)); bottom: calc(10px + var(--sb));
+      width: 54px; height: 54px; margin: 0; z-index: 41; border-radius: 50%;
+      font-size: 0; gap: 0; justify-content: center; }   /* samo ikonica: palac desne ruke */
+    #rideBarBottom .rep svg { margin: 0; }
+    #rideBarBottom .alt { width: 40px; height: 40px; }
+
+    /* --- sheet-ovi: iz punih donjih traka u desne/centralne kartice --- */
+    #layersSheet .lsbody, #optsSheet .lsbody, #altSheet .body, #newsSheet .body {
+      left: auto; right: calc(12px + var(--sr)); top: 10px; bottom: calc(10px + var(--sb));
+      width: min(420px, 50vw); max-height: none; border-radius: 20px;
+      border: 1px solid rgba(148,163,184,.16); }
+    .hz-pop { left: 50% !important; right: auto !important; transform: translateX(-50%) !important;   /* !important: ulazna "pop" animacija inace gazi transform 160ms */
+      width: min(430px, 58vw) !important; bottom: calc(12px + var(--sb)) !important;
+      border-radius: 22px; }
+    .hz-pop button { padding: 9px 4px; font-size: 12px; }
+
+    /* --- pretraga: safe-area sa strane + rezultati u 2 kolone --- */
+    #searchOverlay .shead { padding: 8px calc(14px + var(--sr)) 8px calc(14px + var(--sl)); }
+    #searchOverlay .sbody { padding-left: calc(14px + var(--sl)); padding-right: calc(14px + var(--sr));
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; align-content: start; }
+    #searchOverlay .sfrom, #searchOverlay .ssect { grid-column: 1 / -1; }
+    #searchOverlay #sRecent, #searchOverlay #sSugg { display: contents; }   /* wrapperi predloga: .srow deca teku u obe kolone */
   }
 </style>
 </head>
@@ -1262,12 +1391,20 @@
     </div>
   </div>
   <div id="rideBarBottom">
-    <div class="pill"><div><div class="v" id="rideKmh">0</div><div class="u">km/h</div></div><div class="lim" id="rideLim"><span></span></div></div>
+    <div class="pill"><div><div class="v" id="rideKmh">0</div><div class="u">km/h</div></div><div class="ln"><div class="v" id="rideLean">0°</div><div class="u">nagib</div></div><div class="lim" id="rideLim"><span></span></div></div>
     <button class="rep" id="rideRep"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v6"/><path d="M9 10h6"/></svg>Prijavi</button>
     <button class="alt" id="rideAlt" aria-label="Druga ruta"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 20V9a5 5 0 015-5h6"/><path d="M12 7l3-3-3-3"/><path d="M20 20v-5a5 5 0 00-5-5h-3"/></svg></button>
     <div class="eta"><div class="t" id="rideEta">-</div><div class="d" id="rideRem">-</div></div>
   </div>
   <div id="rideRoad"></div>
+  <div id="rideSum" role="dialog" aria-label="Sažetak vožnje"><div class="card">
+    <h3>Vožnja završena</h3>
+    <div class="rel" id="rsRel">Vožnja</div>
+    <div class="dt" id="rsDt"></div>
+    <div class="grid" id="rsGrid"></div>
+    <div class="tags" id="rsTags"></div>
+    <div class="btns"><button class="shr" id="rsShare">Podeli</button><button class="cls" id="rsClose">Zatvori</button></div>
+  </div></div>
   <div id="altSheet" hidden>
     <div class="back" id="altBack"></div>
     <div class="body">
@@ -3111,7 +3248,10 @@ function drawRoute(route, assess) {
   const b = new maplibregl.LngLatBounds();
   route.coords.forEach((c) => b.extend(c));
   map.fitBounds(b, {
-    padding: mqMobile.matches ? { top: 70, left: 36, right: 36, bottom: 150 } : 60,
+    padding: mqMobile.matches
+      ? (isLS() ? { top: 40, left: lsPadLeft("panel", 444), right: 80, bottom: 60 }   // landscape: izmereno, ne konstanta (notch/mali ekran)
+                : { top: 70, left: 36, right: 36, bottom: 150 })
+      : 60,
     duration: 600,
   });
 }
@@ -4325,18 +4465,28 @@ function kolTikni(lo, la) {
 function zabeleziVoznju() {
   try {
     const ukupnoD = (RIDE.baseD || 0) + (RIDE.maxD || 0);   // zbir etapa preko reroute-ova
-    if (!RIDE.t0 || !RIDE.route || !(ukupnoD > 2000)) return;
+    if (!RIDE.t0 || !RIDE.route) return;
     const km = ukupnoD / 1000;
     const min = Math.max(1, Math.round((Date.now() - RIDE.t0) / 60000));
     const c = RIDE.route._curves;   // sveze posle reroute-a; serpentine ranijih etapa se ne broje (posten minimum)
-    const serp = c ? Math.round((c.sharp || 0) * Math.min(1, (RIDE.maxD || 0) / Math.max(1, RIDE.total))) : 0;
+    const frac = Math.min(1, (RIDE.maxD || 0) / Math.max(1, RIDE.total));
+    const serp = c ? Math.round((c.sharp || 0) * frac) : 0;
+    const kriv = c ? Math.round(((c.L || 0) + (c.R || 0)) * frac) : 0;
     const g = state.geocode || {};
     const naz = (g.from && g.from.name && g.to && g.to.name)
       ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` : "Vožnja";
     const poeni = Math.round(km + serp * 4);
+    const maxK = Math.round(RIDE.maxKmh || 0);
+    const avgK = RIDE.movMs > 30000 ? Math.round(km / (RIDE.movMs / 3600000)) : 0;   // prosek U POKRETU, tek kad ima bar pola minuta
+    const lnL = LEAN.on ? Math.round(LEAN.maxL) : null, lnR = LEAN.on ? Math.round(LEAN.maxR) : null;
+    // summary ekran: i za kratku probnu voznju (>300 m); dnevnik/poeni ostaju samo za prave (>2 km)
+    if (ukupnoD > 300) RIDE.lastSummary = { naz, km: Math.round(km * 10) / 10, min, serp, kriv, poeni: ukupnoD > 2000 ? poeni : 0,
+      maxK, avgK, lnL, lnR, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
+    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; return; }
     const v0 = _zajCitaj("mr_voznje", []);
     const v = Array.isArray(v0) ? v0 : [];
-    v.unshift({ ts: Date.now(), naz, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa });
+    v.unshift({ ts: Date.now(), naz, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
+      kriv, maxK, avgK, lnL, lnR });
     _zajPisi("mr_voznje", v.slice(0, 20));
     poeniDodaj(poeni);
     const ag = _zajCitaj("mr_poeni", { ukupno: 0, nedelje: {} });   // dozivotni agregat (lista se sece na 20)
@@ -4373,7 +4523,7 @@ function renderVoznje(targetId, limit) {
   box.innerHTML = v.slice(0, limit || 10).map((r) => `<div class="zcard">
     <div class="zth"><svg viewBox="0 0 40 40" width="26" height="26"><path d="M7 33 C15 26, 13 17, 21 14 C28 12, 27 7, 33 6" stroke="#f97316" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="7" cy="33" r="2.5" fill="#22c55e"/></svg></div>
     <div class="zb"><div class="zt">${esc(r.naz)}</div>
-      <div class="zs"><b>+${r.poeni}p</b> · ${r.km} km${r.serp ? " · " + r.serp + " " + plSerp(r.serp) : ""}${r.kisa ? " · 🌧" : ""}</div></div>
+      <div class="zs"><b>+${r.poeni}p</b> · ${r.km} km${r.serp ? " · " + r.serp + " " + plSerp(r.serp) : ""}${r.lnL != null && (r.lnL || r.lnR) ? " · nagib " + Math.max(r.lnL, r.lnR) + "°" : ""}${r.kisa ? " · 🌧" : ""}</div></div>
     ${r.kol ? '<span class="ztag">Kolekcija</span>' : ""}</div>`).join("");
 }
 function renderKolekcije() {
@@ -4621,7 +4771,7 @@ function closeOptsSheet() {
   if (qd) qd.addEventListener("click", () => {
     const on = document.body.classList.toggle("qdetails");
     qd.textContent = on ? "Sakrij detalje ▴" : "Svi detalji rute ▾";
-    if (on) setTimeout(() => { try { $("panel").scrollTop = $("results").offsetTop - $("peekBar").offsetHeight; } catch (e) {} }, 120);
+    if (on) setTimeout(() => { try { $("panel").scrollTop = $("results").offsetTop - (isLS() ? 0 : $("peekBar").offsetHeight); } catch (e) {} }, 120);   // landscape: peekBar nije sticky
   });
 })();
 
@@ -4953,16 +5103,28 @@ async function plan() {
 }
 
 /* ---------------- mobilni bottom sheet (apple-design: 1:1 drag, projekcija momenta, rubber-band) ---------------- */
-const mqMobile = window.matchMedia("(max-width: 900px)");
+const mqMobile = window.matchMedia("(max-width: 900px), (max-height: 520px)");   // "mobilni mod" = i landscape telefon (Pro Max je 956px sirok!)
+const mqLS = window.matchMedia("(orientation: landscape) and (max-height: 520px)");
+const isLS = () => mqLS.matches;   // landscape telefon: panel je levi stub, drag ide u stranu
+function lsPadLeft(id, fb) {   // stvarna sirina prepreke levo (rail+panel/rideBar) umesto konstante - notch i mali ekrani je menjaju
+  let x = fb;
+  try { x = Math.round(document.getElementById(id).getBoundingClientRect().right); } catch (e) {}
+  return Math.min(x + 26, Math.round(window.innerWidth * 0.6));   // cap: na uskim ekranima padding ne sme da pojede celu mapu (fitBounds bi tiho odbio)
+}
 const sheet = { open: true, y: 0 };
 
-function sheetMaxY() { return Math.max(0, $("panel").clientHeight - $("peekBar").offsetHeight); }
+/* landscape: panel je levi stub pa se "sheet" povlaci u STRANU (ista logika, druga osa) */
+function sheetMaxY() {
+  const p = $("panel");
+  return isLS() ? Math.max(0, p.clientWidth - 26) : Math.max(0, p.clientHeight - $("peekBar").offsetHeight);
+}
+function sheetXform(y) { return isLS() ? `translateX(${-y}px)` : `translateY(${y}px)`; }
 function applySheet(animate = true) {
   const p = $("panel");
   if (!mqMobile.matches) { p.style.transform = ""; p.classList.remove("open"); return; }
   sheet.y = sheet.open ? 0 : sheetMaxY();
   if (!animate) p.classList.add("dragging");
-  p.style.transform = `translateY(${sheet.y}px)`;
+  p.style.transform = sheetXform(sheet.y);
   p.classList.toggle("open", sheet.open);
   if (!animate) requestAnimationFrame(() => p.classList.remove("dragging"));
 }
@@ -4975,22 +5137,24 @@ function projectMomentum(v, decel = 0.998) { return (v / 1000) * decel / (1 - de
 function initSheet() {
   const p = $("panel"), peek = $("peekBar");
   let drag = null;
+  const AX = (e) => isLS() ? -e.clientX : e.clientY;   // landscape: prevlacenje ulevo zatvara (ista matematika, obrnut znak X)
+  const DIM = () => isLS() ? p.clientWidth : p.clientHeight;
   peek.addEventListener("pointerdown", (e) => {
     if (!mqMobile.matches) return;
     peek.setPointerCapture(e.pointerId);
-    drag = { y0: sheet.y, startY: e.clientY, moved: 0, hist: [[performance.now(), e.clientY]] };
+    drag = { y0: sheet.y, startY: AX(e), moved: 0, hist: [[performance.now(), AX(e)]] };
     p.classList.add("dragging");
   });
   peek.addEventListener("pointermove", (e) => {
     if (!drag) return;
     const maxY = sheetMaxY();
-    let y = drag.y0 + (e.clientY - drag.startY);
-    drag.moved = Math.max(drag.moved, Math.abs(e.clientY - drag.startY));
-    if (y < 0) y = rubberband(y, p.clientHeight);
-    else if (y > maxY) y = maxY + rubberband(y - maxY, p.clientHeight);
+    let y = drag.y0 + (AX(e) - drag.startY);
+    drag.moved = Math.max(drag.moved, Math.abs(AX(e) - drag.startY));
+    if (y < 0) y = rubberband(y, DIM());
+    else if (y > maxY) y = maxY + rubberband(y - maxY, DIM());
     sheet.y = y;
-    p.style.transform = `translateY(${y}px)`;
-    drag.hist.push([performance.now(), e.clientY]);
+    p.style.transform = sheetXform(y);
+    drag.hist.push([performance.now(), AX(e)]);
     if (drag.hist.length > 6) drag.hist.shift();
   });
   const endDrag = () => {
@@ -5015,6 +5179,15 @@ function initSheet() {
   });
   window.addEventListener("resize", () => applySheet(false));
   mqMobile.addEventListener("change", () => applySheet(false));
+  mqLS.addEventListener("change", () => setTimeout(() => {   // rotacija: iOS javlja dimenzije sa zakasnjenjem
+    applySheet(false);
+    try { if (map && map.resize) map.resize(); } catch (e) {}
+    try {   // padding kamere zavisi od orijentacije (voznja: vozac dole u portretu, desno u landscape-u)
+      if (document.body.classList.contains("riding"))
+        map.setPadding(isLS() ? { top: Math.round(window.innerHeight * 0.16), bottom: 0, left: lsPadLeft("rideBar", 390), right: 0 }
+                              : { top: Math.round(window.innerHeight * 0.36), bottom: 0, left: 0, right: 0 });
+    } catch (e) {}
+  }, 250));
   applySheet(false);
 }
 
@@ -5028,6 +5201,7 @@ function setPeek(worst, routeTxt, metaTxt) {
 }
 function sheetAfterPlan() {
   if (!mqMobile.matches) return;
+  if (isLS()) { $("panel").scrollTop = 0; setSheet(true); return; }   // landscape: mapa je vec vidljiva desno, stub ostaje otvoren
   // pre skupljanja nameštamo skrol na rezultate, da širenje odmah pokaže presudu
   $("panel").scrollTop = Math.max(0, $("results").offsetTop - $("peekBar").offsetHeight - 6);
   setSheet(false);
@@ -5119,8 +5293,13 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.13";
+const APP_VERSION = "0.9.14";
 const CHANGELOG = [
+  { v: "0.9.14", d: "05.08.2026.", stavke: [
+    "<b>Merenje nagiba motora</b>: telefon na nosaču meri ugao naginjanja - nula se uzima na \"Kreni\" i sama se doteruje na pravcima. Živi ugao stoji uz brzinu, max levo/desno ide u dnevnik. Lični podatak, nikad na server.",
+    "<b>Sažetak vožnje na kraju</b>: kilometri, trajanje, prosek u pokretu, max brzina, krivine, serpentine, nagib, kolekcije - i dugme Podeli sa karticom stvarne vožnje.",
+    "<b>Ceo ekran radi i položeno</b> (landscape) - za telefon na nosaču koji stoji vodoravno.",
+  ] },
   { v: "0.9.13", d: "04.08.2026.", stavke: [
     "<b>Zajednica je jedan ekran</b>: preporuke, stanje na putu, tvoja nedelja - i na dnu poštena najava prijatelja. Pod-tabovi odlaze dok nalozi ne stignu.",
     "<b>Privatnost prijava</b>: identitet uređaja više nije javno čitljiv, a glasanje je jedan uređaj = jedan glas (i ne važi za sopstvene prijave).",
@@ -5455,7 +5634,7 @@ function init() {
   /* ---- HOME kao maketa: otvaranje/zatvaranje planera + čipovi + FAB ---- */
   const $id = (x) => document.getElementById(x);
   function openPlanner(preset) {
-    if (matchMedia("(max-width:900px)").matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }   // R8: stari formular ne postoji na mobilnom
+    if (mqMobile.matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }   // R8: stari formular ne postoji na mobilnom
     document.body.classList.add("planning");
     setTimeout(rz, 80);
     try {
@@ -5540,7 +5719,7 @@ async function homeWxPeek() {
     ["bikeBrand", "bikeModel", "bikeYear"].forEach((id) => { const e = document.getElementById(id); if (e) e.addEventListener("change", sum); });
     setTimeout(sum, 1500); setTimeout(sum, 4000);
   }
-  if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) setTimeout(homeWxPeek, 1200);
+  if (mqMobile.matches) setTimeout(homeWxPeek, 1200);
 })();
 
 /* ---- app2 Faza 4: cist ekran pretrage (Google/Waze stil + NASA BAZA u predlozima) ---- */
@@ -5605,7 +5784,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
   closeSearch();
   const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();   // sa Rute/Mesta taba: predji na planer (tab ekran je prekrivao sve)
   document.body.classList.add("planning");
-  if (matchMedia("(max-width:900px)").matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }   // R6: pravo na rezultat, bez formulara
+  if (mqMobile.matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }   // R6: pravo na rezultat, bez formulara
   if (SEARCH_MODE === "from") {   // biran je POLAZAK
     try { if (window.qplanFromOk) qplanFromOk(); setStatus(""); } catch (e) {}
     document.getElementById("from").value = sel.n;
@@ -5720,6 +5899,114 @@ function gpsPrefill(force) {   // polazak = trenutna lokacija: KOORDINATE ODMAH 
   }, () => { try { if (window.qplanNeedFrom) qplanNeedFrom(); } catch (e) {} }, { maximumAge: 60000, timeout: 8000 });
 }
 const RIDE = { watch: null, nav: null, lock: null, lastFix: 0, offCount: 0, lastReroute: 0, lastSpeak: 0 };
+/* ---- NAGIB (lean angle) ----
+   Nula se uzima na "Kreni" (telefon na nosacu, ugao nosaca = referenca), pa se na pravcima
+   (brzina >25 km/h, stabilan kurs) referenca TIHO doteruje - prosek na pravcu mora biti nula.
+   To pokriva i bocni oslonac pri startu i nesavrsen polozaj na Quad Lock-u.
+   Ugao je LICNI podatak (odluka 4.8.): dnevnik + summary + deljena kartica, nikad na server. */
+const LEAN = { on: false, uB: null, rB: null, fB: null, uB0: null, cal: [], buf: [], u: null,
+  cur: 0, maxL: 0, maxR: 0, kinEma: 0, kinV: null, strT: 0, crvT: 0, dir: 0, dirW: 0, lastUi: 0, suppressUntil: 0 };
+function leanReset() { LEAN.on = false; LEAN.uB = null; LEAN.rB = null; LEAN.fB = null; LEAN.uB0 = null;
+  LEAN.cal = []; LEAN.buf = []; LEAN.u = null; LEAN.cur = 0; LEAN.maxL = 0; LEAN.maxR = 0;
+  LEAN.kinEma = 0; LEAN.kinV = null; LEAN.strT = 0; LEAN.crvT = 0; LEAN.dir = 0; LEAN.dirW = 0; LEAN.suppressUntil = 0; }
+/* Matematika: NE koristimo beta/gamma direktno (telefon skoro uspravan na nosacu = gimbal
+   singularitet, gamma preskace). Kvaternion (W3C ZXY) -> vektor "svetsko gore" u frame-u
+   telefona; roll = ugao tog vektora u ravni desno/gore MOTORA. Kalibracija na "Kreni" hvata
+   stvaran polozaj na nosacu, pa portrait/landscape/kos nosac rade bez posebnih grana. */
+function _lq(a, b, g) {   // kvaternion iz deviceorientation uglova (stepeni)
+  const r = Math.PI / 360, cz = Math.cos(a * r), sz = Math.sin(a * r), cx = Math.cos(b * r), sx = Math.sin(b * r), cy = Math.cos(g * r), sy = Math.sin(g * r);
+  return { w: cx * cy * cz - sx * sy * sz, x: sx * cy * cz - cx * sy * sz, y: cx * sy * cz + sx * cy * sz, z: cx * cy * sz + sx * sy * cz };
+}
+function _lup(q) { return [2 * (q.x * q.z - q.w * q.y), 2 * (q.y * q.z + q.w * q.x), 1 - 2 * (q.x * q.x + q.y * q.y)]; }
+const _ld = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const _lx = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+function _ln(v) { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; }
+function _lFrame(uB) {   // napred = iza ekrana; telefon polozen -> vrh telefona
+  let f = [0, 0, -1].map((v, i) => v - uB[i] * _ld([0, 0, -1], uB));
+  if (Math.hypot(f[0], f[1], f[2]) < 0.3) f = [0, 1, 0].map((v, i) => v - uB[i] * _ld([0, 1, 0], uB));
+  const fB = _ln(f);
+  return { fB, rB: _lx(fB, uB) };
+}
+function leanTick(e) {
+  if (e.beta == null || e.gamma == null || !document.body.classList.contains("riding")) return;
+  const u = _lup(_lq(e.alpha || 0, e.beta, e.gamma));
+  LEAN.u = u;   // treba i kinematickom kanalu (devicemotion)
+  if (!LEAN.uB) {   // kalibracija: ~1 s posle Kreni, telefon miruje na nosacu = to je "uspravno"
+    LEAN.cal.push(u);
+    if (LEAN.cal.length >= 45) {
+      LEAN.uB = _ln([0, 1, 2].map((i) => LEAN.cal.reduce((s, v) => s + v[i], 0) / LEAN.cal.length));
+      LEAN.uB0 = LEAN.uB;
+      const fr = _lFrame(LEAN.uB); LEAN.fB = fr.fB; LEAN.rB = fr.rB;
+      LEAN.on = true;
+      try { document.querySelector("#rideBarBottom .pill").classList.add("lon"); } catch (er) {}   // senzor ziv - pokazi uz brzinu
+    }
+    return;
+  }
+  const roll = Math.atan2(-_ld(u, LEAN.rB), _ld(u, LEAN.uB)) * 180 / Math.PI;   // + = desno
+  if (Math.abs(roll) > 65) return;   // pad telefona / spic preko realnog maksimuma - ne merimo
+  LEAN.buf.push(roll);
+  if (LEAN.buf.length > 15) LEAN.buf.shift();   // ~0,3 s na 50-60 Hz
+  const srt = [...LEAN.buf].sort((x, y) => x - y);
+  const med = srt[srt.length >> 1];   // medijana guta vibracije i udar rupe bolje od proseka
+  LEAN.cur = med;
+  const now = Date.now();
+  if (LEAN.buf.length >= 12 && (RIDE.spdKmh || 0) > 15 && now > LEAN.suppressUntil) {   // odrzan ugao u voznji; posle povratka iz pozadine 1 s pauze
+    if (med < 0 && -med > LEAN.maxL) LEAN.maxL = -med;
+    if (med > 0 && med > LEAN.maxR) LEAN.maxR = med;
+  }
+  if (now - LEAN.lastUi > 300) {   // zivi prikaz uz brzinu, throttle da ne trepce
+    LEAN.lastUi = now;
+    const el = document.getElementById("rideLean");
+    if (el) { el.textContent = Math.round(Math.abs(med)) + "°"; el.parentElement.parentElement.classList.toggle("lact", Math.abs(med) >= 8); }
+  }
+}
+function leanMotion(e) {
+  /* Kinematicki kanal: u USTALJENOJ krivini senzorska fuzija kliza ka osi motora, pa se yaw NE SME
+     projektovati na (odlutali) LEAN.u. Umesto toga: sa gyro vektora se skine roll komponenta
+     (projekcija na fB - roll je oko ose napred, svetska vertikala je na nju normalna), EMA po
+     komponenti (vibracije nulte srednje vrednosti se potiru), pa MAGNITUDA -> ugao; magnituda ne
+     zavisi od drifta fuzije. Znak skretanja se cita oko kalibrisane ose uB (samo za smer i pravac). */
+  if (!LEAN.on || !LEAN.u || !document.body.classList.contains("riding")) return;
+  const rr = e.rotationRate;
+  if (!rr || rr.alpha == null) return;
+  const gy = [rr.beta || 0, rr.gamma || 0, rr.alpha || 0];   // deg/s, W3C ose: beta=x, gamma=y, alpha=z
+  const gf = _ld(gy, LEAN.fB);
+  const gt = [gy[0] - gf * LEAN.fB[0], gy[1] - gf * LEAN.fB[1], gy[2] - gf * LEAN.fB[2]];
+  if (!LEAN.kinV) LEAN.kinV = [0, 0, 0];
+  for (let i = 0; i < 3; i++) LEAN.kinV[i] += 0.1 * (gt[i] - LEAN.kinV[i]);
+  const omega = Math.hypot(LEAN.kinV[0], LEAN.kinV[1], LEAN.kinV[2]) * Math.PI / 180;   // rad/s
+  const yawB = _ld(LEAN.kinV, LEAN.uB) * Math.PI / 180;   // znak skretanja (rad/s oko kalibrisane ose)
+  LEAN.kinEma = yawB;
+  const now = Date.now();
+  // pravac-detektor: >3 s bez skretanja pri >25 km/h = dokazan pravac (tu je nula po definiciji)
+  if ((RIDE.spdKmh || 0) > 25 && Math.abs(yawB) < 0.01) { if (!LEAN.strT) LEAN.strT = now; } else LEAN.strT = 0;
+  const strOk = LEAN.strT && now - LEAN.strT > 3000;
+  // tiho doterivanje nule: na DOKAZANOM pravcu sme i veci offset (bocni oslonac na Kreni!),
+  // inace samo sitno klizanje; ukupni cap ~12 stepeni od pocetne kalibracije
+  if ((RIDE.spdKmh || 0) > 25 && Math.abs(yawB) < 0.02 && (Math.abs(LEAN.cur) < 2 || strOk) && LEAN.uB0
+      && _ld(LEAN.uB, LEAN.uB0) > 0.978) {
+    const k = strOk ? 0.006 : 0.002;
+    LEAN.uB = _ln([0, 1, 2].map((i) => LEAN.uB[i] + k * (LEAN.u[i] - LEAN.uB[i])));
+    const fr = _lFrame(LEAN.uB); LEAN.fB = fr.fB; LEAN.rB = fr.rB;
+  }
+  const vMs = (RIDE.spdKmh || 0) / 3.6;
+  if (vMs < 4.2 || now < LEAN.suppressUntil) return;   // ispod ~15 km/h kanal ne vredi
+  if (!RIDE.lastFixTs || now - RIDE.lastFixTs > 1500) return;   // ustajao GPS fiks = nepouzdana brzina, ne meri max
+  const kin = Math.min(65, Math.abs(Math.atan(vMs * omega / 9.81) * 180 / Math.PI));
+  // smer: histereza - dok je attitude jasan pamti se smer + znak yaw-a; kad attitude u dugoj
+  // krivini sklizne ka nuli, isti znak yaw-a = ISTA krivina (smer ostaje), suprotan = nova (obrni)
+  const ys = Math.sign(yawB);
+  if (Math.abs(LEAN.cur) >= 8) { LEAN.dir = LEAN.cur > 0 ? 1 : -1; if (ys) LEAN.dirW = ys; }
+  else if (LEAN.dir && LEAN.dirW && ys && ys === -LEAN.dirW) { LEAN.dir = -LEAN.dir; LEAN.dirW = ys; }
+  if (kin < 8 || !LEAN.dir) return;
+  // mlada krivina: attitude je jos tacan pa kanal ne sme da pobegne od njega (GPS brzina kasni pri
+  // kocenju); duga krivina (>4 s): attitude je odlutao i cap se pusta - kanal je tad jedini tacan
+  if (Math.abs(yawB) > 0.05) { if (!LEAN.crvT) LEAN.crvT = now; } else LEAN.crvT = 0;
+  const longCrv = LEAN.crvT && now - LEAN.crvT > 4000;
+  const kinM = longCrv ? kin : Math.min(kin, Math.abs(LEAN.cur) + 10);
+  if (LEAN.dir < 0 && kinM > LEAN.maxL) LEAN.maxL = kinM;
+  if (LEAN.dir > 0 && kinM > LEAN.maxR) LEAN.maxR = kinM;
+}
 /* ćirilica -> latinica (imena ulica iz OSM-a su ćirilična) */
 const C2L = {"а":"a","б":"b","в":"v","г":"g","д":"d","ђ":"đ","е":"e","ж":"ž","з":"z","и":"i","ј":"j","к":"k","л":"l","љ":"lj","м":"m","н":"n","њ":"nj","о":"o","п":"p","р":"r","с":"s","т":"t","ћ":"ć","у":"u","ф":"f","х":"h","ц":"c","ч":"č","џ":"dž","ш":"š"};
 function cyr2lat(t) {
@@ -5862,7 +6149,7 @@ function drawRoadLabel(route, dMeters, lo, la) {
   try {   // ispod strelice vozila, u ekranskim koordinatama
     const p = map.project([lo, la]);
     el.style.left = Math.round(p.x) + "px";
-    el.style.top = Math.round(p.y + 40) + "px";
+    el.style.top = Math.round(Math.min(p.y + 40, window.innerHeight - 96)) + "px";   // na niskom (landscape) ekranu ne sme ispod donje trake
     el.classList.add("on");
   } catch (e) { el.classList.remove("on"); }
 }
@@ -6027,31 +6314,46 @@ function startRide() {
   if (!route) return;
   if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
   try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
-  try {   // R10: kompas telefona - trouglic se okrece i dok stojis (GPS kurs radi tek u pokretu); iOS trazi dozvolu na gest
+  try {   // R10: kompas telefona + nagib; iOS trazi dozvolu na gest (Kreni JESTE gest)
     if (!RIDE._compassReg) {
-      const attach = () => {
-        RIDE._compassReg = true;
-        let lastRot = 0;
-        window.addEventListener("deviceorientation", (e) => {
-          const h = (e.webkitCompassHeading != null && !isNaN(e.webkitCompassHeading)) ? e.webkitCompassHeading
-                  : (e.absolute && e.alpha != null ? (360 - e.alpha) % 360 : null);
-          if (h == null) return;
-          RIDE.compassHdg = h;
-          const now = Date.now();
-          if (now - lastRot > 150 && document.body.classList.contains("riding") && RIDE.marker && !RIDE.gpsCourseFresh) {
-            lastRot = now; try { RIDE.marker.setRotation(h); } catch (er) {}
-          }
-        });
+      RIDE._compassReg = true;
+      let lastRot = 0;
+      RIDE._orientH = (e) => {
+        try { leanTick(e); } catch (er) {}   // nagib pre kompas-izlaza (kompas ume da nema heading, nagib i tad radi)
+        const h = (e.webkitCompassHeading != null && !isNaN(e.webkitCompassHeading)) ? e.webkitCompassHeading
+                : (e.absolute && e.alpha != null ? (360 - e.alpha) % 360 : null);
+        if (h == null) return;
+        RIDE.compassHdg = h;
+        const now = Date.now();
+        if (now - lastRot > 150 && document.body.classList.contains("riding") && RIDE.marker && !RIDE.gpsCourseFresh) {
+          lastRot = now; try { RIDE.marker.setRotation(h); } catch (er) {}
+        }
       };
-      if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function")
-        DeviceOrientationEvent.requestPermission().then((r) => { if (r === "granted") attach(); }).catch(() => {});
-      else attach();
+      RIDE._motionH = (e) => { try { leanMotion(e); } catch (er) {} };
+      const attach = () => {   // remove pa add: bezbedno i za ponovno kacenje posle pozadine
+        window.removeEventListener("deviceorientation", RIDE._orientH);
+        window.removeEventListener("devicemotion", RIDE._motionH);
+        window.addEventListener("deviceorientation", RIDE._orientH);
+        window.addEventListener("devicemotion", RIDE._motionH);
+      };
+      // orientation i motion dozvola su u WebKit-u JEDNO stanje, ali trazimo obe PARALELNO u istom gestu
+      // (sekvencijalni drugi poziv moze ostati bez user-activation); Capacitor delegate auto-grantuje
+      const ask = (C) => (C && typeof C.requestPermission === "function") ? C.requestPermission().catch(() => "denied") : Promise.resolve("granted");
+      Promise.all([ask(window.DeviceOrientationEvent), ask(window.DeviceMotionEvent)]).then(([o]) => { if (o === "granted") attach(); });
+      document.addEventListener("visibilitychange", () => {   // iOS ume da UGASI senzorske evente posle pozadine
+        if (document.visibilityState === "visible" && document.body.classList.contains("riding")) {
+          LEAN.suppressUntil = Date.now() + 1000;   // prva sekunda po povratku ne ulazi u max
+          attach();
+        }
+      });
     }
   } catch (e) {}
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = [];   // dnevnik voznje + kolekcije
+  RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
+  leanReset();   // nagib: nova kalibracija na svakom Kreni (telefon je tad na nosacu)
   try { clearTimeout(RIDE.arrTo); } catch (e) {} RIDE.arrTo = null;   // zaostali auto-stop prosle voznje
   loadSpeedLimits(route);   // u pozadini: dok stigne, roundel je prazan umesto da lazе
   try {   // svezе prijave zajednice na start + osvezavanje na 45 s tokom voznje
@@ -6068,9 +6370,10 @@ function startRide() {
   const gfab = document.querySelector('[data-fab="gps"]'); if (gfab) gfab.classList.remove("recenter");
   try { map.setTerrain(null); } catch (e) {}   // teren OFF u navigaciji (sece pitch/zoom na strminama - lekcija iz 3D demoa)
   try { nightRoads(true); } catch (e) {}   // u voznji mapa svetlija (kontrast za brzi pogled)
-  try {   // kao Google/Waze: vozac u DONJOJ TRECINI ekrana, napred se vidi vise puta (Boskova voznja 1.8.)
+  try {   // kao Google/Waze: vozac u DONJOJ TRECINI ekrana (portret) / u DESNOJ POLOVINI (landscape, levi stub zauzima ~400px)
     const H = (map.getContainer() && map.getContainer().clientHeight) || window.innerHeight || 800;
-    map.setPadding({ top: Math.round(H * 0.36), bottom: 0, left: 0, right: 0 });
+    map.setPadding(isLS() ? { top: Math.round(H * 0.16), bottom: 0, left: lsPadLeft("rideBar", 390), right: 0 }
+                          : { top: Math.round(H * 0.36), bottom: 0, left: 0, right: 0 });
   } catch (e) {}
   // reset banera (druga voznja ne sme da krene sa tekstom prosle) + "trazim GPS" stanje
   const _nc = document.querySelector("#rideBar .navcard");
@@ -6202,6 +6505,16 @@ function startRide() {
       }
     } catch (e) {}
     if (p.coords.speed != null) document.getElementById("rideKmh").textContent = Math.round(p.coords.speed * 3.6);
+    try {   // statistika voznje (summary): max/prosek brzine; brzina hrani i nagib (gate + kinematicki kanal)
+      const nowTs = Date.now();
+      let spdK;
+      if (p.coords.speed != null) { spdK = p.coords.speed * 3.6; RIDE.spdTs = nowTs; }
+      else spdK = (nowTs - (RIDE.spdTs || 0) < 3000) ? RIDE.spdKmh : 0;   // fiks bez brzine (kratak ispad): drzi staru do 3 s - apex krivine ne sme da ispadne iz merenja nagiba
+      RIDE.spdKmh = spdK;
+      if (accFix < 80 && p.coords.speed != null && spdK > RIDE.maxKmh && spdK < 260) RIDE.maxKmh = spdK;   // GPS skok ne sme da napravi "max 700"
+      if (RIDE.lastFixTs && spdK > 4) RIDE.movMs += Math.min(5000, nowTs - RIDE.lastFixTs);   // vreme U POKRETU (pauza na pumpi ne kvari prosek)
+      RIDE.lastFixTs = nowTs;
+    } catch (e) {}
     try { drawRoadLabel(route, d, lo, la); } catch (e) {}
     try {   // ogranicenje brzine: samo gde OSM zna; preko 7 km/h iznad -> brojka pocrveni
       const lim = limitAt(route, d), limEl = document.getElementById("rideLim");
@@ -6248,13 +6561,134 @@ function stopRide() {
   try { speechSynthesis.cancel(); } catch (e) {}
   try { if (RIDE.lock) { RIDE.lock.release(); RIDE.lock = null; } } catch (e) {}
   document.body.classList.remove("riding");
+  try { const pl = document.querySelector("#rideBarBottom .pill"); if (pl) pl.classList.remove("lon", "lact"); } catch (e) {}
+  try { rideSumShow(); } catch (e) {}   // sazetak voznje (nagib/krivine/brzine) - posle skidanja riding klase
 }
+/* ---- Sazetak voznje na kraju (Boskov zahtev 5.8.): sve metrike + deljenje ---- */
+function rideSumShow() {
+  const s = RIDE.lastSummary;
+  RIDE.lastSummary = null;
+  if (!s) return;
+  const el = document.getElementById("rideSum");
+  if (!el) return;
+  document.getElementById("rsRel").textContent = s.naz;
+  const d = new Date(s.ts);
+  document.getElementById("rsDt").textContent = d.toLocaleDateString("sr-RS") + " · " + d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+  const M = [];   // [vrednost, sufiks, labela, hi]
+  M.push([s.km, " km", "pređeno", false]);
+  M.push([s.min >= 60 ? Math.floor(s.min / 60) + "h " + (s.min % 60) : s.min, s.min >= 60 ? "" : " min", "trajanje", false]);
+  if (s.avgK) M.push([s.avgK, " km/h", "prosek u pokretu", false]);
+  if (s.maxK) M.push([s.maxK, " km/h", "max brzina", false]);
+  if (s.lnL != null && (s.lnL || s.lnR)) M.push([`${s.lnL}°/${s.lnR}°`, "", "nagib L / D", true]);
+  if (s.kriv) M.push([s.kriv, "", "krivina", false]);
+  if (s.serp) M.push([s.serp, "", plSerp(s.serp), true]);
+  document.getElementById("rsGrid").innerHTML = M.map(([v, u, l, hi]) =>
+    `<div class="m${hi ? " hi" : ""}"><div class="v">${v}${u ? `<small>${u}</small>` : ""}</div><div class="l">${l}</div></div>`).join("");
+  const tg = [];
+  if (s.poeni) tg.push(`<span class="pts">+${s.poeni} poena</span>`);
+  if (s.kol) tg.push(`<span>${s.kol} ${s.kol === 1 ? "nova tačka kolekcije" : "nove tačke kolekcija"}</span>`);
+  if (s.kisa) tg.push("<span>🌧 istrpeo kišu</span>");
+  if (s.lnL == null) tg.push("<span>nagib: senzor nije bio dostupan</span>");
+  document.getElementById("rsTags").innerHTML = tg.join("");
+  el._sum = s;
+  el.classList.add("on");
+}
+function buildRideCanvas(s) {
+  // ista brend kartica kao buildShareCanvas, ali STVARNA voznja (odluka 4.8.: deli se SVE, korisnikov izbor)
+  const W = 1080, H = 1350, P = 72;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const x = cv.getContext("2d");
+  const F = (w, sz) => `${w} ${sz}px Archivo, -apple-system, sans-serif`;
+  const g = x.createRadialGradient(W / 2, H * 0.22, 80, W / 2, H * 0.3, H);
+  g.addColorStop(0, "#16223c"); g.addColorStop(1, "#0f172a");
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.textBaseline = "alphabetic"; x.font = F(800, 44);
+  let wx = P;
+  for (const [t, c] of [["Route", "#f8fafc"], ["Me", "#f97316"], ["Right", "#f8fafc"]]) { x.fillStyle = c; x.fillText(t, wx, 118); wx += x.measureText(t).width; }
+  x.fillStyle = "#94a3b8"; x.font = F(600, 26);
+  const tag = "odvožena tura";
+  x.fillText(tag, W - P - x.measureText(tag).width, 118);
+  let fs = 68; x.font = F(800, fs);
+  while (x.measureText(s.naz).width > W - 2 * P && fs > 30) { fs -= 2; x.font = F(800, fs); }
+  x.fillStyle = "#f8fafc"; x.fillText(s.naz, P, 230);
+  const d = new Date(s.ts);
+  x.fillStyle = "#94a3b8"; x.font = F(600, 31);
+  x.fillText(d.toLocaleDateString("sr-RS") + " · " + d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" }), P, 288);
+  x.strokeStyle = "rgba(148,163,184,.22)"; x.lineWidth = 2;
+  x.beginPath(); x.moveTo(P, 336); x.lineTo(W - P, 336); x.stroke();
+  let y = 430;
+  // hero: kilometri krupno + nagib desno (ako ga ima)
+  x.fillStyle = "#f97316"; x.font = F(900, 130);
+  const kmTxt = String(s.km);
+  x.fillText(kmTxt, P, y + 104);
+  const kmW = x.measureText(kmTxt).width;
+  x.fillStyle = "#94a3b8"; x.font = F(800, 30); x.fillText("KM", P + kmW + 18, y + 104);
+  if (s.lnL != null && (s.lnL || s.lnR)) {
+    const lt = `${Math.max(s.lnL, s.lnR)}°`;
+    x.fillStyle = "#f8fafc"; x.font = F(900, 96);
+    x.fillText(lt, W - P - x.measureText(lt).width, y + 104);
+    x.fillStyle = "#94a3b8"; x.font = F(800, 26);
+    const ll = "MAX NAGIB";
+    x.fillText(ll, W - P - x.measureText(ll).width, y - 10);
+  }
+  y += 210;
+  const rows = [];
+  rows.push([s.min >= 60 ? Math.floor(s.min / 60) + " h " + (s.min % 60) : s.min + " min", "trajanje"]);
+  rows.push([s.avgK ? s.avgK + " km/h" : "-", "prosek u pokretu"]);
+  rows.push([s.maxK ? s.maxK + " km/h" : "-", "max brzina"]);
+  rows.push([s.kriv ? String(s.kriv) : "-", "krivina"]);
+  const cw = (W - 2 * P) / 4;
+  rows.forEach(([v, l], i) => {
+    let vs = 42; x.font = F(800, vs);
+    while (x.measureText(v).width > cw - 26 && vs > 24) { vs -= 2; x.font = F(800, vs); }
+    x.fillStyle = "#f8fafc"; x.fillText(v, P + i * cw, y + 42);
+    x.fillStyle = "#94a3b8"; x.font = F(600, 24); x.fillText(l, P + i * cw, y + 78);
+  });
+  y += 148;
+  const ex = [];
+  if (s.serp) ex.push(`${s.serp} ${plSerp(s.serp)}`);
+  if (s.lnL != null && (s.lnL || s.lnR)) ex.push(`nagib levo ${s.lnL}° · desno ${s.lnR}°`);
+  if (s.kisa) ex.push("istrpeo kišu");
+  if (s.kol) ex.push(`${s.kol} ${s.kol === 1 ? "tačka kolekcije" : "tačke kolekcija"}`);
+  if (ex.length) { x.fillStyle = "#94a3b8"; x.font = F(600, 28); x.fillText(ex.join(" · "), P, y + 28); }
+  x.strokeStyle = "rgba(148,163,184,.22)";
+  x.beginPath(); x.moveTo(P, H - 118); x.lineTo(W - P, H - 118); x.stroke();
+  x.fillStyle = "#f97316"; x.font = F(800, 30);
+  const site = "routemeright.app";
+  const siteW = x.measureText(site).width;
+  x.fillText(site, W - P - siteW, H - 66);
+  x.fillStyle = "#94a3b8"; x.font = F(600, 26);
+  let ft = "Izmereno tokom vožnje · nagib meri telefon na nosaču";
+  while (x.measureText(ft).width > W - 2 * P - siteW - 40 && ft.length > 10) ft = ft.slice(0, -2);   // ne sme preko imena sajta
+  x.fillText(ft, P, H - 66);
+  return cv;
+}
+async function shareRideCard(s) {
+  try {
+    const cv = buildRideCanvas(s);
+    const blob = await new Promise((res) => cv.toBlob(res, "image/jpeg", 0.92));
+    const file = blob ? new File([blob], "voznja.jpg", { type: "image/jpeg" }) : null;
+    if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: "RouteMeRight vožnja" }); return;
+    }
+    if (navigator.share) { await navigator.share({ title: "RouteMeRight vožnja", text: `${s.naz}: ${s.km} km`, url: "https://routemeright.app" }); return; }
+    if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "voznja.jpg"; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000); shareToast("Slika sačuvana."); }
+  } catch (e) { if (e && e.name !== "AbortError") shareToast("Deljenje nije uspelo."); }
+}
+(function () {
+  const el = document.getElementById("rideSum");
+  if (!el) return;
+  document.getElementById("rsClose").addEventListener("click", () => el.classList.remove("on"));
+  el.addEventListener("click", (e) => { if (e.target === el) el.classList.remove("on"); });   // tap van zatvara (Boskovo pravilo izlaza)
+  document.getElementById("rsShare").addEventListener("click", () => { if (el._sum) shareRideCard(el._sum); });
+})();
 (function(){
   const openPlanning = () => { document.body.classList.add("planning"); try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {} };
   // GPS polazak pri otvaranju planera
   ["homeSearch", "planCta"].forEach((id) => { const el = document.getElementById(id); if (el) el.addEventListener("click", () => { openSearch(); }); });   // cist ekran pretrage umesto formulara (stari openPlanner listener se ponisti u openSearch)
   // tap na OD/DO otvara CIST ekran pretrage (Google princip) - mobilno
-  if (window.matchMedia && window.matchMedia("(max-width: 900px)").matches) {
+  if (mqMobile.matches) {
     const fEl = document.getElementById("from"), tEl = document.getElementById("to");
     if (fEl) fEl.addEventListener("focus", (e) => { e.target.blur(); openSearch("from"); });
     if (tEl) tEl.addEventListener("focus", (e) => { e.target.blur(); openSearch("to"); });
@@ -6550,6 +6984,7 @@ function shareToast(msg) {
     document.body.appendChild(t);
   }
   t.textContent = msg; t.style.opacity = "1";
+  try { t.style.bottom = isLS() ? "calc(10px + env(safe-area-inset-bottom))" : "calc(86px + env(safe-area-inset-bottom))"; } catch (e) {}
   clearTimeout(t._h); t._h = setTimeout(() => { t.style.opacity = "0"; }, 2600);
 }
 async function shareRide() {
@@ -6620,7 +7055,7 @@ async function shareRide() {
   });
   if (ja) ja.addEventListener("click", () => { try { localStorage.setItem("rmr2_theme", "auto"); } catch (e) {} reloadNaJa(); });
   try {   // R11: Moj motor zivi u Ja tabu (mobilno); "Jos opcija" ga pozajmljuje i vraca
-    if (matchMedia("(max-width:900px)").matches) {
+    if (mqMobile.matches) {
       const host = document.getElementById("jaMotorHost"), mh = document.getElementById("motoHead"), mw = document.getElementById("motoWrap");
       if (host && mh && mw) { host.appendChild(mh); host.appendChild(mw); }
     }
@@ -6715,7 +7150,7 @@ function renderMesta(ftype) {
       const f = gf.files && gf.files[0];
       if (!f) return;
       const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
-      if (matchMedia("(max-width:900px)").matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e) {} }
+      if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e) {} }
       document.body.classList.add("planning");
       try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
       importGpx(f);
@@ -6727,7 +7162,7 @@ function renderMesta(ftype) {
   if (kg) kg.addEventListener("click", () => {
     const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
     document.body.classList.add("planning");
-    if (matchMedia("(max-width:900px)").matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }
+    if (mqMobile.matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }
     try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
     const rg = document.getElementById("roundGen");
     if (rg && !rg.checked) { rg.checked = true; rg.dispatchEvent(new Event("change")); }
@@ -6755,7 +7190,7 @@ function renderMesta(ftype) {
       return;
     }
     // na mobilnom pilula vraca na polu-sheet sa rezultatima (qplan), ne na stari pun formular
-    if (matchMedia("(max-width:900px)").matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e2) {} }
+    if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e2) {} }
     document.body.classList.add("planning");
     try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e2) {}
   });
