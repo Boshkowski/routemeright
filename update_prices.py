@@ -87,45 +87,57 @@ def upd_hr(p, today):
     return f"HR benzin: {eur} EUR/L (medijan)"
 
 
-def upd_tolls(p, today):
-    """Auto-VERIFIKACIJA putarina i vinjeta: potvrdi da zvanicni izvor i dalje
-    prikazuje cenu koju imamo. Na poklapanje -> verified=danas. Na promenu ->
-    NE menja cifru sam, nego upise note za rucnu proveru (cena je pravna stvar)."""
-    out = []
-    checks = [
-        ("vignette", "SI", "https://www.tolls.eu/slovenia", r"8[.,]00"),
-        ("vignette", "AT", "https://www.asfinag.at/maut-vignette/vignette/", r"5[.,]10"),
-        ("vignette", "HU", "https://www.tolls.eu/hungary", [r"[Mm]otorcycle", r"5[\s.]?550"]),
-        ("tollMotoPerKm", "RS", "https://www.tolls.eu/serbia", r"1[\s.]?030"),
-        ("tollMotoPerKm", "HR", "https://www.tolls.eu/croatia", r"10[.,]8"),
-    ]
-    done = set()
-    for sect, cc, url, pat in checks:
-        key = sect + cc
-        if key in done:
-            continue
-        try:
-            html = fetch(url)
-            txt = re.sub(r"<[^>]+>", " ", html)
-            pats = pat if isinstance(pat, list) else [pat]
-            if all(re.search(x, txt) for x in pats):
-                p[sect][cc]["verified"] = today
-                p[sect][cc].pop("note", None)
-                out.append(f"{cc} {sect}: potvrdjeno ({pat})")
-                done.add(key)
-            else:
-                p[sect][cc]["note"] = f"PROVERI RUCNO: {pat} nije nadjen na {url} ({today})"
-                out.append(f"{cc} {sect}: NIJE potvrdjeno na {url}")
-        except Exception as e:
-            out.append(f"{cc} {sect}: izvor nedostupan ({e})")
-    return "; ".join(out)
+def upd_eu(p, today):
+    """EU Weekly Oil Bulletin (zvanicni EC izvor, svih 27 zemalja odjednom, cene VEC u EUR/1000 l).
+    GUID dokumenta je STABILAN - EC svakog ponedeljka zameni sadrzaj istim linkom (provereno 6.8.2026).
+    xlsx se parsira stdlib-om (zip + XML regex) - bez ijedne zavisnosti."""
+    import zipfile, io
+    from datetime import date as _d, timedelta
+    url = "https://energy.ec.europa.eu/document/download/264c2d0f-f161-4ea3-a777-78faae59bea0_en"
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15"})
+    raw = urllib.request.urlopen(req, timeout=40).read()
+    z = zipfile.ZipFile(io.BytesIO(raw))
+    ss = [re.sub(r"<[^>]+>", "", s) for s in re.findall(r"<si>(.*?)</si>", z.read("xl/sharedStrings.xml").decode(), re.S)]
+    xml = z.read("xl/worksheets/sheet1.xml").decode()
+    serial = None
+    EU_CC = {"Austria": "AT", "Bulgaria": "BG", "Germany": "DE", "Greece": "GR",
+             "Hungary": "HU", "Italy": "IT", "Romania": "RO", "Slovenia": "SI"}   # HR ide preko HAK-a (svezije od ponedeljackog biltena)
+    got = []
+    for rxml in re.findall(r"<row[^>]*>(.*?)</row>", xml, re.S):
+        cells = {}
+        for c in re.finditer(r'<c r="([A-Z]+)\d+"(?:[^>]*t="(\w+)")?[^>]*>(?:<v>([^<]*)</v>)?', rxml):
+            if c.group(3) is None:
+                continue
+            cells[c.group(1)] = ss[int(c.group(3))] if c.group(2) == "s" else c.group(3)
+        a, b = cells.get("A"), cells.get("B")
+        if a and serial is None and re.fullmatch(r"\d{5}(\.0*)?", a):
+            serial = int(float(a))   # Excel serijski datum nedelje biltena
+            if (_d.today() - _d(1899, 12, 30) - timedelta(days=serial)).days > 21:
+                wob = (_d(1899, 12, 30) + timedelta(days=serial)).isoformat()
+                raise ValueError(f"bilten je ustajao ({wob}) - nista nije upisano")   # PRE upisa ijedne vrednosti
+        if a in EU_CC and b:
+            cc = EU_CC[a]
+            try:
+                eur = float(b) / 1000.0   # EUR po 1000 l -> EUR/L
+            except ValueError:
+                continue
+            if not 0.9 <= eur <= 3.2:
+                continue   # sumnjiva cifra se NE upisuje (ne odokativno)
+            if cc in p["fuel"]:
+                p["fuel"][cc].update({"eur": round(eur, 2), "verified": today, "source": "EU Weekly Oil Bulletin (auto)"})
+                got.append(f"{cc} {eur:.2f}")
+    if not got:
+        raise ValueError("nijedna zemlja nije parsirana iz biltena")
+    wob_date = (_d(1899, 12, 30) + timedelta(days=serial)).isoformat() if serial else "?"
+    return f"EU bilten ({wob_date}): " + " · ".join(got)
 
 
 def main():
     p = json.loads(PJ.read_text(encoding="utf-8"))
     today = date.today().isoformat()
     ok, fail = [], []
-    for name, fn in [("RS", upd_rs), ("BA", upd_ba), ("ME", upd_me), ("HR", upd_hr), ("TOLLS", upd_tolls)]:
+    for name, fn in [("RS", upd_rs), ("BA", upd_ba), ("ME", upd_me), ("HR", upd_hr), ("EU", upd_eu)]:
         try:
             ok.append(fn(p, today))
         except Exception as e:
