@@ -185,10 +185,14 @@ def upd_xk(p, today):
             continue
     if not post:
         raise ValueError("MINTI objava nije nađena (4 dana unazad)")
-    m = re.search(r'(https://minti\.rks-gov\.net/wp-content/uploads/[^"\']+\.jpe?g)', post)
-    if not m:
+    # srcset ima vise URL-ova odvojenih RAZMACIMA (+ .avif varijante) - trazi ciste .jpg krajeve,
+    # preferiraj pun original (bez -800x600 sufiksa dimenzija)
+    cands = re.findall(r'(https://minti\.rks-gov\.net/wp-content/uploads/[^"\'\s]+?\.jpe?g)(?=["\'\s])', post)
+    if not cands:
         raise ValueError("slika sa cenama nije nađena u objavi")
-    req = urllib.request.Request(m.group(1), headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"})
+    full = [c for c in cands if not re.search(r"-\d+x\d+\.jpe?g$", c)]
+    img_url = full[0] if full else cands[-1]
+    req = urllib.request.Request(img_url, headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"})
     img = urllib.request.urlopen(req, timeout=30).read()
     with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f:
         f.write(img)
