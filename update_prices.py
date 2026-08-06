@@ -17,7 +17,11 @@ PJ = ROOT / "data" / "prices.json"
 
 
 def fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "RouteMeRight-updater/1.0 (boskodjurica@gmail.com)"})
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "hr,sr;q=0.8,en;q=0.6",
+    })   # nafta.hr GitHub runnerima (cloud IP) na bot-UA vraca drugaciji HTML - browser zaglavlja pomazu (6.8.)
     return urllib.request.urlopen(req, timeout=20).read().decode("utf-8", "ignore")
 
 
