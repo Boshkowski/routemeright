@@ -28,6 +28,9 @@ jobs:
             -H "apikey: sb_publishable_RTYwIJ1CuNB9xCSoMAyWtA_Y89-QXiI" \
             -H "Authorization: Bearer sb_publishable_RTYwIJ1CuNB9xCSoMAyWtA_Y89-QXiI" || true
         continue-on-error: true
+      - name: Tesseract OCR (Kosovo objavljuje cene samo kao sliku)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr
+        continue-on-error: true
       - name: Osvezi cene goriva (benzin BMB95 po zemljama)
         run: python3 update_prices.py || true
         continue-on-error: true
