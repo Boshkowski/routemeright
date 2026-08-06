@@ -34,14 +34,16 @@
       "source": "EU Weekly Oil Bulletin (auto)"
     },
     "MK": {
-      "eur": 1.28,
-      "verified": null,
-      "source": "TODO: RKE dnevni cenovnik"
+      "eur": 1.48,
+      "verified": "2026-08-06",
+      "source": "gorivo.mk = RKE odluka (auto)",
+      "local": "91 MKD"
     },
     "AL": {
-      "eur": 1.75,
-      "verified": null,
-      "source": "TODO"
+      "eur": 2.02,
+      "verified": "2026-08-06",
+      "source": "trzisni prosek cargopedia (zvanicni bord neaktivan, auto)",
+      "local": "~197 ALL"
     },
     "XK": {
       "eur": 1.35,
@@ -82,6 +84,31 @@
       "eur": 2.18,
       "verified": "2026-08-06",
       "source": "EU Weekly Oil Bulletin (auto)"
+    },
+    "SK": {
+      "eur": 1.76,
+      "verified": "2026-08-06",
+      "source": "EU Weekly Oil Bulletin (auto)"
+    },
+    "CZ": {
+      "eur": 1.74,
+      "verified": "2026-08-06",
+      "source": "EU Weekly Oil Bulletin (auto)"
+    },
+    "PL": {
+      "eur": 1.76,
+      "verified": "2026-08-06",
+      "source": "EU Weekly Oil Bulletin (auto)"
+    },
+    "FR": {
+      "eur": 2.07,
+      "verified": "2026-08-06",
+      "source": "EU Weekly Oil Bulletin (auto)"
+    },
+    "ES": {
+      "eur": 1.69,
+      "verified": "2026-08-06",
+      "source": "EU Weekly Oil Bulletin (auto)"
     }
   },
   "tollMotoPerKm": {
@@ -113,19 +140,29 @@
       "source": "TODO: JP Autoceste FBiH"
     },
     "GR": {
-      "eur": 0.05,
-      "verified": null,
-      "source": "TODO"
+      "eur": 0.04,
+      "verified": "2026-08-06",
+      "source": "Aegean/Egnatia zvanicni cenovnici 2026 (kat. 1, Atina-Solun ~20 EUR)"
     },
     "IT": {
-      "eur": 0.06,
-      "verified": null,
-      "source": "TODO"
+      "eur": 0.08,
+      "verified": "2026-08-06",
+      "source": "klasa A ~0.07 EUR/km + PDV (Milano-Bologna ~16 EUR); Telepass moto -30%"
     },
     "FR": {
       "eur": 0.06,
       "verified": null,
       "source": "TODO"
+    },
+    "RO": {
+      "eur": 0.0,
+      "verified": "2026-08-06",
+      "source": "motocikli izuzeti od rovinjete (OG 15/2002, CNAIR); most A2 u praksi 0"
+    },
+    "BG": {
+      "eur": 0.0,
+      "verified": "2026-08-06",
+      "source": "motocikli izuzeti od e-vinjete (bgtoll.bg: samo vozila sa 4+ tocka)"
     }
   },
   "tollSections": {
@@ -201,14 +238,14 @@
       "source": "TODO: nemzetiutdij.hu"
     },
     "RO": {
-      "text": "rovinjeta",
-      "verified": null,
-      "source": "TODO"
+      "text": "motocikli NE plaćaju rovinjetu - svi putevi besplatni",
+      "verified": "2026-08-06",
+      "source": "CNAIR/erovinieta"
     },
     "BG": {
-      "text": "vinjeta",
-      "verified": null,
-      "source": "TODO"
+      "text": "motocikli NE plaćaju e-vinjetu (samo vozila sa 4+ točka)",
+      "verified": "2026-08-06",
+      "source": "bgtoll.bg"
     },
     "CZ": {
       "text": "vinjeta",

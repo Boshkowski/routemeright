@@ -102,7 +102,8 @@ def upd_eu(p, today):
     xml = z.read("xl/worksheets/sheet1.xml").decode()
     serial = None
     EU_CC = {"Austria": "AT", "Bulgaria": "BG", "Germany": "DE", "Greece": "GR",
-             "Hungary": "HU", "Italy": "IT", "Romania": "RO", "Slovenia": "SI"}   # HR ide preko HAK-a (svezije od ponedeljackog biltena)
+             "Hungary": "HU", "Italy": "IT", "Romania": "RO", "Slovenia": "SI",
+             "Slovakia": "SK", "Czechia": "CZ", "Poland": "PL", "France": "FR", "Spain": "ES"}   # HR ide preko HAK-a (svezije od ponedeljackog biltena)
     got = []
     for rxml in re.findall(r"<row[^>]*>(.*?)</row>", xml, re.S):
         cells = {}
@@ -133,11 +134,81 @@ def upd_eu(p, today):
     return f"EU bilten ({wob_date}): " + " · ".join(got)
 
 
+def upd_mk(p, today):
+    """S. Makedonija: RKE zvanicno odredjuje cene (nedeljna PDF odluka), ali je erc.org.mk iza
+    Cloudflare-a za cloud IP. gorivo.mk agregira ISTU vrednost u cistom HTML-u (provereno 6.8:
+    obe strane 91,0 MKD) i prolazi sa GitHub runnera. Denar je fiksiran za evro (~61.5)."""
+    html = fetch("https://gorivo.mk/")
+    # vrednost je u <h4> ODMAH posle naslova "Цена на бензин</h3>" (MUI klase izmedju su 100+ znakova);
+    # tacno sidro iskljucuje "бензин 98+" karticu
+    m = re.search(r"Цена на бензин</h3><h4[^>]*>\s*(\d{2,3}[.,]\d)", html)
+    if not m:
+        raise ValueError("cena benzina nije nađena na gorivo.mk")
+    den = num(m.group(1))
+    eur = den / 61.5
+    if not 0.9 <= eur <= 2.5:
+        raise ValueError(f"sumnjiva cena: {den} MKD = {eur:.2f} EUR")
+    p["fuel"]["MK"].update({"eur": round(eur, 2), "local": f"{den:g} MKD", "verified": today, "source": "gorivo.mk = RKE odluka (auto)"})
+    return f"MK benzin: {den:g} MKD = {eur:.2f} EUR/L"
+
+
+def upd_al(p, today):
+    """Albanija: zvanicni Bord transparentnosti NEAKTIVAN od 17.6.2026 (poslednja odluka 166 ALL
+    dok je trzisna cena ~199 - zvanicni izvor bi lagao ~20%). Koristimo dnevni trzisni prosek
+    (GitHub json, izvor cargopedia) uz POSTEN source label - cim bord prozivi, vracamo se na njega."""
+    raw = fetch("https://raw.githubusercontent.com/PhoenixKola/albania-fuel-prices/main/data/latest.json")
+    j = json.loads(raw)
+    al = next((c for c in j.get("countries", []) if c.get("country") == "Albania"), {})
+    eur = float(al.get("gasoline95_eur") or 0)
+    if not 1.0 <= eur <= 3.0:
+        raise ValueError(f"sumnjiva cena: {eur}")
+    p["fuel"]["AL"].update({"eur": round(eur, 2), "local": f"~{round(eur * 97.5)} ALL", "verified": today, "source": "trzisni prosek cargopedia (zvanicni bord neaktivan, auto)"})
+    return f"AL benzin: {eur:.2f} EUR/L (trzisni prosek)"
+
+
+def upd_xk(p, today):
+    """Kosovo: MINTI dnevno objavljuje MAKSIMALNE cene - ali iskljucivo kao JPG sliku u objavi.
+    GET dnevnog URL-a -> nadji sliku -> tesseract OCR (GitHub runner ga instalira u workflow-u;
+    lokalno bez tesseracta posteno preskacemo). Slog na slici je krupan i cist - OCR dokazan 6.8."""
+    import shutil, subprocess, tempfile
+    from datetime import timedelta
+    if not shutil.which("tesseract"):
+        raise ValueError("tesseract nije instaliran (lokalno se preskace; robot ga ima)")
+    post = None
+    for back in range(0, 4):   # vikend/praznik: probaj do 4 dana unazad
+        d = date.today() - timedelta(days=back)
+        url = f"https://minti.rks-gov.net/news/cmimet-e-derivateve-te-naftes-per-daten-{d.day:02d}-{d.month:02d}-{d.year}/"
+        try:
+            post = fetch(url)
+            break
+        except Exception:
+            continue
+    if not post:
+        raise ValueError("MINTI objava nije nađena (4 dana unazad)")
+    m = re.search(r'(https://minti\.rks-gov\.net/wp-content/uploads/[^"\']+\.jpe?g)', post)
+    if not m:
+        raise ValueError("slika sa cenama nije nađena u objavi")
+    req = urllib.request.Request(m.group(1), headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"})
+    img = urllib.request.urlopen(req, timeout=30).read()
+    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f:
+        f.write(img)
+        ipath = f.name
+    txt = subprocess.run(["tesseract", ipath, "stdout"], capture_output=True, text=True, timeout=60).stdout
+    mm = re.search(r"Benzina[:\s]*([\d.,]+)\s*euro", txt, re.I)
+    if not mm:
+        raise ValueError("OCR nije pročitao 'Benzina' sa slike")
+    eur = num(mm.group(1))
+    if not 0.9 <= eur <= 2.5:
+        raise ValueError(f"sumnjiva cena: {eur}")
+    p["fuel"]["XK"].update({"eur": round(eur, 2), "verified": today, "source": "MINTI maksimalna cena (auto, OCR)"})
+    return f"XK benzin: {eur:.2f} EUR/L (MINTI max)"
+
+
 def main():
     p = json.loads(PJ.read_text(encoding="utf-8"))
     today = date.today().isoformat()
     ok, fail = [], []
-    for name, fn in [("RS", upd_rs), ("BA", upd_ba), ("ME", upd_me), ("HR", upd_hr), ("EU", upd_eu)]:
+    for name, fn in [("RS", upd_rs), ("BA", upd_ba), ("ME", upd_me), ("HR", upd_hr), ("EU", upd_eu), ("MK", upd_mk), ("AL", upd_al), ("XK", upd_xk)]:
         try:
             ok.append(fn(p, today))
         except Exception as e:
