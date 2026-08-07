@@ -1035,6 +1035,33 @@
   #rideSum .rsxtra { display: flex; gap: 10px; margin-top: 10px; padding: 0 20px; }
   #rideSum .rsxtra button { flex: 1; height: 40px; border-radius: 11px; background: transparent; color: #cbd5e1;
     border: 1px solid rgba(148,163,184,.3); font: 700 13px Archivo, sans-serif; cursor: pointer; }
+  /* birac share template-a (7.8., Boskov izbor: pecat-polukrug / mapa-kolona / lepeza) */
+  #shareTpl { position: fixed; inset: 0; z-index: 340; display: none; }
+  #shareTpl.on { display: block; }
+  #shareTpl .back { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+  #shareTpl .body { position: absolute; left: 0; right: 0; bottom: 0; background: #0f172a;
+    border-radius: 18px 18px 0 0; border-top: 1px solid rgba(148,163,184,.25);
+    padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); max-width: 470px; margin: 0 auto; }
+  #shareTpl .grab { width: 38px; height: 4px; border-radius: 2px; background: #475569; margin: 4px auto 12px; }
+  #shareTpl .ttl { font-size: 15px; font-weight: 800; color: #f8fafc; margin-bottom: 12px; }
+  #shareTpl .kard { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: rgba(30,41,59,.6); border: 1px solid rgba(148,163,184,.22); border-radius: 14px;
+    padding: 11px 14px; margin-bottom: 9px; cursor: pointer; color: #f8fafc; font-family: Archivo, sans-serif; }
+  #shareTpl .kard:active { transform: scale(.985); }
+  #shareTpl .kard svg { width: 40px; height: 40px; flex: none; }
+  #shareTpl .kard .t b { display: block; font-size: 14.5px; font-weight: 800; }
+  #shareTpl .kard .t span { font-size: 11.5px; color: #94a3b8; font-weight: 600; }
+  #shareTpl .kard .st { margin-left: auto; flex: none; font-size: 12px; font-weight: 800; color: #94a3b8; }
+  #shareTpl .kard.radi .st { color: #fbbf24; }
+  #shareTpl .kard.spremno { border-color: rgba(249,115,22,.65); }
+  #shareTpl .kard.spremno .st { color: #f97316; }
+  #shareTpl .kard.nema { opacity: .45; pointer-events: none; }
+  #shareTpl .opcije { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 2px 10px; }
+  #shareTpl .opcije label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #cbd5e1; font-weight: 700; }
+  #shareTpl .opcije input { accent-color: #f97316; width: 16px; height: 16px; }
+  #shareTpl .klip { background: none; border: none; color: #38bdf8; font: 700 12.5px Archivo, sans-serif; cursor: pointer; padding: 4px; }
+  #shareTpl .cancel { width: 100%; height: 44px; border-radius: 12px; background: transparent; color: #e2e8f0;
+    border: 1px solid rgba(148,163,184,.35); font: 800 14px Archivo, sans-serif; cursor: pointer; margin-top: 2px; }
   #rideSum .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; padding: 0 20px; }
   #rideSum .tags span { font-size: 12px; font-weight: 700; color: #e2e8f0; background: rgba(148,163,184,.12); border-radius: 999px; padding: 5px 11px; }
   #rideSum .tags span.pts { color: #0f172a; background: #f97316; }
@@ -1504,6 +1531,33 @@
       <div class="ttl">Druga ruta odavde</div>
       <div class="lst" id="altList"></div>
       <button class="cancel" id="altCancel">Otkaži</button>
+    </div>
+  </div>
+  <div id="shareTpl" role="dialog" aria-label="Podeli vožnju">
+    <div class="back" id="stplBack"></div>
+    <div class="body">
+      <div class="grab"></div>
+      <div class="ttl">Podeli vožnju</div>
+      <button class="kard num" id="stplPecat" type="button">
+        <svg viewBox="0 0 40 40"><path d="M6 30 A 14 14 0 0 1 34 30 Z" fill="rgba(56,66,92,.9)" stroke="rgba(248,250,252,.3)"/><path d="M 20 16 A 14 14 0 0 0 12.8 18.1" fill="none" stroke="#38bdf8" stroke-width="2.6" stroke-linecap="round"/><path d="M 20 16 A 14 14 0 0 1 27 18" fill="none" stroke="#f97316" stroke-width="2.6" stroke-linecap="round"/><line x1="10" y1="26" x2="30" y2="26" stroke="rgba(248,250,252,.35)"/></svg>
+        <span class="t"><b>Pečat</b><span>polukrug: nagib + statistika, preko tvoje fotke</span></span>
+        <span class="st">Napravi</span>
+      </button>
+      <button class="kard num" id="stplMapa" type="button">
+        <svg viewBox="0 0 40 40"><rect x="4" y="5" width="32" height="30" rx="4" fill="rgba(56,66,92,.9)" stroke="rgba(248,250,252,.3)"/><rect x="4" y="5" width="12" height="30" rx="4" fill="rgba(15,23,42,.85)"/><path d="M22 30 C 24 24 30 22 28 15 C 27 11 30 9 31 8" fill="none" stroke="#f97316" stroke-width="2.4" stroke-linecap="round"/><circle cx="31" cy="8" r="2.2" fill="#f97316"/><circle cx="22" cy="30" r="2" fill="#38bdf8"/></svg>
+        <span class="t"><b>Mapa kartica</b><span>cela ruta na tamnoj mapi + kolona statistike</span></span>
+        <span class="st">Napravi</span>
+      </button>
+      <button class="kard num" id="stplLepeza" type="button">
+        <svg viewBox="0 0 40 40"><line x1="6" y1="30" x2="34" y2="30" stroke="rgba(248,250,252,.4)" stroke-width="1.6"/><path d="M 20 30 L 20 14 A 16 16 0 0 0 12.4 16.1 Z" fill="rgba(56,189,248,.3)"/><path d="M 20 30 L 20 14 A 16 16 0 0 1 27.4 15.9 Z" fill="rgba(249,115,22,.3)"/><line x1="20" y1="30" x2="12.4" y2="16.1" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round"/><line x1="20" y1="30" x2="27.4" y2="15.9" stroke="#f97316" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <span class="t"><b>Lepeza</b><span>story: krupni uglovi + mala lepeza + metrike</span></span>
+        <span class="st">Napravi</span>
+      </button>
+      <div class="opcije">
+        <label><input type="checkbox" id="stplHide"> Sakrij start (500 m)</label>
+        <button class="klip" id="stplKlip" type="button" hidden>Kopiraj providan stiker</button>
+      </div>
+      <button class="cancel" id="stplCancel">Otkaži</button>
     </div>
   </div>
   <div id="homeFabs">
@@ -5784,8 +5838,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.19";
+const APP_VERSION = "0.9.20";
 const CHANGELOG = [
+  { v: "0.9.20", d: "07.08.2026.", stavke: [
+    "<b>Deljenje vožnje kao slika - tri template-a</b> (dizajnerska runda + tvoj izbor): tap na Podeli u sažetku otvara birač.",
+    "<b>Pečat</b>: polukružni žig sa skalom nagiba, uglovima uz vrh i statistikom u redu - preko tvoje fotke (ili brend pozadine ako fotke nema). Bonus: \"Kopiraj providan stiker\" pa nalepi u Instagram story preko svoje fotke.",
+    "<b>Mapa kartica</b>: cela odvožena ruta na tamnoj mapi + kolona statistike levo; opcija \"Sakrij start\" seče prvih 500 m traga (privatnost).",
+    "<b>Lepeza</b>: story sa krupnim uglovima nagiba, malom lepezom stvarnog ugla i metrikama.",
+    "Za mirne vožnje (max nagib ispod 10°) instrument se sam sklanja - ostaju brojevi, slika nikad ne izgleda \"pokvareno\"."
+  ] },
   { v: "0.9.19", d: "07.08.2026.", stavke: [
     "<b>Novi sažetak vožnje (A+B)</b>: cela odvožena ruta na velikoj mapi je heroj, sažetak je kartica preko donjeg dela - povuci sadržaj nagore za više. Mapa ostaje živa.",
     "<b>Kriva nagiba kroz vožnju</b> - grafik levo (plavo) / desno (narandžasto) po vremenu; na mapi pinovi GDE je bio max nagib i max brzina, a najvijugavijih 3 km vožnje je istaknuto plavom.",
@@ -8010,6 +8071,387 @@ function buildRideCanvas(s, foto) {
   x.fillText(ft, P, H - 66);
   return cv;
 }
+/* ---- Share template-i v0.9.20 (Boskov finalni izbor 7.8.): pecat-polukrug / mapa-kolona / lepeza.
+   Tok: Podeli -> birac -> "Napravi" (render u canvas) -> "Podeli" (svez gest, navigator.share) -
+   dvokorak namerno: iOS ubija share posle dugog async lanca (transient activation). ---- */
+const STPL = { sum: null, ready: {}, busy: null };
+const STPL_F = (w, sz) => `${w} ${sz}px Archivo, -apple-system, sans-serif`;
+function stplKm(v) { return String(v).replace(".", ","); }
+function stplLogo(x, cx, y, sz) {
+  x.save(); x.textAlign = "center"; x.fillStyle = "#f97316"; x.font = STPL_F(800, sz);
+  try { x.letterSpacing = (0.16 * sz).toFixed(1) + "px"; } catch (e) {}
+  x.fillText("ROUTEMERIGHT", cx, y);
+  x.restore();
+}
+function stplFotoBg(x, W, H) {   // pozadina: korisnikova fotka (cover) ili brend gradijent
+  const f = RIDE._sumFoto;
+  if (f && f.width) {
+    const sc = Math.max(W / f.width, H / f.height);
+    try { x.drawImage(f, (W - f.width * sc) / 2, (H - f.height * sc) / 2, f.width * sc, f.height * sc); return; } catch (e) {}
+  }
+  const g = x.createLinearGradient(0, 0, W * .25, H);
+  g.addColorStop(0, "#2a3f5c"); g.addColorStop(.46, "#13203a"); g.addColorStop(1, "#070d19");
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const r1 = x.createRadialGradient(W * .8, H * .1, 60, W * .8, H * .1, H * .8);
+  r1.addColorStop(0, "rgba(249,115,22,.3)"); r1.addColorStop(1, "rgba(249,115,22,0)");
+  x.fillStyle = r1; x.fillRect(0, 0, W, H);
+  const r2 = x.createRadialGradient(W * .12, H * .92, 60, W * .12, H * .92, H * .7);
+  r2.addColorStop(0, "rgba(56,189,248,.22)"); r2.addColorStop(1, "rgba(56,189,248,0)");
+  x.fillStyle = r2; x.fillRect(0, 0, W, H);
+}
+function stplScrim(x, W, H, od) {
+  const g = x.createLinearGradient(0, od, 0, H);
+  g.addColorStop(0, "rgba(15,23,42,0)"); g.addColorStop(.35, "rgba(15,23,42,.55)"); g.addColorStop(1, "rgba(15,23,42,.94)");
+  x.fillStyle = g; x.fillRect(0, od, W, H - od);
+}
+function stplKupola(x, cx, baseY, f, s) {   // polukrug-pecat u "mockup" koordinatama x f (base = ravna ivica)
+  const R = 152 * f, rS = 138 * f, cy = baseY;
+  const rad = (a) => a * Math.PI / 180;
+  x.save();
+  x.beginPath(); x.arc(cx, cy, R, Math.PI, 0); x.closePath();
+  x.fillStyle = "rgba(15,23,42,.9)"; x.fill();
+  x.strokeStyle = "rgba(248,250,252,.18)"; x.lineWidth = 2 * f; x.stroke();
+  for (let a = -70; a <= 70; a += 10) {   // skala duz luka
+    const big = a % 30 === 0, r2 = rS - (big ? 12 : 7) * f;
+    x.beginPath();
+    x.moveTo(cx + rS * Math.sin(rad(a)), cy - rS * Math.cos(rad(a)));
+    x.lineTo(cx + r2 * Math.sin(rad(a)), cy - r2 * Math.cos(rad(a)));
+    x.strokeStyle = big ? "rgba(248,250,252,.6)" : "rgba(248,250,252,.35)";
+    x.lineWidth = (big ? 2.4 : 1.8) * f; x.stroke();
+  }
+  const lnMax = Math.max(s.lnL || 0, s.lnR || 0);
+  if (s.lnL != null && lnMax >= 10) {   // <10 stepeni: instrument se krije, brojevi ostaju (pravilo 7.8.)
+    const luk = (deg, sgn, boja) => {
+      x.beginPath();
+      x.arc(cx, cy, rS, -Math.PI / 2 + Math.min(0, sgn * rad(deg)), -Math.PI / 2 + Math.max(0, sgn * rad(deg)));
+      x.strokeStyle = boja; x.lineWidth = 7 * f; x.lineCap = "round"; x.stroke();
+      x.beginPath(); x.arc(cx + sgn * rS * Math.sin(rad(deg)), cy - rS * Math.cos(rad(deg)), 6.5 * f, 0, 7);
+      x.fillStyle = boja; x.fill();
+    };
+    if (s.lnL) luk(s.lnL, -1, "#38bdf8");
+    if (s.lnR) luk(s.lnR, 1, "#f97316");
+  }
+  x.textAlign = "center";
+  if (s.lnL != null) {
+    x.font = STPL_F(700, 12.5 * f); x.fillStyle = "#94a3b8";
+    try { x.letterSpacing = (2 * f).toFixed(1) + "px"; } catch (e) {}
+    x.fillText("LEVO", cx - 48 * f, cy - 100 * f);
+    x.fillText("DESNO", cx + 48 * f, cy - 100 * f);
+    try { x.letterSpacing = "0px"; } catch (e) {}
+    x.font = STPL_F(900, 42 * f);
+    x.fillStyle = "#38bdf8"; x.fillText((s.lnL || 0) + "°", cx - 48 * f, cy - 60 * f);
+    x.fillStyle = "#f97316"; x.fillText((s.lnR || 0) + "°", cx + 48 * f, cy - 60 * f);
+    x.save(); x.translate(cx, cy - 79 * f); x.rotate(rad(18));
+    x.fillStyle = "rgba(248,250,252,.25)";
+    x.beginPath(); x.roundRect(-2.2 * f, -19 * f, 4.5 * f, 38 * f, 2.2 * f); x.fill();
+    x.restore();
+  }
+  x.strokeStyle = "rgba(248,250,252,.16)"; x.lineWidth = 1.5 * f;
+  x.beginPath(); x.moveTo(cx - 118 * f, cy - 46 * f); x.lineTo(cx + 118 * f, cy - 46 * f); x.stroke();
+  const seg = (sx, val, unit, lbl) => {
+    x.font = STPL_F(900, 25 * f); const vw = x.measureText(val).width;
+    x.font = STPL_F(700, 12 * f); const uw = x.measureText(" " + unit).width;
+    const px = sx - (vw + uw) / 2;
+    x.textAlign = "left";
+    x.font = STPL_F(900, 25 * f); x.fillStyle = "#f8fafc"; x.fillText(val, px, cy - 20 * f);
+    x.font = STPL_F(700, 12 * f); x.fillStyle = "#94a3b8"; x.fillText(" " + unit, px + vw, cy - 20 * f);
+    x.textAlign = "center"; x.font = STPL_F(800, 8.5 * f);
+    try { x.letterSpacing = (1.6 * f).toFixed(1) + "px"; } catch (e) {}
+    x.fillText(lbl, sx, cy - 6 * f);
+    try { x.letterSpacing = "0px"; } catch (e) {}
+  };
+  seg(cx - 88 * f, stplKm(s.km), "km", "PREĐENO");
+  seg(cx, String(s.min), "min", "VREME");
+  seg(cx + 88 * f, String(s.maxK || 0), "km/h", "MAX");
+  x.strokeStyle = "rgba(148,163,184,.25)"; x.lineWidth = 1.2 * f;
+  for (const lx of [cx - 44 * f, cx + 44 * f]) { x.beginPath(); x.moveTo(lx, cy - 36 * f); x.lineTo(lx, cy - 8 * f); x.stroke(); }
+  x.restore();
+}
+function stplPecatCanvas(s) {   // story 1080x1920: fotka + kupola + logo
+  const W = 1080, H = 1920;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const x = cv.getContext("2d");
+  stplFotoBg(x, W, H);
+  stplScrim(x, W, H, 1060);
+  stplKupola(x, 540, 1560, 2.49, s);   // kupola ~756px siroka (Boskovo "manji")
+  stplLogo(x, 540, 1648, 34);
+  return cv;
+}
+function stplStikerCanvas(s) {   // PROVIDAN PNG (kupola + logo) za lepljenje u IG editor
+  const W = 1080, H = 720;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const x = cv.getContext("2d");
+  stplKupola(x, 540, 610, 3.17, s);
+  stplLogo(x, 540, 692, 40);
+  return cv;
+}
+function stplLepezaCanvas(s) {   // story 1080x1920: krupni uglovi + mala lepeza + stat red
+  const W = 1080, H = 1920;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+  const x = cv.getContext("2d");
+  const rad = (a) => a * Math.PI / 180;
+  stplFotoBg(x, W, H);
+  stplScrim(x, W, H, 1120);
+  x.textAlign = "center";
+  x.font = STPL_F(900, 120);
+  x.fillStyle = "#38bdf8"; x.fillText((s.lnL || 0) + "°", 250, 1408);
+  x.fillStyle = "#f97316"; x.fillText((s.lnR || 0) + "°", 830, 1408);
+  x.font = STPL_F(800, 24); x.fillStyle = "#94a3b8";
+  try { x.letterSpacing = "3px"; } catch (e) {}
+  x.fillText("MAX LEVO", 250, 1448);
+  x.fillText("MAX DESNO", 830, 1448);
+  try { x.letterSpacing = "0px"; } catch (e) {}
+  const cx = 540, cy = 1512, R = 172;
+  const lnMax = Math.max(s.lnL || 0, s.lnR || 0);
+  if (s.lnL != null && lnMax >= 10) {   // lepeza (krije se za mirne voznje)
+    const g = x.createLinearGradient(cx - 300, 0, cx + 300, 0);
+    g.addColorStop(0, "rgba(56,189,248,.8)"); g.addColorStop(.5, "rgba(248,250,252,.35)"); g.addColorStop(1, "rgba(249,115,22,.8)");
+    x.strokeStyle = g; x.lineWidth = 4;
+    x.beginPath(); x.moveTo(cx - 300, cy); x.lineTo(cx + 300, cy); x.stroke();
+    x.setLineDash([10, 12]); x.strokeStyle = "rgba(248,250,252,.35)"; x.lineWidth = 3.5;
+    x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx, cy - R - 20); x.stroke(); x.setLineDash([]);
+    for (let a = -45; a <= 45; a += 15) {
+      if (a === 0) continue;
+      x.beginPath();
+      x.moveTo(cx + R * Math.sin(rad(a)), cy - R * Math.cos(rad(a)));
+      x.lineTo(cx + (R - 18) * Math.sin(rad(a)), cy - (R - 18) * Math.cos(rad(a)));
+      x.strokeStyle = "rgba(248,250,252,.5)"; x.lineWidth = 4; x.stroke();
+    }
+    const sektor = (deg, sgn, boja, alfa) => {
+      x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx, cy - R);
+      x.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + sgn * rad(deg), sgn < 0);
+      x.closePath(); x.fillStyle = alfa; x.fill();
+      const ex = cx + sgn * R * Math.sin(rad(deg)), ey = cy - R * Math.cos(rad(deg));
+      x.beginPath(); x.moveTo(cx, cy); x.lineTo(ex, ey);
+      x.strokeStyle = boja; x.lineWidth = 8; x.lineCap = "round"; x.stroke();
+      x.beginPath(); x.arc(ex, ey, 11, 0, 7); x.fillStyle = boja; x.fill();
+    };
+    if (s.lnL) sektor(s.lnL, -1, "#38bdf8", "rgba(56,189,248,.2)");
+    if (s.lnR) sektor(s.lnR, 1, "#f97316", "rgba(249,115,22,.2)");
+  }
+  const seg = (sx, val, unit, lbl) => {
+    x.font = STPL_F(900, 56); const vw = x.measureText(val).width;
+    x.font = STPL_F(700, 27); const uw = x.measureText(" " + unit).width;
+    const px = sx - (vw + uw) / 2;
+    x.textAlign = "left";
+    x.font = STPL_F(900, 56); x.fillStyle = "#fff"; x.fillText(val, px, 1596);
+    x.font = STPL_F(700, 27); x.fillStyle = "rgba(248,250,252,.75)"; x.fillText(" " + unit, px + vw, 1596);
+    x.textAlign = "center"; x.font = STPL_F(800, 19); x.fillStyle = "#94a3b8";
+    try { x.letterSpacing = "3px"; } catch (e) {}
+    x.fillText(lbl, sx, 1630);
+    try { x.letterSpacing = "0px"; } catch (e) {}
+  };
+  seg(300, stplKm(s.km), "km", "PREĐENO");
+  seg(540, String(s.min), "min", "VREME");
+  seg(780, String(s.maxK || 0), "km/h", "MAX");
+  x.strokeStyle = "rgba(148,163,184,.3)"; x.lineWidth = 2;
+  for (const lx of [420, 660]) { x.beginPath(); x.moveTo(lx, 1552); x.lineTo(lx, 1622); x.stroke(); }
+  stplLogo(x, 540, 1676, 30);
+  return cv;
+}
+function tragBezStarta(pts, metara) {   // privatnost: skini prvih N metara traga
+  let acc = 0;
+  for (let i = 1; i < pts.length; i++) {
+    acc += haversine(pts[i - 1][1], pts[i - 1][0], pts[i][1], pts[i][0]) * 1000;
+    if (acc >= metara) return pts.slice(i);
+  }
+  return pts.slice(-2);
+}
+function stplDarkify(m) {   // recept sa finalne makete (dublje taman od app teme - kartica, ne UI)
+  let layers = []; try { layers = m.getStyle().layers; } catch (e) { return; }
+  for (const l of layers) {
+    try {
+      if (l.type === "background") m.setPaintProperty(l.id, "background-color", "#0f172a");
+      else if (l.type === "raster") m.setPaintProperty(l.id, "raster-opacity", 0.1);
+      else if (l.type === "fill" && /water/i.test(l.id)) m.setPaintProperty(l.id, "fill-color", "#0a1120");
+      else if (l.type === "fill" && /building/i.test(l.id)) { m.setPaintProperty(l.id, "fill-color", "#1c2940"); m.setPaintProperty(l.id, "fill-opacity", 0.5); }
+      else if (l.type === "fill") { m.setPaintProperty(l.id, "fill-color", "#141f36"); m.setPaintProperty(l.id, "fill-opacity", 0.5); }
+      else if (l.type === "line" && /path|footway|pedestrian|steps|rail/i.test(l.id)) { m.setPaintProperty(l.id, "line-color", "#22304c"); m.setPaintProperty(l.id, "line-opacity", 0.5); }
+      else if (l.type === "line" && /case|casing/.test(l.id)) m.setPaintProperty(l.id, "line-color", "#0d1526");
+      else if (l.type === "line" && /mot|trunk|pri|major/.test(l.id)) m.setPaintProperty(l.id, "line-color", "#475569");
+      else if (l.type === "line" && /road|street|highway/i.test(l.id)) m.setPaintProperty(l.id, "line-color", "#2b3a57");
+      else if (l.type === "symbol") {
+        m.setPaintProperty(l.id, "text-color", "#5b6b8a");
+        m.setPaintProperty(l.id, "text-halo-color", "#0f172a");
+        const tf = m.getLayoutProperty(l.id, "text-field");
+        const str = typeof tf === "string" ? tf : JSON.stringify(tf || "");
+        if (/name/.test(str)) m.setLayoutProperty(l.id, "text-field", ["coalesce", ["get", "name:latin"], ["get", "name"]]);
+      }
+    } catch (e) {}
+  }
+}
+async function stplMapaCanvas(s) {   // feed 1080x1350: offscreen mapa snapshot + leva kolona
+  const trag0 = s.trag;
+  if (!trag0 || trag0.length < 2) throw new Error("vožnja nema GPS trag");
+  const hide = !!document.getElementById("stplHide").checked;
+  const trag = hide ? tragBezStarta(trag0, 500) : trag0;
+  const W = 1080, H = 1350;
+  const div = document.createElement("div");
+  div.style.cssText = "position:fixed;left:-2000px;top:0;width:540px;height:675px;";
+  document.body.appendChild(div);
+  let m = null;
+  try {
+    m = new maplibregl.Map({ container: div, style: "https://tiles.openfreemap.org/styles/positron",
+      center: trag[0], zoom: 12, attributionControl: false, interactive: false,
+      pixelRatio: 2, preserveDrawingBuffer: true, fadeDuration: 0 });
+    m.once("styledata", () => stplDarkify(m));
+    await new Promise((res) => { const t = setTimeout(res, 9000); m.on("load", () => { clearTimeout(t); res(); }); });
+    stplDarkify(m);
+    m.addSource("r", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: trag } } });
+    m.addLayer({ id: "rc", type: "line", source: "r", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "rgba(6,11,22,.6)", "line-width": 9 } });
+    m.addLayer({ id: "rl", type: "line", source: "r", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#f97316", "line-width": 5 } });
+    const b = trag.reduce((bb, c) => bb.extend(c), new maplibregl.LngLatBounds(trag[0], trag[0]));
+    m.fitBounds(b, { padding: { top: 34, left: 224, right: 34, bottom: 34 }, duration: 0 });
+    await new Promise((res) => { const t = setTimeout(res, 8000); m.once("idle", () => { clearTimeout(t); res(); }); });
+    const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const x = cv.getContext("2d");
+    x.drawImage(m.getCanvas(), 0, 0, W, H);
+    const dot = (c, boja, r) => { const p = m.project(c);
+      x.beginPath(); x.arc(p.x * 2, p.y * 2, r + 5, 0, 7); x.fillStyle = "#0b1426"; x.fill();
+      x.beginPath(); x.arc(p.x * 2, p.y * 2, r, 0, 7); x.fillStyle = boja; x.fill(); };
+    if (!hide) dot(trag[0], "#38bdf8", 11);
+    dot(trag[trag.length - 1], "#f97316", 13);
+    // leva kolona (gradijent) + tekstovi
+    const g = x.createLinearGradient(0, 0, 420, 0);
+    g.addColorStop(0, "rgba(10,17,32,.94)"); g.addColorStop(.68, "rgba(10,17,32,.55)"); g.addColorStop(1, "rgba(10,17,32,0)");
+    x.fillStyle = g; x.fillRect(0, 0, 420, H);
+    x.textAlign = "left";
+    stplLogo(x, 172, 84, 26); x.textAlign = "left";   // logo levo poravnat vizuelno (centriran na kolonu)
+    const naz = String(s.naz || "Vožnja").split("→").map((t) => t.trim());
+    const fitText = (txt, maxW, start) => { let sz = start; x.font = STPL_F(900, sz);
+      while (sz > 30 && x.measureText(txt).width > maxW) { sz -= 2; x.font = STPL_F(900, sz); } return sz; };
+    let ny = 172;
+    x.fillStyle = "#f8fafc";
+    fitText(naz[0] || "", 300, 52); x.fillText(naz[0] || "", 56, ny);
+    if (naz[1]) {
+      x.fillStyle = "#f97316"; x.font = STPL_F(900, 46); x.fillText("→", 56, ny + 58);
+      x.fillStyle = "#f8fafc"; fitText(naz[1], 300, 52); x.fillText(naz[1], 56, ny + 118);
+      ny += 118;
+    }
+    const d = new Date(s.ts || Date.now());
+    x.font = STPL_F(700, 24); x.fillStyle = "#94a3b8";
+    x.fillText(d.toLocaleDateString("sr-RS"), 56, ny + 52);
+    x.font = STPL_F(800, 24); x.fillStyle = "#38bdf8";
+    try { x.letterSpacing = "2.4px"; } catch (e) {}
+    x.fillText(String(s.tip || "").toUpperCase(), 56, ny + 88);
+    try { x.letterSpacing = "0px"; } catch (e) {}
+    // stat kolona usidrena o dno
+    const grupe = [["PREĐENO", stplKm(s.km), "km"], ["TRAJANJE", String(s.min), "min"]];
+    if (s.lnL != null) grupe.push(["NAGIB L/D", null, null]);
+    grupe.push(["MAX", String(s.maxK || 0), "km/h"]);
+    let gy = 1196 - (grupe.length - 1) * 112;
+    for (const [lbl, val, unit] of grupe) {
+      x.strokeStyle = "rgba(148,163,184,.18)"; x.lineWidth = 1.5;
+      x.beginPath(); x.moveTo(56, gy - 78); x.lineTo(300, gy - 78); x.stroke();
+      x.font = STPL_F(800, 20); x.fillStyle = "#94a3b8";
+      try { x.letterSpacing = "2.4px"; } catch (e) {}
+      x.fillText(lbl, 56, gy - 46);
+      try { x.letterSpacing = "0px"; } catch (e) {}
+      if (val != null) {
+        x.font = STPL_F(800, 52); x.fillStyle = "#f8fafc"; x.fillText(val, 56, gy);
+        const vw = x.measureText(val).width;
+        x.font = STPL_F(700, 26); x.fillStyle = "#94a3b8"; x.fillText(" " + unit, 56 + vw, gy);
+      } else {
+        x.font = STPL_F(800, 52);
+        x.fillStyle = "#38bdf8"; x.fillText((s.lnL || 0) + "°", 56, gy);
+        const w1 = x.measureText((s.lnL || 0) + "°").width;
+        x.fillStyle = "#94a3b8"; x.font = STPL_F(700, 34); x.fillText("/", 58 + w1, gy);
+        const w2 = x.measureText("/").width;
+        x.font = STPL_F(800, 52); x.fillStyle = "#f97316"; x.fillText((s.lnR || 0) + "°", 62 + w1 + w2, gy);
+      }
+      gy += 112;
+    }
+    // atribucija (obavezna: OSM/OpenMapTiles)
+    x.textAlign = "right"; x.font = STPL_F(600, 17);
+    x.fillStyle = "rgba(148,163,184,.85)";
+    x.shadowColor = "rgba(6,11,22,.9)"; x.shadowBlur = 6;
+    x.fillText("© OpenMapTiles © OpenStreetMap", W - 22, H - 20);
+    x.shadowBlur = 0; x.textAlign = "left";
+    return cv;
+  } finally {
+    try { if (m) m.remove(); } catch (e) {}
+    try { div.remove(); } catch (e) {}
+  }
+}
+function stplOtvori(s) {
+  STPL.sum = s; STPL.ready = {}; STPL.busy = null;
+  const bezNagiba = s.lnL == null;
+  const bezTraga = !s.trag || s.trag.length < 2;
+  const reset = (id, nema, porukaNema) => {
+    const k = document.getElementById(id); if (!k) return;
+    k.classList.remove("radi", "spremno");
+    k.classList.toggle("nema", nema);
+    k.querySelector(".st").textContent = nema ? porukaNema : "Napravi";
+  };
+  reset("stplPecat", bezNagiba, "nagib nije meren");
+  reset("stplLepeza", bezNagiba, "nagib nije meren");
+  reset("stplMapa", bezTraga, "nema traga");
+  const kl = document.getElementById("stplKlip");
+  if (kl) kl.hidden = bezNagiba || !(navigator.clipboard && window.ClipboardItem);
+  document.getElementById("shareTpl").classList.add("on");
+}
+async function stplTap(kind) {
+  const s = STPL.sum; if (!s) return;
+  const k = document.getElementById({ pecat: "stplPecat", mapa: "stplMapa", lepeza: "stplLepeza" }[kind]);
+  if (STPL.ready[kind]) { stplPodeli(kind); return; }
+  if (STPL.busy) return;
+  STPL.busy = kind;
+  k.classList.add("radi"); k.querySelector(".st").textContent = "Pravim…";
+  try {
+    try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+    const cv = kind === "pecat" ? stplPecatCanvas(s)
+             : kind === "lepeza" ? stplLepezaCanvas(s)
+             : await stplMapaCanvas(s);
+    STPL.ready[kind] = cv;
+    k.classList.remove("radi"); k.classList.add("spremno");
+    k.querySelector(".st").textContent = "Podeli ▸";
+  } catch (e) {
+    k.classList.remove("radi");
+    k.querySelector(".st").textContent = "Greška - probaj opet";
+    shareToast("Ne mogu da napravim sliku: " + String(e.message || e));
+  }
+  STPL.busy = null;
+}
+async function stplPodeli(kind) {
+  const cv = STPL.ready[kind]; if (!cv) return;
+  try {
+    const blob = await new Promise((res) => cv.toBlob(res, "image/jpeg", 0.92));
+    const file = blob ? new File([blob], "rmr-" + kind + ".jpg", { type: "image/jpeg" }) : null;
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; }
+    if (blob) {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = "rmr-" + kind + ".jpg"; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      shareToast("Slika sačuvana.");
+    }
+  } catch (e) { if (e && e.name !== "AbortError") shareToast("Deljenje nije uspelo."); }
+}
+(function () {
+  const el = document.getElementById("shareTpl");
+  if (!el) return;
+  const zatvori = () => el.classList.remove("on");
+  document.getElementById("stplBack").addEventListener("click", zatvori);
+  document.getElementById("stplCancel").addEventListener("click", zatvori);
+  document.getElementById("stplPecat").addEventListener("click", () => stplTap("pecat"));
+  document.getElementById("stplMapa").addEventListener("click", () => stplTap("mapa"));
+  document.getElementById("stplLepeza").addEventListener("click", () => stplTap("lepeza"));
+  document.getElementById("stplHide").addEventListener("change", () => {   // menja mapu - kes te kartice pada
+    delete STPL.ready.mapa;
+    const k = document.getElementById("stplMapa");
+    if (k && !k.classList.contains("nema")) { k.classList.remove("spremno", "radi"); k.querySelector(".st").textContent = "Napravi"; }
+  });
+  const kl = document.getElementById("stplKlip");
+  if (kl) kl.addEventListener("click", async () => {
+    const s = STPL.sum; if (!s || s.lnL == null) return;
+    try {
+      try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+      const cv = stplStikerCanvas(s);
+      const blob = await new Promise((res) => cv.toBlob(res, "image/png"));
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      shareToast("Providan stiker kopiran - u IG story editoru samo nalepi (Paste).");
+    } catch (e) { shareToast("Kopiranje ne radi na ovom uređaju - koristi Pečat karticu."); }
+  });
+})();
 async function shareRideCard(s) {
   try {
     const cv = buildRideCanvas(s, RIDE._sumFoto || null);
@@ -8056,7 +8498,7 @@ async function shareRideCard(s) {
     });
   }
   el.addEventListener("click", (e) => { if (e.target === el) el.classList.remove("on"); });   // tap van zatvara (Boskovo pravilo izlaza)
-  document.getElementById("rsShare").addEventListener("click", () => { if (el._sum) shareRideCard(el._sum); });
+  document.getElementById("rsShare").addEventListener("click", () => { if (el._sum) stplOtvori(el._sum); });   // v0.9.20: birac template-a (stara kartica penzionisana)
 })();
 (function(){
   const openPlanning = () => { document.body.classList.add("planning"); try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {} };
