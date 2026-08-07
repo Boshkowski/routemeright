@@ -988,14 +988,17 @@
   /* Summary voznje: pun ekran preko svega na kraju, flow layout (bez sticky - lekcija 660px).
      TOP LEVEL namerno (review 5.8.): stilovi ne zavise od sirine ekrana, a bez baznog
      display:none markup bi na desktopu ispao vidljiv u toku dokumenta. */
-  #rideSum { display: none; position: fixed; inset: 0; z-index: 320; background: rgba(4,8,18,.72);
-    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); overflow-y: auto; overscroll-behavior: contain; }
+  #rideSum { display: none; position: fixed; inset: 0; z-index: 320; pointer-events: none; }
   #rideSum.on { display: block; }
-  /* Sazetak V1+V2 (Boskov izbor 6.8.): ruta je heroj na vrhu, metrike u redu bez kutijica, nagib kao instrument */
-  #rideSum .card { max-width: 430px; margin: max(24px, env(safe-area-inset-top)) auto 24px; background: #16223c;
-    border: 1px solid rgba(148,163,184,.22); border-radius: 20px; overflow: hidden;
-    padding: 0 0 calc(18px + env(safe-area-inset-bottom));
-    box-shadow: 0 24px 70px rgba(0,0,0,.6); animation: sumIn .32s cubic-bezier(.23,1,.32,1); }
+  /* Sazetak v3 A+B (Boskov izbor 7.8.): trag ide na GLAVNU mapu (heroj), kartica je donji sheet;
+     skrol sadrzaja nagore otkriva blokove (kriva nagiba, rekord, kolekcije). Mapa iznad ostaje ziva. */
+  #rideSum .card { pointer-events: auto; position: absolute; left: 50%; transform: translateX(-50%); bottom: 0;
+    width: 100%; max-width: 470px; max-height: 58dvh; overflow-y: auto; overscroll-behavior: contain;
+    background: #16223c; border: 1px solid rgba(148,163,184,.25); border-bottom: none; border-radius: 22px 22px 0 0;
+    padding: 0 0 calc(16px + env(safe-area-inset-bottom));
+    box-shadow: 0 -18px 50px rgba(0,0,0,.55); animation: sumIn .32s cubic-bezier(.23,1,.32,1); }
+  #rideSum .grab { width: 44px; height: 4px; border-radius: 3px; background: rgba(148,163,184,.4); margin: 10px auto 0; }
+  #rideSum [hidden] { display: none !important; }   /* display:flex na blokovima ne sme da pregazi hidden atribut */
   @media (prefers-reduced-motion: reduce) { #rideSum .card { animation: none; } }
   @keyframes sumIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   #rideSum .rsmap { position: relative; background: #0b1426; border-bottom: 1px solid rgba(148,163,184,.14); }
@@ -1019,6 +1022,19 @@
   #rideSum .rsgauge .gn div { font-size: 15px; font-weight: 800; }
   #rideSum .rsgauge .gn span { display: block; font-size: 10px; color: #94a3b8; font-weight: 700; letter-spacing: .05em; }
   #rideSum .rsgauge .gl { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin-top: 6px; }
+  #rideSum .rspark { margin: 12px 20px 0; background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.14);
+    border-radius: 16px; padding: 10px 12px 6px; }
+  #rideSum .rspark svg { display: block; width: 100%; height: auto; }
+  #rideSum .rspark .gl { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin-top: 4px; text-align: center; }
+  #rideSum .rsrek { margin: 12px 20px 0; display: flex; align-items: center; gap: 10px; background: rgba(249,115,22,.14);
+    border: 1px solid rgba(249,115,22,.45); border-radius: 14px; padding: 10px 14px; font-weight: 800; color: #fdba74; font-size: 14px; }
+  #rideSum .rsrek svg { width: 20px; height: 20px; stroke: #f97316; fill: none; flex: none; }
+  #rideSum .rskol { margin: 12px 20px 0; background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.14);
+    border-radius: 14px; padding: 10px 14px; font-size: 13px; color: #cbd5e1; font-weight: 600; line-height: 1.5; }
+  #rideSum .rskol b { color: #f8fafc; }
+  #rideSum .rsxtra { display: flex; gap: 10px; margin-top: 10px; padding: 0 20px; }
+  #rideSum .rsxtra button { flex: 1; height: 40px; border-radius: 11px; background: transparent; color: #cbd5e1;
+    border: 1px solid rgba(148,163,184,.3); font: 700 13px Archivo, sans-serif; cursor: pointer; }
   #rideSum .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; padding: 0 20px; }
   #rideSum .tags span { font-size: 12px; font-weight: 700; color: #e2e8f0; background: rgba(148,163,184,.12); border-radius: 999px; padding: 5px 11px; }
   #rideSum .tags span.pts { color: #0f172a; background: #f97316; }
@@ -1045,8 +1061,9 @@
   .vrow .vkm { font-size: 17px; font-weight: 800; color: #f8fafc; }
   .vrow .vkm small { font-size: 11px; color: #94a3b8; font-weight: 700; }
   .vrow .vx { font-size: 11.5px; color: #94a3b8; font-weight: 700; margin-top: 1px; }
-  /* niski ekran (landscape telefon): uze margine, mapa se skrati */
-  @media (max-height: 520px) { #rideSum .card { margin: 12px auto; max-width: 560px; } #rideSum .rsmap svg { max-height: 120px; } }
+  /* niski ekran (landscape telefon): sheet postaje desna kolona, mapa sa tragom ostaje levo */
+  @media (max-height: 520px) { #rideSum .card { left: auto; right: 10px; transform: none; bottom: 10px; top: 10px;
+    width: min(46vw, 400px); max-height: none; border-radius: 18px; border-bottom: 1px solid rgba(148,163,184,.25); } }
 
   /* ===== LANDSCAPE telefon (npr. 844x390): mapa desno, alat u levom stubu (Google Maps obrazac).
      Ceo blok zatvoren u orientation+max-height pa portret CSS ostaje netaknut. Mobilni mod
@@ -1460,6 +1477,7 @@
   </div>
   <div id="rideRoad"></div>
   <div id="rideSum" role="dialog" aria-label="Sažetak vožnje"><div class="card">
+    <div class="grab"></div>
     <div class="rsmap" id="rsMap" hidden><span class="chip">Vožnja završena</span></div>
     <h3 id="rsKick">Vožnja završena</h3>
     <div class="rshead">
@@ -1468,11 +1486,15 @@
     </div>
     <div class="rstats" id="rsGrid"></div>
     <div class="rsgauge" id="rsGauge" hidden></div>
+    <div class="rspark" id="rsSpark" hidden></div>
+    <div class="rsrek" id="rsRek" hidden></div>
+    <div class="rskol" id="rsKol" hidden></div>
     <div class="tags" id="rsTags"></div>
     <div class="btns">
       <button class="foto" id="rsFoto" type="button" aria-label="Dodaj fotku za deljivu karticu"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg></button>
       <button class="shr" id="rsShare">Podeli</button><button class="cls" id="rsClose">Zatvori</button>
     </div>
+    <div class="rsxtra"><button id="rsGpx" type="button">Izvezi GPX</button><button id="rsRuta" type="button">Sačuvaj kao rutu</button></div>
     <input type="file" id="rsFotoIn" accept="image/*" hidden>
   </div></div>
   <div id="altSheet" hidden>
@@ -2526,16 +2548,25 @@ function rawGpxRoute(coords, label) {
     label, tollKm: null, roughKm: 0, roughAt: [], hasFerry: false, tollSegs: [], maneuvers: [], gpxRaw: true };
 }
 async function importGpx(file) {
-  const _pseq = ++state.planSeq;
   try {
     shareToast("Čitam GPX fajl…");
     const text = await file.text();
     const g = parseGpx(text);
     const gpxName = g.name || (file.name || "GPX ruta").replace(/\.gpx$/i, "");
+    await importGpxCoords(g.coords, gpxName);
+  } catch (e) {
+    shareToast("GPX nije učitan: " + String(e.message || e));
+    logState({ phase: "error", msg: "gpx: " + String(e.message || e) });
+  }
+}
+async function importGpxCoords(coords, label) {   // zajednicki motor: GPX fajl I "Sacuvaj voznju kao rutu" (7.8.)
+  const _pseq = ++state.planSeq;
+  try {
+    const gpxName = label || "Ruta";
     shareToast("Lepim trag na puteve…");
     let route;
-    try { route = await traceGpxRoute(g.coords, "GPX · " + gpxName); }
-    catch (e) { route = rawGpxRoute(g.coords, "GPX · " + gpxName); }
+    try { route = await traceGpxRoute(coords, "GPX · " + gpxName); }
+    catch (e) { route = rawGpxRoute(coords, "GPX · " + gpxName); }
     if (_pseq !== state.planSeq) return;
     // polazak: "sada" u qplan rezimu, inace vrednost iz polja
     try {
@@ -3492,6 +3523,7 @@ function clearMap() {
   // i SVAKO sledece planiranje bi puklo na "Source seg already exists"; review nalaz 6.8.)
   for (const id of ["seg", "seg-casing", "alts", "nav-risk"]) if (map.getLayer(id)) map.removeLayer(id);
   for (const id of ["seg", "alts"]) if (map.getSource(id)) map.removeSource(id);
+  try { sumTragSkini(); } catch (e) {}   // trag sazetka v3 - isti zakon kao nav-risk: zaostali sloj rusi sledece planiranje
 }
 const CAT_LABELS = { fuel: "Pumpa", food: "Hrana / restoran", camp: "Kamp", cam: "Fiksna kamera za brzinu", pause: "Predlog pauze", work: "Radovi na putu" };
 function markerPopup(html) {
@@ -4903,9 +4935,12 @@ function zabeleziVoznju() {
     // trag za "ruta je heroj" u sazetku (samo u RAM lastSummary - u localStorage dnevnik NE ide, prevelik)
     const trag = (RIDE.trace && RIDE.trace.length > 1)
       ? RIDE.trace.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 400)) === 0 || i === a.length - 1) : null;
+    const smp = (RIDE.samples && RIDE.samples.length > 5)   // kriva nagiba: proredi na ~240 tacaka za sparkline
+      ? RIDE.samples.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 240)) === 0 || i === a.length - 1) : null;
     // summary ekran: i za kratku probnu voznju (>300 m); dnevnik/poeni ostaju samo za prave (>2 km)
     if (ukupnoD > 300) RIDE.lastSummary = { naz, tip, km: Math.round(km * 10) / 10, min, serp, kriv, poeni: ukupnoD > 2000 ? poeni : 0,
-      maxK, avgK, lnL, lnR, lnChk, trag, pauz, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
+      maxK, avgK, lnL, lnR, lnChk, trag, smp, pauz, momNagib: RIDE.momNagib || null, momBrz: RIDE.momBrz || null,
+      kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
     if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; return; }
     const v0 = _zajCitaj("mr_voznje", []);
     const v = Array.isArray(v0) ? v0 : [];
@@ -5749,8 +5784,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.18";
+const APP_VERSION = "0.9.19";
 const CHANGELOG = [
+  { v: "0.9.19", d: "07.08.2026.", stavke: [
+    "<b>Novi sažetak vožnje (A+B)</b>: cela odvožena ruta na velikoj mapi je heroj, sažetak je kartica preko donjeg dela - povuci sadržaj nagore za više. Mapa ostaje živa.",
+    "<b>Kriva nagiba kroz vožnju</b> - grafik levo (plavo) / desno (narandžasto) po vremenu; na mapi pinovi GDE je bio max nagib i max brzina, a najvijugavijih 3 km vožnje je istaknuto plavom.",
+    "<b>Lični rekordi</b>: \"novi lični max nagib\", \"najduža vožnja\" - poređenje samo sa TVOJOM istorijom, ništa javno.",
+    "<b>Kolekcije te vuku dalje</b>: sažetak kaže koja ti je najbliža sledeća tačka kolekcije i na koliko km.",
+    "<b>Izvezi GPX</b> svake vožnje + <b>Sačuvaj kao rutu</b> - odvožena vožnja postane ruta u planeru (ponovi je ili je podeli)."
+  ] },
   { v: "0.9.18", d: "06.08.2026.", stavke: [
     "<b>Snimi i kreni</b>: novo dugme na mapi (crveni krug) snima vožnju BEZ planirane rute - trag, kilometraža, brzina, nagib i kolekcije rade, sažetak i dnevnik na kraju. Za gradsku vožnju ili kad prosto kreneš.",
     "<b>Pauza u vožnji</b>: dugme pauze u donjoj traci - stao si u kafanu, kilometraža, vreme u pokretu i nagib se zamrznu; nastavak jednim tapom. Radi i u navigaciji i u slobodnoj vožnji.",
@@ -7217,6 +7259,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;
   RIDE.paused = false; RIDE.pauseMs = 0; RIDE.pauseT0 = null;
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE.trace = []; RIDE._sumFoto = null;
+  RIDE.samples = []; RIDE._smpT = 0; RIDE._maxLnSeen = 0; RIDE.momBrz = null; RIDE.momNagib = null;
   RIDE.log = []; navLog("start-free", { v: APP_VERSION });
   leanReset();   // nagib: kalibracija na Snimi (telefon je tad na nosacu)
   try { clearTimeout(RIDE.arrTo); } catch (e) {} RIDE.arrTo = null;
@@ -7294,8 +7337,14 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
     document.getElementById("rideInstr").textContent = "Snimam vožnju";
     document.getElementById("rideKmh").textContent = Math.round(spdK);
     try {
-      if (accFix < 80 && p.coords.speed != null && spdK > RIDE.maxKmh && spdK < 260) RIDE.maxKmh = spdK;
+      if (accFix < 80 && p.coords.speed != null && spdK > RIDE.maxKmh && spdK < 260) { RIDE.maxKmh = spdK; RIDE.momBrz = [lo, la]; }
       if (prevFixTs && spdK > 4) RIDE.movMs += Math.min(5000, nowFix - prevFixTs);
+      if (LEAN.on && Math.abs(LEAN.cur) > (RIDE._maxLnSeen || 0)) { RIDE._maxLnSeen = Math.abs(LEAN.cur); RIDE.momNagib = [lo, la]; }
+      if (!RIDE._smpT || nowFix - RIDE._smpT >= 3000) {
+        RIDE._smpT = nowFix;
+        (RIDE.samples = RIDE.samples || []).push({ t: Math.round((nowFix - RIDE.t0) / 1000), v: Math.round(spdK), ln: LEAN.on ? Math.round(LEAN.cur) : null });
+        if (RIDE.samples.length > 2400) RIDE.samples = RIDE.samples.filter((_, i) => i % 2 === 0);
+      }
     } catch (e) {}
     const elMs = Date.now() - RIDE.t0, mm = Math.floor(elMs / 60000), hh = Math.floor(mm / 60);   // desna pilula: proteklo vreme + km
     document.getElementById("rideEta").textContent = hh ? hh + ":" + String(mm % 60).padStart(2, "0") : mm + " min";
@@ -7341,6 +7390,7 @@ function startRide() {
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
   RIDE.lastRouteI = null; RIDE.offSt = { offMs: 0 };   // hint prozor projekcije + off-route masina stanja
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE._gpxOffAt = 0; RIDE.trace = []; RIDE._sumFoto = null;   // odometar/trag iz GPS-a + delta-brzina + fizicka provera nagiba
+  RIDE.samples = []; RIDE._smpT = 0; RIDE._maxLnSeen = 0; RIDE.momBrz = null; RIDE.momNagib = null;   // uzorci + momenti za sazetak v3
   try { for (const v of state.vias || []) delete v._passed; } catch (e) {}   // nova voznja = sveze oznake prodjenosti stanica
   RIDE.log = []; navLog("start", { km: +((route.cumDist[route.cumDist.length - 1] || 0) / 1000).toFixed(2), v: APP_VERSION });
   leanReset();   // nagib: nova kalibracija na svakom Kreni (telefon je tad na nosacu)
@@ -7541,8 +7591,14 @@ function startRide() {
     } catch (e) {}
     document.getElementById("rideKmh").textContent = Math.round(spdK);   // brzina je izracunata na vrhu ticka (radi i kad GPS ne da speed - prikaz 5.8. ostajao na "0")
     try {   // statistika voznje (summary): max/prosek brzine; brzina hrani i nagib (gate + kinematicki kanal)
-      if (accFix < 80 && p.coords.speed != null && spdK > RIDE.maxKmh && spdK < 260) RIDE.maxKmh = spdK;   // max samo iz pravog GPS speed-a (delta ume da skoci na "max 700")
+      if (accFix < 80 && p.coords.speed != null && spdK > RIDE.maxKmh && spdK < 260) { RIDE.maxKmh = spdK; RIDE.momBrz = [lo, la]; }   // max iz pravog GPS speed-a + GDE (pin u sazetku)
       if (prevFixTs && spdK > 4) RIDE.movMs += Math.min(5000, nowFix - prevFixTs);   // vreme U POKRETU (pauza na pumpi ne kvari prosek); lastFixTs je vec upisan na vrhu ticka
+      if (LEAN.on && Math.abs(LEAN.cur) > (RIDE._maxLnSeen || 0)) { RIDE._maxLnSeen = Math.abs(LEAN.cur); RIDE.momNagib = [lo, la]; }
+      if (!RIDE._smpT || nowFix - RIDE._smpT >= 3000) {   // uzorci za krivu nagiba u sazetku (~3 s; pauza ne stize dovde)
+        RIDE._smpT = nowFix;
+        (RIDE.samples = RIDE.samples || []).push({ t: Math.round((nowFix - RIDE.t0) / 1000), v: Math.round(spdK), ln: LEAN.on ? Math.round(LEAN.cur) : null });
+        if (RIDE.samples.length > 2400) RIDE.samples = RIDE.samples.filter((_, i) => i % 2 === 0);   // duge ture: proredi
+      }
     } catch (e) {}
     try { drawRoadLabel(route, d, lo, la); } catch (e) {}
     try {   // ogranicenje brzine: samo gde OSM zna; preko 7 km/h iznad -> brojka pocrveni
@@ -7653,6 +7709,139 @@ function rsGaugeSvg(lnL, lnR) {   // polukruzni merac nagiba: levo cyan, desno n
     (lnR ? `<path d="M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${rx} ${ry}" fill="none" stroke="#f97316" stroke-width="7" stroke-linecap="round"/>` : "") +
     `<line x1="110" y1="-5" x2="110" y2="8" stroke="rgba(148,163,184,.5)" stroke-width="2"/></svg>`;
 }
+function rsSparkSvg(smp) {   // kriva nagiba kroz voznju: desno iznad ose narandzasto, levo ispod plavo
+  const W = 320, H = 76, mid = H / 2;
+  const maxA = Math.max(20, ...smp.map((s) => Math.abs(s.ln || 0)));
+  const X = (i) => (4 + (i / Math.max(1, smp.length - 1)) * (W - 8)).toFixed(1);
+  const pD = smp.map((s, i) => X(i) + "," + (mid - (Math.max(0, s.ln || 0) / maxA) * (mid - 8)).toFixed(1)).join(" ");
+  const pL = smp.map((s, i) => X(i) + "," + (mid + (Math.max(0, -(s.ln || 0)) / maxA) * (mid - 8)).toFixed(1)).join(" ");
+  return `<svg viewBox="0 0 ${W} ${H}">` +
+    `<line x1="4" y1="${mid}" x2="${W - 4}" y2="${mid}" stroke="rgba(148,163,184,.25)" stroke-width="1"/>` +
+    `<text x="6" y="12" fill="#94a3b8" font-size="9" font-weight="700">D ${maxA}°</text>` +
+    `<text x="6" y="${H - 5}" fill="#94a3b8" font-size="9" font-weight="700">L ${maxA}°</text>` +
+    `<polyline points="${pD}" fill="none" stroke="#f97316" stroke-width="2" stroke-linejoin="round"/>` +
+    `<polyline points="${pL}" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round"/></svg>`;
+}
+function best3km(pts) {   // najvijugavija ~3 km deonica traga (gustina skretanja po km); null za kratke/prave voznje
+  if (!pts || pts.length < 12) return null;
+  const brg = (a, b) => { const dl = (b[0] - a[0]) * Math.PI / 180, f1 = a[1] * Math.PI / 180, f2 = b[1] * Math.PI / 180;
+    return Math.atan2(Math.sin(dl) * Math.cos(f2), Math.cos(f1) * Math.sin(f2) - Math.sin(f1) * Math.cos(f2) * Math.cos(dl)) * 180 / Math.PI; };
+  const cum = [0], turn = [0];
+  for (let i = 1; i < pts.length; i++) {
+    cum.push(cum[i - 1] + haversine(pts[i - 1][1], pts[i - 1][0], pts[i][1], pts[i][0]));
+    let dv = 0;
+    if (i > 1) { dv = Math.abs(((brg(pts[i - 1], pts[i]) - brg(pts[i - 2], pts[i - 1]) + 540) % 360) - 180); if (dv > 120) dv = 0; }   // GPS skok se ne broji
+    turn.push(turn[i - 1] + dv);
+  }
+  if (cum[cum.length - 1] < 4) return null;
+  let best = null, j = 1;
+  for (let i = 0; i < pts.length - 1; i++) {
+    while (j < pts.length - 1 && cum[j] - cum[i] < 3) j++;
+    if (cum[j] - cum[i] < 1.5) continue;
+    const dens = (turn[j] - turn[i]) / (cum[j] - cum[i]);
+    if (!best || dens > best.dens) best = { a: i, b: j, dens };
+  }
+  return best && best.dens > 25 ? best : null;   // ispod ~25 stepeni/km nije vijugavo - prave se ne hvale
+}
+let SUMMARK = [];
+function sumTragSkini() {
+  for (const m of SUMMARK) { try { m.remove(); } catch (e) {} }
+  SUMMARK = [];
+  for (const l of ["sumtrag-bestln", "sumtrag-ln", "sumtrag-cas"]) { try { if (map && map.getLayer(l)) map.removeLayer(l); } catch (e) {} }
+  for (const s of ["sumtrag-best", "sumtrag"]) { try { if (map && map.getSource(s)) map.removeSource(s); } catch (e) {} }
+}
+function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza sheeta) + momenti + najvijugavija deonica
+  const pts = s.trag;
+  if (!pts || pts.length < 2 || !map || !map.getStyle) return false;
+  try {
+    sumTragSkini();
+    map.addSource("sumtrag", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: pts } } });
+    map.addLayer({ id: "sumtrag-cas", type: "line", source: "sumtrag", layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#7c2d0a", "line-width": 9, "line-opacity": .6 } });
+    map.addLayer({ id: "sumtrag-ln", type: "line", source: "sumtrag", layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#f97316", "line-width": 4.5 } });
+    const b3 = best3km(pts);
+    if (b3) {
+      map.addSource("sumtrag-best", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: pts.slice(b3.a, b3.b + 1) } } });
+      map.addLayer({ id: "sumtrag-bestln", type: "line", source: "sumtrag-best", layout: { "line-cap": "round", "line-join": "round" },
+        paint: { "line-color": "#38bdf8", "line-width": 5 } });
+    }
+    const dot = (c, boja) => { const el = document.createElement("div");
+      el.style.cssText = "width:15px;height:15px;border-radius:50%;background:" + boja + ";border:2.5px solid #0b1426;box-shadow:0 1px 6px rgba(0,0,0,.6)";
+      SUMMARK.push(new maplibregl.Marker({ element: el }).setLngLat(c).addTo(map)); };
+    dot(pts[0], "#38bdf8"); dot(pts[pts.length - 1], "#f97316");
+    const pin = (c, txt, cy) => { const el = document.createElement("div");
+      el.style.cssText = "width:27px;height:27px;border-radius:50%;background:rgba(15,23,42,.92);border:2px solid " + (cy ? "#38bdf8" : "#f97316") + ";display:flex;align-items:center;justify-content:center;font:900 9px Archivo,sans-serif;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.6)";
+      el.textContent = txt;
+      SUMMARK.push(new maplibregl.Marker({ element: el }).setLngLat(c).addTo(map)); };
+    if (s.momNagib && (s.lnL || s.lnR)) pin(s.momNagib, Math.max(s.lnL || 0, s.lnR || 0) + "°", true);
+    if (s.momBrz && s.maxK) pin(s.momBrz, String(s.maxK));
+    const b = pts.reduce((bb, c) => bb.extend(c), new maplibregl.LngLatBounds(pts[0], pts[0]));
+    const ls = window.matchMedia && window.matchMedia("(max-height: 520px)").matches;
+    map.fitBounds(b, { padding: ls ? { top: 40, left: 40, right: Math.round(window.innerWidth * 0.5), bottom: 40 }
+                                   : { top: 84, left: 36, right: 36, bottom: Math.round(window.innerHeight * 0.55) },
+      duration: 600, maxZoom: 16 });
+    return b3 ? "best" : true;
+  } catch (e) { return false; }
+}
+function licniRekord(s) {   // poredjenje SAMO sa sopstvenom istorijom (Boskova odluka: bez javnog ranga)
+  try {
+    const sve = _zajCitaj("mr_voznje", []);
+    if (!Array.isArray(sve)) return null;
+    const upisana = (s.km || 0) > 2;   // kratke probe se ne upisuju u dnevnik pa je [0] tudja
+    const ist = upisana ? sve.slice(1) : sve;
+    if (ist.length < 3) return null;   // prvih par voznji bi uvek bile "rekord" - ne obezvredjuj bedz
+    const maxLn = Math.max(s.lnL || 0, s.lnR || 0);
+    const prevLn = Math.max(0, ...ist.map((v) => Math.max(v.lnL || 0, v.lnR || 0)));
+    if (maxLn >= 15 && maxLn > prevLn) return "Novi lični rekord: nagib " + maxLn + "°";
+    const prevKm = Math.max(0, ...ist.map((v) => v.km || 0));
+    if ((s.km || 0) >= 20 && s.km > prevKm) return "Najduža vožnja do sada: " + s.km + " km";
+    const prevSerp = Math.max(0, ...ist.map((v) => v.serp || 0));
+    if ((s.serp || 0) >= 5 && s.serp > prevSerp) return "Rekord serpentina: " + s.serp;
+  } catch (e) {}
+  return null;
+}
+function kolSledeca(endC) {   // najbliza neposecena tacka kolekcija od kraja voznje - "vozi vise" petlja
+  try {
+    const st = kolStanje();
+    let best = null;
+    for (const k of KOLEKCIJE) {
+      if (k.brojac) continue;
+      for (const t of k.tacke) {
+        if (st[k.id + ":" + t.n]) continue;
+        const d = haversine(endC[1], endC[0], t.lat, t.lon);
+        if (!best || d < best.d) best = { d, t, k };
+      }
+    }
+    return best;
+  } catch (e) { return null; }
+}
+function vozGpx(s) {   // izvoz voznje kao GPX (share sheet na telefonu, download na webu)
+  const pts = s && s.trag;
+  if (!pts || pts.length < 2) { shareToast("Ova vožnja nema sačuvan GPS trag."); return; }
+  const d = new Date(s.ts || Date.now());
+  const naz = String(s.naz || "Vožnja").replace(/[<>&"]/g, "");
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="RouteMeRight" xmlns="http://www.topografix.com/GPX/1/1">\n' +
+    `<trk><name>${naz} · ${d.toLocaleDateString("sr-RS")}</name><trkseg>\n` +
+    pts.map((p) => `<trkpt lat="${p[1].toFixed(6)}" lon="${p[0].toFixed(6)}"/>`).join("\n") +
+    "\n</trkseg></trk>\n</gpx>";
+  const blob = new Blob([xml], { type: "application/gpx+xml" });
+  const file = new File([blob], "RMR-voznja-" + d.toISOString().slice(0, 10) + ".gpx", { type: "application/gpx+xml" });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file] }).catch(() => {});
+  else {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    shareToast("GPX sačuvan.");
+  }
+}
+async function vozKaoRuta(s) {   // odvozena voznja -> ruta u planeru (map-snap preko GPX motora)
+  const pts = s && s.trag;
+  if (!pts || pts.length < 2) { shareToast("Ova vožnja nema sačuvan GPS trag."); return; }
+  try { document.getElementById("rideSum").classList.remove("on"); } catch (e) {}
+  sumTragSkini();
+  await importGpxCoords(pts, (s.naz || "Moja vožnja").split("·")[0].trim());
+}
 function rideSumShow(sIn) {
   // bez argumenta: svez sazetak posle voznje; sa argumentom: zapis iz dnevnika (tap na vrow - Boskov nalaz 6.8.)
   const s = sIn || RIDE.lastSummary;
@@ -7660,20 +7849,14 @@ function rideSumShow(sIn) {
   if (!s) return;
   const el = document.getElementById("rideSum");
   if (!el) return;
-  // V1 (Boskov izbor 6.8.): trag TVOJE voznje je heroj; svezoj voznji fallback je planirana ruta;
-  // zapisu iz dnevnika NE - RIDE.route je tada neka nevezana ruta iz planera
+  // v3 (Boskov izbor 7.8., A+B): trag ide na GLAVNU mapu iza sheeta (mapa je heroj); svezoj voznji
+  // fallback je planirana ruta; zapis iz dnevnika nema trag (localStorage stednja) - samo sheet
   const mapEl = document.getElementById("rsMap"), kick = document.getElementById("rsKick");
+  if (mapEl) mapEl.hidden = true;   // mini-svg penzionisan - prava mapa iza je heroj
+  if (kick) kick.hidden = false;
   const pts = (s.trag && s.trag.length > 1) ? s.trag
     : (!sIn && RIDE.route && RIDE.route.coords && RIDE.route.coords.length > 1 ? RIDE.route.coords : null);
-  const tp = pts ? rsTracePath(pts, 320, 150, { t: 38, r: 16, b: 16, l: 16 }) : null;   // t=38: trag ne sme pod chip "Voznja zavrsena" (6.8.)
-  if (tp && mapEl) {
-    mapEl.hidden = false; if (kick) kick.hidden = true;
-    mapEl.innerHTML = '<span class="chip">Vožnja završena</span>' +
-      `<svg viewBox="0 0 320 150"><path d="${tp.d}" fill="none" stroke="#7c2d0a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>` +
-      `<path d="${tp.d}" fill="none" stroke="#f97316" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>` +
-      `<circle cx="${tp.a[0].toFixed(1)}" cy="${tp.a[1].toFixed(1)}" r="5" fill="#38bdf8" stroke="#0b1426" stroke-width="2"/>` +
-      `<circle cx="${tp.b[0].toFixed(1)}" cy="${tp.b[1].toFixed(1)}" r="6" fill="#f97316" stroke="#0b1426" stroke-width="2.5"/></svg>`;
-  } else { if (mapEl) mapEl.hidden = true; if (kick) kick.hidden = false; }
+  const naMapi = sumTragNaMapi({ ...s, trag: pts });
   document.getElementById("rsRel").textContent = s.naz;
   const d = new Date(s.ts);
   document.getElementById("rsDt").textContent = (s.tip ? s.tip + " · " : "") + d.toLocaleDateString("sr-RS") + " · " + d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
@@ -7695,6 +7878,28 @@ function rideSumShow(sIn) {
         '<div class="gl">maksimalan održani nagib</div>';
     } else ga.hidden = true;
   }
+  const sp = document.getElementById("rsSpark");   // kriva nagiba kroz voznju (v3)
+  if (sp) {
+    if (s.smp && s.smp.length > 5 && s.smp.some((x) => x.ln != null)) {
+      sp.hidden = false;
+      sp.innerHTML = rsSparkSvg(s.smp) + '<div class="gl">nagib kroz vožnju · levo plavo, desno narandžasto</div>';
+    } else sp.hidden = true;
+  }
+  const rk = document.getElementById("rsRek");   // licni rekord (samo sveza voznja, samo sopstvena istorija)
+  if (rk) {
+    const r = sIn ? null : licniRekord(s);
+    if (r) { rk.hidden = false; rk.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 22l5-3 5 3-1.5-8"/></svg>' + esc(r); }
+    else rk.hidden = true;
+  }
+  const ko = document.getElementById("rsKol");   // kolekcije: sledeca najbliza tacka ("vozi vise" petlja)
+  if (ko) {
+    let kolHtml = "";
+    if (pts && pts.length) {
+      const ns = kolSledeca(pts[pts.length - 1]);
+      if (ns && ns.d < 400) kolHtml = `Kolekcija <b>${esc(ns.k.ime)}</b>: sledeća ti je <b>${esc(ns.t.n)}</b> · ~${Math.round(ns.d)} km odavde`;
+    }
+    if (kolHtml) { ko.hidden = false; ko.innerHTML = kolHtml; } else ko.hidden = true;
+  }
   const tg = [];
   if (s.poeni) tg.push(`<span class="pts">+${s.poeni} poena</span>`);
   if (s.serp) tg.push(`<span>${s.serp} ${plSerp(s.serp)}</span>`);
@@ -7702,6 +7907,7 @@ function rideSumShow(sIn) {
   if (s.kol) tg.push(`<span>${s.kol} ${s.kol === 1 ? "nova tačka kolekcije" : "nove tačke kolekcija"}</span>`);
   if (s.kisa) tg.push("<span>" + rIco("rain", 12) + " istrpeo kišu</span>");
   if (s.pauz) tg.push(`<span>pauza ${s.pauz} min</span>`);
+  if (naMapi === "best") tg.push("<span>najvijugavijih 3 km - plavo na mapi</span>");
   if (s.lnL == null) tg.push("<span>nagib: senzor nije bio dostupan</span>");
   document.getElementById("rsTags").innerHTML = tg.join("");
   // fotka: svez sazetak = svez izbor; slika ide SAMO u deljivu karticu, nikad na server
@@ -7820,7 +8026,11 @@ async function shareRideCard(s) {
 (function () {
   const el = document.getElementById("rideSum");
   if (!el) return;
-  document.getElementById("rsClose").addEventListener("click", () => el.classList.remove("on"));
+  document.getElementById("rsClose").addEventListener("click", () => { el.classList.remove("on"); try { sumTragSkini(); } catch (e) {} });
+  const gx = document.getElementById("rsGpx");
+  if (gx) gx.addEventListener("click", () => { if (el._sum) vozGpx(el._sum); });
+  const rt = document.getElementById("rsRuta");
+  if (rt) rt.addEventListener("click", () => { if (el._sum) vozKaoRuta(el._sum); });
   const _fb = document.getElementById("rsFoto"), _fi = document.getElementById("rsFotoIn");
   if (_fb && _fi) {   // fotka za deljivu karticu: bira se iz galerije, ostaje lokalno
     _fb.addEventListener("click", () => _fi.click());
