@@ -2702,6 +2702,7 @@ async function importGpx(file) {
   }
 }
 async function importGpxCoords(coords, label) {   // zajednicki motor: GPX fajl I "Sacuvaj voznju kao rutu" (7.8.)
+  state._lastRelKey = null;   // uvezen trag = nova relacija: sheet se skuplja i kamera preleti rutu
   const _pseq = ++state.planSeq;
   try {
     const gpxName = label || "Ruta";
@@ -3833,12 +3834,14 @@ function drawRoute(route, assess) {
 
   const b = new maplibregl.LngLatBounds();
   route.coords.forEach((c) => b.extend(c));
+  // ista relacija (varijanta/opcija/stanica): trenutni reframe BEZ preleta - "ceo preview" se gleda samo za novu rutu (7.8.)
+  const sameRel = !!state._lastRelKey && state._lastRelKey === relKey();
   map.fitBounds(b, {
     padding: mqMobile.matches
       ? (isLS() ? { top: 40, left: lsPadLeft("panel", 444), right: 80, bottom: 60 }   // landscape: izmereno, ne konstanta (notch/mali ekran)
                 : { top: 70, left: 36, right: 36, bottom: 150 })
       : 60,
-    duration: 600,
+    duration: sameRel ? 0 : 600,
   });
 }
 
@@ -5586,6 +5589,18 @@ function renderRouteTabs(departure) {
 async function selectRoute(departure) {
   const _seq = ++state.planSeq;   // R13: generacija - stariji async renderi ne smeju da diraju noviju rutu
   state._activeSeq = _seq;
+  // replan iste relacije: vrati skrol - plan() ga hvata PRE add("hidden") klampa; direktan poziv (varijanta/polazak) hvata ovde
+  const _sameRelNow = mqMobile.matches && !isLS() && state._lastRelKey && state._lastRelKey === relKey();
+  const _keepScroll = state._keepScroll != null ? state._keepScroll : (_sameRelNow ? $("panel").scrollTop : null);
+  const _ksT0 = state._keepScrollT0 || Date.now();
+  state._keepScroll = null; state._keepScrollT0 = 0;   // potroseno - varijanta posle ne sme da vuce bajat skrol
+  const _restScroll = () => {
+    if (_keepScroll == null || _seq !== state.planSeq) return;
+    if ((state._userScrollAt || 0) > _ksT0) return;   // korisnik je u medjuvremenu sam skrolovao - ne otimaj
+    try { $("panel").scrollTop = _keepScroll; } catch (e) {}
+  };
+  // zakasneli pozadinski renderi (road status, konsenzus...) umeju da klampuju i posle hero-a - drzi poziciju jos ~5s
+  [1200, 3000, 5000].forEach((ms) => setTimeout(_restScroll, ms));
   const route = state.routes[state.selected];
   const assess = route.assess;
   renderRouteTabs(departure);
@@ -5597,6 +5612,9 @@ async function selectRoute(departure) {
   drawRoute(route, assess);
   try { loadPrijave(route); } catch (e) {}   // prijave zajednice duz rute (tiho, u pozadini)
   $("planBtn").disabled = false; setStatus("");   // RUTA je gotova - dugme se otkljucava; pumpe/kafane stizu u pozadini
+  try { sheetAfterPlan(); } catch (e) {}   // 7.8. (Boskov nalaz): sheet se skuplja SAD, uz iscrtanu rutu - ne sekundama
+  // kasnije kad pozadinski POI zavrse (kasni pad je izgledao kao da se sheet "sam spusti" dok citas)
+  _restScroll();
   let zones = [];   // sporedni koraci NE SMEJU da obore plan (Overpass/mreza umeju da zakazu)
   try { zones = await renderWarnings(assess) || []; } catch (e) { logState({ phase: "warn-fail", msg: String(e).slice(0, 120) }); }
   if (_seq !== state.planSeq) return;   // R13v2: ustajala generacija ne sme da pokrene batch (sinhroni prolozi brisu tudji DOM)
@@ -5614,6 +5632,7 @@ async function selectRoute(departure) {
   if (_seq !== state.planSeq) return;   // R13: novija generacija je preuzela - ne gazi njene zone/hero
   state._zones = zones; state._zonesSeq = state.planSeq;   // MORA pre hero rendera - hero cita razlog iz zona
   try { renderResultHero(route); } catch (e) {}   // Faza 3: mobilni hero (svi podaci su sad na route objektu)
+  _restScroll();   // pozadinski renderi umeju jos jednom da klampuju skrol - finalno vracanje
   try {   // "Nedavno" istorija za brzo dugme
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
     const _tn = (state.geocode.to.name || "").trim();
@@ -5633,6 +5652,9 @@ async function plan() {
   const _pseq = ++state.planSeq;   // R13: novi plan ponistava sve prethodne async lance
   const btn = $("planBtn");
   btn.disabled = true;
+  // PRE skrivanja rezultata: zapamti skrol za replan iste relacije - add("hidden") odmah klampuje scrollTop na 0 (7.8.)
+  state._keepScroll = (mqMobile.matches && !isLS() && state._lastRelKey && state._lastRelKey === relKey()) ? $("panel").scrollTop : null;
+  state._keepScrollT0 = Date.now();
   $("results").classList.add("hidden");
   try {
     const roundGen = $("roundGen") && $("roundGen").checked;
@@ -5753,7 +5775,7 @@ async function plan() {
     if (_pseq !== state.planSeq) return;
     await selectRoute(departure);
     setStatus("");
-    sheetAfterPlan();
+    // sheetAfterPlan sada zove selectRoute u trenutku kad je ruta spremna (kasni pad = Boskov nalaz 7.8.)
   } catch (e) {
     const raw = String(e.message || e);
     // 5.8.: pad PRETRAGE se prikazivao kao pad RUTERA i odveo na pogresan trag - geo greske nose e.geo i svoju poruku
@@ -5809,6 +5831,9 @@ function projectMomentum(v, decel = 0.998) { return (v / 1000) * decel / (1 - de
 
 function initSheet() {
   const p = $("panel"), peek = $("peekBar");
+  // korisnikov skrol ima prednost nad restauracijom skrola posle replana (7.8.)
+  ["pointerdown", "wheel", "touchstart"].forEach((ev) =>
+    p.addEventListener(ev, () => { state._userScrollAt = Date.now(); }, { passive: true }));
   let drag = null;
   const AX = (e) => isLS() ? -e.clientX : e.clientY;   // landscape: prevlacenje ulevo zatvara (ista matematika, obrnut znak X)
   const DIM = () => isLS() ? p.clientWidth : p.clientHeight;
@@ -5870,8 +5895,17 @@ function setPeek(worst, routeTxt, metaTxt) {
   $("peekMeta").textContent = metaTxt;
   $("peekSum").classList.remove("hidden");
 }
+function relKey() {   // identitet relacije = STA JE KORISNIK UNEO (polja Od/Do): opcije/stanice/vreme ga ne menjaju,
+  // novi cilj/polazak da; geocode imena su nestabilna (roundtrip ih interno prepisuje usred plana)
+  return ($("from").value.trim() + "→" + $("to").value.trim()).toLowerCase();
+}
 function sheetAfterPlan() {
-  if (!mqMobile.matches) return;
+  // 7.8. (Boskov nalaz): replan ISTE relacije (Povratno, vreme, stanica, varijanta) vise ne obara sheet
+  // i ne resetuje skrol - ostajes tacno gde si citao; samo NOVA relacija skuplja sheet da se ruta vidi
+  const k = relKey();
+  const same = state._lastRelKey === k;
+  state._lastRelKey = k;
+  if (!mqMobile.matches || same) return;
   if (isLS()) { $("panel").scrollTop = 0; setSheet(true); return; }   // landscape: mapa je vec vidljiva desno, stub ostaje otvoren
   // pre skupljanja nameštamo skrol na rezultate, da širenje odmah pokaže presudu
   $("panel").scrollTop = Math.max(0, $("results").offsetTop - $("peekBar").offsetHeight - 6);
@@ -5964,8 +5998,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.23";
+const APP_VERSION = "0.9.24";
 const CHANGELOG = [
+  { v: "0.9.24", d: "07.08.2026.", stavke: [
+    "<b>Sheet se više ne spušta sam</b> (tvoj nalaz): spuštao se sekundama posle izbora rute - kad pumpe/kafane u pozadini završe. Sada se skuplja tačno u trenutku kad je ruta spremna, i to SAMO za novu relaciju.",
+    "<b>Promena opcija više ne resetuje pregled</b>: Povratno, vreme polaska, stanica ili druga varijanta - sheet ostaje otvoren gde si stao, skrol se čuva (i kroz zakasnele kartice), a kamera ne preleće celu rutu ponovo - samo tiho preuokviri. Ceo prelet gledaš samo za novu destinaciju."
+  ] },
   { v: "0.9.23", d: "07.08.2026.", stavke: [
     "<b>\"Vodi me ovde\" sada zaista vodi</b> (tvoj nalaz): dugi pritisak odmah upisuje \"Moja lokacija\" kao polazak i računa rutu - nema više nemih 8 sekundi; dok GPS ne stigne piše \"Čekam GPS poziciju...\", a ako lokacija padne, sheet se otvori sa jasnom porukom i narandžastim poljem za ručni polazak.",
     "<b>Nova kartica dugog pritiska</b> (maketa Kompakt): ime mesta preko celog reda + koordinate i vazdušna udaljenost, X za otkazivanje, pin pulsira dok se ruta ne iscrta, tap na mapu zatvara; uz postojeću rutu tu je i <b>Dodaj stanicu</b> - ubaci tačku kao usputnu stanicu bez menjanja cilja.",
