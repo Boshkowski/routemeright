@@ -1,6 +1,6 @@
 {
  "meta": {
-  "updated": "2026-08-05",
+  "updated": "2026-08-07",
   "source": "Community sweep: BJBikers + motori.hr (Firecrawl multi-agent, 2026-07-23) + BJBikers sweep 2026-07-18",
   "note": "Kurirani editorial sloj iz zajednice: rute, kafane/pauze, okupljalista i evergreen upozorenja. Svaki unos ima izvor (link ka temi) i year_hint - stariji unosi (pre 2018) su oznaceni u note i treba ih proveriti pre ugradnje u app. Jos NIJE povezano u app UI - sledeci korak: geokodiranje + sloj na mapi. Geokodirano 2026-07-18 (Nominatim); loc=poi tacno / loc=mesto orijentaciono. KRUG 1 (2026-07-23): +337 unosa (18 tema, dedup vs prvih 55); loc=null znaci da geokodiranje nije uspelo - unos sacuvan ali se ne crta na mapi.",
   "types": [
@@ -8458,6 +8458,19 @@
    "loc": "tacna",
    "pominjanja": 1,
    "source_kind": "forum-lokal"
+  },
+  {
+   "type": "mesto",
+   "name": "Moto Bike Shop",
+   "where": "Trgovačka 20, Žarkovo (Beograd)",
+   "details": "Radnja za moto opremu i delove na Trgovačkoj 20 u Žarkovu.",
+   "year_hint": "2026",
+   "source": "vlasnik-app (Boško, terenska provera 6.8.2026)",
+   "note": "",
+   "lat": 44.76081,
+   "lon": 20.41419,
+   "loc": "poi",
+   "source_kind": "rucno-vlasnik"
   }
  ]
 }
