@@ -990,6 +990,7 @@
      display:none markup bi na desktopu ispao vidljiv u toku dokumenta. */
   #rideSum { display: none; position: fixed; inset: 0; z-index: 320; pointer-events: none; }
   #rideSum.on { display: block; }
+  #rideSum.dim { pointer-events: auto; background: rgba(4,8,18,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }   /* stari dnevnik zapis bez mape: zatamni, tap van zatvara */
   /* Sazetak v3 A+B (Boskov izbor 7.8.): trag ide na GLAVNU mapu (heroj), kartica je donji sheet;
      skrol sadrzaja nagore otkriva blokove (kriva nagiba, rekord, kolekcije). Mapa iznad ostaje ziva. */
   #rideSum .card { pointer-events: auto; position: absolute; left: 50%; transform: translateX(-50%); bottom: 0;
@@ -5020,7 +5021,9 @@ function zabeleziVoznju() {
     const v0 = _zajCitaj("mr_voznje", []);
     const v = Array.isArray(v0) ? v0 : [];
     v.unshift({ ts: Date.now(), naz, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
-      kriv, maxK, avgK, lnL, lnR, lnChk, pauz });
+      kriv, maxK, avgK, lnL, lnR, lnChk, pauz,
+      // mali trag (~150 tacaka, ~4KB) i u dnevnik - da sacuvana voznja iz profila ima mapu kao svez sazetak (Boskov nalaz 7.8.)
+      trag: trag ? trag.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 150)) === 0 || i === a.length - 1).map((p) => [+p[0].toFixed(5), +p[1].toFixed(5)]) : undefined });
     _zajPisi("mr_voznje", v.slice(0, 20));
     poeniDodaj(poeni);
     const ag = _zajCitaj("mr_poeni", { ukupno: 0, nedelje: {} });   // dozivotni agregat (lista se sece na 20)
@@ -5859,8 +5862,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.21";
+const APP_VERSION = "0.9.22";
 const CHANGELOG = [
+  { v: "0.9.22", d: "07.08.2026.", stavke: [
+    "<b>Sačuvane vožnje iz profila sređene</b> (tvoj nalaz): nove vožnje sada čuvaju i mali trag, pa otvaranje iz dnevnika prikazuje mapu sa rutom kao svež sažetak; stare vožnje (bez sačuvanog traga) dobijaju zatamnjenu pozadinu umesto providnog profila, a GPX/Sačuvaj dugmad se ne prikazuju kad traga nema."
+  ] },
   { v: "0.9.21", d: "07.08.2026.", stavke: [
     "<b>TomTom u pretrazi</b>: kucanje radnji i lokala sada pored OpenStreetMap izvora pita i TomTom-ovu komercijalnu bazu firmi (ključ koji je Boško poslao još 18.7. - identifikovan i uključen). Adresna pretraga dodatno ojačana.",
     "Čuvar od gluposti: TomTom-ov rezultat mora da deli reč sa onim što si kucao (bez \"Nike\" kad tražiš \"Motor Bike Shop\") i mora biti u krugu 300 km."
@@ -7943,6 +7949,13 @@ function rideSumShow(sIn) {
   const pts = (s.trag && s.trag.length > 1) ? s.trag
     : (!sIn && RIDE.route && RIDE.route.coords && RIDE.route.coords.length > 1 ? RIDE.route.coords : null);
   const naMapi = sumTragNaMapi({ ...s, trag: pts });
+  el.classList.toggle("dim", !naMapi);   // bez mape iza (stari dnevnik zapisi): zatamni pozadinu, ne providi se profil
+  if (sIn && naMapi) {   // zapis iz dnevnika SA tragom: predji na mapu da se trag vidi (tab ekran bi je prekrio)
+    try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
+    try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
+  }
+  const rx = document.querySelector("#rideSum .rsxtra");
+  if (rx) rx.style.display = (pts && pts.length > 1) ? "" : "none";   // bez traga nema ni GPX/Sacuvaj dugmadi
   document.getElementById("rsRel").textContent = s.naz;
   const d = new Date(s.ts);
   document.getElementById("rsDt").textContent = (s.tip ? s.tip + " · " : "") + d.toLocaleDateString("sr-RS") + " · " + d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
