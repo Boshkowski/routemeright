@@ -2341,6 +2341,23 @@ async function geoPhotonRaw(q, n) {   // Photon (komoot): fuzzy POI pretraga - n
   } catch (e) { return []; }
 }
 async function geoPhoton(q) { const r = await geoPhotonRaw(q, 1); return r.length ? { lat: r[0].lat, lon: r[0].lon, name: r[0].name } : null; }
+const TT_KEY = "VfscYxmsXo35nz1UOf200QmtgzkWsZ6E";   // TomTom Fuzzy Search - Boskov kljuc (poslat 18.7., identifikovan i verifikovan 7.8.); free ~2.5k/mes pa se zove SAMO u Enter-kaskadi, nikad iz sugestija
+async function geoTomTom(q) {   // komercijalna POI baza + jake adrese; cuvar: POI mora da deli rec sa upitom (fuzzy ume "Nike" za "Motor Bike Shop")
+  const ref = geoRef();
+  try {
+    const bias = ref && ref.lat != null ? `&lat=${ref.lat.toFixed(4)}&lon=${ref.lon.toFixed(4)}` : "";
+    const j = await fetchJSON(`https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json?key=${TT_KEY}${bias}&limit=5`, { timeoutMs: 7000, retries: 0 });
+    const toks = _geoFold(q).split(/\s+/).filter((t) => t.length > 2);
+    const cand = (j.results || []).map((r) => ({
+      name: (r.poi && r.poi.name) || (r.address && r.address.freeformAddress) || q,
+      lat: r.position && r.position.lat, lon: r.position && r.position.lon,
+      poi: !!(r.poi && r.poi.name), d: (r.dist || 9e9) / 1000
+    })).filter((x) => x.lat != null && x.d < 300 && (!x.poi || toks.some((t) => _geoFold(x.name).includes(t))));
+    if (!cand.length) return null;
+    cand.sort((a, b) => (a.poi === b.poi ? a.d - b.d : a.poi ? -1 : 1));   // POI pre gole adrese, pa blizina
+    return { lat: cand[0].lat, lon: cand[0].lon, name: cand[0].name.split(",")[0] };
+  } catch (e) { return null; }
+}
 function geoLogMiss(q) {   // dnevnik neuspelih pretraga = putokaz sta fali u nasoj bazi
   try {
     const v = JSON.parse(localStorage.getItem("mr_geo_miss") || "[]");
@@ -2372,9 +2389,11 @@ async function geocode(q) {
     }
   }
   if (!j || !j.length) {
-    // Photon i Overpass su DRUGI hostovi - rade i kad Nominatim vrati 429, zato se probaju i uz netErr
+    // Photon, TomTom i Overpass su DRUGI hostovi - rade i kad Nominatim vrati 429, zato se probaju i uz netErr
     const ph = /\d/.test(qq) ? null : await geoPhoton(qq);   // fuzzy POI spas ("Motor" vs "Moto"); adrese ga preskacu
     if (ph) return ph;
+    const tt = await geoTomTom(qq);   // komercijalna baza (radnje kojih nema u OSM) + jake adrese
+    if (tt) return tt;
     const op = await geoOverpass(qq);
     if (op) return op;
     const fz = geoEditorial(qq, true);
@@ -2393,6 +2412,8 @@ async function geocode(q) {
     if (dBest > 25) {
       const phN = await geoPhoton(qq);
       if (phN && haversine(ref.lat, ref.lon, phN.lat, phN.lon) < dBest * 0.5) return phN;
+      const ttN = await geoTomTom(qq);   // i komercijalna baza sme da ponudi blizeg
+      if (ttN && haversine(ref.lat, ref.lon, ttN.lat, ttN.lon) < dBest * 0.5) return ttN;
     }
   }
   if (ref && ref.lat != null && !/,/.test(qq)) {   // mali POI na drugom kraju sveta = sumnjivo (zaselak Stivale u Italiji!)
@@ -5838,8 +5859,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.20";
+const APP_VERSION = "0.9.21";
 const CHANGELOG = [
+  { v: "0.9.21", d: "07.08.2026.", stavke: [
+    "<b>TomTom u pretrazi</b>: kucanje radnji i lokala sada pored OpenStreetMap izvora pita i TomTom-ovu komercijalnu bazu firmi (ključ koji je Boško poslao još 18.7. - identifikovan i uključen). Adresna pretraga dodatno ojačana.",
+    "Čuvar od gluposti: TomTom-ov rezultat mora da deli reč sa onim što si kucao (bez \"Nike\" kad tražiš \"Motor Bike Shop\") i mora biti u krugu 300 km."
+  ] },
   { v: "0.9.20", d: "07.08.2026.", stavke: [
     "<b>Deljenje vožnje kao slika - tri template-a</b> (dizajnerska runda + tvoj izbor): tap na Podeli u sažetku otvara birač.",
     "<b>Pečat</b>: polukružni žig sa skalom nagiba, uglovima uz vrh i statistikom u redu - preko tvoje fotke (ili brend pozadine ako fotke nema). Bonus: \"Kopiraj providan stiker\" pa nalepi u Instagram story preko svoje fotke.",
