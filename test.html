@@ -1098,7 +1098,8 @@
   #shareTpl .kard .st { margin-left: auto; flex: none; font-size: 12px; font-weight: 800; color: #94a3b8; }
   #shareTpl .kard.radi .st { color: #fbbf24; }
   #shareTpl .kard.spremno { border-color: rgba(249,115,22,.65); }
-  #shareTpl .kard.spremno .st { color: #f97316; }
+  #shareTpl .kard.spremno .st { color: #f97316; background: rgba(249,115,22,.15); border: 1px solid rgba(249,115,22,.5);
+    border-radius: 999px; padding: 7px 12px; margin: -4px -4px -4px 0; }   /* prava meta za palac: deljenje ide SAMO ovde */
   #shareTpl .kard.nema { opacity: .45; pointer-events: none; }
   #shareTpl .opcije { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 2px 10px; }
   #shareTpl .opcije label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #cbd5e1; font-weight: 700; }
@@ -5998,8 +5999,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.24";
+const APP_VERSION = "0.9.25";
 const CHANGELOG = [
+  { v: "0.9.25", d: "07.08.2026.", stavke: [
+    "<b>Podeli vožnju - izbor se sada može poništiti</b> (tvoj nalaz): tap na karticu bira šablon (i automatski poništava prethodni - uvek najviše jedan izabran), tap na već izabranu je poništava, a deljenje ide isključivo preko narandžaste \"Podeli\" pilule. Ponovni izbor je trenutan (slika ostaje u kešu)."
+  ] },
   { v: "0.9.24", d: "07.08.2026.", stavke: [
     "<b>Sheet se više ne spušta sam</b> (tvoj nalaz): spuštao se sekundama posle izbora rute - kad pumpe/kafane u pozadini završe. Sada se skuplja tačno u trenutku kad je ruta spremna, i to SAMO za novu relaciju.",
     "<b>Promena opcija više ne resetuje pregled</b>: Povratno, vreme polaska, stanica ili druga varijanta - sheet ostaje otvoren gde si stao, skrol se čuva (i kroz zakasnele kartice), a kamera ne preleće celu rutu ponovo - samo tiho preuokviri. Ceo prelet gledaš samo za novu destinaciju."
@@ -8613,11 +8617,18 @@ function stplOtvori(s) {
   if (kl) kl.hidden = bezNagiba || !(navigator.clipboard && window.ClipboardItem);
   document.getElementById("shareTpl").classList.add("on");
 }
+function stplNeutral(kind) {   // vrati karticu u "Napravi" (kes slike ostaje - ponovni izbor je instant)
+  const k = document.getElementById({ pecat: "stplPecat", mapa: "stplMapa", lepeza: "stplLepeza" }[kind]);
+  if (k && !k.classList.contains("nema")) { k.classList.remove("spremno", "radi"); k.querySelector(".st").textContent = "Napravi"; }
+}
 async function stplTap(kind) {
   const s = STPL.sum; if (!s) return;
   const k = document.getElementById({ pecat: "stplPecat", mapa: "stplMapa", lepeza: "stplLepeza" }[kind]);
-  if (STPL.ready[kind]) { stplPodeli(kind); return; }
+  // 7.8. (Boskov nalaz): tap na IZABRANU = ponisti izbor; deljenje ide SAMO preko "Podeli" pilule
+  if (k.classList.contains("spremno")) { stplNeutral(kind); return; }
   if (STPL.busy) return;
+  ["pecat", "mapa", "lepeza"].filter((x) => x !== kind).forEach(stplNeutral);   // radio: uvek najvise jedna izabrana
+  if (STPL.ready[kind]) { k.classList.add("spremno"); k.querySelector(".st").textContent = "Podeli ▸"; return; }
   STPL.busy = kind;
   k.classList.add("radi"); k.querySelector(".st").textContent = "Pravim…";
   try {
@@ -8658,6 +8669,14 @@ async function stplPodeli(kind) {
   document.getElementById("stplPecat").addEventListener("click", () => stplTap("pecat"));
   document.getElementById("stplMapa").addEventListener("click", () => stplTap("mapa"));
   document.getElementById("stplLepeza").addEventListener("click", () => stplTap("lepeza"));
+  // "Podeli ▸" pilula = JEDINO mesto deljenja (tap na karticu bira/ponistava izbor)
+  [["stplPecat", "pecat"], ["stplMapa", "mapa"], ["stplLepeza", "lepeza"]].forEach(([id, kind]) => {
+    const st = document.querySelector("#" + id + " .st");
+    if (st) st.addEventListener("click", (e) => {
+      const k = document.getElementById(id);
+      if (k.classList.contains("spremno") && STPL.ready[kind]) { e.stopPropagation(); stplPodeli(kind); }
+    });
+  });
   document.getElementById("stplHide").addEventListener("change", () => {   // menja mapu - kes te kartice pada
     delete STPL.ready.mapa;
     const k = document.getElementById("stplMapa");
