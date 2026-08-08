@@ -1,5 +1,5 @@
 {
- "updated": "2026-08-08T18:56+00:00",
+ "updated": "2026-08-08T19:42+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -7,10 +7,10 @@
    "ok": true,
    "items": [
     {
-     "type": "Zastoj",
-     "title": "A2-E61, Ljubljana - Karavanke: Zastoj",
-     "detail": "A2, Ljubljana - Karavanke, priključek Kranj vzhod - priključek Naklo v smeri Karavank, Avstrije, območje zastojev, zamuda: 5 min, dolžina: 3 km in 800 m.",
-     "region": "A2-E61, Ljubljana - Karavanke"
+     "type": "Ovire",
+     "title": "A1-E57, E59, Šentilj - Maribor: Ovire",
+     "detail": "A1, Šentilj - Maribor, priključek Šentilj - priključek Maribor sever v smeri Maribora, oviran promet, goreče vozilo.",
+     "region": "A1-E57, E59, Šentilj - Maribor"
     },
     {
      "type": "Delo",
@@ -19,22 +19,10 @@
      "region": "A1-E57, Maribor - Ljubljana"
     },
     {
-     "type": "Delo",
-     "title": "A2-E61, Ljubljana - Karavanke: Delo",
-     "detail": "A2, Ljubljana - Karavanke, priključek Kranj vzhod - priključek Naklo v smeri Karavank, Avstrije, dela, zaprt prehitevalni pas.",
-     "region": "A2-E61, Ljubljana - Karavanke"
-    },
-    {
      "type": "Zastoj",
      "title": "A1-E57, Ljubljana - Maribor: Zastoj",
-     "detail": "A1, Ljubljana - Maribor, priključek Dramlje - predor Golo Rebro v smeri Maribora, območje zastojev, zamuda: 13 min, dolžina: 5 km in 600 m.",
+     "detail": "A1, Ljubljana - Maribor, priključek Dramlje - predor Pletovarje v smeri Maribora, zastoj, zamuda: 5 min, dolžina: 1 km in 300 m.",
      "region": "A1-E57, Ljubljana - Maribor"
-    },
-    {
-     "type": "Delo",
-     "title": "A1-E61, E70, Koper - Ljubljana: Delo",
-     "detail": "A1, Koper - Ljubljana, priključek Divača - razcep Gabrk v smeri Ljubljane, dela, oviran promet.",
-     "region": "A1-E61, E70, Koper - Ljubljana"
     },
     {
      "type": "Nesreča",
@@ -245,9 +233,21 @@
      "title": "A2-E70, Ljubljana - Obrežje: Delo",
      "detail": "A2, Ljubljana - Obrežje, izvoz 21 Ivančna Gorica iz smeri Ljubljane, dela, popolna zapora.",
      "region": "A2-E70, Ljubljana - Obrežje"
+    },
+    {
+     "type": "Delo",
+     "title": "R2-452, Hrušica - Javornik: Delo",
+     "detail": "R2-452, Hrušica - Javornik, na Jesenicah, na Cesti maršala Tita, oviran promet, obnova občinske ceste, do 16. 10. 2026.",
+     "region": "R2-452, Hrušica - Javornik"
+    },
+    {
+     "type": "Delo",
+     "title": "R3-704, Ribnica - Brezno: Delo",
+     "detail": "R3 - 704, Ribnica - Brezno, pri Janževskem Vrhu, izmenično enosmerni promet, izgradnja nadomestne TP, do 28. 8. 2026.",
+     "region": "R3-704, Ribnica - Brezno"
     }
    ],
-   "fetched": "2026-08-08T18:56+00:00"
+   "fetched": "2026-08-08T19:42+00:00"
   },
   "HR": {
    "name": "Hrvatska",
@@ -257,43 +257,13 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
-     "detail": "Na autocesti A1 izlaz iz tunela Sv Rok smjer Dubrovnik zbog oštećenja kolnika vozi se uz ograničenje brzine od 80 km/h po dvije prometne trake. Molimo korisnike za oprez.",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (autobus) na autocesti A1 na 461+900 km između čvora Vrgorac i čvora Ravča na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Zastoj)",
-     "title": "A1 - Zastoj",
-     "detail": "Povećanje gustoće prometa na autocesti A1 između čvora Karlovac i naplatne postaje ČCP Lučko na kolniku u smjeru Zagreba. .",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Zastoj)",
-     "title": "A1 - Zastoj",
-     "detail": "Povećanje gustoće prometa na autocesti A1 između čvora Bosiljevo 2 i čvora Karlovac na kolniku u smjeru Zagreba.",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A1 između 255+700 km i 255+800 km , između čvora Zadar centar i čvora Zadar istok. Zbog oštećanja odbojne ograde promet se vodi po dvije prometne trake u oba smjera uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "detail": "Izvanredni događaj na autocesti A1 na 238+400 km između tunela Čelinka i PUO Jasenice u smjeru Dubrovnika. Zbog oštećenja odbojne ograde promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A1"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
      "detail": "Zbog sigurnosti i protočnosti cestovnog prometa te organiziranosti hitnih i interventnih službi za vrijeme turističke sezone 2026. godine, zatvorena je traka za spora vozila u smjeru Zagreba od 237+200 km do 232+600 km, te u smjeru Dubrovnika od 233+850 km do 237+200 km.",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A1 na 238+400 km između tunela Čelinka i PUO Jasenice u smjeru Dubrovnika. Zbog oštećenja odbojne ograde promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A1"
     },
     {
@@ -315,27 +285,45 @@
      "region": "A1"
     },
     {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A1 - Zastoj",
+     "detail": "Povećanje gustoće prometa na autocesti A1 između čvora Bosiljevo 2 i čvora Karlovac na kolniku u smjeru Zagreba.",
+     "region": "A1"
+    },
+    {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A1 na 274+500 km između čvora Zadar istok i čvora Benkovac na kolniku u smjeru Dubrovnika. Promet se vodi po dvije prometne trake uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "detail": "Izvanredni događaj na autocesti A1 između 255+700 km i 255+800 km , između čvora Zadar centar i čvora Zadar istok. Zbog oštećanja odbojne ograde promet se vodi po dvije prometne trake u oba smjera uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Vozilo u kvaru (autobus) na autocesti A1 na 461+900 km između čvora Vrgorac i čvora Ravča na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Na autocesti A1 izlaz iz tunela Sv Rok smjer Dubrovnik zbog oštećenja kolnika vozi se uz ograničenje brzine od 80 km/h po dvije prometne trake. Molimo korisnike za oprez.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A1 - Zastoj",
+     "detail": "Povećanje gustoće prometa na autocesti A1 između čvora Karlovac i naplatne postaje ČCP Lučko na kolniku u smjeru Zagreba. .",
      "region": "A1"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3 između 135+000 km i 142+000 km, na kolniku, u smjeru Lipovca, promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
      "detail": "Zbog oštećenja opreme (odbojne ograde) na autocesti A3 na 66+500 km između čvora Ivanić Grad i čvora Križ na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Veća iznenadna oštećenja cestovnog trupa ili objekta na autocesti A3 na kraku 6 čvora Kosnica na kolniku u smjeru Lipovca. Vozi se uz ograničenje brzine od 60 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -359,19 +347,25 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3 između 135+000 km i 142+000 km, na kolniku, u smjeru Lipovca, promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
-     "region": "A3"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
      "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
      "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A3 na 12+100 km između čvora Sveta Nedelja i čvora Zagreb zapad na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Veća iznenadna oštećenja cestovnog trupa ili objekta na autocesti A3 na kraku 6 čvora Kosnica na kolniku u smjeru Lipovca. Vozi se uz ograničenje brzine od 60 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -417,6 +411,12 @@
      "region": "A4"
     },
     {
+     "type": "guzva/dogadjaj (Nesreća)",
+     "title": "A4 - Nesreća",
+     "detail": "Prometna nesreća na autocesti A4 kod čvora Sesvete na kolniku u smjeru Zagreba. Promet se vodi jednom prometnom trakom uz ograničenje brzine od 60 km/h. Molimo korisnike za oprez.",
+     "region": "A4"
+    },
+    {
      "type": "guzva/dogadjaj (Radovi)",
      "title": "A4 - Radovi",
      "detail": "Zbog radova na održavanju na autocesti A4 između 95+000 km i 91+800 km, između čvora Zagreb istok i čvora Popovec na kolniku u smjeru Goričan, promet se vodi dvosmjerno po dvije sužene trake na kolniku u smjeru Zagreba i jednom suženom trakom u smjeru Goričana. Na kolniku u smjeru Goričana promet se",
@@ -450,12 +450,6 @@
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A7 - Izvanredni događaj",
      "detail": "Oštećenje kolnika na autocesti A7 između tunela Sveti Kuzam i tunela Draga ( 33+000 km ) na kolniku u smjeru Rupe. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A7"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A7 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A7 između čvora Rijeka istok i čvora Orehovica na kolniku u smjeru Rupe. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Molimo korisnike za oprez.",
      "region": "A7"
     },
     {
@@ -493,9 +487,15 @@
      "title": "default - Radovi",
      "detail": "radovi - cesta zatvorena",
      "region": "default"
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "ŽC2195-4 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "ŽC2195-4"
     }
    ],
-   "fetched": "2026-08-08T18:56+00:00"
+   "fetched": "2026-08-08T19:42+00:00"
   },
   "RS": {
    "name": "Srbija",
@@ -743,7 +743,7 @@
      "region": "Srbija"
     }
    ],
-   "fetched": "2026-08-08T18:56+00:00"
+   "fetched": "2026-08-08T19:42+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -991,7 +991,7 @@
      "region": "Granični prijelazi"
     }
    ],
-   "fetched": "2026-08-08T18:56+00:00"
+   "fetched": "2026-08-08T19:42+00:00"
   },
   "ME": {
    "name": "Crna Gora",
@@ -1089,7 +1089,7 @@
      "region": "Crna Gora"
     }
    ],
-   "fetched": "2026-08-08T18:56+00:00"
+   "fetched": "2026-08-08T19:42+00:00"
   },
   "MK": {
    "name": "S. Makedonija",
@@ -1175,7 +1175,7 @@
      "region": "Прилеп – Битола"
     }
    ],
-   "fetched": "2026-08-08T18:56+00:00"
+   "fetched": "2026-08-08T19:42+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -1243,7 +1243,7 @@
      "region": "Bërdicës – Ura"
     }
    ],
-   "fetched": "2026-08-08T18:56+00:00"
+   "fetched": "2026-08-08T19:42+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -1573,7 +1573,7 @@
      "region": "Neamt"
     }
    ],
-   "fetched": "2026-08-08T18:56+00:00"
+   "fetched": "2026-08-08T19:42+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -1761,7 +1761,7 @@
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-08-08T18:56+00:00"
+   "fetched": "2026-08-08T19:42+00:00"
   }
  },
  "meteo": {
@@ -2574,114 +2574,6 @@
   "RO": [
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Vâlcea",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Vâlcea"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Teleorman",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Teleorman"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Sibiu",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Sibiu"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Prahova",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Prahova"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Olt",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Olt"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Mureș",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Mureș"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Ilfov",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Ilfov"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Hunedoara",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Hunedoara"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Harghita",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Harghita"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Gorj",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Gorj"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Giurgiu",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Giurgiu"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Dâmbovița",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Dâmbovița"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Covasna",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Covasna"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Buzău",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Buzău"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - București",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "București"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Brașov",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Brașov"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Argeș",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Argeș"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Alba",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-08T09:00 do 2026-08-08T19:00",
-    "region": "Alba"
-   },
-   {
-    "type": "meteo-upozorenje",
     "title": "Yellow Wind Warning issued for Romania - Vrancea",
     "detail": "nivo: zuto | pojava: awareness_type=1, awareness_level=2 | vazi: 2026-08-08T07:00 do 2026-08-08T20:00",
     "region": "Vrancea"
@@ -2834,5 +2726,175 @@
    }
   ]
  },
- "borders": []
+ "borders": [
+  {
+   "prelaz": "Nova Sela",
+   "zemlja": "HR",
+   "ulaz_auto": "-",
+   "izlaz_auto": "do 30 min.",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "8.8.2026. 19:17:36",
+   "lat": 43.123258,
+   "lon": 17.558684,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Županja",
+   "zemlja": "HR",
+   "ulaz_auto": "do 30 min.",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "8.8.2026. 19:33:08",
+   "lat": 45.046352,
+   "lon": 18.70347,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Slavonski Brod",
+   "zemlja": "HR",
+   "ulaz_auto": "do 30 min.",
+   "izlaz_auto": "do 30 min.",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "8.8.2026. 20:17:04",
+   "lat": 45.156888,
+   "lon": 18.002278,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Maljevac",
+   "zemlja": "HR",
+   "ulaz_auto": "do 30 min.",
+   "izlaz_auto": "do 30 min.",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "8.8.2026. 19:58:44",
+   "lat": 45.2,
+   "lon": 15.79,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Karasovići",
+   "zemlja": "HR",
+   "ulaz_auto": "4 h",
+   "izlaz_auto": "1 h",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "08.08.2026 21:16:00",
+   "lat": 42.490472,
+   "lon": 18.434121,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Bajakovo",
+   "zemlja": "HR",
+   "ulaz_auto": "5 h",
+   "izlaz_auto": "1 h",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "8.8.2026. 20:07:30",
+   "lat": 45.05,
+   "lon": 19.1,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Tovarnik",
+   "zemlja": "HR",
+   "ulaz_auto": "1 h",
+   "izlaz_auto": "1 h",
+   "ulaz_teretno": "do 30 min.",
+   "izlaz_teretno": "-",
+   "ocitano": "8.8.2026. 19:12:33",
+   "lat": 45.157234,
+   "lon": 19.170414,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Hrvatska Dubica",
+   "zemlja": "HR",
+   "ulaz_auto": "do 30 min.",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "8.8.2026. 17:36:49",
+   "lat": 45.19,
+   "lon": 16.81,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Hrvatska Kostajnica",
+   "zemlja": "HR",
+   "ulaz_auto": "-",
+   "izlaz_auto": "do 30 min.",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "08.08.2026 17:30:43",
+   "lat": 45.220223,
+   "lon": 16.547074,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Ilok II",
+   "zemlja": "HR",
+   "ulaz_auto": "do 30 min.",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "do 30 min.",
+   "izlaz_teretno": "-",
+   "ocitano": "8.8.2026. 19:17:51",
+   "lat": 45.216529,
+   "lon": 19.42194,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Principovac",
+   "zemlja": "HR",
+   "ulaz_auto": "1 h",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "08.08.2026 18:38:38",
+   "lat": 45.17,
+   "lon": 19.35,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Principovac II",
+   "zemlja": "HR",
+   "ulaz_auto": "do 30 min.",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "do 30 min.",
+   "izlaz_teretno": "-",
+   "ocitano": "8.8.2026. 19:41:55",
+   "lat": 45.18,
+   "lon": 19.36,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Vitaljina",
+   "zemlja": "HR",
+   "ulaz_auto": "6 h",
+   "izlaz_auto": "do 30 min.",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "08.08.2026 18:20:48",
+   "lat": 42.421272,
+   "lon": 18.522058,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  }
+ ]
 }
