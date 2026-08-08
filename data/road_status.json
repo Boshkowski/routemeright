@@ -1,5 +1,5 @@
 {
- "updated": "2026-08-07T23:46+00:00",
+ "updated": "2026-08-08T02:19+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -7,22 +7,22 @@
    "ok": true,
    "items": [
     {
+     "type": "Zastoj",
+     "title": "A4-E59, Maribor - Gruškovje (Hrvaška): Zastoj",
+     "detail": "A4, Maribor - Gruškovje (Hrvaška), priključek Zakl - prehod Gruškovje v smeri Hrvaške, zastoj, zamuda: 17 min, dolžina: 2 km.",
+     "region": "A4-E59, Maribor - Gruškovje (Hrvaška)"
+    },
+    {
      "type": "Nesreča",
-     "title": "A2-E70, Ljubljana - Obrežje: Nesreča",
-     "detail": "A2, Ljubljana - Obrežje, priključek Mirna Peč - priključek Novo mesto vzhod v smeri Novega mesta, prometna nesreča, oviran promet.",
-     "region": "A2-E70, Ljubljana - Obrežje"
+     "title": "A2-E61, Karavanke - Ljubljana: Nesreča",
+     "detail": "A2, Karavanke - Ljubljana, priključek Naklo - priključek Kranj zahod v smeri Ljubljane, prometna nesreča, zaprt vozni pas.",
+     "region": "A2-E61, Karavanke - Ljubljana"
     },
     {
      "type": "Delo",
      "title": "A2-E61, Karavanke - Ljubljana: Delo",
      "detail": "A2, Karavanke - Ljubljana, priključek Kranj zahod - počivališče Voklo v smeri Ljubljane, dela, zaprt prehitevalni pas.",
      "region": "A2-E61, Karavanke - Ljubljana"
-    },
-    {
-     "type": "Nesreča",
-     "title": "R1-216, Soteska - Črmošnjice: Nesreča",
-     "detail": "R1-216, Soteska - Črmošnjice, pri Črmošnjicah, prometna nesreča, popolna zapora.",
-     "region": "R1-216, Soteska - Črmošnjice"
     },
     {
      "type": "Delo",
@@ -247,7 +247,7 @@
      "region": "G2-105, Nm  (Krka)"
     }
    ],
-   "fetched": "2026-08-07T23:46+00:00"
+   "fetched": "2026-08-08T02:19+00:00"
   },
   "HR": {
    "name": "Hrvatska",
@@ -258,12 +258,6 @@
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
      "detail": "Izvanredni događaj na autocesti A1 na 238+400 km između tunela Čelinka i PUO Jasenice u smjeru Dubrovnika. Zbog oštećenja odbojne ograde promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A1 između 255+700 km i 255+800 km , između čvora Zadar centar i čvora Zadar istok. Zbog oštećanja odbojne ograde promet se vodi po dvije prometne trake u oba smjera uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
      "region": "A1"
     },
     {
@@ -286,20 +280,14 @@
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme (odbojne ograde) na autocesti A3 na 66+500 km između čvora Ivanić Grad i čvora Križ na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3"
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A1 između 255+700 km i 255+800 km , između čvora Zadar centar i čvora Zadar istok. Zbog oštećanja odbojne ograde promet se vodi po dvije prometne trake u oba smjera uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "region": "A1"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Sredanci i čvora Nova Gradiška, u smjeru Bregane, promet se vodi po dvije prometne trake. Vozi se uz ograničenje 100 km/h. Molimo korisnike za dodatni oprez.",
-     "region": "A3"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Slavonski Brod zapad i čvora Sredanci, u smjeru Lipovca. Promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za dodatni oprez.",
+     "detail": "Veća iznenadna oštećenja cestovnog trupa ili objekta na autocesti A3 na kraku 6 čvora Kosnica na kolniku u smjeru Lipovca. Vozi se uz ograničenje brzine od 60 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -321,27 +309,39 @@
      "region": "A3"
     },
     {
-     "type": "guzva/dogadjaj (Zastoj)",
-     "title": "A3 - Zastoj",
-     "detail": "Kolona osobnih i teretnih vozila na autocesti A3 između 303+500 km i graničnog prijelaza GP Bajakovo na kolniku u smjeru Lipovca, duljine 2 km. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Kolona se povećava. Molimo korisnike za oprez i strpljenje.",
-     "region": "A3"
-    },
-    {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
      "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Veća iznenadna oštećenja cestovnog trupa ili objekta na autocesti A3 na kraku 6 čvora Kosnica na kolniku u smjeru Lipovca. Vozi se uz ograničenje brzine od 60 km/h. Molimo korisnike za oprez.",
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A3 - Zastoj",
+     "detail": "Kolona osobnih i teretnih vozila na autocesti A3 između 302+500 km i graničnog prijelaza GP Bajakovo na kolniku u smjeru Lipovca, duljine 3 km. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Kolona se povećava. Molimo korisnike za oprez i strpljenje.",
      "region": "A3"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
      "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja opreme (odbojne ograde) na autocesti A3 na 66+500 km između čvora Ivanić Grad i čvora Križ na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Sredanci i čvora Nova Gradiška, u smjeru Bregane, promet se vodi po dvije prometne trake. Vozi se uz ograničenje 100 km/h. Molimo korisnike za dodatni oprez.",
+     "region": "A3"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Slavonski Brod zapad i čvora Sredanci, u smjeru Lipovca. Promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za dodatni oprez.",
      "region": "A3"
     },
     {
@@ -495,7 +495,7 @@
      "region": "D2-13"
     }
    ],
-   "fetched": "2026-08-07T23:46+00:00"
+   "fetched": "2026-08-08T02:19+00:00"
   },
   "RS": {
    "name": "Srbija",
@@ -743,7 +743,7 @@
      "region": "Srbija"
     }
    ],
-   "fetched": "2026-08-07T23:46+00:00"
+   "fetched": "2026-08-08T02:19+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -991,12 +991,12 @@
      "region": "Granični prijelazi"
     }
    ],
-   "fetched": "2026-08-07T23:46+00:00"
+   "fetched": "2026-08-08T02:19+00:00"
   },
   "ME": {
    "name": "Crna Gora",
    "source": "AMSCG",
-   "ok": true,
+   "ok": false,
    "items": [
     {
      "type": "stanje",
@@ -1089,6 +1089,8 @@
      "region": "Crna Gora"
     }
    ],
+   "error": "Expecting value: line 1 column 1 (char 0)",
+   "stale": true,
    "fetched": "2026-08-07T23:46+00:00"
   },
   "MK": {
@@ -1175,7 +1177,7 @@
      "region": "Прилеп – Битола"
     }
    ],
-   "fetched": "2026-08-07T23:46+00:00"
+   "fetched": "2026-08-08T02:19+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -1243,7 +1245,7 @@
      "region": "Bërdicës – Ura"
     }
    ],
-   "fetched": "2026-08-07T23:46+00:00"
+   "fetched": "2026-08-08T02:19+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -1573,7 +1575,7 @@
      "region": "Neamt"
     }
    ],
-   "fetched": "2026-08-07T23:46+00:00"
+   "fetched": "2026-08-08T02:19+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -1701,67 +1703,13 @@
      "region": "A1 Maliakos-Kleidi (centralna Grcka)"
     },
     {
-     "type": "closure",
-     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
-     "detail": "Tue, 21 Apr 2026 10:14:33 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό, ότι λόγω Άσκησης Πυρασφάλειας που θα διεξαχθεί εντός της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθεί προσωρινή διακοπή της κυκλοφορίας στην Υποθαλάσσια Σήραγγα Ακτίου – Πρέβεζας επί της Ε.Ο Πρέβεζας – Ηγουμενίτσας, στο οδικό τμήμα α",
-     "region": "A2 Egnatia (severna Grcka)"
-    },
-    {
-     "type": "info",
-     "title": "Νέος φορέας διαχείρισης του αυτοκινητόδρομου της Εγνατίας οδού, από 31/12/2025",
-     "detail": "Wed, 15 Apr 2026 09:02:25 +0000 - Από τις 31/12/2025 η διαχείριση του αυτοκινητοδρόμου της Εγνατίας Οδού Α2 και των Κάθετων Αξόνων Καστοριάς Α29, Ευζώνων Α1 και Σερρών Α25 ΕΧΕΙ ΜΕΤΑΒΙΒΑΣΤΕΙ μέσω σύμβασης παραχώρησης στην εταιρεία «Νέα Εγνατία Οδός Παραχώρηση Α.Ε.» (https://neodos.gr). Συνεπώς για ζη",
-     "region": "A2 Egnatia (severna Grcka)"
-    },
-    {
-     "type": "closure",
-     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
-     "detail": "Mon, 10 Nov 2025 13:33:57 +0000 - Η «ΕΓΝΑΤΙΑ ΟΔΟΣ Α.Ε.» κάνει γνωστό ότι, για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών Δομικής Επιθεώρησης εντός της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρίδας κυκλοφορίας, σύμφωνα με το παρακάτω πρόγραμμα: Δε",
-     "region": "A2 Egnatia (severna Grcka)"
-    },
-    {
-     "type": "closure",
-     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
-     "detail": "Thu, 06 Nov 2025 06:25:36 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό ότι, για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών Συντήρησης Η/Μ εξοπλισμού εντός της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρίδας κυκλοφορίας, σύμφωνα με το παρακάτω πρόγραμ",
-     "region": "A2 Egnatia (severna Grcka)"
-    },
-    {
-     "type": "info",
-     "title": "25 Ιουνίου 2025 Ευρωπαϊκή Ημέρα Ευαισθητοποίησης για τους εργαζόμενους πεδίου των αυτοκινητοδρόμων",
-     "detail": "Tue, 24 Jun 2025 08:54:21 +0000 - Ο αυτοκινητόδρομος της Εγνατίας Οδού και των Κάθετων Αξόνων είναι συνολικού μήκους 900 χιλιομέτρων που διατρέχουν το σύνολο της Βόρειας Ελλάδας εξασφαλίζοντας γρήγορες και ασφαλείς μετακινήσεις. Στον αυτοκινητόδρομο της Εγνατίας Οδού και στους Κάθετους Άξονες δουλεύ",
-     "region": "A2 Egnatia (severna Grcka)"
-    },
-    {
-     "type": "closure",
-     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
-     "detail": "Fri, 06 Jun 2025 04:44:56 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό, ότι για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών εγκατάστασης Σταθμού Βάσης Κινητής Τηλεφωνίας (Victus Networks) για την κάλυψη της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρί",
-     "region": "A2 Egnatia (severna Grcka)"
-    },
-    {
-     "type": "closure",
-     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
-     "detail": "Tue, 27 May 2025 10:57:16 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό, ότι για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών εγκατάστασης Σταθμού Βάσης Κινητής Τηλεφωνίας (Victus Networks) για την κάλυψη της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρί",
-     "region": "A2 Egnatia (severna Grcka)"
-    },
-    {
-     "type": "roadworks",
-     "title": "Εργασίες συντήρησης του οδοστρώματος στην περιοχή του Περιστερίου της ΠΕ Ιωαννίνων",
-     "detail": "Mon, 19 May 2025 08:46:21 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό ότι, για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών συντήρησης του οδοστρώματος στην περιοχή του Περιστερίου της ΠΕ Ιωαννίνων περί την χ.θ. 102+000 του Βορείου Κλάδου (κατεύθυνση προς Ιωάννινα) της Εγνατίας Οδού, θα πραγματοπ",
-     "region": "A2 Egnatia (severna Grcka)"
-    },
-    {
-     "type": "closure",
-     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
-     "detail": "Tue, 01 Apr 2025 10:30:00 +0000 - Η «Εγνατία Οδός ΑΕ» κάνει γνωστό, ότι για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών εγκατάστασης Σταθμού Βάσης Κινητής Τηλεφωνίας Cosmote για την ραδιοκάλυψη της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρίδας κυκ",
-     "region": "A2 Egnatia (severna Grcka)"
-    },
-    {
-     "type": "closure",
-     "title": "Παράδοση στην κυκλοφορία του νότιου κλάδου (κατεύθυνση προς Θεσσαλονίκη) της γέφυρας Αξιού",
-     "detail": "Thu, 20 Mar 2025 09:27:33 +0000 - Η «Εγνατία Οδός ΑΕ» ενημερώνει ότι, τη Δευτέρα 24 Μαρτίου 2025, θα δοθεί σε κυκλοφορία ο νότιος κλάδος της γέφυρας Αξιού, με κατεύθυνση προς Θεσσαλονίκη. Το οδικό τμήμα που παρέμεινε κλειστό λόγω εργασιών αποκατάστασης της γέφυρας, η οποία έχει κατασκευαστεί τη δεκα",
+     "type": "error",
+     "title": "https://egnatia.eu/category/deltia-typou/feed/",
+     "detail": "mismatched tag: line 93, column 2",
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-08-07T23:46+00:00"
+   "fetched": "2026-08-08T02:19+00:00"
   }
  },
  "meteo": {
