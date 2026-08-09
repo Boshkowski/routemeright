@@ -6024,8 +6024,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.28";
+const APP_VERSION = "0.9.29";
 const CHANGELOG = [
+  { v: "0.9.29", d: "09.08.2026.", stavke: [
+    "<b>Trouglić se više ne gubi i ne secka</b> (tvoj nalaz sa vožnje): tri korena popravljena - (1) neispravna vrednost iz iOS GPS-a (brzina ume da bude prazna) je umela da pošalje marker u nepostojanje - sada je sve oklopljeno; (2) van rute se pozicija ekstrapolira brzinom i klizi umesto da skače jednom u sekundi; (3) GPS korekcija se razliva kroz ~trećinu sekunde umesto trzaja na svaki fiks. U mirovanju kamera više ne troši frejmove uzalud (manje seckanja svuda)."
+  ] },
   { v: "0.9.28", d: "09.08.2026.", stavke: [
     "<b>\"Snimi vožnju\" na početnom ekranu</b> (tvoj izbor - opcija A): crveni čip je sada PRVI u redu ispod pretrage; crveni krug na mapi ostaje kao prečica.",
     "<b>Grafik brzine umesto krive nagiba</b> (tvoj nalaz \"neupotrebljivo\"): narandžasta kriva brzine kroz vožnju, beli krug označava najbržu tačku; maksimalan nagib i dalje ima svoj polukrug iznad.",
@@ -7417,24 +7420,49 @@ function startNavCam() {
       if (!c || !c.ts || !route) return;
       const total = RIDE.total || 1;
       const onRoute = c.offM < 40;
-      // dead-reckoning izmedju fikseva: klizi duz rute trenutnom brzinom (marker ne skakuce na 1 Hz)
+      // 9.8. (Boskov nalaz "iseckano + gubi se trouglic"): PRIKAZANA pozicija je glatka velicina koja juri cilj -
+      // GPS korekcija se razliva kroz ~0.3s umesto trzaja na svaki fiks; van rute se sirovi fiks ekstrapolira
+      // brzinom po kursu pa prikaz klizi (nema 1 Hz skokova); SVE prolazi Number.isFinite - jedan NaN iz
+      // iOS GPS-a (speed=null i sl.) je umeo da posalje marker u nepostojanje
+      const spd = Number.isFinite(c.spd) ? Math.max(0, c.spd) : 0;
       const ageS = Math.min(3, (Date.now() - c.ts) / 1000);
-      const sNow = Math.min(total, c.d + (onRoute ? c.spd * ageS : 0));
-      const posM = onRoute ? navPosAlong(route, sNow) : [c.rawLo, c.rawLa];
+      let posM = null;
+      if (onRoute && Number.isFinite(c.d)) {
+        const target = Math.min(total, c.d + spd * ageS);
+        c.dS = !Number.isFinite(c.dS) ? target : c.dS + (target - c.dS) * (1 - Math.exp(-5 * dt));
+        if (Math.abs(target - c.dS) > 120) c.dS = target;   // velika korekcija (reroute/GPS skok): teleport, ne klizanje preko pola grada
+        posM = navPosAlong(route, c.dS);
+      } else if (Number.isFinite(c.rawLo) && Number.isFinite(c.rawLa)) {
+        const brgE = Number.isFinite(c.hdg) ? c.hdg : (Number.isFinite(c.brgS) ? c.brgS : 0);
+        const tgt = navDest(c.rawLo, c.rawLa, brgE, spd * ageS);   // ekstrapolacija sirove pozicije po kursu
+        const k = 1 - Math.exp(-5 * dt);
+        c.pS = (!c.pS || !Number.isFinite(c.pS[0])) ? tgt
+             : [c.pS[0] + (tgt[0] - c.pS[0]) * k, c.pS[1] + (tgt[1] - c.pS[1]) * k];
+        if (Math.abs(tgt[0] - c.pS[0]) + Math.abs(tgt[1] - c.pS[1]) > 0.003) c.pS = tgt;   // ~300m raskorak = teleport
+        posM = c.pS;
+      }
+      if (posM && !(Number.isFinite(posM[0]) && Number.isFinite(posM[1]))) posM = null;
       // pravac: GPS kurs kad ima brzine; inace pravac rute (kurs i kompas u mestu divljaju)
-      const hdgT = (c.hdg != null && c.spd > 2.8) ? c.hdg
-                 : (onRoute ? navSegBearing(route, sNow) : (RIDE.compassHdg != null ? RIDE.compassHdg : map.getBearing()));
-      if (c.brgS == null) c.brgS = hdgT;
+      const sRef = Number.isFinite(c.dS) ? c.dS : (Number.isFinite(c.d) ? c.d : 0);
+      let hdgT = (c.hdg != null && spd > 2.8) ? c.hdg
+               : (onRoute ? navSegBearing(route, sRef) : (RIDE.compassHdg != null ? RIDE.compassHdg : map.getBearing()));
+      if (!Number.isFinite(hdgT)) hdgT = Number.isFinite(c.brgS) ? c.brgS : 0;
+      if (!Number.isFinite(c.brgS)) c.brgS = hdgT;
       const db = ((hdgT - c.brgS + 540) % 360) - 180;
       c.brgS = (c.brgS + db * (1 - Math.exp(-3 * dt)) + 360) % 360;
-      const kmh = c.spd * 3.6;   // zum: brzina odredjuje sirinu, blizina skretanja pobedjuje
+      const kmh = spd * 3.6;   // zum: brzina odredjuje sirinu, blizina skretanja pobedjuje
       const zt = Math.max(zoomForSpeed(kmh), c.distTo < 250 ? 17.2 : c.distTo < 700 ? 16.6 : 0);   // pred skretanje blize, ali bez mikroskopa (9.8.)
-      c.zoomS = c.zoomS == null ? zt : c.zoomS + (zt - c.zoomS) * (1 - Math.exp(-1.8 * dt));
+      c.zoomS = !Number.isFinite(c.zoomS) ? zt : c.zoomS + (zt - c.zoomS) * (1 - Math.exp(-1.8 * dt));
       if (posM && RIDE.marker) { RIDE.marker.setLngLat(posM); RIDE.marker.setRotation(c.brgS); }
       if (Date.now() > (RIDE.freeCamUntil || 0)) {
-        if (RIDE.freeCamUntil) { RIDE.freeCamUntil = 0; const g = document.querySelector('[data-fab="gps"].recenter'); if (g) g.classList.remove("recenter"); }
-        if (posM) map.jumpTo({ center: navDest(posM[0], posM[1], c.brgS, navAheadM(c.zoomS, posM[1])),
-          bearing: c.brgS, pitch: NAV_PITCH, zoom: c.zoomS, padding: navCamPadding() });   // padding u SVAKOM pozivu - lepljiv padding je 5.8. vratio vozaca na sredinu ekrana
+        if (RIDE.freeCamUntil) { RIDE.freeCamUntil = 0; c._parked = false; const g = document.querySelector('[data-fab="gps"].recenter'); if (g) g.classList.remove("recenter"); }
+        // mirovanje: kad se nista ne pomera, ne pucaj jumpTo 30x/s (WKWebView frame budzet - manje seckanja svuda)
+        const still = spd < 0.3 && Math.abs(db) < 0.15 && Math.abs(zt - c.zoomS) < 0.02;
+        if (posM && (!still || !c._parked)) {
+          map.jumpTo({ center: navDest(posM[0], posM[1], c.brgS, navAheadM(c.zoomS, posM[1])),
+            bearing: c.brgS, pitch: NAV_PITCH, zoom: c.zoomS, padding: navCamPadding() });   // padding u SVAKOM pozivu - lepljiv padding je 5.8. vratio vozaca na sredinu ekrana
+          c._parked = still;
+        }
       }
     } catch (e) {}
   };
