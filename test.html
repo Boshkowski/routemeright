@@ -530,6 +530,8 @@
     #homeChips .chip { white-space: nowrap; display: flex; align-items: center; gap: 7px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.2); border-radius: 999px; padding: 12px 15px; min-height: 44px; color: #e2e8f0; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.3); }
     #homeChips .chip svg { width: 16px; height: 16px; stroke: #f97316; fill: none; }
     #homeChips .chip.on { background: #f97316; border-color: #f97316; color: #fff; }
+    #homeChips .chip.rec { border-color: rgba(239,68,68,.5); }
+    #homeChips .chip.rec svg { stroke: #ef4444; }
     #homeChips .chip.on svg { stroke: #fff; }
 
     #homeFabs { display: flex; position: fixed; right: 14px; top: calc(122px + env(safe-area-inset-top)); z-index: 12; flex-direction: column; gap: 10px; }
@@ -1090,6 +1092,10 @@
   #rideSum .rskol { margin: 12px 20px 0; background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.14);
     border-radius: 14px; padding: 10px 14px; font-size: 13px; color: #cbd5e1; font-weight: 600; line-height: 1.5; }
   #rideSum .rskol b { color: #f8fafc; }
+  /* prevlacenje nadole spusta sazetak (9.8.) - grabber i naslov su rucke, sadrzaj ispod normalno skroluje */
+  #rideSum .card { transition: transform 240ms var(--ease); }
+  #rideSum .card.dragging { transition: none; }
+  #rideSum .grab, #rideSum #rsKick { touch-action: none; cursor: grab; }
   #rideSum .rsxtra { display: flex; gap: 10px; margin-top: 10px; padding: 0 20px; }
   #rideSum .rsxtra button { flex: 1; height: 40px; border-radius: 11px; background: transparent; color: #cbd5e1;
     border: 1px solid rgba(148,163,184,.3); font: 700 13px Archivo, sans-serif; cursor: pointer; }
@@ -1542,6 +1548,8 @@
       <span class="av">B</span>
     </div>
     <div id="homeChips">
+      <!-- Opcija A (Boskov izbor 9.8.): snimanje voznje = prvi cip, crveni akcenat; FAB na mapi ostaje kao precica -->
+      <button class="chip rec" data-chip="snimi"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4" fill="#ef4444" stroke="none"/></svg>Snimi vožnju</button>
       <button class="chip" data-chip="mkafana"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 8h13v5a5 5 0 01-5 5H9a5 5 0 01-5-5zM17 9h2a2 2 0 010 4h-2M6 2v2M10 2v2M14 2v2"/></svg>Kafane</button>
       <button class="chip" data-chip="mvidikovac"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 20l6-11 4 7 3-4 5 8z"/><circle cx="17.5" cy="6" r="2.5"/></svg>Vidikovci</button>
       <button class="chip" data-chip="lrute"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Legendarne rute</button>
@@ -5139,7 +5147,9 @@ function zabeleziVoznju() {
     v.unshift({ ts: Date.now(), naz, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
       kriv, maxK, avgK, lnL, lnR, lnChk, pauz,
       // mali trag (~150 tacaka, ~4KB) i u dnevnik - da sacuvana voznja iz profila ima mapu kao svez sazetak (Boskov nalaz 7.8.)
-      trag: trag ? trag.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 150)) === 0 || i === a.length - 1).map((p) => [+p[0].toFixed(5), +p[1].toFixed(5)]) : undefined });
+      trag: trag ? trag.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 150)) === 0 || i === a.length - 1).map((p) => [+p[0].toFixed(5), +p[1].toFixed(5)]) : undefined,
+      // kompaktni uzorci (~120 tacaka, ~1.5KB) - da i sacuvana voznja ima grafik brzine (Boskov nalaz 9.8.: "kad udjem u voznje, ne vidim ga")
+      smp: smp ? smp.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 120)) === 0 || i === a.length - 1).map((x) => ({ t: x.t, v: x.v, ln: x.ln })) : undefined });
     _zajPisi("mr_voznje", v.slice(0, 20));
     poeniDodaj(poeni);
     const ag = _zajCitaj("mr_poeni", { ukupno: 0, nedelje: {} });   // dozivotni agregat (lista se sece na 20)
@@ -6014,8 +6024,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.27";
+const APP_VERSION = "0.9.28";
 const CHANGELOG = [
+  { v: "0.9.28", d: "09.08.2026.", stavke: [
+    "<b>\"Snimi vožnju\" na početnom ekranu</b> (tvoj izbor - opcija A): crveni čip je sada PRVI u redu ispod pretrage; crveni krug na mapi ostaje kao prečica.",
+    "<b>Grafik brzine umesto krive nagiba</b> (tvoj nalaz \"neupotrebljivo\"): narandžasta kriva brzine kroz vožnju, beli krug označava najbržu tačku; maksimalan nagib i dalje ima svoj polukrug iznad.",
+    "<b>Grafik sada i u sačuvanim vožnjama</b>: dnevnik od sada čuva i kompaktne uzorke brzine (~1.5KB), pa vožnja otvorena iz profila ima isti grafik kao svež sažetak (stare vožnje bez uzoraka ostaju bez njega).",
+    "<b>Sažetak se spušta prevlačenjem</b> (tvoj nalaz): povuci ručicu ili naslov nadole i kartica ode; Zatvori i dalje radi isto."
+  ] },
   { v: "0.9.27", d: "09.08.2026.", stavke: [
     "<b>\"Zatim\" najava kao Google</b> (tvoj zahtev): kad je skretanje blizu, ispod glavnog banera visi zeleni čip sa PRAVOM strelicom sledećeg manevra - znaš šta dolazi posle ovog skretanja i pre nego što ga prođeš.",
     "<b>Kraj slobodne vožnje sređen</b> (tvoj nalaz): u snimanju bez rute donja traka sada ima crveno dugme <b>Završi</b> (prvi tap pita \"Završi?\", drugi gasi - zbog rukavica); \"Druga ruta\" se u slobodnoj vožnji ne prikazuje jer rute nema. X gore i dalje radi isto."
@@ -6444,6 +6460,7 @@ function init() {
   document.querySelectorAll("#homeChips .chip").forEach((c) => {
     c.addEventListener("click", () => {
       const chip = c.dataset.chip;
+      if (chip === "snimi") { try { startFreeRide(); } catch (e) {} return; }   // Opcija A (9.8.)
       const ruteTab = document.querySelector('#bottomnav a[data-tab="rute"]');
       if (ruteTab) ruteTab.click();
       if (chip === "lrute") { const rb2 = document.querySelector('#ruteSeg [data-seg="rute"]'); if (rb2) rb2.click(); return; }
@@ -8028,6 +8045,26 @@ function rsSparkSvg(smp) {   // kriva nagiba kroz voznju: desno iznad ose narand
     `<polyline points="${pD}" fill="none" stroke="#f97316" stroke-width="2" stroke-linejoin="round"/>` +
     `<polyline points="${pL}" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round"/></svg>`;
 }
+function rsBrzSvg(smp) {   // 9.8. (Boskov nalaz: kriva nagiba neupotrebljiva) - BRZINA kroz voznju, citljiva na prvi pogled
+  const W = 320, H = 84;
+  const vs = smp.map((s) => Math.max(0, s.v || 0));
+  const vMax = Math.max(10, ...vs);
+  const X = (i) => 4 + (i / Math.max(1, vs.length - 1)) * (W - 8);
+  const Y = (v) => 16 + (1 - v / vMax) * (H - 34);
+  const pts = vs.map((v, i) => X(i).toFixed(1) + "," + Y(v).toFixed(1)).join(" ");
+  const area = `4,${H - 18} ` + pts + ` ${W - 4},${H - 18}`;
+  let mi = 0; vs.forEach((v, i) => { if (v > vs[mi]) mi = i; });
+  const mx = X(mi), my = Y(vs[mi]);
+  const trajMin = Math.max(1, Math.round(((smp[smp.length - 1].t || 0) - (smp[0].t || 0)) / 60));
+  return `<svg viewBox="0 0 ${W} ${H}">` +
+    `<polygon points="${area}" fill="rgba(249,115,22,.13)"/>` +
+    `<line x1="4" y1="${H - 18}" x2="${W - 4}" y2="${H - 18}" stroke="rgba(148,163,184,.25)" stroke-width="1"/>` +
+    `<polyline points="${pts}" fill="none" stroke="#f97316" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` +
+    `<circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="3.4" fill="#fff" stroke="#f97316" stroke-width="2"/>` +
+    `<text x="${Math.min(W - 62, Math.max(6, mx - 28)).toFixed(0)}" y="${(my - 8 < 12 ? my + 16 : my - 8).toFixed(0)}" fill="#fff" font-size="11" font-weight="800">${Math.round(vs[mi])} km/h</text>` +
+    `<text x="4" y="${H - 5}" fill="#94a3b8" font-size="9" font-weight="700">start</text>` +
+    `<text x="${W - 4}" y="${H - 5}" fill="#94a3b8" font-size="9" font-weight="700" text-anchor="end">${trajMin} min</text></svg>`;
+}
 function best3km(pts) {   // najvijugavija ~3 km deonica traga (gustina skretanja po km); null za kratke/prave voznje
   if (!pts || pts.length < 12) return null;
   const brg = (a, b) => { const dl = (b[0] - a[0]) * Math.PI / 180, f1 = a[1] * Math.PI / 180, f2 = b[1] * Math.PI / 180;
@@ -8191,11 +8228,11 @@ function rideSumShow(sIn) {
         '<div class="gl">maksimalan održani nagib</div>';
     } else ga.hidden = true;
   }
-  const sp = document.getElementById("rsSpark");   // kriva nagiba kroz voznju (v3)
+  const sp = document.getElementById("rsSpark");   // 9.8.: BRZINA kroz voznju (kriva nagiba penzionisana - "neupotrebljiva", Bosko)
   if (sp) {
-    if (s.smp && s.smp.length > 5 && s.smp.some((x) => x.ln != null)) {
+    if (s.smp && s.smp.length > 5 && s.smp.some((x) => (x.v || 0) > 0)) {
       sp.hidden = false;
-      sp.innerHTML = rsSparkSvg(s.smp) + '<div class="gl">nagib kroz vožnju · levo plavo, desno narandžasto</div>';
+      sp.innerHTML = rsBrzSvg(s.smp) + '<div class="gl">brzina kroz vožnju · beli krug = najbrža tačka</div>';
     } else sp.hidden = true;
   }
   const rk = document.getElementById("rsRek");   // licni rekord (samo sveza voznja, samo sopstvena istorija)
@@ -8735,7 +8772,19 @@ async function shareRideCard(s) {
 (function () {
   const el = document.getElementById("rideSum");
   if (!el) return;
-  document.getElementById("rsClose").addEventListener("click", () => { el.classList.remove("on"); try { sumTragSkini(); } catch (e) {} });
+  const zatvoriSum = () => { el.classList.remove("on"); try { sumTragSkini(); } catch (e) {} const cd0 = el.querySelector(".card"); if (cd0) cd0.style.transform = ""; };
+  document.getElementById("rsClose").addEventListener("click", zatvoriSum);
+  {   // prevlacenje nadole = spustanje sazetka (Boskov nalaz 9.8.: grabber je "stajao zakljucan")
+    const cd = el.querySelector(".card");
+    let dg = null;
+    const start = (e) => { dg = { y0: e.clientY, moved: 0 }; cd.classList.add("dragging"); try { e.target.setPointerCapture(e.pointerId); } catch (er) {} };
+    const move = (e) => { if (!dg) return; const dy = Math.max(0, e.clientY - dg.y0); dg.moved = dy; cd.style.transform = dy ? "translateY(" + dy + "px)" : ""; };
+    const end = () => { if (!dg) return; const dy = dg.moved; dg = null; cd.classList.remove("dragging"); if (dy > 130) zatvoriSum(); else cd.style.transform = ""; };
+    [el.querySelector(".grab"), document.getElementById("rsKick")].forEach((z) => { if (!z) return;
+      z.addEventListener("pointerdown", start); z.addEventListener("pointermove", move);
+      z.addEventListener("pointerup", end); z.addEventListener("pointercancel", end);
+    });
+  }
   const gx = document.getElementById("rsGpx");
   if (gx) gx.addEventListener("click", () => { if (el._sum) vozGpx(el._sum); });
   const rt = document.getElementById("rsRuta");
