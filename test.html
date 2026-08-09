@@ -2432,6 +2432,26 @@ async function geoPhotonRaw(q, n) {   // Photon (komoot): fuzzy POI pretraga - n
   } catch (e) { return []; }
 }
 async function geoPhoton(q) { const r = await geoPhotonRaw(q, 1); return r.length ? { lat: r[0].lat, lon: r[0].lon, name: r[0].name } : null; }
+async function geoPhotonSugg(q, n) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SIRE klase - mesta, ulice, adrese, POI.
+  const ref = geoRef();                //  Ovde covek BIRA OCIMA iz liste (sub red nosi grad+daljinu), pa fuzzy promasaj ne odvede nikud;
+  const bias = ref && ref.lat != null ? `&lat=${ref.lat.toFixed(4)}&lon=${ref.lon.toFixed(4)}` : "";   //  auto-izbor i dalje ide SAMO kroz Enter kaskadu sa svojim cuvarima.
+  try {
+    const j = await fetchJSON(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}${bias}&zoom=11&location_bias_scale=0.5&limit=10&lang=default`, { timeoutMs: 6000, retries: 0 });
+    const cand = ((j && j.features) || [])
+      .map((f) => ({ p: f.properties || {}, c: (f.geometry || {}).coordinates || [] }))
+      .filter((x) => x.c.length === 2 && (x.p.name || x.p.street));
+    const lat0 = (s) => /[Ѐ-ӿ]/.test(s || "") ? cyr2lat(s) : (s || "");
+    const scored = cand.map((x) => {
+      const base = x.p.name || [x.p.street, x.p.housenumber].filter(Boolean).join(" ");
+      const nm = lat0(base) + (x.p.name && x.p.housenumber ? " " + x.p.housenumber : "");
+      return { name: nm, lat: x.c[1], lon: x.c[0],
+        sub: [lat0(x.p.city || x.p.county), lat0(x.p.country)].filter(Boolean).join(", "),
+        d: ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null };
+    }).filter((x) => x.name && (x.d == null || x.d < 300));   // drugi kraj sveta se ne nudi ni u listi
+    scored.sort((a, b) => (a.d == null ? 9e9 : a.d) - (b.d == null ? 9e9 : b.d));
+    return scored.slice(0, n || 6);
+  } catch (e) { return []; }
+}
 const TT_KEY = "VfscYxmsXo35nz1UOf200QmtgzkWsZ6E";   // TomTom Fuzzy Search - Boskov kljuc (poslat 18.7., identifikovan i verifikovan 7.8.); free ~2.5k/mes pa se zove SAMO u Enter-kaskadi, nikad iz sugestija
 async function geoTomTom(q) {   // komercijalna POI baza + jake adrese; cuvar: POI mora da deli rec sa upitom (fuzzy ume "Nike" za "Motor Bike Shop")
   const ref = geoRef();
@@ -2597,7 +2617,8 @@ function tripToRoute(trip, label) {
     maneuvers: mans };   // TBT: instrukcije skretanja (begin_shape_index -> coords indeks)
 }
 async function valhallaRoute(from, to, style, netOpts) {
-  const vias = (state.vias || []).map((it) => ({ lat: it.v[1], lon: it.v[0], type: it.t === "stop" ? "break" : "through" }));
+  const vias = (netOpts && netOpts.noVias) ? []
+    : (state.vias || []).map((it) => ({ lat: it.v[1], lon: it.v[0], type: it.t === "stop" ? "break" : "through" }));
   const locations = [{ lat: from.lat, lon: from.lon }, ...vias, { lat: to.lat, lon: to.lon }];
   // povratno: krug se zatvara na loopFrom (pravi dom) ako je zadat - reroute salje trenutnu poziciju kao from,
   // pa bi bez ovoga "povratak kuci" postao povratak na mesto skretanja s rute (review nalaz 6.8.)
@@ -2615,13 +2636,93 @@ async function valhallaRoute(from, to, style, netOpts) {
   const j = await fetchJSON("https://valhalla1.openstreetmap.de/route", { method: "POST", body: JSON.stringify(body),
     timeoutMs: (netOpts && netOpts.timeoutMs) || 14000, retries: (netOpts && netOpts.retries) || 0 });   // reroute u voznji trazi krace cekanje + retry
   if (!j.trip || !j.trip.legs || !j.trip.legs.length) throw new Error("Valhalla: nema rute");
-  return tripToRoute(j.trip, style.label);
+  const r = tripToRoute(j.trip, style.label);
+  if (netOpts && netOpts.keepTrip) r._trip = j.trip;   // pametan grad: sirovi legovi za sivenje sinteticke rute
+  return r;
+}
+/* ---- pametan grad (Boskov zakon 9.8.): iz grada NAJBRZE do oboda, vijuganje TEK OD OBODA;
+   u grad NAJBRZE od oboda do cilja; cela gradska relacija = najbrza, bez vijuganja ---- */
+function gradIzlaz(route) {   // prvi manevar od kog prozor >=1.5 km drzi prosek >=52 km/h = kraj gradskog tkiva
+  const mans = route.maneuvers || [];
+  let acc = 0;
+  for (let i = 0; i < mans.length; i++) {
+    let d = 0, t = 0;
+    for (let k = i; k < mans.length && d < 2; k++) { d += mans[k].length || 0; t += mans[k].time || 0; }
+    if (d >= 1.5 && t > 0 && d / (t / 3600) >= 52) return { coordIdx: mans[i].begin_shape_index, kmOd: acc };
+    acc += mans[i].length || 0;
+  }
+  return null;
+}
+function gradUlaz(route) {   // isto, gledano od CILJA unazad
+  const mans = route.maneuvers || [];
+  const total = mans.reduce((a, m) => a + (m.length || 0), 0);
+  let accEnd = 0;
+  for (let i = mans.length - 1; i >= 0; i--) {
+    let d = 0, t = 0;
+    for (let k = i; k >= 0 && d < 2; k--) { d += mans[k].length || 0; t += mans[k].time || 0; }
+    if (d >= 1.5 && t > 0 && d / (t / 3600) >= 52) return { coordIdx: mans[Math.min(i + 1, mans.length - 1)].begin_shape_index, kmDo: accEnd };
+    accEnd += mans[i].length || 0;
+  }
+  return null;
+}
+function spojiTripove(trips) {   // legovi vise tripova u jedan; fantomski start/arrive manevri na savovima se skidaju
+  const legs = [];
+  trips.forEach((tp, ti) => {
+    (tp.legs || []).forEach((leg, li) => {
+      const l = { ...leg, maneuvers: (leg.maneuvers || []).slice() };
+      if (ti > 0 && li === 0 && l.maneuvers.length && l.maneuvers[0].type >= 1 && l.maneuvers[0].type <= 3) l.maneuvers.shift();
+      if (ti < trips.length - 1 && li === (tp.legs.length - 1) && l.maneuvers.length) {
+        const zad = l.maneuvers[l.maneuvers.length - 1];
+        if (zad.type >= 4 && zad.type <= 6) l.maneuvers.pop();
+      }
+      legs.push(l);
+    });
+  });
+  const s = trips.reduce((a, tp) => ({ length: a.length + ((tp.summary && tp.summary.length) || 0),
+    time: a.time + ((tp.summary && tp.summary.time) || 0),
+    has_highway: a.has_highway || !!(tp.summary && tp.summary.has_highway) }), { length: 0, time: 0, has_highway: false });
+  return { legs, summary: s };
 }
 async function fetchRoutes(from, to) {
   try {
-    const all = await Promise.all(ROUTE_STYLES.map((s) => valhallaRoute(from, to, s)));
-    for (const r of all) if (r.label && r.label.includes("autoput") && !r.hasHighway) r.label = "Najbrža";   // ne laze: nema autoputa na ovoj ruti
+    state._gradska = false;
+    // FAZA A: najbrza + balans odmah (2 poziva) - najbrza je i "sonda" za granice grada
+    const [brza, balans] = await Promise.all([
+      valhallaRoute(from, to, ROUTE_STYLES[3], { keepTrip: true }),
+      valhallaRoute(from, to, ROUTE_STYLES[2]),
+    ]);
     state.engine = "valhalla";
+    // FAZA B (pametan grad, 9.8.): granice gradskog tkiva iz najbrze rute
+    const iz = gradIzlaz(brza), ul = gradUlaz(brza);
+    const kmTot = brza.totalDist / 1000;
+    const urbStart = !!(iz && iz.kmOd > 1.2), urbEnd = !!(ul && ul.kmDo > 1.2);
+    const cistoZaSivenje = !(state.vias && state.vias.length) && !isRoundTrip();   // stanice/povratno zadrzavaju stari tok (v1)
+    let vijugave = [];
+    if (!iz || (urbStart && urbEnd && iz.kmOd + ul.kmDo > kmTot - 3)) {
+      // nigde otvorenog puta (ili se gradski krajevi preklapaju) = CELA relacija je gradska: vijuganje NEMA SMISLA
+      state._gradska = true;
+    } else if (cistoZaSivenje && (urbStart || urbEnd)) {
+      // sinteticka "Ekstra vijugava": najbrze do oboda + vijugavo izmedju + najbrze od oboda do cilja
+      try {
+        const izl = urbStart ? { lat: brza.coords[iz.coordIdx][1], lon: brza.coords[iz.coordIdx][0] } : from;
+        const ula = urbEnd ? { lat: brza.coords[ul.coordIdx][1], lon: brza.coords[ul.coordIdx][0] } : to;
+        const seg = { noVias: true, noLoop: true, keepTrip: true };
+        const [gl, sred, rep] = await Promise.all([
+          urbStart ? valhallaRoute(from, izl, ROUTE_STYLES[3], seg) : null,
+          valhallaRoute(izl, ula, ROUTE_STYLES[0], seg),
+          urbEnd ? valhallaRoute(ula, to, ROUTE_STYLES[3], seg) : null,
+        ]);
+        const synth = spojiTripove([gl && gl._trip, sred._trip, rep && rep._trip].filter(Boolean));
+        const pametna = tripToRoute(synth, "Ekstra vijugava · grad najbrže, obod vijugavo");
+        vijugave = [pametna];
+      } catch (e) {   // sivenje palo (mreza/kvota): posten fallback na pun stari tok
+        vijugave = await Promise.all([ROUTE_STYLES[0], ROUTE_STYLES[1]].map((s) => valhallaRoute(from, to, s)));
+      }
+    } else if (!state._gradska) {
+      vijugave = await Promise.all([ROUTE_STYLES[0], ROUTE_STYLES[1]].map((s) => valhallaRoute(from, to, s)));
+    }
+    const all = [...vijugave, balans, brza];
+    for (const r of all) if (r.label && r.label.includes("autoput") && !r.hasHighway) r.label = "Najbrža";   // ne laze: nema autoputa na ovoj ruti
     // isti put pod dva stila - zadrži prvi, ali NE gutaj "Najbrža · autoput" labelu
     // (ako se najbrža poklopi sa Balans, korisnik mora da vidi da autoput opcija postoji)
     const uniq = [];
@@ -2633,6 +2734,16 @@ async function fetchRoutes(from, to) {
     const _minT = Math.min(...uniq.map((r) => r.totalDur));   // "Najbrža" sme da pise samo ako je STVARNO najbrža (autoput ume da bude duži I sporiji)
     for (const r of uniq) if (r.label && r.label.startsWith("Najbrža") && r.totalDur > _minT * 1.03)
       r.label = r.hasHighway ? "Autoput" : "Alternativa";
+    // pametna se stopila sa najbrzom (ravnica bez vijugave alternative na obodu): ponudi PUN "predeli" stil
+    // kao dodatni IZBOR na kraju liste - vozac bira svesno, preporuka ostaje brza/pametna (Boskov zakon 9.8.)
+    if (!state._gradska && !uniq.some((r) => r.label && r.label.startsWith("Ekstra"))) {
+      try {
+        await new Promise((rs) => setTimeout(rs, 700));   // predah: 6. poziv u salvi ume da udari u FOSSGIS limit
+        const pun = await valhallaRoute(from, to, ROUTE_STYLES[0], { retries: 1 });
+        pun.label = "Predeli · ceo put vijugavo";
+        if (!uniq.some((u) => Math.abs(u.totalDist - pun.totalDist) < 500 && Math.abs(u.totalDur - pun.totalDur) < 60)) uniq.push(pun);
+      } catch (e) {}
+    }
     return uniq;
   } catch (e) {
     state.engine = "osrm";
@@ -5790,8 +5901,10 @@ async function plan() {
     }
     state.routes.forEach((r) => { r.assess = assessRoute(r, departure); });
 
-    // preporuka: moto stil = vijugava; kod OSRM fallback-a najmirnija pa najbrža
-    state.recommended = state.engine === "valhalla" ? 0 : state.routes
+    // preporuka: moto stil = vijugava; GRADSKA relacija = najbrza (Boskov zakon 9.8.); OSRM fallback najmirnija pa najbrza
+    state.recommended = state._gradska
+      ? state.routes.reduce((bi, r, i, a) => (r.totalDur < a[bi].totalDur ? i : bi), 0)
+      : state.engine === "valhalla" ? 0 : state.routes
       .map((r, i) => ({ i, w: Math.max(...r.assess.map((a) => a.level)), d: r.totalDur }))
       .sort((a, b) => a.w - b.w || a.d - b.d)[0].i;
     state.selected = state.recommended;
@@ -6024,8 +6137,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.29";
+const APP_VERSION = "0.9.30";
 const CHANGELOG = [
+  { v: "0.9.30", d: "09.08.2026.", stavke: [
+    "<b>Pretraga Faza 1 - biraš, ne kucaš do kraja</b> (tvoj prioritet): predlozi stižu DOK kucaš (od 3. slova, bez čekanja u redu), rangirani po daljini sa \"~X km\" oznakom; tvoje nedavne destinacije se mešaju u rezultate od prvog slova; adrese, ulice i mesta sada ulaze u predloge (ranije samo radnje i kafići). Spori servis je izbačen iz kucanja pa lista ne kasni sekundama.",
+    "<b>Gradska logika rutiranja</b> (tvoj zakon): iz grada se izlazi NAJBRŽE do oboda, vijuganje počinje tek od oboda; u grad se ulazi najbrže od oboda do cilja; relacija cela u gradu = najbrža ruta, bez vijuganja. Kad na obodu nema prave vijugave alternative, rute se pošteno stope u jednu; \"Predeli · ceo put vijugavo\" ostaje kao svesni izbor kad se stvarno razlikuje. Napomena: planiranje sada ume da traje sekund-dva duže (prvo se sondira granica grada)."
+  ] },
   { v: "0.9.29", d: "09.08.2026.", stavke: [
     "<b>Trouglić se više ne gubi i ne secka</b> (tvoj nalaz sa vožnje): tri korena popravljena - (1) neispravna vrednost iz iOS GPS-a (brzina ume da bude prazna) je umela da pošalje marker u nepostojanje - sada je sve oklopljeno; (2) van rute se pozicija ekstrapolira brzinom i klizi umesto da skače jednom u sekundi; (3) GPS korekcija se razliva kroz ~trećinu sekunde umesto trzaja na svaki fiks. U mirovanju kamera više ne troši frejmove uzalud (manje seckanja svuda)."
   ] },
@@ -6582,34 +6699,35 @@ function searchIndex() {   // nasa baza: mesta zajednice + poznate rute + gradov
   return out;
 }
 let _netSuggT = null, _netSuggSeq = 0;
-function scheduleNetSugg(q) {   // mrezni predlozi dok kucas - kroz geoNet red + Photon fuzzy paralelno (drugi host)
+function scheduleNetSugg(q) {   // FAZA 1 typeahead (9.8., Google princip "biras, ne kucas do kraja"):
+  // Photon DIREKTNO (ne kroz GEONET red - on je za Nominatim politiku), 3+ slova, 280ms debounce,
+  // rangirano po vazdusnoj daljini sa "~X km" u redu; Nominatim IZBACEN iz kucanja (bio je izvor
+  // kasnjenja od 1.5-3s i 429 salvi) - on ziv samo u Enter kaskadi.
   clearTimeout(_netSuggT);
   const seq = ++_netSuggSeq;
-  if (!q || q.length < 4) return;   // 3->4 slova + duzi debounce: manje salvi ka Nominatimu (429 lekcija 6.8.)
+  const sugg0 = document.getElementById("sSugg");
+  if (!q || q.length < 3) { if (sugg0) sugg0.querySelectorAll("[data-net]").forEach((r) => r.remove()); return; }
   _netSuggT = setTimeout(async () => {
     try {
-      const [j, phList] = await Promise.all([
-        geoQuery(q).catch(() => null),
-        /\d/.test(q) ? Promise.resolve([]) : geoPhotonRaw(q, 3)
-      ]);
+      const ph = await geoPhotonSugg(q, 6);
       if (seq !== _netSuggSeq) return;   // korisnik je odkucao dalje
       const sugg = document.getElementById("sSugg");
       if (!sugg || sugg._q !== q) return;
       const seen = new Set((sugg._hits || []).map((h) => SFOLD(h.n)));
-      const net = (j || []).map((x) => ({ n: geoName(x, q), lat: +x.lat, lon: +x.lon,
-        sub: (x.display_name || "").split(",").slice(1, 3).join(",").trim() }))
-        .concat((phList || []).map((p) => ({ n: p.name, lat: p.lat, lon: p.lon, sub: p.sub })))
-        .filter((x) => { if (!x.n || seen.has(SFOLD(x.n))) return false; seen.add(SFOLD(x.n)); return true; })
-        .slice(0, 5);
-      if (!net.length) return;
+      const net = (ph || []).map((p) => ({ n: p.name, lat: p.lat, lon: p.lon,
+          sub: (p.d != null ? "~" + (p.d < 1 ? "manje od 1" : Math.round(p.d)) + " km" + (p.sub ? " · " : "") : "") + (p.sub || "") }))
+        .filter((x) => { const f = SFOLD(x.n); if (!x.n || seen.has(f)) return false; seen.add(f); return true; })
+        .slice(0, 6);
       sugg._net = net;
+      sugg.querySelectorAll("[data-net]").forEach((r) => r.remove());   // svez set, ne lepljenje na staro
+      if (!net.length) return;
       const html = net.map((h, i) =>
         `<div class="srow" data-net="${i}"><span class="sic">${rIco("pin", 18)}</span><div class="st"><b>${esc(h.n)}</b><span>${esc(h.sub)}</span></div></div>`).join("");
       const geoRow = sugg.querySelector("[data-geo]");
       if (geoRow) geoRow.insertAdjacentHTML("beforebegin", html);
       else sugg.insertAdjacentHTML("beforeend", html);
     } catch (e) {}
-  }, 550);
+  }, 280);
 }
 function renderSugg(q) {
   const sugg = document.getElementById("sSugg");
@@ -6619,9 +6737,16 @@ function renderSugg(q) {
     r.style.display = isTyping ? "none" : (r.id === "sMyLoc" && SEARCH_MODE !== "from" ? "none" : "flex"); });
   if (!isTyping) { sugg.innerHTML = ""; updateSearchStatic(); return; }
   const fq = SFOLD(q.trim());
-  const hits = searchIndex().filter((x) => x.f.includes(fq)).slice(0, 8);
+  let hits = searchIndex().filter((x) => x.f.includes(fq)).slice(0, 8);
+  try {   // Faza 1: Nedavno se MESA u rezultate dok kucas (Google princip - istorija je najjaci signal)
+    const rec = (JSON.parse(localStorage.getItem("rmr2_recent") || "[]"))
+      .filter((r) => r.to && SFOLD(r.to).includes(fq)).slice(0, 2)
+      .map((r) => ({ n: r.to, lat: r.tp ? r.tp[0] : null, lon: r.tp ? r.tp[1] : null, sub: "nedavno · iz: " + (r.from || ""), t: "recent" }));
+    const seenR = new Set(rec.map((r) => SFOLD(r.n)));
+    hits = rec.concat(hits.filter((h) => !seenR.has(SFOLD(h.n)))).slice(0, 8);
+  } catch (e) {}
   sugg.innerHTML = hits.map((h, i) =>
-    `<div class="srow" data-hit="${i}"><span class="sic">${SICONS[h.t] || rIco("route", 18)}</span><div class="st"><b>${esc(h.n)}</b><span>${esc(h.sub || "")}</span></div></div>`).join("") +
+    `<div class="srow" data-hit="${i}"><span class="sic">${h.t === "recent" ? rIco("saved", 18) : (SICONS[h.t] || rIco("route", 18))}</span><div class="st"><b>${esc(h.n)}</b><span>${esc(h.sub || "")}</span></div></div>`).join("") +
     `<div class="srow" data-geo="1"><span class="sic">${rIco("route", 18)}</span><div class="st"><b>Traži "${esc(q.trim())}"</b><span>mesta i adrese (OpenStreetMap)</span></div></div>` +
     `<div class="srow" data-pickmap="1"><span class="sic">${rIco("pin", 18)}</span><div class="st"><b>Izaberi na mapi</b><span>drži prst na mapi - "Vodi me ovde"</span></div></div>`;   // nikad corsokak (6.8.)
   sugg._hits = hits; sugg._q = q.trim(); sugg._net = [];
