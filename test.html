@@ -544,8 +544,6 @@
     body.riding #homeFabs button[data-fab="gps"] { bottom: calc(84px + env(safe-area-inset-bottom)); }
     #homeFabs button[data-fab="gps"].recenter { border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,.35), 0 6px 18px rgba(0,0,0,.35); }
     /* Snimi voznju (6.8.): rec dugme iznad GPS FAB-a; nestaje u planiranju i u voznji */
-    #homeFabs button[data-fab="rec"] { position: fixed; right: 14px; top: auto; bottom: calc(138px + env(safe-area-inset-bottom)); z-index: 12; }
-    body.planning:not(.riding) #homeFabs button[data-fab="rec"], body.riding #homeFabs button[data-fab="rec"] { display: none; }
     #ridePause.on { border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,.35); }
     body.ridepaused #rideBar .navcard { opacity: .65; }
 
@@ -1188,6 +1186,7 @@
     #peekBar { position: static; margin: 0 -14px 6px; padding: 8px 14px; }
     #peekBar .grabber { width: 4.5px; height: 34px; margin: 0 0 0 auto; }   /* handle uspravan: sheet se povlaci U STRANU */
     #resCta { margin: 10px -14px 0; padding: 10px 14px calc(8px + var(--sb)); }   /* landscape: stub drzi dno ekrana pa traka nosi safe-area */
+    body.qplan.planning #panel { padding-bottom: 0; }   /* dok je usidren i u landscape-u - bez 10px gepa ispod (QA 9.8.) */
     body.qplan.planning:not(.qdetails) #resHero .rslide { height: 176px; }
     #resHero .rslide { flex: 0 0 92%; }
 
@@ -1202,7 +1201,6 @@
     #homeChrome { left: calc(var(--rail) + var(--sl)); right: auto; width: min(52vw, 420px); padding: 8px 12px 0 10px; }   /* levo od raila, ne ispod njega */
     #homeFabs { right: calc(14px + var(--sr)); top: 8px; }
     #homeFabs button[data-fab="gps"] { position: fixed; right: calc(14px + var(--sr)); bottom: calc(10px + var(--sb)); top: auto; }
-    #homeFabs button[data-fab="rec"] { position: fixed; right: calc(14px + var(--sr)); bottom: calc(66px + var(--sb)); top: auto; }
     body.riding #homeFabs button[data-fab="gps"] { bottom: calc(78px + var(--sb)); }
     .compass-btn { right: calc(14px + var(--sr)); top: auto; bottom: calc(64px + var(--sb)); }
     body.riding .compass-btn { bottom: calc(132px + var(--sb)); }
@@ -1655,7 +1653,7 @@
     <button data-fab="layers" aria-label="Slojevi"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 2l9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></button>
     <button data-fab="tilt" aria-label="3D nagib"><span style="font:800 13px/1 Archivo,system-ui;color:#e2e8f0">3D</span></button>
     <button data-fab="gps" aria-label="Moja lokacija"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.5" fill="#f97316" stroke="none"/></svg></button>
-    <button data-fab="rec" aria-label="Snimi vožnju"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5" fill="#ef4444" stroke="none"/></svg></button>
+<!-- REC dugme uklonjeno 9.8. (Boskov nalaz): cip "Snimi voznju" ispod pretrage je jedini ulaz - mapa bez viska -->
 
   </div>
 
@@ -6137,8 +6135,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.33";
+const APP_VERSION = "0.9.34";
 const CHANGELOG = [
+  { v: "0.9.34", d: "09.08.2026.", stavke: [
+    "<b>Crveni REC krug sklonjen sa mape</b> (tvoj predlog): \"Snimi vožnju\" čip ispod pretrage je jedini ulaz - mapa ostaje čista, bez dupliranja iste akcije.",
+    "<b>Landscape ispravka</b>: traka Kreni/Čuvaj/Deli je i u položenom telefonu sada usidrena skroz do dna (bio je razmak od 10 px)."
+  ] },
   { v: "0.9.33", d: "09.08.2026.", stavke: [
     "<b>Trag vožnje više ne gubi početak</b> (tvoj nalaz): na dugim turama se trag sekao s POČETKA (zato je 66 km tura na mapi krenula tek od Perleza umesto od zelene tačke) - sada se na dugim vožnjama ceo trag proređuje umesto da se seče, pa mapa uvek pokazuje OD starta DO kraja. Stare vožnje sa odsečenim početkom ostaju takve - taj podatak je bačen pri snimanju.",
     "<b>Čitljivija mapa sažetka</b>: start je sada ZELENA tačka (plavo je rezervisano samo za najvijugavijih 3 km, koja je i podebljana), a ostaci planirane rute (zeleni/crveni pin, ikonice pumpi i kafana) se sklanjaju kad se pokaže svež sažetak - mapa priča samo tvoju vožnju. Oznaka \"plavo na mapi\" se prikazuje samo kad vijugava deonica stvarno postoji."
