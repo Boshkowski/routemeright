@@ -6137,8 +6137,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.31";
+const APP_VERSION = "0.9.32";
 const CHANGELOG = [
+  { v: "0.9.32", d: "09.08.2026.", stavke: [
+    "<b>Pređeni deo rute se boji tačno uz trouglić</b> (tvoj nalaz): granica plavo/narandžasto je kaskala i po nekoliko stotina metara (pomerala se tek na svaki GPS signal, uz prag vezan za dužinu rute) pa je iza tebe stajala narandžasta linija. Sada granica klizi sa strelicom, na 10 metara tačno."
+  ] },
   { v: "0.9.31", d: "09.08.2026.", stavke: [
     "<b>Kanjon samo gde kanjon postoji</b> (tvoj nalaz): najava kolekcije posle vožnje se prikazuje samo kad si geografski u njoj - sledeća tačka na manje od 50 km, ili si na turi već prošao neku tačku kolekcije. Gradska vožnja po Beogradu više ne dobija \"Kanjon Uvca ~158 km odavde\". Samih 5 kanjona u kolekciji su provereni pravi kanjoni (Tara, Morača, Uvac, Piva, Radika) - tu greške nije bilo."
   ] },
@@ -7422,10 +7425,14 @@ function navRideLayersOff() {
     for (const id of ["seg", "seg-casing"]) if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", "visible");
   } catch (e) {}
 }
-function navProgress(p) {   // plavi (predjeni) deo raste - throttle da ne pali repaint na svaki fiks
+function navProgress(p, totalM) {   // plavi (predjeni) deo raste
+  // 9.8. (Boskov nalaz "ostaje narandzasto iza"): prag je bio 0.4% DUZINE RUTE (na 76 km = skok svakih ~300 m)
+  // i vezan za sirovi 1 Hz fiks - granica je kaskala za klizecim trouglicem. Sada: metarski prag (10 m)
+  // + poziv iz rAF petlje sa glatkom prikazanom pozicijom - granica ide zalepljenja uz trouglic.
   try {
     const q = Math.max(0.0001, Math.min(0.9999, p));
-    if (Math.abs(q - (RIDE._prog || 0)) < 0.004) return;
+    const prag = totalM ? Math.max(0.0002, 10 / totalM) : 0.004;
+    if (Math.abs(q - (RIDE._prog || 0)) < prag) return;
     RIDE._prog = q;
     if (map.getLayer("nav-ln")) map.setPaintProperty("nav-ln", "line-gradient",
       ["step", ["line-progress"], "#38bdf8", q, "#f97316"]);
@@ -7570,6 +7577,7 @@ function startNavCam() {
         posM = c.pS;
       }
       if (posM && !(Number.isFinite(posM[0]) && Number.isFinite(posM[1]))) posM = null;
+      if (onRoute && Number.isFinite(c.dS)) try { navProgress(c.dS / total, total); } catch (e) {}   // granica plavo/narandzasto zalepljena uz trouglic (9.8.)
       // pravac: GPS kurs kad ima brzine; inace pravac rute (kurs i kompas u mestu divljaju)
       const sRef = Number.isFinite(c.dS) ? c.dS : (Number.isFinite(c.d) ? c.d : 0);
       let hdgT = (c.hdg != null && spd > 2.8) ? c.hdg
@@ -8046,7 +8054,7 @@ function startRide() {
       if (!RIDE.arrTo) RIDE.arrTo = setTimeout(stopRide, 8000);   // jednom, ne na svaki fiks - stale timeout je ubijao SLEDECU voznju
     }
     // meta traka
-    try { navProgress(d / Math.max(1, total)); } catch (e) {}   // predjeni deo rute plavi
+    try { navProgress(d / Math.max(1, total), total); } catch (e) {}   // predjeni deo rute plavi (fallback; rAF petlja vodi glatku granicu)
     const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total));
     document.getElementById("rideRem").textContent = "još " + (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
     document.getElementById("rideEta").textContent = new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
