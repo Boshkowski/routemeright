@@ -2478,8 +2478,51 @@ function geoLogMiss(q) {   // dnevnik neuspelih pretraga = putokaz sta fali u na
     localStorage.setItem("mr_geo_miss", JSON.stringify(v.slice(0, 100)));
   } catch (e) {}
 }
+/* Koordinate i podeljene lokacije (9.8., Boskov zahtev): WhatsApp/Viber/Google/Apple/OSM link ili gole koordinate.
+   Radi lokalno, bez ijednog servisa - nalepi u pretragu i idemo. Podrzano:
+   "44.7866, 20.4489" | "44.7866 20.4489" | "geo:44.78,20.44" | google maps @lat,lng / ?q= / !3dlat!4dlng
+   | maps.apple.com ?ll= / ?q= | osm.org #map=z/lat/lon | "N 44 47.1 E 20 26.9" (stepeni i minuti) */
+function parseKoord(t) {
+  const txt = String(t || "").trim();
+  if (!txt) return null;
+  const ok = (la, lo) => (Number.isFinite(la) && Number.isFinite(lo) && Math.abs(la) <= 90 && Math.abs(lo) <= 180 && (la !== 0 || lo !== 0))
+    ? { lat: +la, lon: +lo } : null;
+  let m;
+  // 1) link sa parametrom (google q=/ll=, apple ll=/q=, geo:)
+  m = txt.match(/[?&](?:q|ll|daddr|destination|center|mlat)=(-?\d{1,3}(?:\.\d+)?)(?:,|%2C|\s)+(-?\d{1,3}(?:\.\d+)?)/i);   // NE karakter-klasa: [%2C] bi pojela cifru 2 iz "20.44" (uhvaceno u QA 9.8.)
+  if (m) return ok(+m[1], +m[2]);
+  m = txt.match(/geo:\s*(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)/i);
+  if (m) return ok(+m[1], +m[2]);
+  // 2) google maps /@lat,lng,zoom  i  !3dlat!4dlng
+  m = txt.match(/@(-?\d{1,3}(?:\.\d+)?),(-?\d{1,3}(?:\.\d+)?)/);
+  if (m) return ok(+m[1], +m[2]);
+  m = txt.match(/!3d(-?\d{1,3}(?:\.\d+)?)!4d(-?\d{1,3}(?:\.\d+)?)/);
+  if (m) return ok(+m[1], +m[2]);
+  // 3) openstreetmap #map=z/lat/lon
+  m = txt.match(/#map=\d+(?:\.\d+)?\/(-?\d{1,3}(?:\.\d+)?)\/(-?\d{1,3}(?:\.\d+)?)/);
+  if (m) return ok(+m[1], +m[2]);
+  // 4) stepeni i minuti: N 44 47.166 E 20 26.934  (i sa " ' znacima)
+  m = txt.match(/([NSns])\s*(\d{1,3})[°\s]+(\d{1,2}(?:[.,]\d+)?)['\s]*[,;\s]+([EWew])\s*(\d{1,3})[°\s]+(\d{1,2}(?:[.,]\d+)?)/);
+  if (m) {
+    const la = (+m[2] + parseFloat(String(m[3]).replace(",", ".")) / 60) * (/[sS]/.test(m[1]) ? -1 : 1);
+    const lo = (+m[5] + parseFloat(String(m[6]).replace(",", ".")) / 60) * (/[wW]/.test(m[4]) ? -1 : 1);
+    return ok(la, lo);
+  }
+  // 5) gole koordinate: "44.7866, 20.4489" ili sa razmakom; ceo upit mora da bude to (da "20 km" ne prodje)
+  m = txt.match(/^(-?\d{1,2}(?:[.,]\d{3,})?)\s*[,;]?\s+?(-?\d{1,3}(?:[.,]\d{3,})?)$/) ||
+      txt.match(/^(-?\d{1,2}[.,]\d{3,})\s*,\s*(-?\d{1,3}[.,]\d{3,})$/);
+  if (m) return ok(parseFloat(String(m[1]).replace(",", ".")), parseFloat(String(m[2]).replace(",", ".")));
+  return null;
+}
+function koordIme(k) { return "Tačka " + k.lat.toFixed(4) + ", " + k.lon.toFixed(4); }
 async function geocode(q) {
   const qq = (q || "").trim();
+  const kk = parseKoord(qq);   // koordinate/deljeni link idu pravo na mapu - bez ijednog geokodera
+  if (kk) {
+    let nm = null;
+    try { nm = await reverseName(kk.lat, kk.lon, 16); } catch (e) {}
+    return { lat: kk.lat, lon: kk.lon, name: nm || koordIme(kk) };
+  }
   if (/^moja lokacija/i.test(qq)) {   // odbrana u dubinu: literal NIKAD ne ide na geokoder (6.8. bug)
     try { gpsPrefill(true); } catch (e) {}
     const err = new Error('"Moja lokacija" nije ime mesta - koristi se tvoja GPS pozicija. Sačekaj par sekundi da je uhvatim pa probaj opet.');
@@ -6177,8 +6220,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.36";
+const APP_VERSION = "0.9.37";
 const CHANGELOG = [
+  { v: "0.9.37", d: "09.08.2026.", stavke: [
+    "<b>Nalepi lokaciju iz poruke</b> (tvoj zahtev): u pretragu možeš da nalepiš koordinate (\"44.8123, 20.4111\") ili LINK koji ti je neko poslao - Google Maps, Apple Maps, OpenStreetMap, geo: link iz WhatsApp/Viber poruke. Prvi red u listi odmah nudi tu tačku, bez čekanja pretrage. Radi i format sa stepenima i minutima (\"N 44 47.196 E 20 26.934\").",
+    "<b>Link koji otvara rutu</b>: routemeright.app/?ll=44.8123,20.4111&naziv=Splav%20na%20Adi odmah otvara aplikaciju i računa rutu do te tačke od tvoje lokacije - to je link koji možeš da pošalješ društvu u grupu."
+  ] },
   { v: "0.9.36", d: "09.08.2026.", stavke: [
     "<b>Planinske rute su se gubile</b> (nalaz revizije, najozbiljniji): Kotor-Cetinje i Užice-Zlatibor se voze oko 50 km/h, pa ih je nova gradska logika proglašavala gradom i nudila SAMO najbržu rutu - bez ijedne vijugave varijante, na najlepšim rutama koje imamo. Sada se grad prepoznaje po gustini raskrsnica (mereno: grad 1,2-1,5 raskrsnica po km i prosek 30 km/h, planina 0,4-0,6 i 50 km/h).",
     "<b>Prognoza je kasnila na pametnim gradskim rutama</b>: pri spajanju tri dela rute gubilo se vreme prve deonice svakog dela (na Beograd-Valjevo čak 26 minuta), pa su prognoza po satu prolaska i predlog pauze bili pomereni. Sada je sat prolaska tačan (provereno: rupa 0 minuta).",
@@ -6594,6 +6641,17 @@ function init() {
   const params = new URLSearchParams(location.search);
   state.pendingFamous = params.get("famous") || null;
   if (params.has("preview")) { previewFill(); return; }
+  // podeljena lokacija (9.8.): ?ll=44.78,20.44 ili ?q=<link/koordinate> - iz WhatsApp poruke, deljenja iz nase app,
+  // ili bilo kog linka sa koordinatama. Ista logika koju koristi i pretraga (parseKoord).
+  {
+    const sirovo = params.get("ll") || params.get("q") || params.get("geo");
+    const kk = sirovo ? parseKoord(decodeURIComponent(sirovo)) : null;
+    if (kk) {
+      const ime = params.get("naziv") || params.get("name") || "";
+      setTimeout(() => { try { SEARCH_MODE = "to"; pickDestination({ n: ime || koordIme(kk), lat: kk.lat, lon: kk.lon }); } catch (e) {} }, 400);
+      return;
+    }
+  }
   if (params.has("demo")) {
     $("from").value = params.get("from") || "Beograd";
     $("to").value = params.get("to") || "Zlatibor";
@@ -6721,7 +6779,7 @@ async function homeWxPeek() {
 
 /* ---- app2 Faza 4: cist ekran pretrage (Google/Waze stil + NASA BAZA u predlozima) ---- */
 const SFOLD = (x) => String(x || "").toLowerCase().replace(/č|ć/g,"c").replace(/š/g,"s").replace(/ž/g,"z").replace(/đ/g,"dj");
-const SICONS = { kafana: rIco("tavern", 18), vidikovac: rIco("viewpoint", 18), okupljaliste: rIco("meetup", 18), ruta: rIco("route", 18), grad: rIco("start", 18), nedavno: rIco("saved", 18), geo: rIco("start", 18) };   // R13: RMR ikonice
+const SICONS = { kafana: rIco("tavern", 18), vidikovac: rIco("viewpoint", 18), okupljaliste: rIco("meetup", 18), ruta: rIco("route", 18), grad: rIco("start", 18), nedavno: rIco("saved", 18), geo: rIco("start", 18), koord: rIco("pin", 18) };   // R13: RMR ikonice
 function openSearch(mode) {   // mode: 'to' (default) ili 'from' - Google princip: tap na polje otvara pretragu
   SEARCH_MODE = mode === "from" ? "from" : "to";
   document.body.classList.remove("planning");
@@ -6805,8 +6863,10 @@ function renderSugg(q) {
     _netSuggSeq++; sugg._q = ""; sugg._hits = []; sugg._net = [];
     sugg.innerHTML = ""; updateSearchStatic(); return;
   }
+  const kk = parseKoord(q);   // nalepljene koordinate ili link (WhatsApp/Google/Apple) - prvi red, bez mreze (9.8.)
   const fq = SFOLD(q.trim());
   let hits = searchIndex().filter((x) => x.f.includes(fq)).slice(0, 8);
+  if (kk) hits = [{ n: koordIme(kk), lat: kk.lat, lon: kk.lon, sub: "koordinate iz poruke ili linka", t: "koord" }].concat(hits).slice(0, 8);
   try {   // Faza 1: Nedavno se MESA u rezultate dok kucas (Google princip - istorija je najjaci signal)
     const rec = (JSON.parse(localStorage.getItem("rmr2_recent") || "[]"))
       .filter((r) => r.to && SFOLD(r.to).includes(fq)).slice(0, 2)
