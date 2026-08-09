@@ -6137,8 +6137,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.32";
+const APP_VERSION = "0.9.33";
 const CHANGELOG = [
+  { v: "0.9.33", d: "09.08.2026.", stavke: [
+    "<b>Trag vožnje više ne gubi početak</b> (tvoj nalaz): na dugim turama se trag sekao s POČETKA (zato je 66 km tura na mapi krenula tek od Perleza umesto od zelene tačke) - sada se na dugim vožnjama ceo trag proređuje umesto da se seče, pa mapa uvek pokazuje OD starta DO kraja. Stare vožnje sa odsečenim početkom ostaju takve - taj podatak je bačen pri snimanju.",
+    "<b>Čitljivija mapa sažetka</b>: start je sada ZELENA tačka (plavo je rezervisano samo za najvijugavijih 3 km, koja je i podebljana), a ostaci planirane rute (zeleni/crveni pin, ikonice pumpi i kafana) se sklanjaju kad se pokaže svež sažetak - mapa priča samo tvoju vožnju. Oznaka \"plavo na mapi\" se prikazuje samo kad vijugava deonica stvarno postoji."
+  ] },
   { v: "0.9.32", d: "09.08.2026.", stavke: [
     "<b>Pređeni deo rute se boji tačno uz trouglić</b> (tvoj nalaz): granica plavo/narandžasto je kaskala i po nekoliko stotina metara (pomerala se tek na svaki GPS signal, uz prag vezan za dužinu rute) pa je iza tebe stajala narandžasta linija. Sada granica klizi sa strelicom, na 10 metara tačno."
   ] },
@@ -7743,7 +7747,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = [];
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;
   RIDE.paused = false; RIDE.pauseMs = 0; RIDE.pauseT0 = null;
-  RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE.trace = []; RIDE._sumFoto = null;
+  RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;
   RIDE.samples = []; RIDE._smpT = 0; RIDE._maxLnSeen = 0; RIDE.momBrz = null; RIDE.momNagib = null;
   RIDE.log = []; navLog("start-free", { v: APP_VERSION });
   leanReset();   // nagib: kalibracija na Snimi (telefon je tad na nosacu)
@@ -7808,9 +7812,12 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
       RIDE.lastTrk = { la, lo };
       if (!RIDE.trace) RIDE.trace = [];
       const _tl = RIDE.trace[RIDE.trace.length - 1];
-      if (!_tl || haversine(_tl[1], _tl[0], la, lo) * 1000 > 12) {
+      if (!_tl || haversine(_tl[1], _tl[0], la, lo) * 1000 > (RIDE._trStepM || 12)) {
         RIDE.trace.push([lo, la]);
-        if (RIDE.trace.length > 3000) RIDE.trace.splice(0, 500);
+        if (RIDE.trace.length > 3000) {   // duga voznja: proredi CEO trag - POCETAK se nikad ne sece (9.8. Boskov nalaz: 66 km tura krenula "od Perleza")
+          RIDE.trace = RIDE.trace.filter((_, i, a) => i % 2 === 0 || i === a.length - 1);
+          RIDE._trStepM = Math.min(200, (RIDE._trStepM || 12) * 2);
+        }
       }
     }
     RIDE.lastFixObj = { lo, la, ts: nowFix };
@@ -7979,9 +7986,12 @@ function startRide() {
       RIDE.lastTrk = { la, lo };
       if (!RIDE.trace) RIDE.trace = [];   // trag za "ruta je heroj" sazetak (tacka na ~12 m)
       const _tl = RIDE.trace[RIDE.trace.length - 1];
-      if (!_tl || haversine(_tl[1], _tl[0], la, lo) * 1000 > 12) {
+      if (!_tl || haversine(_tl[1], _tl[0], la, lo) * 1000 > (RIDE._trStepM || 12)) {
         RIDE.trace.push([lo, la]);
-        if (RIDE.trace.length > 3000) RIDE.trace.splice(0, 500);
+        if (RIDE.trace.length > 3000) {   // duga voznja: proredi CEO trag - POCETAK se nikad ne sece (9.8. Boskov nalaz: 66 km tura krenula "od Perleza")
+          RIDE.trace = RIDE.trace.filter((_, i, a) => i % 2 === 0 || i === a.length - 1);
+          RIDE._trStepM = Math.min(200, (RIDE._trStepM || 12) * 2);
+        }
       }
     }
     RIDE.lastFixObj = { lo, la, ts: nowFix };
@@ -8262,6 +8272,9 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
   if (!pts || pts.length < 2 || !map || !map.getStyle) return false;
   try {
     sumTragSkini();
+    if (s._svez) {   // svez sazetak: pocisti ostatke PLANIRANE rute (zeleni/crveni pin + POI ikonice) - mapa prica samo voznju (9.8.)
+      try { (state.markers || []).forEach((m) => m.remove()); state.markers = []; } catch (e) {}
+    }
     map.addSource("sumtrag", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: pts } } });
     map.addLayer({ id: "sumtrag-cas", type: "line", source: "sumtrag", layout: { "line-cap": "round", "line-join": "round" },
       paint: { "line-color": "#7c2d0a", "line-width": 9, "line-opacity": .6 } });
@@ -8271,12 +8284,12 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
     if (b3) {
       map.addSource("sumtrag-best", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: pts.slice(b3.a, b3.b + 1) } } });
       map.addLayer({ id: "sumtrag-bestln", type: "line", source: "sumtrag-best", layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": "#38bdf8", "line-width": 5 } });
+        paint: { "line-color": "#38bdf8", "line-width": 6.5 } });
     }
     const dot = (c, boja) => { const el = document.createElement("div");
       el.style.cssText = "width:15px;height:15px;border-radius:50%;background:" + boja + ";border:2.5px solid #0b1426;box-shadow:0 1px 6px rgba(0,0,0,.6)";
       SUMMARK.push(new maplibregl.Marker({ element: el }).setLngLat(c).addTo(map)); };
-    dot(pts[0], "#38bdf8"); dot(pts[pts.length - 1], "#f97316");
+    dot(pts[0], "#22c55e"); dot(pts[pts.length - 1], "#f97316");   // start ZELEN (univerzalni jezik), plavo je rezervisano za najvijugaviju deonicu (9.8.)
     const pin = (c, txt, cy) => { const el = document.createElement("div");
       el.style.cssText = "width:27px;height:27px;border-radius:50%;background:rgba(15,23,42,.92);border:2px solid " + (cy ? "#38bdf8" : "#f97316") + ";display:flex;align-items:center;justify-content:center;font:900 9px Archivo,sans-serif;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.6)";
       el.textContent = txt;
@@ -8363,7 +8376,7 @@ function rideSumShow(sIn) {
   if (kick) kick.hidden = false;
   const pts = (s.trag && s.trag.length > 1) ? s.trag
     : (!sIn && RIDE.route && RIDE.route.coords && RIDE.route.coords.length > 1 ? RIDE.route.coords : null);
-  const naMapi = sumTragNaMapi({ ...s, trag: pts });
+  const naMapi = sumTragNaMapi({ ...s, trag: pts, _svez: !sIn });
   el.classList.toggle("dim", !naMapi);   // bez mape iza (stari dnevnik zapisi): zatamni pozadinu, ne providi se profil
   if (sIn && naMapi) {   // zapis iz dnevnika SA tragom: predji na mapu da se trag vidi (tab ekran bi je prekrio)
     try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
