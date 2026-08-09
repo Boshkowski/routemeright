@@ -747,8 +747,13 @@
     #rideBar .nt .sub { font-size: 17.5px; font-weight: 800; opacity: 1; margin-top: 2px; white-space: nowrap; overflow: hidden;
       text-overflow: ellipsis; }   /* R13v2: rtl trik izbacen (lomio imena sa brojevima) - JS skida genericki prefiks */
     #rideBar .right { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; align-self: flex-start; flex: none; }
-    #rideBar .then { background: rgba(0,0,0,.26); color: #d9fbe5; padding: 8px 16px; font-size: 13.5px; font-weight: 800; border-top: 1px solid rgba(255,255,255,.09); }
-    #rideBar .then::before { content: "zatim  "; font-weight: 600; opacity: .75; }
+    /* "Zatim" cip kao Google (9.8.): visi ISPOD banera uz levu ivicu, tamnije zelen, sa PRAVOM strelicom manevra */
+    #rideBar .then { display: inline-flex; align-items: center; gap: 8px; width: fit-content;
+      background: #0f4c26; color: #d9fbe5; padding: 9px 15px 10px; margin: 0 0 0 14px;
+      border-radius: 0 0 15px 15px; font-size: 13.5px; font-weight: 800;
+      box-shadow: 0 10px 22px rgba(0,0,0,.4); }
+    #rideBar .then .tl { font-weight: 700; opacity: .85; }
+    #rideBar .then svg { width: 24px; height: 24px; stroke: #fff; fill: none; }
     #rideBar .then:empty { display: none; }
     /* Tablice puteva i izlaza - podaci dolaze iz Valhalla polja "sign" (broj izlaza, oznake, ka cemu vodi).
        Boje po znakovima na terenu: evropski put i autoput zeleno, drzavni put zuto, izlaz beli okvir. */
@@ -854,6 +859,15 @@
       border: none; color: #fff; font-size: 0; display: flex; align-items: center; justify-content: center;
       box-shadow: 0 8px 22px rgba(249,115,22,.4); cursor: pointer; font-family: inherit; align-self: center; margin: 0 auto; }
     #rideBarBottom .rep svg { width: 30px; height: 30px; stroke: #fff; fill: none; stroke-width: 2.3px; }   /* jasniji trougao s uzvicnikom */
+    /* Zavrsi (slobodna voznja, 9.8.): crveno stop dugme u donjoj traci - konzistentno sa crvenim Snimi krugom;
+       dvostepeno kao rideX (rukavice). Vidljivo SAMO u freeride; "Druga ruta" tamo nema smisla pa se krije. */
+    #rideBarBottom .endr { display: none; flex: none; align-items: center; gap: 7px; height: 46px; border-radius: 999px; align-self: center;
+      background: #dc2626; border: none; color: #fff; font: 800 14px Archivo, sans-serif; padding: 0 16px;
+      box-shadow: 0 8px 20px rgba(220,38,38,.4); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    #rideBarBottom .endr svg { width: 20px; height: 20px; stroke: #fff; fill: none; }
+    #rideBarBottom .endr.arm { background: #991b1b; }
+    body.freeride #rideBarBottom .endr { display: inline-flex; }
+    body.freeride #rideBarBottom #rideAlt { display: none; }
     #rideBarBottom .eta { background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); border-radius: 16px; padding: 9px 12px; text-align: center; }
     #rideBarBottom .eta .t { font-size: 21px; font-weight: 900; color: #fff; line-height: 1.1; font-variant-numeric: tabular-nums; }
     #rideBarBottom .eta .d { font-size: 13.5px; color: #e2e8f0; margin-top: 2px; font-weight: 700; }
@@ -1558,16 +1572,17 @@
         <div class="nt"><b id="rideDist">-</b><span id="rideInstr">Krećemo</span><span class="shields" id="rideShields"></span><span class="sub" id="rideStreet"></span></div>
         <div class="right"><div class="btns"><button id="rideMute" aria-label="Zvuk"></button><button id="rideX" aria-label="Prekini vožnju">✕</button></div></div>
       </div>
-      <div class="then" id="rideThen"></div>
       <div class="ahead" id="rideAhead"></div>
       <div class="wx" id="rideWx"></div>
     </div>
+    <div class="then" id="rideThen"></div>
   </div>
   <div id="rideBarBottom">
     <div class="pill"><div><div class="v" id="rideKmh">0</div><div class="u">km/h</div></div><div class="ln"><div class="v" id="rideLean">0°</div><div class="u">nagib</div></div><div class="lim" id="rideLim"><span></span></div></div>
     <button class="rep" id="rideRep"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v6"/><path d="M9 10h6"/></svg>Prijavi</button>
     <button class="alt" id="rideAlt" aria-label="Druga ruta"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 20V9a5 5 0 015-5h6"/><path d="M12 7l3-3-3-3"/><path d="M20 20v-5a5 5 0 00-5-5h-3"/></svg></button>
     <button class="alt" id="ridePause" aria-label="Pauza"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10 5v14M14 5v14"/></svg></button>
+    <button class="endr" id="rideEnd" aria-label="Završi vožnju"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="2"/></svg><span>Završi</span></button>
     <div class="eta"><div class="t" id="rideEta">-</div><div class="d" id="rideRem">-</div></div>
   </div>
   <div id="rideRoad"></div>
@@ -5999,8 +6014,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.26";
+const APP_VERSION = "0.9.27";
 const CHANGELOG = [
+  { v: "0.9.27", d: "09.08.2026.", stavke: [
+    "<b>\"Zatim\" najava kao Google</b> (tvoj zahtev): kad je skretanje blizu, ispod glavnog banera visi zeleni čip sa PRAVOM strelicom sledećeg manevra - znaš šta dolazi posle ovog skretanja i pre nego što ga prođeš.",
+    "<b>Kraj slobodne vožnje sređen</b> (tvoj nalaz): u snimanju bez rute donja traka sada ima crveno dugme <b>Završi</b> (prvi tap pita \"Završi?\", drugi gasi - zbog rukavica); \"Druga ruta\" se u slobodnoj vožnji ne prikazuje jer rute nema. X gore i dalje radi isto."
+  ] },
   { v: "0.9.26", d: "09.08.2026.", stavke: [
     "<b>Google perspektiva u navigaciji</b> (tvoj zahtev sa vožnje): kamera je podignuta i otvorena - vidi se DALEKO napred (zum 16.3 umesto 17.4, nagib kamere 45° umesto 56°), a strelica je spuštena niže na ekran (76% visine, kao Google) pa ceo ekran radi za ono što dolazi. Pred skretanje se i dalje primakne, ali bez mikroskopa. 3D zgrade i teren ostaju."
   ] },
@@ -7568,6 +7587,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   document.getElementById("rideEta").textContent = "0 min";
   document.getElementById("rideRem").textContent = "0,0 km";
   const _rx = document.getElementById("rideX"); if (_rx) { _rx.textContent = "✕"; _rx.classList.remove("arm"); }
+  const _re = document.getElementById("rideEnd"); if (_re) { _re.classList.remove("arm"); const _rs = _re.querySelector("span"); if (_rs) _rs.textContent = "Završi"; }
   rideLock();
   ridePauseReg();
   try { const u = new SpeechSynthesisUtterance(""); speechSynthesis.speak(u); } catch (e) {}   // otkljucaj TTS na user gesture (iOS)
@@ -7713,6 +7733,7 @@ function startRide() {
   document.getElementById("rideEta").textContent = "-";
   document.getElementById("rideRem").textContent = "-";
   const _rx = document.getElementById("rideX"); if (_rx) { _rx.textContent = "✕"; _rx.classList.remove("arm"); }
+  const _re = document.getElementById("rideEnd"); if (_re) { _re.classList.remove("arm"); const _rs = _re.querySelector("span"); if (_rs) _rs.textContent = "Završi"; }
   rideLock();
   ridePauseReg();
   RIDE.freeRide = false; RIDE.paused = false; RIDE.pauseMs = 0; RIDE.pauseT0 = null;   // navigaciona voznja = svez pauza-stroj
@@ -7813,9 +7834,9 @@ function startRide() {
     let distTo = m ? Math.max(0, m.d - d) : Math.max(0, total - d);
     if (m) {
       document.getElementById("rideArr").innerHTML = arrSvg(m.sr.arr);
-      const nx = nav.mans[nav.next + 1];   // "zatim" najava sledeceg (kao maketa) - samo kad je ovo skretanje blizu
-      document.getElementById("rideThen").textContent =
-        (nx && distTo < 900) ? (MAN_SR[nx.type] ? MAN_SR[nx.type][1].toLowerCase().split(" ")[0] === "skreni" ? (nx.type === 15 ? "↰" : "↱") : "→" : "→") + " " + fmtM(Math.max(0, nx.d - m.d)) : "";
+      const nx = nav.mans[nav.next + 1];   // "Zatim" cip kao Google (9.8., Boskov zahtev): PRAVA strelica manevra, ne unicode
+      document.getElementById("rideThen").innerHTML =
+        (nx && distTo < 900) ? '<span class="tl">Zatim</span>' + arrSvg((nx.sr && nx.sr.arr) || "straight") : "";
       document.getElementById("rideDist").textContent = fmtM(distTo);
       document.getElementById("rideInstr").textContent = m.sr.t;
       document.getElementById("rideShields").innerHTML = signHtml(m);
@@ -8816,6 +8837,11 @@ async function shareRideCard(s) {
     if (rx.classList.contains("arm")) { stopRide(); return; }
     rx.classList.add("arm"); rx.textContent = "Prekini?";
     setTimeout(() => { rx.classList.remove("arm"); rx.textContent = "✕"; }, 2500);
+  });
+  const re = document.getElementById("rideEnd"); if (re) re.addEventListener("click", () => {   // Zavrsi (slobodna voznja) - isti dvostepeni princip
+    if (re.classList.contains("arm")) { stopRide(); return; }
+    re.classList.add("arm"); re.querySelector("span").textContent = "Završi?";
+    setTimeout(() => { re.classList.remove("arm"); const s = re.querySelector("span"); if (s) s.textContent = "Završi"; }, 2500);
   });
 window.rideFree = function (e) {   // na window - definicija je unutar IIFE a koristi je startRide/fabMap iz drugih scope-ova
   if (e && e.originalEvent && document.body.classList.contains("riding")) {
