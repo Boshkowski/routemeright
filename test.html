@@ -6137,8 +6137,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.30";
+const APP_VERSION = "0.9.31";
 const CHANGELOG = [
+  { v: "0.9.31", d: "09.08.2026.", stavke: [
+    "<b>Kanjon samo gde kanjon postoji</b> (tvoj nalaz): najava kolekcije posle vožnje se prikazuje samo kad si geografski u njoj - sledeća tačka na manje od 50 km, ili si na turi već prošao neku tačku kolekcije. Gradska vožnja po Beogradu više ne dobija \"Kanjon Uvca ~158 km odavde\". Samih 5 kanjona u kolekciji su provereni pravi kanjoni (Tara, Morača, Uvac, Piva, Radika) - tu greške nije bilo."
+  ] },
   { v: "0.9.30", d: "09.08.2026.", stavke: [
     "<b>Pretraga Faza 1 - biraš, ne kucaš do kraja</b> (tvoj prioritet): predlozi stižu DOK kucaš (od 3. slova, bez čekanja u redu), rangirani po daljini sa \"~X km\" oznakom; tvoje nedavne destinacije se mešaju u rezultate od prvog slova; adrese, ulice i mesta sada ulaze u predloge (ranije samo radnje i kafići). Spori servis je izbačen iz kucanja pa lista ne kasni sekundama.",
     "<b>Gradska logika rutiranja</b> (tvoj zakon): iz grada se izlazi NAJBRŽE do oboda, vijuganje počinje tek od oboda; u grad se ulazi najbrže od oboda do cilja; relacija cela u gradu = najbrža ruta, bez vijuganja. Kad na obodu nema prave vijugave alternative, rute se pošteno stope u jednu; \"Predeli · ceo put vijugavo\" ostaje kao svesni izbor kad se stvarno razlikuje. Napomena: planiranje sada ume da traje sekund-dva duže (prvo se sondira granica grada)."
@@ -8399,7 +8402,12 @@ function rideSumShow(sIn) {
     let kolHtml = "";
     if (pts && pts.length) {
       const ns = kolSledeca(pts[pts.length - 1]);
-      if (ns && ns.d < 400) kolHtml = `Kolekcija <b>${esc(ns.k.ime)}</b>: sledeća ti je <b>${esc(ns.t.n)}</b> · ~${Math.round(ns.d)} km odavde`;
+      // 9.8. (Boskov zakon "kanjon - kanjon"): kolekcijska prica SAMO kad si geografski u njoj -
+      // ako je voznja tiknula tacku kolekcije, na turi si pa sira najava ima smisla (400 km);
+      // inace tek kad ti je sledeca tacka na skok-domet (50 km). Gradska voznja u Beogradu
+      // vise NE dobija "Kanjon Uvca ~158 km" - to tamo geografski ne postoji.
+      const prag = (s.kol && s.kol > 0) ? 400 : 50;
+      if (ns && ns.d < prag) kolHtml = `Kolekcija <b>${esc(ns.k.ime)}</b>: sledeća ti je <b>${esc(ns.t.n)}</b> · ~${Math.round(ns.d)} km odavde`;
     }
     if (kolHtml) { ko.hidden = false; ko.innerHTML = kolHtml; } else ko.hidden = true;
   }
