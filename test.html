@@ -5999,8 +5999,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.25";
+const APP_VERSION = "0.9.26";
 const CHANGELOG = [
+  { v: "0.9.26", d: "09.08.2026.", stavke: [
+    "<b>Google perspektiva u navigaciji</b> (tvoj zahtev sa vožnje): kamera je podignuta i otvorena - vidi se DALEKO napred (zum 16.3 umesto 17.4, nagib kamere 45° umesto 56°), a strelica je spuštena niže na ekran (76% visine, kao Google) pa ceo ekran radi za ono što dolazi. Pred skretanje se i dalje primakne, ali bez mikroskopa. 3D zgrade i teren ostaju."
+  ] },
   { v: "0.9.25", d: "07.08.2026.", stavke: [
     "<b>Podeli vožnju - izbor se sada može poništiti</b> (tvoj nalaz): tap na karticu bira šablon (i automatski poništava prethodni - uvek najviše jedan izabran), tap na već izabranu je poništava, a deljenje ide isključivo preko narandžaste \"Podeli\" pilule. Ponovni izbor je trenutan (slika ostaje u kešu)."
   ] },
@@ -7098,10 +7101,11 @@ function navSegBearing(route, s) {   // pravac rute na s metara - kamera/marker 
   const ky = 110540, kx = 111320 * Math.cos(a[1] * Math.PI / 180);
   return (Math.atan2((b[0] - a[0]) * kx, (b[1] - a[1]) * ky) * 180 / Math.PI + 360) % 360;
 }
-function zoomForSpeed(kmh) {   // maketa tools/tbt3d-koncept: sporo = blizu (17.4), brzo = siroko (15.9)
+function zoomForSpeed(kmh) {   // 9.8. Google-perspektiva (Boskov zahtev sa test voznje): sporo 16.3, brzo 15.1 - vidi se DALEKO
   const t = Math.max(0, Math.min(1, (kmh - 25) / 75));
-  return 17.4 + (15.9 - 17.4) * t;
+  return 16.3 + (15.1 - 16.3) * t;
 }
+const NAV_PITCH = 45;   // bio 56: previse je sabijao daljinu i zgrade su zaklanjale put; 45 = 3D dubina + otvoren horizont
 /* [NAVCORE kraj] */
 function buildAhead(route) {   // najave ispred: kamere sa rute + lokalne prijave (km preko najblize tacke NOVE geometrije)
   try {
@@ -7352,8 +7356,8 @@ async function lpShow(ll) {
 function navCamPadding() {
   return isLS() ? { top: 0, bottom: 0, left: lsPadLeft("rideBar", 390), right: 0 } : { top: 0, bottom: 0, left: 0, right: 0 };
 }
-function navAheadM(zoom, lat) {   // vozac ispod centra, nezavisno od zuma; pitch 56 skracuje projekciju pa px > zeljeni pomak (230px -> ~68% visine, mereno QA 6.8.)
-  const px = isLS() ? 90 : 230;
+function navAheadM(zoom, lat) {   // vozac nisko na ekranu kao Google (260px + pitch 45 -> ~76% visine, mereno QA 9.8.)
+  const px = isLS() ? 100 : 260;
   const mpp = Math.cos(lat * Math.PI / 180) * 40075016.686 / (512 * Math.pow(2, zoom));
   return px * mpp;
 }
@@ -7388,13 +7392,13 @@ function startNavCam() {
       const db = ((hdgT - c.brgS + 540) % 360) - 180;
       c.brgS = (c.brgS + db * (1 - Math.exp(-3 * dt)) + 360) % 360;
       const kmh = c.spd * 3.6;   // zum: brzina odredjuje sirinu, blizina skretanja pobedjuje
-      const zt = Math.max(zoomForSpeed(kmh), c.distTo < 250 ? 18.2 : c.distTo < 700 ? 17.6 : 0);
+      const zt = Math.max(zoomForSpeed(kmh), c.distTo < 250 ? 17.2 : c.distTo < 700 ? 16.6 : 0);   // pred skretanje blize, ali bez mikroskopa (9.8.)
       c.zoomS = c.zoomS == null ? zt : c.zoomS + (zt - c.zoomS) * (1 - Math.exp(-1.8 * dt));
       if (posM && RIDE.marker) { RIDE.marker.setLngLat(posM); RIDE.marker.setRotation(c.brgS); }
       if (Date.now() > (RIDE.freeCamUntil || 0)) {
         if (RIDE.freeCamUntil) { RIDE.freeCamUntil = 0; const g = document.querySelector('[data-fab="gps"].recenter'); if (g) g.classList.remove("recenter"); }
         if (posM) map.jumpTo({ center: navDest(posM[0], posM[1], c.brgS, navAheadM(c.zoomS, posM[1])),
-          bearing: c.brgS, pitch: 56, zoom: c.zoomS, padding: navCamPadding() });   // padding u SVAKOM pozivu - lepljiv padding je 5.8. vratio vozaca na sredinu ekrana
+          bearing: c.brgS, pitch: NAV_PITCH, zoom: c.zoomS, padding: navCamPadding() });   // padding u SVAKOM pozivu - lepljiv padding je 5.8. vratio vozaca na sredinu ekrana
       }
     } catch (e) {}
   };
@@ -7898,9 +7902,9 @@ function startRide() {
       c.rawLo = lo; c.rawLa = la;
       if (RIDE._camReduced && Date.now() > (RIDE.freeCamUntil || 0)) {   // reduced-motion: jedan skok po fiksu, bez animacije
         if (RIDE.freeCamUntil) { RIDE.freeCamUntil = 0; const g = document.querySelector('[data-fab="gps"].recenter'); if (g) g.classList.remove("recenter"); }
-        const zt = Math.max(zoomForSpeed(spdK), distTo < 250 ? 18.2 : distTo < 700 ? 17.6 : 0);
+        const zt = Math.max(zoomForSpeed(spdK), distTo < 250 ? 17.2 : distTo < 700 ? 16.6 : 0);
         const hdgCam = c.hdg != null ? c.hdg : (pr.offM < 40 ? navSegBearing(route, d) : (RIDE.compassHdg != null ? RIDE.compassHdg : map.getBearing()));
-        map.jumpTo({ center: navDest(lo, la, hdgCam, navAheadM(zt, la)), zoom: zt, pitch: 56, bearing: hdgCam, padding: navCamPadding() });
+        map.jumpTo({ center: navDest(lo, la, hdgCam, navAheadM(zt, la)), zoom: zt, pitch: NAV_PITCH, bearing: hdgCam, padding: navCamPadding() });
       }
     } catch (e) {}
   };
@@ -8826,9 +8830,9 @@ window.rideRecenter = function () {
   if (c && c.rawLo != null) {
     const brg = c.brgS != null ? c.brgS : map.getBearing();
     const z = c.zoomS || 17.2;
-    map.easeTo({ center: navDest(c.rawLo, c.rawLa, brg, navAheadM(z, c.rawLa)), zoom: z, pitch: 56, bearing: brg, padding: navCamPadding(), duration: 500 });
+    map.easeTo({ center: navDest(c.rawLo, c.rawLa, brg, navAheadM(z, c.rawLa)), zoom: z, pitch: NAV_PITCH, bearing: brg, padding: navCamPadding(), duration: 500 });
   } else if (RIDE.lastPos) {
-    map.easeTo({ center: [RIDE.lastPos[0], RIDE.lastPos[1]], zoom: 16.5, pitch: 56, padding: navCamPadding(), duration: 500 });
+    map.easeTo({ center: [RIDE.lastPos[0], RIDE.lastPos[1]], zoom: 16.3, pitch: NAV_PITCH, padding: navCamPadding(), duration: 500 });
   }
 };
   try {   // staticki emoji u markup-u -> RMR ikonice (Boskovo pravilo 5.8.: bez emojija, premium)
