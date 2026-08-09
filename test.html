@@ -545,7 +545,7 @@
     #homeFabs button[data-fab="gps"].recenter { border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,.35), 0 6px 18px rgba(0,0,0,.35); }
     /* Snimi voznju (6.8.): rec dugme iznad GPS FAB-a; nestaje u planiranju i u voznji */
     #ridePause.on { border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,.35); }
-    body.ridepaused #rideBar .navcard { opacity: .65; }
+    body.ridepaused #rideBar .navcard, body.ridepaused #rideBar .then { opacity: .65; }
 
     #homeSheet { display: block; position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 11; background: rgba(15,23,42,.97); border-top: 1px solid rgba(148,163,184,.16); border-radius: 22px 22px 0 0; padding: 8px 16px 18px; box-shadow: 0 -10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
     #homeSheet .grab { width: 40px; height: 4.5px; border-radius: 999px; background: #475569; margin: 0 auto 12px; }
@@ -861,11 +861,15 @@
     #rideBarBottom .rep svg { width: 30px; height: 30px; stroke: #fff; fill: none; stroke-width: 2.3px; }   /* jasniji trougao s uzvicnikom */
     /* Zavrsi (slobodna voznja, 9.8.): crveno stop dugme u donjoj traci - konzistentno sa crvenim Snimi krugom;
        dvostepeno kao rideX (rukavice). Vidljivo SAMO u freeride; "Druga ruta" tamo nema smisla pa se krije. */
-    #rideBarBottom .endr { display: none; flex: none; align-items: center; gap: 7px; height: 46px; border-radius: 999px; align-self: center;
-      background: #dc2626; border: none; color: #fff; font: 800 14px Archivo, sans-serif; padding: 0 16px;
+    /* ikona dok miruje (uska traka na 360-390px je izbacivala ETA van ekrana - review 9.8.), tekst tek kad se naoruza */
+    #rideBarBottom .endr { display: none; flex: none; align-items: center; justify-content: center; gap: 7px; width: 46px; height: 46px;
+      border-radius: 999px; align-self: center; background: #dc2626; border: none; color: #fff; font: 800 14px Archivo, sans-serif; padding: 0;
       box-shadow: 0 8px 20px rgba(220,38,38,.4); cursor: pointer; -webkit-tap-highlight-color: transparent; }
     #rideBarBottom .endr svg { width: 20px; height: 20px; stroke: #fff; fill: none; }
-    #rideBarBottom .endr.arm { background: #991b1b; }
+    #rideBarBottom .endr span { display: none; }
+    #rideBarBottom .endr.arm { background: #991b1b; width: auto; padding: 0 15px; }
+    #rideBarBottom .endr.arm span { display: inline; }
+    #rideBarBottom .pill, #rideBarBottom .eta { min-width: 0; }
     body.freeride #rideBarBottom .endr { display: inline-flex; }
     body.freeride #rideBarBottom #rideAlt { display: none; }
     #rideBarBottom .eta { background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); border-radius: 16px; padding: 9px 12px; text-align: center; }
@@ -1186,7 +1190,7 @@
     #peekBar { position: static; margin: 0 -14px 6px; padding: 8px 14px; }
     #peekBar .grabber { width: 4.5px; height: 34px; margin: 0 0 0 auto; }   /* handle uspravan: sheet se povlaci U STRANU */
     #resCta { margin: 10px -14px 0; padding: 10px 14px calc(8px + var(--sb)); }   /* landscape: stub drzi dno ekrana pa traka nosi safe-area */
-    body.qplan.planning #panel { padding-bottom: 0; }   /* dok je usidren i u landscape-u - bez 10px gepa ispod (QA 9.8.) */
+    body.qplan.planning #panel, body.qplan.planning.qdetails #panel { padding-bottom: 0; }   /* dok usidren i u landscape-u; .qdetails MORA da stoji tu - njegov selektor je specificniji (review 9.8.) */
     body.qplan.planning:not(.qdetails) #resHero .rslide { height: 176px; }
     #resHero .rslide { flex: 0 0 92%; }
 
@@ -2445,7 +2449,7 @@ async function geoPhotonSugg(q, n) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SI
       return { name: nm, lat: x.c[1], lon: x.c[0],
         sub: [lat0(x.p.city || x.p.county), lat0(x.p.country)].filter(Boolean).join(", "),
         d: ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null };
-    }).filter((x) => x.name && (x.d == null || x.d < 300));   // drugi kraj sveta se ne nudi ni u listi
+    }).filter((x) => x.name && (x.d == null || x.d < 900));   // 900 km: Alpi i Grcka ostaju u predlozima, drugi kraj sveta ne (review 9.8.)
     scored.sort((a, b) => (a.d == null ? 9e9 : a.d) - (b.d == null ? 9e9 : b.d));
     return scored.slice(0, n || 6);
   } catch (e) { return []; }
@@ -2561,10 +2565,10 @@ async function reverseName(lat, lon, zoom = 10) {
 /* ---------------- rute: Valhalla moto profil (fallback OSRM) ---------------- */
 /* 4 nivoa (Kurviger obrazac: fastest → extra curvy), preporuka = Ekstra vijugava */
 const ROUTE_STYLES = [
-  { label: "Ekstra vijugava · predeli", uh: 0.02, ut: 0.05 },
-  { label: "Vijugava", uh: 0.15, ut: 0.2 },
-  { label: "Balans", uh: 0.5, ut: 0.5 },
-  { label: "Najbrža · autoput", uh: 1.0, ut: 1.0 },
+  { i: 0, label: "Ekstra vijugava · predeli", uh: 0.02, ut: 0.05 },
+  { i: 1, label: "Vijugava", uh: 0.15, ut: 0.2 },
+  { i: 2, label: "Balans", uh: 0.5, ut: 0.5 },
+  { i: 3, label: "Najbrža · autoput", uh: 1.0, ut: 1.0 },
 ];
 function decodeShape(str) { // Valhalla polyline (precision 6)
   let i = 0, lat = 0, lon = 0; const out = [];
@@ -2635,6 +2639,7 @@ async function valhallaRoute(from, to, style, netOpts) {
     timeoutMs: (netOpts && netOpts.timeoutMs) || 14000, retries: (netOpts && netOpts.retries) || 0 });   // reroute u voznji trazi krace cekanje + retry
   if (!j.trip || !j.trip.legs || !j.trip.legs.length) throw new Error("Valhalla: nema rute");
   const r = tripToRoute(j.trip, style.label);
+  r.styleIdx = style.i;   // 9.8. review: labela je PRIKAZ i menja se; stil rerouta se cita odavde (stil nosi svoj indeks)
   if (netOpts && netOpts.keepTrip) r._trip = j.trip;   // pametan grad: sirovi legovi za sivenje sinteticke rute
   return r;
 }
@@ -2668,10 +2673,13 @@ function spojiTripove(trips) {   // legovi vise tripova u jedan; fantomski start
   trips.forEach((tp, ti) => {
     (tp.legs || []).forEach((leg, li) => {
       const l = { ...leg, maneuvers: (leg.maneuvers || []).slice() };
-      if (ti > 0 && li === 0 && l.maneuvers.length && l.maneuvers[0].type >= 1 && l.maneuvers[0].type <= 3) l.maneuvers.shift();
+      // 9.8. review: start manevar sledeceg dela NOSI pravu duzinu i vreme - brisanje je pravilo rupu od 26 min
+      // u cumDur (prognoza na ETA i pauze citaju bas to). Zato se ne brise nego pretvara u "Nastavi pravo".
+      if (ti > 0 && li === 0 && l.maneuvers.length && l.maneuvers[0].type >= 1 && l.maneuvers[0].type <= 3)
+        l.maneuvers[0] = { ...l.maneuvers[0], type: 8 };
       if (ti < trips.length - 1 && li === (tp.legs.length - 1) && l.maneuvers.length) {
         const zad = l.maneuvers[l.maneuvers.length - 1];
-        if (zad.type >= 4 && zad.type <= 6) l.maneuvers.pop();
+        if (zad.type >= 4 && zad.type <= 6 && !(zad.length > 0.01) && !(zad.time > 1)) l.maneuvers.pop();   // samo prazan "stigao si" na savu
       }
       legs.push(l);
     });
@@ -2682,8 +2690,8 @@ function spojiTripove(trips) {   // legovi vise tripova u jedan; fantomski start
   return { legs, summary: s };
 }
 async function fetchRoutes(from, to) {
+  let gradska = false;   // 9.8. review: NE na state tokom awaita - preklopljeni planovi su trovali flag; vraca se uz rute
   try {
-    state._gradska = false;
     // FAZA A: najbrza + balans odmah (2 poziva) - najbrza je i "sonda" za granice grada
     const [brza, balans] = await Promise.all([
       valhallaRoute(from, to, ROUTE_STYLES[3], { keepTrip: true }),
@@ -2695,10 +2703,21 @@ async function fetchRoutes(from, to) {
     const kmTot = brza.totalDist / 1000;
     const urbStart = !!(iz && iz.kmOd > 1.2), urbEnd = !!(ul && ul.kmDo > 1.2);
     const cistoZaSivenje = !(state.vias && state.vias.length) && !isRoundTrip();   // stanice/povratno zadrzavaju stari tok (v1)
-    let vijugave = [];
+    let vijugave = [], sinteticka = false;
+    const punStil = async () => {   // pun stari tok; pad NE sme da baci vec dobijene Valhalla rute na OSRM auto-profil (review 9.8.)
+      try { return await Promise.all([ROUTE_STYLES[0], ROUTE_STYLES[1]].map((st) => valhallaRoute(from, to, st))); }
+      catch (e) { return []; }
+    };
+    // KRITICNO (review 9.8.): "nigde deonice preko 52 km/h" NE znaci grad - Kotor-Cetinje i Uzice-Zlatibor
+    // se voze ~50 km/h i to su NAJVIJUGAVIJE rute koje imamo. Grad se razlikuje po GUSTINI RASKRSNICA:
+    // mereno 9.8. na zivom ruteru - grad 1,15-1,53 manevra/km uz prosek ~30 km/h; planina 0,43-0,56 uz ~50 km/h.
+    const _mans = (brza.maneuvers || []).filter((m) => m.type !== 0);
+    const manPoKm = _mans.length / Math.max(1, kmTot);
+    const prosekKmh = kmTot / Math.max(0.01, brza.totalDur / 3600);
+    const gustoGradsko = manPoKm > 0.85 && prosekKmh < 42;
     if (!iz || (urbStart && urbEnd && iz.kmOd + ul.kmDo > kmTot - 3)) {
-      // nigde otvorenog puta (ili se gradski krajevi preklapaju) = CELA relacija je gradska: vijuganje NEMA SMISLA
-      state._gradska = true;
+      if (gustoGradsko && kmTot < 40) gradska = true;   // gusto + sporo + kratko = pravi grad
+      else vijugave = await punStil();                  // planinski put: vijugave varijante OSTAJU
     } else if (cistoZaSivenje && (urbStart || urbEnd)) {
       // sinteticka "Ekstra vijugava": najbrze do oboda + vijugavo izmedju + najbrze od oboda do cilja
       try {
@@ -2711,13 +2730,15 @@ async function fetchRoutes(from, to) {
           urbEnd ? valhallaRoute(ula, to, ROUTE_STYLES[3], seg) : null,
         ]);
         const synth = spojiTripove([gl && gl._trip, sred._trip, rep && rep._trip].filter(Boolean));
+        [gl, sred, rep, brza].forEach((x) => { if (x) delete x._trip; });   // sirov trip (do ~1.5MB) ne ostaje u memoriji (review 9.8.)
         const pametna = tripToRoute(synth, "Ekstra vijugava · grad najbrže, obod vijugavo");
-        vijugave = [pametna];
+        pametna.styleIdx = 0;
+        vijugave = [pametna]; sinteticka = true;
       } catch (e) {   // sivenje palo (mreza/kvota): posten fallback na pun stari tok
-        vijugave = await Promise.all([ROUTE_STYLES[0], ROUTE_STYLES[1]].map((s) => valhallaRoute(from, to, s)));
+        vijugave = await punStil();
       }
-    } else if (!state._gradska) {
-      vijugave = await Promise.all([ROUTE_STYLES[0], ROUTE_STYLES[1]].map((s) => valhallaRoute(from, to, s)));
+    } else {
+      vijugave = await punStil();
     }
     const all = [...vijugave, balans, brza];
     for (const r of all) if (r.label && r.label.includes("autoput") && !r.hasHighway) r.label = "Najbrža";   // ne laze: nema autoputa na ovoj ruti
@@ -2734,7 +2755,8 @@ async function fetchRoutes(from, to) {
       r.label = r.hasHighway ? "Autoput" : "Alternativa";
     // pametna se stopila sa najbrzom (ravnica bez vijugave alternative na obodu): ponudi PUN "predeli" stil
     // kao dodatni IZBOR na kraju liste - vozac bira svesno, preporuka ostaje brza/pametna (Boskov zakon 9.8.)
-    if (!state._gradska && !uniq.some((r) => r.label && r.label.startsWith("Ekstra"))) {
+    // SAMO kad je sivena ruta pojedena dedupom: u punStil grani je stil 0 vec dovucen, pa bi ovo bio bacen poziv (review 9.8.)
+    if (!gradska && sinteticka && !uniq.some((r) => r.label && r.label.startsWith("Ekstra"))) {
       try {
         await new Promise((rs) => setTimeout(rs, 700));   // predah: 6. poziv u salvi ume da udari u FOSSGIS limit
         const pun = await valhallaRoute(from, to, ROUTE_STYLES[0], { retries: 1 });
@@ -2742,6 +2764,7 @@ async function fetchRoutes(from, to) {
         if (!uniq.some((u) => Math.abs(u.totalDist - pun.totalDist) < 500 && Math.abs(u.totalDur - pun.totalDur) < 60)) uniq.push(pun);
       } catch (e) {}
     }
+    uniq._gradska = gradska;   // presuda putuje UZ rute - commit pod planSeq guardom u plan()
     return uniq;
   } catch (e) {
     state.engine = "osrm";
@@ -2864,6 +2887,7 @@ async function importGpxCoords(coords, label) {   // zajednicki motor: GPX fajl 
     if (_pseq !== state.planSeq) return;
     // dalje IDENTICNO repu plan()-a: uzorci -> prognoza -> ocena -> prikaz
     state.routes = [route];
+    state._gradska = false;   // uvezen trag nije gradska relacija
     state.routes.forEach(buildSamples);
     shareToast("Proveravam prognozu po satu prolaska…");
     const _wx = await Promise.allSettled(state.routes.map((r) => fetchWeather(r, departure)));
@@ -5883,6 +5907,7 @@ async function plan() {
     const _rts = await fetchRoutes(from, to);
     if (_pseq !== state.planSeq) return;   // R13v2: prvo provera, PA commit (stari fetch ne sme da pregazi nove rute)
     state.routes = _rts;
+    state._gradska = !!_rts._gradska;   // presuda "gradska relacija" commituje se ZAJEDNO sa rutama
     state.routes.forEach(buildSamples);
     if (state.engine === "osrm")
       $("engineNote").textContent = "Pažnja: moto profil (Valhalla) trenutno nedostupan - prikazane rute su auto profil (OSRM).";
@@ -6152,8 +6177,16 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.35";
+const APP_VERSION = "0.9.36";
 const CHANGELOG = [
+  { v: "0.9.36", d: "09.08.2026.", stavke: [
+    "<b>Planinske rute su se gubile</b> (nalaz revizije, najozbiljniji): Kotor-Cetinje i Užice-Zlatibor se voze oko 50 km/h, pa ih je nova gradska logika proglašavala gradom i nudila SAMO najbržu rutu - bez ijedne vijugave varijante, na najlepšim rutama koje imamo. Sada se grad prepoznaje po gustini raskrsnica (mereno: grad 1,2-1,5 raskrsnica po km i prosek 30 km/h, planina 0,4-0,6 i 50 km/h).",
+    "<b>Prognoza je kasnila na pametnim gradskim rutama</b>: pri spajanju tri dela rute gubilo se vreme prve deonice svakog dela (na Beograd-Valjevo čak 26 minuta), pa su prognoza po satu prolaska i predlog pauze bili pomereni. Sada je sat prolaska tačan (provereno: rupa 0 minuta).",
+    "<b>Prevlačenje sažetka je bacalo karticu udesno</b> - kartica je tokom prevlačenja iskakala pola ekrana u stranu; sada ostaje centrirana.",
+    "<b>Sažetak više ne gasi oznake na mapi</b>: pinovi rute, pumpe i kafane se sada samo privremeno sklone i vrate kad zatvoriš sažetak (ranije su nestajali zauvek, a i Slojevi bi prestali da rade).",
+    "<b>Traka u vožnji više ne izbacuje sat dolaska van ekrana</b> na užim telefonima - \"Završi\" je sada crveno stop dugme, a tekst se pojavi tek kad ga pritisneš.",
+    "Još osam sitnijih: promena rute više ne oboji celu novu rutu kao pređenu; gustina traga se resetuje za svaku vožnju; zumovi posle nove kamere usklađeni; \"Druga ruta\" i preračun sada pamte pravi stil rute; prazna pretraga poništava predloge u letu; pad drugog kruga računanja više ne baca rute na rezervni servis; daleka odredišta (Alpi, Grčka) opet iskaču u predlozima; \"Zatim\" čip se prigušuje u pauzi."
+  ] },
   { v: "0.9.35", d: "09.08.2026.", stavke: [
     "<b>Nagib se sada VIDI duž cele rute</b> (tvoj zahtev): trag na mapi sažetka je obojen po uglu obaranja - siva gde si uspravan, žuta 10-20°, narandžasta 20-30°, crvena preko 30°. Odmah vidiš u kojoj krivini si najviše legao. Najvijugavijih 3 km su sada plavi oreol ISPOD traga, pa se boje nagiba i dalje čitaju.",
     "<b>Gradska vožnja se prepoznaje po ritmu</b> (tvoj nalaz): 13,8 km po Beogradu je bilo označeno kao \"Otvoreni put\" jer je prosek bio 45 km/h. Sada se gleda ritam vožnje (stajanja na semaforima i udeo sporih deonica), a kod planirane rute i presuda rutera - bulevar više ne pretvara grad u otvoreni put."
@@ -6629,7 +6662,6 @@ function init() {
       if (document.body.classList.contains("riding") && typeof rideRecenter === "function") { rideRecenter(); return; }
       homeLocRecenter();   // nas tok: centriranje + JASNA poruka kad je dozvola odbijena (staro dugme je cutalo)
     },
-    rec: () => { try { startFreeRide(); } catch (e) {} },   // Snimi i kreni (6.8.)
     theme: () => { /* dan/noć - poveži se u sledećoj fazi */ },
   };
   document.querySelectorAll("#homeFabs button").forEach((b) => {
@@ -6768,7 +6800,11 @@ function renderSugg(q) {
   ["sRecentT", "sRecent"].forEach((id) => { document.getElementById(id).style.display = isTyping ? "none" : ""; });
   document.querySelectorAll("#sBody > .srow").forEach((r) => {
     r.style.display = isTyping ? "none" : (r.id === "sMyLoc" && SEARCH_MODE !== "from" ? "none" : "flex"); });
-  if (!isTyping) { sugg.innerHTML = ""; updateSearchStatic(); return; }
+  if (!isTyping) {   // review 9.8.: odgovor u letu je znao da ubaci redove u ponovo otvorenu pretragu
+    try { clearTimeout(_netSuggT); } catch (e) {}
+    _netSuggSeq++; sugg._q = ""; sugg._hits = []; sugg._net = [];
+    sugg.innerHTML = ""; updateSearchStatic(); return;
+  }
   const fq = SFOLD(q.trim());
   let hits = searchIndex().filter((x) => x.f.includes(fq)).slice(0, 8);
   try {   // Faza 1: Nedavno se MESA u rezultate dok kucas (Google princip - istorija je najjaci signal)
@@ -7336,7 +7372,7 @@ async function altOpen() {
   s.hidden = false;
   if (!pos || !to) { lst.innerHTML = '<div class="prazno">Nemam GPS ili cilj, ne mogu da računam odavde.</div>'; return; }
   lst.innerHTML = '<div class="prazno">Računam rutu odavde…</div>';
-  const sada = ROUTE_STYLES.find((x) => route.label && route.label.startsWith(x.label.split(" ")[0]));
+  const sada = ROUTE_STYLES[route.styleIdx] || ROUTE_STYLES.find((x) => route.label && route.label.startsWith(x.label.split(" ")[0])) || ROUTE_STYLES[1];
   const savedVias = state.vias; state.vias = [];   // odavde do cilja, bez starih stanica
   let res = [];
   try {
@@ -7416,7 +7452,7 @@ function navPaintRoute(route) {   // osvezi liniju rute na mapi iz (nove) geomet
     if (src) src.setData({ type: "FeatureCollection", features: [{ type: "Feature", properties: { color: "#f97316" },
       geometry: { type: "LineString", coordinates: route.coords } }] });
     const ns = map.getSource("navseg");
-    if (ns) { ns.setData({ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: route.coords } }); RIDE._prog = -1; navProgress(0.0001); }
+    if (ns) { ns.setData({ type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: route.coords } }); RIDE._prog = -1; navProgress(0.0001); if (RIDE.cam) { RIDE.cam.d = 0; RIDE.cam.dS = null; RIDE.cam.offM = 9999; } }
   } catch (e) {}
 }
 /* ---------- nav izgled po maketi (docs/3d-mockup + tools/tbt3d-koncept): narandzasto jezgro,
@@ -7645,7 +7681,7 @@ async function rideReroute(route, lo, la, dNow) {
     document.getElementById("rideShields").innerHTML = "";
     speakSr("Menjam rutu.");
     const to = state.geocode && state.geocode.to; if (!to) return;
-    const style = ROUTE_STYLES.find((x) => route.label && route.label.startsWith(x.label.split(" ")[0])) || ROUTE_STYLES[1];
+    const style = ROUTE_STYLES[route.styleIdx] || ROUTE_STYLES.find((x) => route.label && route.label.startsWith(x.label.split(" ")[0])) || ROUTE_STYLES[1];
     // NEPROĐENE stanice OSTAJU u ruti - 5.8. je reroute tiho brisao celu turu i vodio pravo na cilj.
     // Prodjenost je TRAJNA oznaka (v._passed): geometrijski test na novoj ruti bi "uskrsnuo"
     // davno prodjenu stanicu preko offM>2000 grane (review nalaz 6.8.)
@@ -7870,7 +7906,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
       if (Date.now() > (RIDE.freeCamUntil || 0)) {
         if (RIDE.freeCamUntil) { RIDE.freeCamUntil = 0; const gg = document.querySelector('[data-fab="gps"].recenter'); if (gg) gg.classList.remove("recenter"); }
         const hdg = (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : map.getBearing();
-        map.easeTo({ center: [lo, la], zoom: Math.max(15.2, zoomForSpeed(spdK) - 0.8), bearing: hdg, pitch: 45, duration: 850, padding: navCamPadding() });
+        map.easeTo({ center: [lo, la], zoom: Math.max(14.6, zoomForSpeed(spdK) - 0.8), bearing: hdg, pitch: 45, duration: 850, padding: navCamPadding() });
       }
     } catch (e) {}
   };
@@ -7905,7 +7941,7 @@ function startRide() {
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = [];   // dnevnik voznje + kolekcije
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
   RIDE.lastRouteI = null; RIDE.offSt = { offMs: 0 };   // hint prozor projekcije + off-route masina stanja
-  RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE._gpxOffAt = 0; RIDE.trace = []; RIDE._sumFoto = null;   // odometar/trag iz GPS-a + delta-brzina + fizicka provera nagiba
+  RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE._gpxOffAt = 0; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;   // odometar/trag iz GPS-a + delta-brzina + fizicka provera nagiba
   RIDE.samples = []; RIDE._smpT = 0; RIDE._maxLnSeen = 0; RIDE.momBrz = null; RIDE.momNagib = null;   // uzorci + momenti za sazetak v3
   try { for (const v of state.vias || []) delete v._passed; } catch (e) {}   // nova voznja = sveze oznake prodjenosti stanica
   RIDE.log = []; navLog("start", { km: +((route.cumDist[route.cumDist.length - 1] || 0) / 1000).toFixed(2), v: APP_VERSION });
@@ -7928,7 +7964,7 @@ function startRide() {
   try { nightRoads(true); } catch (e) {}   // u voznji mapa svetlija (kontrast za brzi pogled)
   try { map.setPadding(navCamPadding()); } catch (e) {}   // vertikalu resava look-ahead kamera (vozac ~165px ispod centra), ne padding
   navRideLayersOn(route);   // nav stil po maketi: narandzasta ruta + predjeno plavo + rizik overlay
-  RIDE.cam = { d: 0, spd: 0, hdg: null, ts: 0, offM: 9999, distTo: 9999, rawLo: null, rawLa: null, zoomS: 17.2, brgS: null };
+  RIDE.cam = { d: 0, spd: 0, hdg: null, ts: 0, offM: 9999, distTo: 9999, rawLo: null, rawLa: null, zoomS: 16.3, brgS: null };
   startNavCam();
   // reset banera (druga voznja ne sme da krene sa tekstom prosle) + "trazim GPS" stanje
   const _nc = document.querySelector("#rideBar .navcard");
@@ -8284,9 +8320,12 @@ function best3km(pts) {   // najvijugavija ~3 km deonica traga (gustina skretanj
   return best && best.dens > 25 ? best : null;   // ispod ~25 stepeni/km nije vijugavo - prave se ne hvale
 }
 let SUMMARK = [];
+let SUMHID = [];   // elementi markera sakrivenih zbog svezeg sazetka (vracaju se u sumTragSkini)
 function sumTragSkini() {
   for (const m of SUMMARK) { try { m.remove(); } catch (e) {} }
   SUMMARK = [];
+  for (const el of SUMHID) { try { el.style.display = ""; } catch (e) {} }   // vrati sakrivene markere planirane rute (review 9.8.)
+  SUMHID = [];
   for (const l of ["sumtrag-nag", "sumtrag-bestln", "sumtrag-ln", "sumtrag-cas"]) { try { if (map && map.getLayer(l)) map.removeLayer(l); } catch (e) {} }
   for (const s of ["sumtrag-nagib", "sumtrag-best", "sumtrag"]) { try { if (map && map.getSource(s)) map.removeSource(s); } catch (e) {} }
 }
@@ -8295,8 +8334,13 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
   if (!pts || pts.length < 2 || !map || !map.getStyle) return false;
   try {
     sumTragSkini();
-    if (s._svez) {   // svez sazetak: pocisti ostatke PLANIRANE rute (zeleni/crveni pin + POI ikonice) - mapa prica samo voznju (9.8.)
-      try { (state.markers || []).forEach((m) => m.remove()); state.markers = []; } catch (e) {}
+    if (s._svez) {   // svez sazetak: SAKRIJ (ne brisi!) markere planirane rute - mapa prica samo voznju (9.8., review: brisanje je gasilo i Slojeve)
+      try {
+        SUMHID = [];
+        [...(state.markers || []), ...(state.editorialMarkers || [])].forEach((m) => {
+          try { const el = m.getElement(); if (el && el.style.display !== "none") { SUMHID.push(el); el.style.display = "none"; } } catch (e2) {}
+        });
+      } catch (e) {}
     }
     map.addSource("sumtrag", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: pts } } });
     map.addLayer({ id: "sumtrag-cas", type: "line", source: "sumtrag", layout: { "line-cap": "round", "line-join": "round" },
@@ -8999,8 +9043,12 @@ async function shareRideCard(s) {
   {   // prevlacenje nadole = spustanje sazetka (Boskov nalaz 9.8.: grabber je "stajao zakljucan")
     const cd = el.querySelector(".card");
     let dg = null;
+    // 9.8. review: kartica je centrirana sa translateX(-50%) - inline translateY je to BRISAO i kartica bi
+    // skocila na pola ekrana udesno tokom prevlacenja. Landscape varijanta ima transform:none, pa tamo ide cist Y.
+    const bezX = () => window.matchMedia && window.matchMedia("(max-height: 520px)").matches;
+    const xform = (dy) => !dy ? "" : (bezX() ? "translateY(" + dy + "px)" : "translate(-50%, " + dy + "px)");
     const start = (e) => { dg = { y0: e.clientY, moved: 0 }; cd.classList.add("dragging"); try { e.target.setPointerCapture(e.pointerId); } catch (er) {} };
-    const move = (e) => { if (!dg) return; const dy = Math.max(0, e.clientY - dg.y0); dg.moved = dy; cd.style.transform = dy ? "translateY(" + dy + "px)" : ""; };
+    const move = (e) => { if (!dg) return; const dy = Math.max(0, e.clientY - dg.y0); dg.moved = dy; cd.style.transform = xform(dy); };
     const end = () => { if (!dg) return; const dy = dg.moved; dg = null; cd.classList.remove("dragging"); if (dy > 130) zatvoriSum(); else cd.style.transform = ""; };
     [el.querySelector(".grab"), document.getElementById("rsKick")].forEach((z) => { if (!z) return;
       z.addEventListener("pointerdown", start); z.addEventListener("pointermove", move);
@@ -9107,12 +9155,14 @@ async function shareRideCard(s) {
   const rx = document.getElementById("rideX"); if (rx) rx.addEventListener("click", () => {   // dvostepeno (rukavice): prvi tap pita, drugi gasi
     if (rx.classList.contains("arm")) { stopRide(); return; }
     rx.classList.add("arm"); rx.textContent = "Prekini?";
-    setTimeout(() => { rx.classList.remove("arm"); rx.textContent = "✕"; }, 2500);
+    clearTimeout(rx._armT);   // stari tajmer bi razoruzao sveze naoruzano dugme (review 9.8.)
+    rx._armT = setTimeout(() => { rx.classList.remove("arm"); rx.textContent = "✕"; }, 2500);
   });
   const re = document.getElementById("rideEnd"); if (re) re.addEventListener("click", () => {   // Zavrsi (slobodna voznja) - isti dvostepeni princip
     if (re.classList.contains("arm")) { stopRide(); return; }
     re.classList.add("arm"); re.querySelector("span").textContent = "Završi?";
-    setTimeout(() => { re.classList.remove("arm"); const s = re.querySelector("span"); if (s) s.textContent = "Završi"; }, 2500);
+    clearTimeout(re._armT);
+    re._armT = setTimeout(() => { re.classList.remove("arm"); const s = re.querySelector("span"); if (s) s.textContent = "Završi"; }, 2500);
   });
 window.rideFree = function (e) {   // na window - definicija je unutar IIFE a koristi je startRide/fabMap iz drugih scope-ova
   if (e && e.originalEvent && document.body.classList.contains("riding")) {
@@ -9126,7 +9176,7 @@ window.rideRecenter = function () {
   const c = RIDE.cam;
   if (c && c.rawLo != null) {
     const brg = c.brgS != null ? c.brgS : map.getBearing();
-    const z = c.zoomS || 17.2;
+    const z = c.zoomS || 16.3;
     map.easeTo({ center: navDest(c.rawLo, c.rawLa, brg, navAheadM(z, c.rawLa)), zoom: z, pitch: NAV_PITCH, bearing: brg, padding: navCamPadding(), duration: 500 });
   } else if (RIDE.lastPos) {
     map.easeTo({ center: [RIDE.lastPos[0], RIDE.lastPos[1]], zoom: 16.3, pitch: NAV_PITCH, padding: navCamPadding(), duration: 500 });
