@@ -1,5 +1,5 @@
 {
- "updated": "2026-08-10T20:59+00:00",
+ "updated": "2026-08-10T21:56+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -7,15 +7,21 @@
    "ok": true,
    "items": [
     {
+     "type": "Nesreča",
+     "title": "A1-E57, Ljubljana  - vzh. obvoznica: Nesreča",
+     "detail": "A1, Ljubljana - vzhodna obvoznica, razcep Malence iz smeri Golovca proti Debelemu hribu, prometna nesreča, zaprt vozni pas.",
+     "region": "A1-E57, Ljubljana  - vzh. obvoznica"
+    },
+    {
+     "type": "Delo",
+     "title": "A1-E57, Ljubljana - Maribor: Delo",
+     "detail": "A1, Ljubljana - Maribor, predor Ločica - uvoz Žalec v smeri Maribora, dela, zaprt prehitevalni pas, barvanje talnih označb.",
+     "region": "A1-E57, Ljubljana - Maribor"
+    },
+    {
      "type": "Okvara vozila",
      "title": "A1-E61, E70, Koper - Ljubljana: Okvara vozila",
      "detail": "A1, Koper - Ljubljana, priključek Vrhnika - priključek Dragomer v smeri Ljubljane, okvara vozila, oviran promet.",
-     "region": "A1-E61, E70, Koper - Ljubljana"
-    },
-    {
-     "type": "Ovire",
-     "title": "A1-E61, E70, Koper - Ljubljana: Ovire",
-     "detail": "A1, Koper - Ljubljana, pred razcepom Gabrk v smeri Ljubljane, žival na cestišču, oviran promet.",
      "region": "A1-E61, E70, Koper - Ljubljana"
     },
     {
@@ -38,21 +44,9 @@
     },
     {
      "type": "Delo",
-     "title": "A1-E57, Maribor - Ljubljana: Delo",
-     "detail": "A1, Maribor - Ljubljana, uvoz Žalec - predor Ločica v smeri Ljubljane, dela, zaprt prehitevalni pas, barvanje talnih označb.",
-     "region": "A1-E57, Maribor - Ljubljana"
-    },
-    {
-     "type": "Delo",
      "title": "A2-E61, Karavanke - Ljubljana: Delo",
      "detail": "A2, Karavanke - Ljubljana, priključek Kranj zahod v smeri Ljubljane, dela, zaprt prehitevalni pas.",
      "region": "A2-E61, Karavanke - Ljubljana"
-    },
-    {
-     "type": "Delo",
-     "title": "G1-11 , Koper - Škofije: Delo",
-     "detail": "G1-11, Koper - Škofije, priključek Koper center, Slavček - uvoz Bertoki v smeri Ljubljane, dela, zaprt vozni pas.",
-     "region": "G1-11 , Koper - Škofije"
     },
     {
      "type": "Delo",
@@ -245,9 +239,15 @@
      "title": "RT-912, Zali Log - Davča: Delo",
      "detail": "RT-912, Zali log - Davča - Novaki, pri Davči, izmenično enosmerni promet, kratkotrajne popolne zapore (do 20 minut), izvedbe zaščite ceste pred padajočim kamenjem, do 11. 9. 2026.",
      "region": "RT-912, Zali Log - Davča"
+    },
+    {
+     "type": "Delo",
+     "title": "G2-108, Litija - Zagorje: Delo",
+     "detail": "G2-108, Litija - Zagorje, pri Šklendrovcu, izmenično enosmerni promet, gradnje krožišča in rekonstrukcija mostu, do 2. 12. 2026.",
+     "region": "G2-108, Litija - Zagorje"
     }
    ],
-   "fetched": "2026-08-10T20:59+00:00"
+   "fetched": "2026-08-10T21:56+00:00"
   },
   "HR": {
    "name": "Hrvatska",
@@ -393,12 +393,6 @@
      "region": "A4"
     },
     {
-     "type": "guzva/dogadjaj (Nesreća)",
-     "title": "A4 - Nesreća",
-     "detail": "Prometna nesreća na autocesti A4 na 46+550 km između čvora Varaždinske Toplice i čvora Novi Marof na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A4"
-    },
-    {
      "type": "guzva/dogadjaj (Radovi)",
      "title": "A4 - Radovi",
      "detail": "Radovi na održavanju na autocesti A4 između 91+000 km i 89+700 km , između čvora Sesvete i čvora Sveta Helena na kolniku u smjeru Goričana. Promet se vodi jednom prometnom trakom uz ograničenje brzine od 60 km/h. Predviđeno trajanje radova je do 23:59 h. Molimo korisnike za oprez.",
@@ -493,9 +487,15 @@
      "title": "1026 - Radovi",
      "detail": "radovi - cesta zatvorena",
      "region": "1026"
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "D29-1 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "D29-1"
     }
    ],
-   "fetched": "2026-08-10T20:59+00:00"
+   "fetched": "2026-08-10T21:56+00:00"
   },
   "RS": {
    "name": "Srbija",
@@ -743,7 +743,7 @@
      "region": "Srbija"
     }
    ],
-   "fetched": "2026-08-10T20:59+00:00"
+   "fetched": "2026-08-10T21:56+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -991,12 +991,12 @@
      "region": "Granični prijelazi"
     }
    ],
-   "fetched": "2026-08-10T20:59+00:00"
+   "fetched": "2026-08-10T21:56+00:00"
   },
   "ME": {
    "name": "Crna Gora",
    "source": "AMSCG",
-   "ok": false,
+   "ok": true,
    "items": [
     {
      "type": "radovi",
@@ -1077,9 +1077,7 @@
      "region": "Crna Gora"
     }
    ],
-   "error": "Expecting value: line 1 column 1 (char 0)",
-   "stale": true,
-   "fetched": "2026-08-10T20:01+00:00"
+   "fetched": "2026-08-10T21:56+00:00"
   },
   "MK": {
    "name": "S. Makedonija",
@@ -1165,7 +1163,7 @@
      "region": "Прилеп – Битола"
     }
    ],
-   "fetched": "2026-08-10T20:59+00:00"
+   "fetched": "2026-08-10T21:56+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -1233,7 +1231,7 @@
      "region": "Bërdicës – Ura"
     }
    ],
-   "fetched": "2026-08-10T20:59+00:00"
+   "fetched": "2026-08-10T21:56+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -1563,7 +1561,7 @@
      "region": "Neamt"
     }
    ],
-   "fetched": "2026-08-10T20:59+00:00"
+   "fetched": "2026-08-10T21:56+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -1691,13 +1689,67 @@
      "region": "A1 Maliakos-Kleidi (centralna Grcka)"
     },
     {
-     "type": "error",
-     "title": "https://egnatia.eu/category/deltia-typou/feed/",
-     "detail": "mismatched tag: line 93, column 2",
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Tue, 21 Apr 2026 10:14:33 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό, ότι λόγω Άσκησης Πυρασφάλειας που θα διεξαχθεί εντός της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθεί προσωρινή διακοπή της κυκλοφορίας στην Υποθαλάσσια Σήραγγα Ακτίου – Πρέβεζας επί της Ε.Ο Πρέβεζας – Ηγουμενίτσας, στο οδικό τμήμα α",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "info",
+     "title": "Νέος φορέας διαχείρισης του αυτοκινητόδρομου της Εγνατίας οδού, από 31/12/2025",
+     "detail": "Wed, 15 Apr 2026 09:02:25 +0000 - Από τις 31/12/2025 η διαχείριση του αυτοκινητοδρόμου της Εγνατίας Οδού Α2 και των Κάθετων Αξόνων Καστοριάς Α29, Ευζώνων Α1 και Σερρών Α25 ΕΧΕΙ ΜΕΤΑΒΙΒΑΣΤΕΙ μέσω σύμβασης παραχώρησης στην εταιρεία «Νέα Εγνατία Οδός Παραχώρηση Α.Ε.» (https://neodos.gr). Συνεπώς για ζη",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Mon, 10 Nov 2025 13:33:57 +0000 - Η «ΕΓΝΑΤΙΑ ΟΔΟΣ Α.Ε.» κάνει γνωστό ότι, για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών Δομικής Επιθεώρησης εντός της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρίδας κυκλοφορίας, σύμφωνα με το παρακάτω πρόγραμμα: Δε",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Thu, 06 Nov 2025 06:25:36 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό ότι, για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών Συντήρησης Η/Μ εξοπλισμού εντός της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρίδας κυκλοφορίας, σύμφωνα με το παρακάτω πρόγραμ",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "info",
+     "title": "25 Ιουνίου 2025 Ευρωπαϊκή Ημέρα Ευαισθητοποίησης για τους εργαζόμενους πεδίου των αυτοκινητοδρόμων",
+     "detail": "Tue, 24 Jun 2025 08:54:21 +0000 - Ο αυτοκινητόδρομος της Εγνατίας Οδού και των Κάθετων Αξόνων είναι συνολικού μήκους 900 χιλιομέτρων που διατρέχουν το σύνολο της Βόρειας Ελλάδας εξασφαλίζοντας γρήγορες και ασφαλείς μετακινήσεις. Στον αυτοκινητόδρομο της Εγνατίας Οδού και στους Κάθετους Άξονες δουλεύ",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Fri, 06 Jun 2025 04:44:56 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό, ότι για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών εγκατάστασης Σταθμού Βάσης Κινητής Τηλεφωνίας (Victus Networks) για την κάλυψη της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρί",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Tue, 27 May 2025 10:57:16 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό, ότι για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών εγκατάστασης Σταθμού Βάσης Κινητής Τηλεφωνίας (Victus Networks) για την κάλυψη της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρί",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "roadworks",
+     "title": "Εργασίες συντήρησης του οδοστρώματος στην περιοχή του Περιστερίου της ΠΕ Ιωαννίνων",
+     "detail": "Mon, 19 May 2025 08:46:21 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό ότι, για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών συντήρησης του οδοστρώματος στην περιοχή του Περιστερίου της ΠΕ Ιωαννίνων περί την χ.θ. 102+000 του Βορείου Κλάδου (κατεύθυνση προς Ιωάννινα) της Εγνατίας Οδού, θα πραγματοπ",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Tue, 01 Apr 2025 10:30:00 +0000 - Η «Εγνατία Οδός ΑΕ» κάνει γνωστό, ότι για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών εγκατάστασης Σταθμού Βάσης Κινητής Τηλεφωνίας Cosmote για την ραδιοκάλυψη της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρίδας κυκ",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "Παράδοση στην κυκλοφορία του νότιου κλάδου (κατεύθυνση προς Θεσσαλονίκη) της γέφυρας Αξιού",
+     "detail": "Thu, 20 Mar 2025 09:27:33 +0000 - Η «Εγνατία Οδός ΑΕ» ενημερώνει ότι, τη Δευτέρα 24 Μαρτίου 2025, θα δοθεί σε κυκλοφορία ο νότιος κλάδος της γέφυρας Αξιού, με κατεύθυνση προς Θεσσαλονίκη. Το οδικό τμήμα που παρέμεινε κλειστό λόγω εργασιών αποκατάστασης της γέφυρας, η οποία έχει κατασκευαστεί τη δεκα",
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-08-10T20:59+00:00"
+   "fetched": "2026-08-10T21:56+00:00"
   }
  },
  "meteo": {
@@ -2250,54 +2302,6 @@
     "type": "meteo-upozorenje",
     "title": "Orange High-temperature Warning issued for Republic of North Macedonia - Vardar region",
     "detail": "nivo: narandzasto | pojava: High Temperature | vazi: 2026-08-11T08:00 do 2026-08-11T21:30",
-    "region": "Vardar region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Republic of North Macedonia - Skopje region",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-08-10T11:30 do 2026-08-10T21:30",
-    "region": "Skopje region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Republic of North Macedonia - Southwestern region",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-08-10T11:30 do 2026-08-10T21:30",
-    "region": "Southwestern region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Republic of North Macedonia - Southeastern region",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-08-10T11:30 do 2026-08-10T21:30",
-    "region": "Southeastern region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Republic of North Macedonia - Pelagonia region",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-08-10T11:30 do 2026-08-10T21:30",
-    "region": "Pelagonia region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Republic of North Macedonia - Polog region",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-08-10T11:30 do 2026-08-10T21:30",
-    "region": "Polog region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Republic of North Macedonia - Northeastern region",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-08-10T11:30 do 2026-08-10T21:30",
-    "region": "Northeastern region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Republic of North Macedonia - Eastern region",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-08-10T11:30 do 2026-08-10T21:30",
-    "region": "Eastern region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Republic of North Macedonia - Vardar region",
-    "detail": "nivo: zuto | pojava: High Temperature | vazi: 2026-08-10T11:30 do 2026-08-10T21:30",
     "region": "Vardar region"
    },
    {
