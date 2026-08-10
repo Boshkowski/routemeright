@@ -527,10 +527,14 @@
       -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent); }
     #homeChips::-webkit-scrollbar { display: none; }
     #homeChips::-webkit-scrollbar { display: none; }
-    #homeChips .chip { white-space: nowrap; display: flex; align-items: center; gap: 7px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.2); border-radius: 999px; padding: 12px 15px; min-height: 44px; color: #e2e8f0; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.3); }
+    /* Cipovi su PUNI, bez prozirnosti: na 92% je mapa probijala kroz njih i "Snimi voznju"
+       je delovao poluprovidno i nedovrseno (Boskov nalaz 10.8.). Crveni akcenat sada nosi
+       pun okvir i tanka aura, a ne bleda ivica na pola prozirnosti. */
+    #homeChips .chip { white-space: nowrap; display: flex; align-items: center; gap: 7px; background: #0f172a; border: 1px solid rgba(148,163,184,.22); border-radius: 999px; padding: 12px 15px; min-height: 44px; color: #e2e8f0; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.35); }
     #homeChips .chip svg { width: 16px; height: 16px; stroke: #f97316; fill: none; }
     #homeChips .chip.on { background: #f97316; border-color: #f97316; color: #fff; }
-    #homeChips .chip.rec { border-color: rgba(239,68,68,.5); }
+    #homeChips .chip.rec { border-color: #ef4444; color: #fff;
+      box-shadow: 0 3px 10px rgba(0,0,0,.35), 0 0 0 3px rgba(239,68,68,.14); }
     #homeChips .chip.rec svg { stroke: #ef4444; }
     #homeChips .chip.on svg { stroke: #fff; }
 
@@ -891,12 +895,35 @@
     #rideBarBottom .endr span { display: none; }
     #rideBarBottom .endr.arm { background: #991b1b; width: auto; padding: 0 15px; }
     #rideBarBottom .endr.arm span { display: inline; }
-    #rideBarBottom .pill, #rideBarBottom .eta { min-width: 0; }
+    /* Pilula se NE skuplja: kad je stisnuta, krug sa ogranicenjem brzine iscuri iz nje
+       i zavuce se pod dugme Prijavi (izmereno 16 px preklopa na 360 px). Da bi sve stalo,
+       na uskim telefonima su dugmad za nijansu manja. */
+    #rideBarBottom .pill { flex: none; }
+    @media (max-width: 400px) {
+      body.riding #rideBarBottom { gap: 7px; }
+      #rideBarBottom .rep { width: 50px; height: 50px; }
+      #rideBarBottom .rep svg { width: 26px; height: 26px; }
+      #rideBarBottom .alt { width: 40px; height: 40px; }
+      #rideBarBottom .alt svg { width: 20px; height: 20px; }
+      #rideBarBottom .pill { padding: 8px 9px; }
+      #rideBarBottom .pill .v { font-size: 23px; }
+      #rideBarBottom .pill .ln { margin-left: 8px; padding-left: 8px; }
+      #rideBarBottom .lim { width: 40px; height: 40px; margin-left: 8px; border-width: 4px; }
+      #rideBarBottom .lim span { font-size: 17px; }
+    }
     body.freeride #rideBarBottom .endr { display: inline-flex; }
     body.freeride #rideBarBottom #rideAlt { display: none; }
-    #rideBarBottom .eta { background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); border-radius: 16px; padding: 9px 12px; text-align: center; }
-    #rideBarBottom .eta .t { font-size: 21px; font-weight: 900; color: #fff; line-height: 1.1; font-variant-numeric: tabular-nums; }
-    #rideBarBottom .eta .d { font-size: 13.5px; color: #e2e8f0; margin-top: 2px; font-weight: 700; }
+    /* ETA red: sopstveni red iznad dugmadi, levo (desno je GPS dugme). U donjoj traci je na
+       390 px ostajalo 33 px za oba podatka, pa ih vozac prakticno nije video. */
+    #rideEtaRow { display: none; }
+    body.riding #rideEtaRow { display: block; position: fixed; left: 12px; z-index: 40;
+      bottom: calc(84px + env(safe-area-inset-bottom)); max-width: calc(100% - 92px); }
+    #rideEtaRow .eta { display: inline-flex; align-items: baseline; gap: 9px;
+      background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); border-radius: 14px;
+      padding: 7px 13px; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+    #rideEtaRow .eta .d { font-size: 19px; font-weight: 900; color: #fff; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    #rideEtaRow .eta .t { font-size: 15.5px; font-weight: 800; color: #cbd5e1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    #rideEtaRow .eta .t::before { content: "·"; margin-right: 9px; color: #64748b; }
     body.riding #homeChrome, body.riding #homeSheet { display: none !important; }
     body.riding #bottomnav, body.riding #screen-rute, body.riding #screen-zajednica, body.riding #screen-ja { display: none !important; }   /* u voznji: samo mapa i nav kontrole */
     body.riding .maplibregl-user-location-dot, body.riding .maplibregl-user-location-accuracy-circle { display: none !important; }
@@ -1246,6 +1273,7 @@
     #rideBar .ahead, #rideBar .wx { padding: 5px 12px; font-size: 11.5px; }
     body.riding #rideBarBottom { left: calc(10px + var(--sl)); right: auto; width: var(--col);
       bottom: calc(8px + var(--sb)); gap: 8px; }
+    body.riding #rideEtaRow { left: calc(10px + var(--sl)); bottom: calc(70px + var(--sb)); max-width: var(--col); }
     #rideBarBottom .pill { padding: 6px 11px; }
     #rideBarBottom .pill .v { font-size: 22px; }
     #rideBarBottom .pill .ln .v { font-size: 18px; }
@@ -1626,8 +1654,10 @@
     <button class="alt" id="rideAlt" aria-label="Druga ruta"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 20V9a5 5 0 015-5h6"/><path d="M12 7l3-3-3-3"/><path d="M20 20v-5a5 5 0 00-5-5h-3"/></svg></button>
     <button class="alt" id="ridePause" aria-label="Pauza"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10 5v14M14 5v14"/></svg></button>
     <button class="endr" id="rideEnd" aria-label="Završi vožnju"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="2"/></svg><span>Završi</span></button>
-    <div class="eta"><div class="t" id="rideEta">-</div><div class="d" id="rideRem">-</div></div>
   </div>
+  <!-- ETA i preostali km su svoj red IZNAD dugmadi: u donjoj traci ih je na telefonu od 390 px
+       gnjecilo na 33 px, pa se u voznji nisu ni videli (Boskov nalaz sa puta 10.8.) -->
+  <div id="rideEtaRow"><div class="eta"><div class="d" id="rideRem">-</div><div class="t" id="rideEta">-</div></div></div>
   <div id="rideRoad"></div>
   <div id="rideSum" role="dialog" aria-label="Sažetak vožnje"><div class="card">
     <div class="grab"></div>
@@ -6630,8 +6660,13 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.41";
+const APP_VERSION = "0.9.42";
 const CHANGELOG = [
+  { v: "0.9.42", d: "10.08.2026.", stavke: [
+    "<b>ETA i preostali kilometri se konačno vide u vožnji</b> (tvoj nalaz sa puta): bili su u istom redu sa brzinom, nagibom, ograničenjem i tri dugmeta, pa im je na tvom telefonu ostajalo 33 piksela - praktično ih nije ni bilo. Sada su svoj red iznad dugmadi: <b>još 128,4 km · 14:07</b>.",
+    "<b>Ograničenje brzine se više ne zavlači pod dugme Prijavi</b>: crveni krug je curio izvan svoje pilule i na užim telefonima ga je narandžasto dugme sekło za 16 piksela. Dugmad su na uskim ekranima za nijansu manja pa sve staje.",
+    "<b>Čip \"Snimi vožnju\" više ne izgleda poluprovidno</b> (tvoj nalaz): svi čipovi na početnom ekranu su sada puni, bez prozirnosti kroz koju je probijala mapa, a crveni akcenat nosi pun okvir umesto blede ivice."
+  ] },
   { v: "0.9.41", d: "10.08.2026.", stavke: [
     "<b>Sačuvana ruta radi bez signala</b> (tvoj zahtev za offline): dugme <b>Čuvaj</b> više ne pamti samo imena polazišta i cilja nego celu rutu - svaku tačku puta, svih 59 skretanja, prognozu (satnu, sa fine mreže i 15-minutnu), profil visine, pumpe i trošak. U klisuri bez signala otvoriš <b>Sačuvane</b> i ruta je tu za desetinku sekunde, sa preračunatim satom prolaska za novo vreme polaska.",
     "<b>Aplikacija se sada otvara i bez interneta.</b> Do sada bez signala nije mogla ni da se učita. Sada se sama aplikacija, mapa i podaci o motorima čuvaju na telefonu, a mapa pamti i krajeve koje si već gledao - pa se vidi i podloga, ne samo linija rute.",
