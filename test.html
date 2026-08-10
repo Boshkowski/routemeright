@@ -539,6 +539,10 @@
     #homeChips .chip.on svg { stroke: #fff; }
 
     #homeFabs { display: flex; position: fixed; right: 14px; top: calc(122px + env(safe-area-inset-top)); z-index: 12; flex-direction: column; gap: 10px; }
+    /* U voznji zelena kartica menja visinu (ima "Zatim", najavu, upozorenje o vremenu), pa je
+       dugme Slojevi znalo da se pribije uz nju (Boskov nalaz sa puta). Visinu kartice meri JS
+       i upisuje u --navcard-h, a dugmad krecu 14 px ispod nje. */
+    body.riding #homeFabs { top: calc(var(--navcard-h, 130px) + 14px); }
     #homeFabs button { width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.2); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,0,0,.35); cursor: pointer; }
     #homeFabs button svg { width: 22px; height: 22px; stroke: #e2e8f0; fill: none; }
     #homeFabs button[data-fab="tilt"] { display: none; }   /* 3D toggle = kompas dugme */
@@ -801,8 +805,9 @@
     #rideBarBottom .pill.over .v { color: #fca5a5; }
     /* Nagib uzivo: pojavi se tek kad senzor radi (LEAN.on), narandzast kad se stvarno naginje */
     #rideBarBottom .pill .ln { display: none; margin-left: 11px; padding-left: 11px; border-left: 1px solid rgba(148,163,184,.25); text-align: center; }
-    #rideBarBottom .pill.lon .ln { display: block; }
-    #rideBarBottom .pill .ln .v { font-size: 21px; }
+    #rideBarBottom .pill.lon .ln { display: flex; }   /* flex, ne block: kolona sa brojem i oznakom kao kod brzine */
+
+    #rideBarBottom .pill .ln .v { font-size: 26px; }   /* isti broj kao brzina - nagib je ravnopravan podatak */
     #rideBarBottom .pill.lact .ln .v { color: #f97316; }
     /* (#rideSum stilovi su na top-levelu, van media bloka - review 5.8. nasao da bi na desktopu
        markup bez baznog display:none ispao vidljiv u toku dokumenta) */
@@ -870,8 +875,17 @@
     #rideBar #rideX, #rideBar #rideMute { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); color: #fff; min-width: 48px; height: 48px; border-radius: 50%; font-size: 17px; font-weight: 900; cursor: pointer; -webkit-tap-highlight-color: transparent; display: flex; align-items: center; justify-content: center; }
     #rideBar #rideMute svg { width: 22px; height: 22px; stroke: #fff; fill: none; }
     #rideBar #rideMute.off { opacity: .55; }
-    #rideBar #rideX.arm { background: #dc2626; border-color: #dc2626; border-radius: 999px; padding: 0 14px; font-size: 14px; width: auto; }
+    /* Kraj voznje mora da se cita kao KRAJ: crveni krug sa stop kvadratom, ne bledo X. */
+    #rideBar #rideX { background: rgba(220,38,38,.9); border-color: rgba(248,113,113,.65); }
+    #rideBar #rideX svg { width: 21px; height: 21px; stroke: #fff; fill: none; }
+    #rideBar #rideX.arm { background: #dc2626; border-color: #fca5a5; border-radius: 999px; padding: 0 14px; font-size: 13.5px; width: auto; }
     #rideBar .navcard.acquiring, #rideBar .navcard.nosignal, #rideBar .navcard.rerouting { background: linear-gradient(160deg, #475569, #334155); }
+    /* Snimanje voznje = crveno i pulsira (Boskov predlog): zeleno je boja navigacije,
+       a snimanje je drugo stanje i mora da se prepozna na prvi pogled. */
+    body.freeride #rideBar .navcard { background: #7f1d1d; animation: recPuls 2.4s ease-in-out infinite; }
+    body.freeride.ridepaused #rideBar .navcard { animation: none; background: #5b1717; }
+    @keyframes recPuls { 0%, 100% { background: #7f1d1d; } 50% { background: #b91c1c; } }
+    @media (prefers-reduced-motion: reduce) { body.freeride #rideBar .navcard { animation: none; } }
     #rideBar .ahead { display: none; background: rgba(180,83,9,.94); color: #fef3c7; padding: 7px 14px; font-size: 13px; font-weight: 800; border-top: 1px solid rgba(249,115,22,.5); }
     #rideBar .ahead.on { display: block; }
     #rideBar .wx { display: none; background: rgba(153,27,27,.92); color: #fee2e2; padding: 7px 14px; font-size: 12.5px; font-weight: 600; line-height: 1.3; border-top: 1px solid rgba(239,68,68,.5); }
@@ -879,8 +893,12 @@
     #rideBarBottom { display: none; }
     body.riding #rideBarBottom { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 40; align-items: stretch; gap: 10px; }
     #rideBarBottom .pill { background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); border-radius: 16px; padding: 9px 13px; display: flex; align-items: center; }
+    /* Brzina i nagib su dve iste kolone: broj pa oznaka, oba centrirana i iste visine.
+       Ranije je nagib imao manji broj i drugu osnovnu liniju pa je "visio" u pilули
+       (Boskov nalaz sa puta 10.8.). */
+    #rideBarBottom .pill > div { display: flex; flex-direction: column; align-items: center; justify-content: center; }
     #rideBarBottom .pill .v { font-size: 26px; font-weight: 900; color: #fff; line-height: 1; font-variant-numeric: tabular-nums; }
-    #rideBarBottom .pill .u { font-size: 13px; color: #cbd5e1; margin-top: 2px; font-weight: 700; }
+    #rideBarBottom .pill .u { font-size: 13px; color: #cbd5e1; margin-top: 3px; font-weight: 700; line-height: 1; }
     #rideBarBottom .rep { flex: none; width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg, #f97316, #ea580c);
       border: none; color: #fff; font-size: 0; display: flex; align-items: center; justify-content: center;
       box-shadow: 0 8px 22px rgba(249,115,22,.4); cursor: pointer; font-family: inherit; align-self: center; margin: 0 auto; }
@@ -899,17 +917,16 @@
        i zavuce se pod dugme Prijavi (izmereno 16 px preklopa na 360 px). Da bi sve stalo,
        na uskim telefonima su dugmad za nijansu manja. */
     #rideBarBottom .pill { flex: none; }
+    /* Prijavi je Boskov nalaz sa puta: "prilicno je malo". Umesto da se sve stiska da bi stalo
+       u jedan red, iz reda izlazi "Druga ruta" - retka radnja usred voznje, a i sama se krije
+       u slobodnoj voznji. Prijavi zato raste, ne pada. */
+    #rideBarBottom .rep { width: 64px; height: 64px; }
+    #rideBarBottom .rep svg { width: 33px; height: 33px; }
+    body.riding #rideAlt { display: none; }
     @media (max-width: 400px) {
-      body.riding #rideBarBottom { gap: 7px; }
-      #rideBarBottom .rep { width: 50px; height: 50px; }
-      #rideBarBottom .rep svg { width: 26px; height: 26px; }
-      #rideBarBottom .alt { width: 40px; height: 40px; }
-      #rideBarBottom .alt svg { width: 20px; height: 20px; }
-      #rideBarBottom .pill { padding: 8px 9px; }
-      #rideBarBottom .pill .v { font-size: 23px; }
-      #rideBarBottom .pill .ln { margin-left: 8px; padding-left: 8px; }
-      #rideBarBottom .lim { width: 40px; height: 40px; margin-left: 8px; border-width: 4px; }
-      #rideBarBottom .lim span { font-size: 17px; }
+      body.riding #rideBarBottom { gap: 8px; }
+      #rideBarBottom .pill { padding: 8px 11px; }
+      #rideBarBottom .lim { width: 42px; height: 42px; margin-left: 9px; }
     }
     body.freeride #rideBarBottom .endr { display: inline-flex; }
     body.freeride #rideBarBottom #rideAlt { display: none; }
@@ -1100,6 +1117,18 @@
      display:none markup bi na desktopu ispao vidljiv u toku dokumenta. */
   #rideSum { display: none; position: fixed; inset: 0; z-index: 320; pointer-events: none; }
   #rideSum.on { display: block; }
+  /* Dok stoji sazetak odvozene voznje, planer NE SME da bude ispod njega: Bosko je spustio
+     sazetak i dobio traku "Kreni" kao da tek krece, a podignuta kartica je izgledala kao
+     planiranje nove voznje (nalazi sa puta 10.8.). */
+  body.sumopen #panel, body.sumopen #resCta, body.sumopen #qbar,
+  body.sumopen #routePill, body.sumopen #homeSheet, body.sumopen #homeChrome { display: none !important; }
+  /* Spustanje sazetka ga vise ne gasi nego skuplja u traku - trag voznje ostaje na mapi. */
+  #rideSum.peek { pointer-events: none; }
+  #rideSum.peek .card { transform: translate(-50%, calc(100% - 74px)); pointer-events: auto;
+    transition: transform .28s cubic-bezier(.23,1,.32,1); cursor: pointer; }
+  @media (max-height: 520px) { #rideSum.peek .card { transform: translateY(calc(100% - 74px)); } }
+  #rideSum.peek .card > *:not(.grab):not(#rsKick):not(.rshead) { display: none !important; }
+  #rideSum.peek #rsKick { margin-bottom: 2px; }
   #rideSum.dim { pointer-events: auto; background: rgba(4,8,18,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }   /* stari dnevnik zapis bez mape: zatamni, tap van zatvara */
   /* Sazetak v3 A+B (Boskov izbor 7.8.): trag ide na GLAVNU mapu (heroj), kartica je donji sheet;
      skrol sadrzaja nagore otkriva blokove (kriva nagiba, rekord, kolekcije). Mapa iznad ostaje ziva. */
@@ -1641,7 +1670,7 @@
       <div class="nmain">
         <span class="arr" id="rideArr"></span>
         <div class="nt"><b id="rideDist">-</b><span id="rideInstr">Krećemo</span><span class="shields" id="rideShields"></span><span class="sub" id="rideStreet"></span></div>
-        <div class="right"><div class="btns"><button id="rideMute" aria-label="Zvuk"></button><button id="rideX" aria-label="Prekini vožnju">✕</button></div></div>
+        <div class="right"><div class="btns"><button id="rideMute" aria-label="Zvuk"></button><button id="rideX" aria-label="Prekini vožnju"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/></svg></button></div></div>
       </div>
       <div class="ahead" id="rideAhead"></div>
       <div class="wx" id="rideWx"></div>
@@ -5738,6 +5767,7 @@ function zabeleziVoznju() {
     // summary ekran: i za kratku probnu voznju (>300 m); dnevnik/poeni ostaju samo za prave (>2 km)
     if (ukupnoD > 300) RIDE.lastSummary = { naz, tip, km: Math.round(km * 10) / 10, min, serp, kriv, poeni: ukupnoD > 2000 ? poeni : 0,
       maxK, avgK, lnL, lnR, lnChk, trag, smp, pauz, momNagib: RIDE.momNagib || null, momBrz: RIDE.momBrz || null,
+      momLnL: RIDE.momLnL || null, momLnR: RIDE.momLnR || null,   // GDE je bio najveci nagib levo, a gde desno
       kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
     if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; return; }
     const v0 = _zajCitaj("mr_voznje", []);
@@ -6660,8 +6690,19 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.42";
+const APP_VERSION = "0.9.43";
 const CHANGELOG = [
+  { v: "0.9.43", d: "10.08.2026.", stavke: [
+    "<b>Sažetak vožnje više ne izgleda kao planiranje nove</b> (tvoj nalaz sa puta): ispod sažetka je stajao planer, pa je spuštanje kartice pokazivalo traku \"Kreni\", a podizanje ekran za planiranje. Sada je planer sklonjen dok stoji sažetak, a <b>spuštanje kartice je više ne gasi</b> - skupi se u traku, trag vožnje ostaje na mapi, a tap na traku vraća ceo sažetak.",
+    "<b>Nova vožnja više ne prikazuje sažetak prethodne.</b>",
+    "<b>Vrhunci vožnje se vide i mogu da se tapnu</b> (tvoj zahtev): na mapi su sada tri obeležene tačke - <b>MAX LEVO</b>, <b>MAX DESNO</b> i <b>NAJBRŽE</b>, svaka sa brojem i natpisom. Tap na \"nagib levo\", \"nagib desno\" ili \"max\" u sažetku skuplja karticu i odvodi kameru tačno na mesto gde se to desilo.",
+    "Napomena: najveći nagib levo i desno se od sada mere <b>odvojeno</b>. Vožnje snimljene ranije imaju samo jednu zajedničku tačku i tako će i ostati.",
+    "<b>Dugme Prijavi je veće</b> (bilo je premalo za rukavice), a \"Druga ruta\" je izašla iz vozačke trake - retko se koristi u vožnji, a gušila je ostalo.",
+    "<b>Kraj vožnje se sada vidi kao kraj</b>: umesto bledog X stoji crveni krug sa stop kvadratom (i dalje dvostepeno, da se ne prekine slučajno).",
+    "<b>Dugme Slojevi se više ne pribija uz zelenu karticu</b> - prati njenu visinu, koja se menja kad se pojavi \"Zatim\" ili upozorenje.",
+    "<b>Brzina i nagib su poravnati</b> u istoj kućici, sa istom veličinom broja.",
+    "<b>Snimanje vožnje je sada crveno i pulsira</b> (tvoj predlog) - zeleno je boja navigacije, snimanje je drugo stanje."
+  ] },
   { v: "0.9.42", d: "10.08.2026.", stavke: [
     "<b>ETA i preostali kilometri se konačno vide u vožnji</b> (tvoj nalaz sa puta): bili su u istom redu sa brzinom, nagibom, ograničenjem i tri dugmeta, pa im je na tvom telefonu ostajalo 33 piksela - praktično ih nije ni bilo. Sada su svoj red iznad dugmadi: <b>još 128,4 km · 14:07</b>.",
     "<b>Ograničenje brzine se više ne zavlači pod dugme Prijavi</b>: crveni krug je curio izvan svoje pilule i na užim telefonima ga je narandžasto dugme sekło za 16 piksela. Dugmad su na uskim ekranima za nijansu manja pa sve staje.",
@@ -7156,6 +7197,9 @@ function init() {
   /* ---- HOME kao maketa: otvaranje/zatvaranje planera + čipovi + FAB ---- */
   const $id = (x) => document.getElementById(x);
   function openPlanner(preset) {
+    // sazetak skriva planer dok stoji; ako korisnik krene da planira, sazetak se sklanja
+    // (inace bi planer ostao neviljiv iza njega)
+    try { if (document.body.classList.contains("sumopen") && window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
     if (mqMobile.matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }   // R8: stari formular ne postoji na mobilnom
     document.body.classList.add("planning");
     setTimeout(rz, 80);
@@ -8477,6 +8521,23 @@ function rideSensorsInit() {   // kompas + nagib senzori: zajednicko za navigaci
     }
   } catch (e) {}
 }
+/* Kartica sa navigacijom raste i pada (Zatim, najava, upozorenje o vremenu), a dugmad ispod nje
+   su bila na fiksnoj visini pa su se pribijala uz nju. Merimo je i upisujemo u --navcard-h. */
+function navCardVisina() {
+  try {
+    const b = document.getElementById("rideBar");
+    if (!b || !document.body.classList.contains("riding")) return;
+    const r = b.getBoundingClientRect();
+    if (r.height > 0) document.documentElement.style.setProperty("--navcard-h", Math.round(r.bottom) + "px");
+  } catch (e) {}
+}
+try {
+  const _nb = document.getElementById("rideBar");
+  if (_nb && window.ResizeObserver) new ResizeObserver(navCardVisina).observe(_nb);
+  window.addEventListener("resize", navCardVisina);
+} catch (e) {}
+/* Stop kvadrat umesto golog X: "X" se cita kao "zatvori prozor", a ovo je KRAJ voznje (Boskov nalaz 10.8.) */
+const RIDE_STOP_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/></svg>';
 const RIDE_PAUSE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10 5v14M14 5v14"/></svg>';
 const RIDE_PLAY_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M8 5l11 7-11 7z"/></svg>';
 function ridePauseReg() {
@@ -8509,6 +8570,8 @@ function ridePauseToggle() {   // Boskov zahtev 6.8.: "kad stanemo u kafanu - da
   }
 }
 function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ rute - trag/km/brzina/nagib/kolekcije, bez instrukcija
+  // sazetak PRETHODNE voznje ne sme da ostane preko nove (Boskov nalaz sa puta 10.8.)
+  try { if (window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
   if (document.body.classList.contains("riding")) return;
   if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
   try { homeLocHide(); } catch (e) {}
@@ -8522,7 +8585,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;
   RIDE.paused = false; RIDE.pauseMs = 0; RIDE.pauseT0 = null;
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;
-  RIDE.samples = []; RIDE._smpT = 0; RIDE._maxLnSeen = 0; RIDE.momBrz = null; RIDE.momNagib = null;
+  RIDE.samples = []; RIDE._smpT = 0; RIDE._maxLnSeen = 0; RIDE.momBrz = null; RIDE.momNagib = null; RIDE.momLnL = null; RIDE.momLnR = null; RIDE._mxL = 0; RIDE._mxR = 0;
   RIDE.log = []; navLog("start-free", { v: APP_VERSION });
   leanReset();   // nagib: kalibracija na Snimi (telefon je tad na nosacu)
   try { clearTimeout(RIDE.arrTo); } catch (e) {} RIDE.arrTo = null;
@@ -8545,7 +8608,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   document.getElementById("rideKmh").textContent = "0";
   document.getElementById("rideEta").textContent = "0 min";
   document.getElementById("rideRem").textContent = "0,0 km";
-  const _rx = document.getElementById("rideX"); if (_rx) { _rx.textContent = "✕"; _rx.classList.remove("arm"); }
+  const _rx = document.getElementById("rideX"); if (_rx) { _rx.innerHTML = RIDE_STOP_SVG; _rx.classList.remove("arm"); }
   const _re = document.getElementById("rideEnd"); if (_re) { _re.classList.remove("arm"); const _rs = _re.querySelector("span"); if (_rs) _rs.textContent = "Završi"; }
   rideLock();
   ridePauseReg();
@@ -8607,6 +8670,9 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
       if (accFix < 80 && p.coords.speed != null && spdK > RIDE.maxKmh && spdK < 260) { RIDE.maxKmh = spdK; RIDE.momBrz = [lo, la]; }
       if (prevFixTs && spdK > 4) RIDE.movMs += Math.min(5000, nowFix - prevFixTs);
       if (LEAN.on && Math.abs(LEAN.cur) > (RIDE._maxLnSeen || 0)) { RIDE._maxLnSeen = Math.abs(LEAN.cur); RIDE.momNagib = [lo, la]; }
+      // levo i desno posebno: "gde mi je bio najveci nagib LEVO" je Boskovo pitanje sa puta 10.8.
+      if (LEAN.on && LEAN.cur < 0 && -LEAN.cur > (RIDE._mxL || 0)) { RIDE._mxL = -LEAN.cur; RIDE.momLnL = [lo, la, Math.round(-LEAN.cur)]; }
+      if (LEAN.on && LEAN.cur > 0 && LEAN.cur > (RIDE._mxR || 0)) { RIDE._mxR = LEAN.cur; RIDE.momLnR = [lo, la, Math.round(LEAN.cur)]; }
       if (!RIDE._smpT || nowFix - RIDE._smpT >= 3000) {
         RIDE._smpT = nowFix;
         (RIDE.samples = RIDE.samples || []).push({ t: Math.round((nowFix - RIDE.t0) / 1000), v: Math.round(spdK), ln: LEAN.on ? Math.round(LEAN.cur) : null });
@@ -8646,6 +8712,8 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
 function startRide() {
   const route = (typeof state !== "undefined" && state.routes) ? state.routes[state.selected] : null;
   if (!route) return;
+  // sazetak PRETHODNE voznje ne sme da ostane preko nove (Boskov nalaz sa puta 10.8.)
+  try { if (window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
   if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
   try { homeLocHide(); } catch (e) {}   // u voznji navigacioni marker preuzima; kucni puck + watch se gase
   try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
@@ -8657,7 +8725,7 @@ function startRide() {
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
   RIDE.lastRouteI = null; RIDE.offSt = { offMs: 0 };   // hint prozor projekcije + off-route masina stanja
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE._gpxOffAt = 0; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;   // odometar/trag iz GPS-a + delta-brzina + fizicka provera nagiba
-  RIDE.samples = []; RIDE._smpT = 0; RIDE._maxLnSeen = 0; RIDE.momBrz = null; RIDE.momNagib = null;   // uzorci + momenti za sazetak v3
+  RIDE.samples = []; RIDE._smpT = 0; RIDE._maxLnSeen = 0; RIDE.momBrz = null; RIDE.momNagib = null; RIDE.momLnL = null; RIDE.momLnR = null; RIDE._mxL = 0; RIDE._mxR = 0;   // uzorci + momenti za sazetak v3
   try { for (const v of state.vias || []) delete v._passed; } catch (e) {}   // nova voznja = sveze oznake prodjenosti stanica
   RIDE.log = []; navLog("start", { km: +((route.cumDist[route.cumDist.length - 1] || 0) / 1000).toFixed(2), v: APP_VERSION });
   leanReset();   // nagib: nova kalibracija na svakom Kreni (telefon je tad na nosacu)
@@ -8695,7 +8763,7 @@ function startRide() {
   document.getElementById("rideKmh").textContent = "0";
   document.getElementById("rideEta").textContent = "-";
   document.getElementById("rideRem").textContent = "-";
-  const _rx = document.getElementById("rideX"); if (_rx) { _rx.textContent = "✕"; _rx.classList.remove("arm"); }
+  const _rx = document.getElementById("rideX"); if (_rx) { _rx.innerHTML = RIDE_STOP_SVG; _rx.classList.remove("arm"); }
   const _re = document.getElementById("rideEnd"); if (_re) { _re.classList.remove("arm"); const _rs = _re.querySelector("span"); if (_rs) _rs.textContent = "Završi"; }
   rideLock();
   ridePauseReg();
@@ -8868,6 +8936,9 @@ function startRide() {
       if (accFix < 80 && p.coords.speed != null && spdK > RIDE.maxKmh && spdK < 260) { RIDE.maxKmh = spdK; RIDE.momBrz = [lo, la]; }   // max iz pravog GPS speed-a + GDE (pin u sazetku)
       if (prevFixTs && spdK > 4) RIDE.movMs += Math.min(5000, nowFix - prevFixTs);   // vreme U POKRETU (pauza na pumpi ne kvari prosek); lastFixTs je vec upisan na vrhu ticka
       if (LEAN.on && Math.abs(LEAN.cur) > (RIDE._maxLnSeen || 0)) { RIDE._maxLnSeen = Math.abs(LEAN.cur); RIDE.momNagib = [lo, la]; }
+      // levo i desno posebno: "gde mi je bio najveci nagib LEVO" je Boskovo pitanje sa puta 10.8.
+      if (LEAN.on && LEAN.cur < 0 && -LEAN.cur > (RIDE._mxL || 0)) { RIDE._mxL = -LEAN.cur; RIDE.momLnL = [lo, la, Math.round(-LEAN.cur)]; }
+      if (LEAN.on && LEAN.cur > 0 && LEAN.cur > (RIDE._mxR || 0)) { RIDE._mxR = LEAN.cur; RIDE.momLnR = [lo, la, Math.round(LEAN.cur)]; }
       if (!RIDE._smpT || nowFix - RIDE._smpT >= 3000) {   // uzorci za krivu nagiba u sazetku (~3 s; pauza ne stize dovde)
         RIDE._smpT = nowFix;
         (RIDE.samples = RIDE.samples || []).push({ t: Math.round((nowFix - RIDE.t0) / 1000), v: Math.round(spdK), ln: LEAN.on ? Math.round(LEAN.cur) : null });
@@ -8971,6 +9042,16 @@ function rsTracePath(pts, w, h, pad) {   // normalizovan SVG path GPS traga (asp
   const ox = PD.l + (w - PD.l - PD.r - dx * sc) / 2, oy = PD.t + (h - PD.t - PD.b - dy * sc) / 2;
   const P = pts.map((p) => [ox + (p[0] - loMin) * mlat * sc, oy + (laMax - p[1]) * sc]);
   return { d: "M" + P.map((q) => q[0].toFixed(1) + "," + q[1].toFixed(1)).join(" L"), a: P[0], b: P[P.length - 1] };
+}
+/* Odlazak na tacku iz sazetka: sazetak se skuplja u traku (da se mapa vidi), kamera odleti
+   na mesto i kratko se javi sta je tu bilo. Boskov zahtev sa puta: "zelim da vidim GDE". */
+function sumLetiNa(c, poruka) {
+  try {
+    const el = document.getElementById("rideSum");
+    if (el && el.classList.contains("on")) el.classList.add("peek");
+    if (map) map.flyTo({ center: [c[0], c[1]], zoom: Math.max(map.getZoom(), 15.5), duration: 900 });
+    if (poruka) shareToast(poruka);
+  } catch (e) {}
 }
 function rsGaugeSvg(lnL, lnR) {   // polukruzni merac nagiba: levo cyan, desno narandzasto (V2 maketa)
   const r = 92, cx = 110, cy = 92;
@@ -9091,12 +9172,25 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
       el.style.cssText = "width:15px;height:15px;border-radius:50%;background:" + boja + ";border:2.5px solid #0b1426;box-shadow:0 1px 6px rgba(0,0,0,.6)";
       SUMMARK.push(new maplibregl.Marker({ element: el }).setLngLat(c).addTo(map)); };
     dot([pts[0][0], pts[0][1]], "#22c55e"); dot([pts[pts.length - 1][0], pts[pts.length - 1][1]], "#f97316");   // start ZELEN (univerzalni jezik), plavo je rezervisano za najvijugaviju deonicu (9.8.)
-    const pin = (c, txt, cy) => { const el = document.createElement("div");
-      el.style.cssText = "width:27px;height:27px;border-radius:50%;background:rgba(15,23,42,.92);border:2px solid " + (cy ? "#38bdf8" : "#f97316") + ";display:flex;align-items:center;justify-content:center;font:900 9px Archivo,sans-serif;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.6)";
-      el.textContent = txt;
-      SUMMARK.push(new maplibregl.Marker({ element: el }).setLngLat(c).addTo(map)); };
-    if (s.momNagib && (s.lnL || s.lnR)) pin(s.momNagib, Math.max(s.lnL || 0, s.lnR || 0) + "°", true);
-    if (s.momBrz && s.maxK) pin(s.momBrz, String(s.maxK));
+    /* Vrhunci voznje su bili goli krugovi sa brojem, pa se nisu razlikovali od ostalih tacaka
+       na tragu (Boskov nalaz: "ne mogu da vidim gde sam imao max nagib levo"). Sada svaki nosi
+       i natpis sta je, a nagib levo i desno su DVE tacke - ne jedna zajednicka. */
+    const pin = (c, broj, natpis, boja) => {
+      const el = document.createElement("div");
+      el.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer";
+      el.innerHTML = `<div style="min-width:34px;height:34px;padding:0 6px;border-radius:999px;background:rgba(10,16,30,.95);` +
+        `border:2.5px solid ${boja};display:flex;align-items:center;justify-content:center;` +
+        `font:900 12px Archivo,sans-serif;color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.65)">${broj}</div>` +
+        `<div style="font:800 9px Archivo,sans-serif;letter-spacing:.06em;color:${boja};` +
+        `background:rgba(10,16,30,.9);padding:2px 5px;border-radius:6px;white-space:nowrap">${natpis}</div>`;
+      SUMMARK.push(new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat([c[0], c[1]]).addTo(map));
+    };
+    if (s.momLnL && s.lnL) pin(s.momLnL, s.lnL + "°", "MAX LEVO", "#38bdf8");
+    if (s.momLnR && s.lnR) pin(s.momLnR, s.lnR + "°", "MAX DESNO", "#f97316");
+    // starije voznje (pre 0.9.43) nemaju odvojeno levo/desno - tada ide jedna zajednicka tacka
+    if (!s.momLnL && !s.momLnR && s.momNagib && (s.lnL || s.lnR))
+      pin(s.momNagib, Math.max(s.lnL || 0, s.lnR || 0) + "°", "MAX NAGIB", "#38bdf8");
+    if (s.momBrz && s.maxK) pin(s.momBrz, s.maxK + " km/h", "NAJBRŽE", "#ef4444");
     const b = pts.reduce((bb, c) => bb.extend([c[0], c[1]]), new maplibregl.LngLatBounds([pts[0][0], pts[0][1]], [pts[0][0], pts[0][1]]));
     const ls = window.matchMedia && window.matchMedia("(max-height: 520px)").matches;
     map.fitBounds(b, { padding: ls ? { top: 40, left: 40, right: Math.round(window.innerWidth * 0.5), bottom: 40 }
@@ -9194,17 +9288,31 @@ function rideSumShow(sIn) {
   if (s.avgK) M.push([s.avgK, "km/h", "prosek"]);
   if (s.maxK) M.push([s.maxK, "km/h", "max"]);
   document.getElementById("rsGrid").innerHTML = M.map(([v, u, l]) =>
-    `<div class="s"><div class="v">${v}${u ? `<small>${u}</small>` : ""}</div><div class="l">${l}</div></div>`).join("");
+    `<div class="s"${l === "max" && s.momBrz ? ' data-go="brz" role="button" tabindex="0" style="cursor:pointer"' : ""}>` +
+    `<div class="v">${v}${u ? `<small>${u}</small>` : ""}</div><div class="l">${l}</div></div>`).join("");
+  {   // tap na "max" vodi na mesto gde je ta brzina i postignuta
+    const gb = document.querySelector('#rsGrid [data-go="brz"]');
+    if (gb) gb.addEventListener("click", () => sumLetiNa(s.momBrz, "Najbrže: " + s.maxK + " km/h"));
+  }
   // V2: nagib kao instrument (samo kad je senzor merio)
   const imaNagibTrag = !!(pts && pts.some && pts.some((p) => p.length > 2 && p[2] != null));   // legenda samo kad mapa stvarno boji nagib (9.8.)
   const ga = document.getElementById("rsGauge");
   if (ga) {
     if (s.lnL != null && (s.lnL || s.lnR)) {
       ga.hidden = false;
+      ga.hidden = false;
+      // brojevi su dugmad: tap odvede kameru na mesto gde je taj nagib i bio (Boskov zahtev)
+      const kl = s.momLnL ? ' data-go="L" role="button" tabindex="0"' : "";
+      const kd = s.momLnR ? ' data-go="D" role="button" tabindex="0"' : "";
       ga.innerHTML = rsGaugeSvg(s.lnL || 0, s.lnR || 0) +
-        `<div class="gn"><div style="color:#38bdf8">${s.lnL || 0}°<span>NAGIB LEVO</span></div>` +
-        `<div style="color:#f97316">${s.lnR || 0}°<span>NAGIB DESNO</span></div></div>` +
-        '<div class="gl">maksimalan održani nagib' + (imaNagibTrag ? ' · na mapi: boja traga = nagib (siva do crvene)' : '') + '</div>';
+        `<div class="gn"><div style="color:#38bdf8"${kl}>${s.lnL || 0}°<span>NAGIB LEVO</span></div>` +
+        `<div style="color:#f97316"${kd}>${s.lnR || 0}°<span>NAGIB DESNO</span></div></div>` +
+        '<div class="gl">maksimalan održani nagib' + (imaNagibTrag ? ' · na mapi: boja traga = nagib (siva do crvene)' : '') +
+        ((s.momLnL || s.momLnR) ? ' · tapni broj da vidiš gde je bio' : '') + '</div>';
+      ga.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => {
+        const c = b.dataset.go === "L" ? s.momLnL : s.momLnR;
+        if (c) sumLetiNa(c, (b.dataset.go === "L" ? "Najveći nagib levo: " : "Najveći nagib desno: ") + (c[2] || "") + "°");
+      }));
     } else ga.hidden = true;
   }
   const sp = document.getElementById("rsSpark");   // 9.8.: BRZINA kroz voznju (kriva nagiba penzionisana - "neupotrebljiva", Bosko)
@@ -9250,7 +9358,9 @@ function rideSumShow(sIn) {
   if (fb) { fb.classList.remove("has"); fb.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg>'; }
   if (fi) fi.value = "";
   el._sum = s;
+  el.classList.remove("peek");
   el.classList.add("on");
+  document.body.classList.add("sumopen");   // planer se sklanja dok stoji sazetak
 }
 function buildRideCanvas(s, foto) {
   // ista brend kartica kao buildShareCanvas, ali STVARNA voznja (odluka 4.8.: deli se SVE, korisnikov izbor)
@@ -9756,8 +9866,21 @@ async function shareRideCard(s) {
 (function () {
   const el = document.getElementById("rideSum");
   if (!el) return;
-  const zatvoriSum = () => { el.classList.remove("on"); try { sumTragSkini(); } catch (e) {} const cd0 = el.querySelector(".card"); if (cd0) cd0.style.transform = ""; };
+  // "Zatvori" gasi sve i vraca planer; prevlacenje nadole SAMO skuplja (trag ostaje na mapi)
+  const zatvoriSum = () => {
+    el.classList.remove("on", "peek");
+    document.body.classList.remove("sumopen");
+    try { sumTragSkini(); } catch (e) {}
+    const cd0 = el.querySelector(".card"); if (cd0) cd0.style.transform = "";
+  };
+  window.rideSumZatvori = zatvoriSum;
+  const skupiSum = () => { const cd0 = el.querySelector(".card"); if (cd0) cd0.style.transform = ""; el.classList.add("peek"); };
+  const vratiSum = () => { el.classList.remove("peek"); };
   document.getElementById("rsClose").addEventListener("click", zatvoriSum);
+  el.querySelector(".card").addEventListener("click", (e) => {   // tap na skupljenu traku vraca ceo sazetak
+    if (e.target.closest("[data-go]")) return;   // tap na "40° levo" skuplja sazetak namerno - ne vracaj ga odmah
+    if (el.classList.contains("peek")) { e.stopPropagation(); vratiSum(); }
+  });
   {   // prevlacenje nadole = spustanje sazetka (Boskov nalaz 9.8.: grabber je "stajao zakljucan")
     const cd = el.querySelector(".card");
     let dg = null;
@@ -9767,7 +9890,7 @@ async function shareRideCard(s) {
     const xform = (dy) => !dy ? "" : (bezX() ? "translateY(" + dy + "px)" : "translate(-50%, " + dy + "px)");
     const start = (e) => { dg = { y0: e.clientY, moved: 0 }; cd.classList.add("dragging"); try { e.target.setPointerCapture(e.pointerId); } catch (er) {} };
     const move = (e) => { if (!dg) return; const dy = Math.max(0, e.clientY - dg.y0); dg.moved = dy; cd.style.transform = xform(dy); };
-    const end = () => { if (!dg) return; const dy = dg.moved; dg = null; cd.classList.remove("dragging"); if (dy > 130) zatvoriSum(); else cd.style.transform = ""; };
+    const end = () => { if (!dg) return; const dy = dg.moved; dg = null; cd.classList.remove("dragging"); if (dy > 130) skupiSum(); else cd.style.transform = ""; };
     [el.querySelector(".grab"), document.getElementById("rsKick")].forEach((z) => { if (!z) return;
       z.addEventListener("pointerdown", start); z.addEventListener("pointermove", move);
       z.addEventListener("pointerup", end); z.addEventListener("pointercancel", end);
@@ -9877,9 +10000,9 @@ async function shareRideCard(s) {
   }
   const rx = document.getElementById("rideX"); if (rx) rx.addEventListener("click", () => {   // dvostepeno (rukavice): prvi tap pita, drugi gasi
     if (rx.classList.contains("arm")) { stopRide(); return; }
-    rx.classList.add("arm"); rx.textContent = "Prekini?";
+    rx.classList.add("arm"); rx.textContent = "Prekini vožnju?";
     clearTimeout(rx._armT);   // stari tajmer bi razoruzao sveze naoruzano dugme (review 9.8.)
-    rx._armT = setTimeout(() => { rx.classList.remove("arm"); rx.textContent = "✕"; }, 2500);
+    rx._armT = setTimeout(() => { rx.classList.remove("arm"); rx.innerHTML = RIDE_STOP_SVG; }, 2500);
   });
   const re = document.getElementById("rideEnd"); if (re) re.addEventListener("click", () => {   // Zavrsi (slobodna voznja) - isti dvostepeni princip
     if (re.classList.contains("arm")) { stopRide(); return; }
