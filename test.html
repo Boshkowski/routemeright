@@ -744,6 +744,20 @@
   }
   /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
   #rideBar { display: none; }
+  /* odricanje odgovornosti pre prve voznje */
+  #discSheet { position: fixed; inset: 0; z-index: 340; }
+  #discSheet .back { position: absolute; inset: 0; background: rgba(2,6,16,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  #discSheet .body { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: min(560px, 100%);
+    background: #0f172a; border-radius: 22px 22px 0 0; border-top: 1px solid rgba(148,163,184,.16);
+    padding: 8px 18px calc(18px + env(safe-area-inset-bottom)); max-height: 84vh; overflow-y: auto; }
+  #discSheet .grab { width: 38px; height: 4px; border-radius: 2px; background: #475569; margin: 4px auto 12px; }
+  #discSheet .ttl { font-size: 18px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+  #discSheet .lst p { font-size: 14.5px; line-height: 1.55; color: #cbd5e1; margin: 0 0 11px; }
+  #discSheet .lst p b { color: #f1f5f9; }
+  #discSheet .lst .sub { font-size: 13px; color: #94a3b8; }
+  #discSheet .lst a { color: #fdba74; }
+  #discSheet .ok { width: 100%; margin-top: 6px; background: linear-gradient(135deg, #f97316, #ea580c); border: 0;
+    color: #fff; border-radius: 14px; padding: 14px; font: 900 15.5px Archivo, sans-serif; cursor: pointer; }
   /* sacuvane rute za offline - deli izgled sa #newsSheet */
   #offSheet { position: fixed; inset: 0; z-index: 65; }
   #offSheet .back { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
@@ -1599,6 +1613,8 @@
 
     <div class="note" style="margin-top:16px" id="engineNote">
       Podaci: OpenStreetMap (rute, pumpe, restorani), Open-Meteo (prognoza), CHMI Aladin 2,3 km (fina mreža za Balkan), based on data from MET Norway (presuda). Rutiranje: Valhalla moto profil - "Vijugava" izbegava autoputeve i naplatu. Procena vremena na planinskim putevima je konzervativna.
+      <br><b>Ti voziš, ne aplikacija.</b> Prognoza je procena, a put ume da bude drugačiji od mape - prati signalizaciju i stanje na putu.
+      <a href="privatnost.html" target="_blank" rel="noopener" style="color:#fdba74">Privatnost i uslovi korišćenja</a>
     </div>
     <div id="applog"></div>
     <!-- Faza 3: CTA traka - POSLEDNJE dete panela (7.8.: van #results, sticky se vise ne "otkaci"
@@ -1613,6 +1629,22 @@
 
   <!-- HOME chrome (kao maketa): pretraga + čipovi -->
   <button id="verBadge" type="button" aria-label="Šta je novo u ovoj verziji"></button>
+  <!-- Odricanje odgovornosti: jednom, pre prve voznje. Ne pri svakom pokretanju - to se preskace pogledom. -->
+  <div id="discSheet" hidden>
+    <div class="back"></div>
+    <div class="body">
+      <div class="grab"></div>
+      <div class="ttl">Pre nego što kreneš</div>
+      <div class="lst">
+        <p><b>Ti voziš, ne aplikacija.</b> RouteMeRight pomaže da isplaniraš i da se snađeš, ali odluku na putu donosiš ti.</p>
+        <p><b>Ne gledaj u telefon dok voziš.</b> Stavi ga u držač i slušaj uputstva.</p>
+        <p><b>Prognoza je procena</b>, ne obećanje. Kad se modeli ne slažu, aplikacija ti to i kaže.</p>
+        <p><b>Put ume da bude drugačiji od mape.</b> Prati saobraćajnu signalizaciju i stvarno stanje puta, ne liniju na ekranu.</p>
+        <p class="sub">Detaljno u <a href="privatnost.html" target="_blank" rel="noopener">uslovima korišćenja</a>.</p>
+      </div>
+      <button class="ok" id="discOk">Razumem, vozi</button>
+    </div>
+  </div>
   <div id="offBadge">Bez mreže - vozi sačuvanu rutu</div>
   <div id="offSheet" hidden>
     <div class="back" id="offBack"></div>
@@ -6690,7 +6722,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.43";
+const APP_VERSION = "0.9.44";
 const CHANGELOG = [
   { v: "0.9.43", d: "10.08.2026.", stavke: [
     "<b>Sažetak vožnje više ne izgleda kao planiranje nove</b> (tvoj nalaz sa puta): ispod sažetka je stajao planer, pa je spuštanje kartice pokazivalo traku \"Kreni\", a podizanje ekran za planiranje. Sada je planer sklonjen dok stoji sažetak, a <b>spuštanje kartice je više ne gasi</b> - skupi se u traku, trag vožnje ostaje na mapi, a tap na traku vraća ceo sažetak.",
@@ -8521,6 +8553,28 @@ function rideSensorsInit() {   // kompas + nagib senzori: zajednicko za navigaci
     }
   } catch (e) {}
 }
+/* Odricanje odgovornosti pre PRVE voznje. Vraca true ako sme da se krene, false ako je
+   upravo prikazano pitanje - tada pozivalac prekida, a dugme "Razumem" ga zove ponovo. */
+function disclaimerOK(nastavi) {
+  try {
+    if (localStorage.getItem("rmr2_disc") === "1") return true;
+  } catch (e) { return true; }   // bez memorije ne blokiramo voznju
+  const el = document.getElementById("discSheet");
+  if (!el) return true;
+  el.hidden = false;
+  const ok = document.getElementById("discOk");
+  if (ok && !ok._vez) {
+    ok._vez = true;
+    ok.addEventListener("click", () => {
+      try { localStorage.setItem("rmr2_disc", "1"); } catch (e) {}
+      el.hidden = true;
+      const f = el._nastavi; el._nastavi = null;
+      if (typeof f === "function") setTimeout(f, 60);
+    });
+  }
+  el._nastavi = nastavi;
+  return false;
+}
 /* Kartica sa navigacijom raste i pada (Zatim, najava, upozorenje o vremenu), a dugmad ispod nje
    su bila na fiksnoj visini pa su se pribijala uz nju. Merimo je i upisujemo u --navcard-h. */
 function navCardVisina() {
@@ -8570,6 +8624,7 @@ function ridePauseToggle() {   // Boskov zahtev 6.8.: "kad stanemo u kafanu - da
   }
 }
 function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ rute - trag/km/brzina/nagib/kolekcije, bez instrukcija
+  if (!disclaimerOK(startFreeRide)) return;   // jednom, pre prve voznje
   // sazetak PRETHODNE voznje ne sme da ostane preko nove (Boskov nalaz sa puta 10.8.)
   try { if (window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
   if (document.body.classList.contains("riding")) return;
@@ -8712,6 +8767,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
 function startRide() {
   const route = (typeof state !== "undefined" && state.routes) ? state.routes[state.selected] : null;
   if (!route) return;
+  if (!disclaimerOK(startRide)) return;   // jednom, pre prve voznje
   // sazetak PRETHODNE voznje ne sme da ostane preko nove (Boskov nalaz sa puta 10.8.)
   try { if (window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
   if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
