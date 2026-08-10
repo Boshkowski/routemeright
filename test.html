@@ -7977,7 +7977,9 @@ async function wxLiveRebuild(route) {
   try {
     if (!route || !route.coords) return;
     RIDE.wx = null; route.weather = null; route.fine = undefined; route.min15 = null; route._dense = false;
-    wxLiveReset();
+    // NE cistiti spisak izgovorenog: nova geometrija ide istim krajem, pa bi se ista kisa
+    // najavljivala iznova na svakom reroute-u (vijugav put ume da ih ima desetak)
+    WXLIVE.lastCalc = 0;
     buildSamples(route);
     const dep = new Date();
     const w = await wxPoints(route.samples, 2, { past: true, fetchOpts: { timeoutMs: 9000, retries: 0 } });
@@ -8634,7 +8636,6 @@ function startRide() {
   buildAhead(route);   // R13: izdvojeno - i reroute mora da rebuild-uje najave na novoj geometriji
   RIDE.announced = new Set(); RIDE.aheadHideAt = 0;
   wxLiveReset(true);   // nova voznja: najave iz pocetka, sveza prognoza tek posle prvog intervala
-  try { min15Prime(route); } catch (e) {}   // 15-minutni tajming odmah, ne posle 20 minuta
   if (!RIDE._freeReg) {   // registracija OVDE - na load-u je map jos null (tihi catch je gutao dragstart!)
     RIDE._freeReg = true;
     try { map.on("dragstart", rideFree); map.on("zoomstart", rideFree); map.on("rotatestart", rideFree); } catch (e) {}
@@ -8678,6 +8679,7 @@ function startRide() {
   } catch (e) {}
   RIDE.total = route.cumDist[route.cumDist.length - 1];   // R13: na RIDE - reroute ga azurira (closure je lagao ETA/dolazak)
   RIDE.route = route;   // sheet "druga ruta" je van ovog scope-a
+  try { min15Prime(route); } catch (e) {}   // TEK POSLE RIDE.route: min15Prime proverava da ruta nije u medjuvremenu zamenjena
   if (!RIDE._altReg) {  // registracija ovde, na load-u dugmad jos ne postoje u DOM-u
     RIDE._altReg = 1;
     const ab = document.getElementById("rideAlt"), bk = document.getElementById("altBack"),
@@ -10252,6 +10254,22 @@ async function offlineOpen(id) {
   document.getElementById("results").classList.remove("hidden");
   await selectRoute(dep);
   const star = Math.round((Date.now() - (p.wxTs || p.ts)) / 3600e3);
+  // ako ima signala a prognoza je bajata, povuci svezu (sacuvana ruta se cesto otvara dan-dva kasnije)
+  if (star >= 2 && navigator.onLine) {
+    (async () => {
+      try {
+        const w = await wxPoints(r.samples, wxDays(r, dep, 6), { past: true, fetchOpts: { timeoutMs: 9000, retries: 0 } });
+        if (state.routes[0] !== r) return;
+        r.weather = w;
+        r.fine = await finePoints(r.samples, fineDays(r, dep));
+        r.min15 = null; r.consensus = undefined; r.metno = undefined;
+        r.assess = assessRoute(r, dep);
+        redrawWx(r, dep);
+        const el2 = document.getElementById("consensusOut");
+        if (el2) el2.innerHTML = `<div class="note">Prognoza osvežena maločas.</div>` + el2.innerHTML;
+      } catch (e) { /* nema veze - ostaje snimljena prognoza uz napomenu koliko je stara */ }
+    })();
+  }
   if (star >= 2) {
     const el = document.getElementById("consensusOut");
     if (el) el.innerHTML = `<div class="note">Prognoza je preuzeta pre ${star} h i nije osvežavana` +
