@@ -2390,6 +2390,15 @@ function geoPick(j, q) {   // bodovanje umesto "place pre svega": POI upit bira 
     if (looksAddr && (x.addresstype === "house" || c === "building" || (x.address && x.address.house_number))) s += 2;
     if (!looksAddr && ["amenity", "tourism", "leisure", "shop"].includes(c)) s += 2;
     if (!looksAddr && (c === "place" || ["city", "town", "village"].includes(x.addresstype))) s += 1;   // sela/gradovi i dalje jaki
+    // 10.8. KRITICNO: bez znacaja mesta, ZASEOK NA 130 km POBEDJUJE GLAVNI GRAD NA 200 km
+    // (uhvaceno testom: "Sarajevo" je vodilo u selo u Vojvodini). Nominatim daje importance 0..1.
+    s += (+x.importance || 0) * 6;
+    if (!looksAddr) {
+      const at = x.addresstype || "";
+      if (at === "city") s += 2;
+      else if (at === "town") s += 1;
+      else if (at === "hamlet" || at === "isolated_dwelling" || at === "farm") s -= 1;
+    }
     if (ref && ref.lat != null) {
       const dKm = haversine(ref.lat, ref.lon, +x.lat, +x.lon);
       s += dKm < 30 ? 2 : dKm < 150 ? 1 : dKm > 600 ? -2 : 0;
@@ -2415,6 +2424,20 @@ async function geoOverpass(q) {   // POI po imenu u krugu 30 km (OSM objekti koj
     return lat == null ? null : { lat, lon, name: (el.tags && el.tags.name) || q };
   } catch (e) { return null; }
 }
+function _phBod(p, q, d) {   // 10.8.: znacaj mesta i tacno ime, pa tek onda daljina
+  const nm = _geoFold(p.name || ""), qq = _geoFold(q || "");
+  const key = (p.osm_key || "").toLowerCase(), val = (p.osm_value || "").toLowerCase();
+  let s = 0;
+  if (key === "place") {
+    if (val === "city") s += 4;
+    else if (val === "town") s += 2.5;
+    else if (val === "village" || val === "suburb") s += 1;
+    else if (val === "hamlet" || val === "isolated_dwelling" || val === "farm" || val === "locality") s -= 1;
+  }
+  if (nm && qq) { if (nm === qq) s += 3; else if (nm.startsWith(qq)) s += 1; }
+  if (d != null) s += d < 30 ? 2 : d < 100 ? 1.2 : d < 200 ? 0.6 : d < 400 ? 0 : -1.5;
+  return s;
+}
 async function geoPhotonRaw(q, n) {   // Photon (komoot): fuzzy POI pretraga - nalazi "Motor Bike Shop" za "Moto Bike Shop".
   const ref = geoRef();                //  Adresama NE veruj (test 6.8: "Trgovacka 20" vraca skole u Hrvatskoj) - zato samo POI klase.
   const bias = ref && ref.lat != null ? `&lat=${ref.lat.toFixed(4)}&lon=${ref.lon.toFixed(4)}` : "";
@@ -2427,9 +2450,10 @@ async function geoPhotonRaw(q, n) {   // Photon (komoot): fuzzy POI pretraga - n
       name: /[Ѐ-ӿ]/.test(x.p.name) ? cyr2lat(x.p.name) : x.p.name,
       lat: x.c[1], lon: x.c[0],
       sub: [x.p.city || x.p.county, x.p.country].filter(Boolean).join(", "),
-      d: ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null
+      d: ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null,
+      bod: _phBod(x.p, q, ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null)
     })).filter((x) => x.d == null || x.d < 300);   // fuzzy pogodak na drugom kraju sveta = ne nudi se
-    scored.sort((a, b) => (a.d == null ? 9e9 : a.d) - (b.d == null ? 9e9 : b.d));
+    scored.sort((a, b) => b.bod - a.bod || (a.d == null ? 9e9 : a.d) - (b.d == null ? 9e9 : b.d));
     return scored.slice(0, n || 3);
   } catch (e) { return []; }
 }
@@ -2446,11 +2470,12 @@ async function geoPhotonSugg(q, n) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SI
     const scored = cand.map((x) => {
       const base = x.p.name || [x.p.street, x.p.housenumber].filter(Boolean).join(" ");
       const nm = lat0(base) + (x.p.name && x.p.housenumber ? " " + x.p.housenumber : "");
+      const d = ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null;
       return { name: nm, lat: x.c[1], lon: x.c[0],
         sub: [lat0(x.p.city || x.p.county), lat0(x.p.country)].filter(Boolean).join(", "),
-        d: ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null };
+        d, bod: _phBod(x.p, q, d) };
     }).filter((x) => x.name && (x.d == null || x.d < 900));   // 900 km: Alpi i Grcka ostaju u predlozima, drugi kraj sveta ne (review 9.8.)
-    scored.sort((a, b) => (a.d == null ? 9e9 : a.d) - (b.d == null ? 9e9 : b.d));
+    scored.sort((a, b) => b.bod - a.bod || (a.d == null ? 9e9 : a.d) - (b.d == null ? 9e9 : b.d));
     return scored.slice(0, n || 6);
   } catch (e) { return []; }
 }
@@ -2546,6 +2571,16 @@ async function geocode(q) {
   }
   if (!j || !j.length) {
     // Photon, TomTom i Overpass su DRUGI hostovi - rade i kad Nominatim vrati 429, zato se probaju i uz netErr
+    // 10.8. VAZNO: kad Nominatim NISTA ne vrati, nemamo nijednog kandidata za NASELJE, pa POI-only Photon
+    // ume da vrati kafanu "Sarajevo" u Subotici umesto grada Sarajeva. Zato prvo siri Photon sa bodovanjem
+    // (mesta + ulice + POI), pa tek onda uski POI spas.
+    if (!/\d/.test(qq)) {
+      const wide = await geoPhotonSugg(qq, 5);
+      if (wide && wide.length) {
+        const naj = wide[0];
+        if (naj.bod >= 2 || wide.length === 1) return { lat: naj.lat, lon: naj.lon, name: naj.name };
+      }
+    }
     const ph = /\d/.test(qq) ? null : await geoPhoton(qq);   // fuzzy POI spas ("Motor" vs "Moto"); adrese ga preskacu
     if (ph) return ph;
     const tt = await geoTomTom(qq);   // komercijalna baza (radnje kojih nema u OSM) + jake adrese
@@ -2984,11 +3019,44 @@ function loadPrices() {
   return pricesPromise;
 }
 const ccCache = {};
+/* 10.8.: zemlja se odredjuje LOKALNO iz pojednostavljenih granica (Natural Earth 50m, javno vlasnistvo,
+   ~100 KB, tacnost ~400 m). Nominatim je ostao samo kao rezerva - na 40 poziva vraca 429 i prazno,
+   a od zemlje zavise i trosak po zemljama i prikaz granicnog prelaza. Radi i offline. */
+let CCGEO = null, _ccGeoP = null;
+function _ccUcitaj() {
+  if (CCGEO) return Promise.resolve(CCGEO);
+  if (!_ccGeoP) _ccGeoP = fetchData("data/countries_bbox.json?v=" + APP_VERSION, { timeoutMs: 8000 })
+    .then((d) => (CCGEO = (d && d.zemlje) || [])).catch(() => (CCGEO = []));
+  return _ccGeoP;
+}
+function _uPrstenu(lat, lon, ring) {   // ray casting
+  let unutra = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0], yi = ring[i][1], xj = ring[j][0], yj = ring[j][1];
+    if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) unutra = !unutra;
+  }
+  return unutra;
+}
+function countryAtLocal(lat, lon) {
+  if (!CCGEO || !CCGEO.length) return "";
+  for (const z of CCGEO) {
+    for (const poly of z.p) {
+      if (!_uPrstenu(lat, lon, poly[0])) continue;
+      let rupa = false;
+      for (let k = 1; k < poly.length; k++) if (_uPrstenu(lat, lon, poly[k])) { rupa = true; break; }
+      if (!rupa) return z.cc;
+    }
+  }
+  return "";
+}
 async function countryAt(lat, lon) {
   const key = lat.toFixed(1) + "," + lon.toFixed(1);
   if (ccCache[key]) return ccCache[key];
+  await _ccUcitaj();
+  const lok = countryAtLocal(lat, lon);
+  if (lok) { ccCache[key] = lok; return lok; }
   try {
-    const j = await fetchJSON(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&zoom=3&format=json`, { timeoutMs: 7000, retries: 0 });
+    const j = await geoFetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&zoom=3&format=json`, 7000);   // 10.8.: kroz GEONET red (direktan fetch je pravio 429 i prazne odgovore)
     const cc = ((j.address && j.address.country_code) || "").toUpperCase();
     ccCache[key] = cc;
     return cc;
@@ -3897,6 +3965,70 @@ async function loadRoadStatus() {
   return state.roadStatus;
 }
 const ROAD_PRIO = { "zatvaranje": 0, "closure": 0, "granicni_prelaz": 1, "granicni-prelaz": 1, "guzva": 1, "Zastoj": 1, "Nesreča": 1, "zabrana": 2, "restriction": 2, "radovi": 3, "roadworks": 3, "Delo": 3 };
+/* 10.8. (Boskov zahtev): granice i radovi VEZANI ZA RUTU, ne kao opsti spisak po zemlji.
+   Granice imaju koordinate pa se mere do trase; radovi su tekst iz zvanicnih izvora pa se
+   vezuju preko OZNAKE PUTA (A1, E75, M-5, R-105, DN7...) koju ruta stvarno koristi. */
+function _refoviRute(route) {   // skup oznaka puteva kroz koje ruta prolazi (iz manevara i tabli)
+  const out = new Set();
+  const dodaj = (t) => {
+    for (const m of String(t || "").toUpperCase().matchAll(/\b([AEMRDN]{1,2}[\s-]?\d{1,4}[A-Z]?)\b/g)) {
+      const v = m[1].replace(/[\s-]/g, "");
+      if (v.length >= 2) out.add(v);
+    }
+  };
+  for (const m of (route.maneuvers || [])) {
+    dodaj(m.street_names && m.street_names.join(" "));
+    dodaj(m.instruction);
+    const sg = m.sign || {};
+    for (const k of ["exit_branch_elements", "exit_toward_elements", "exit_name_elements"])
+      for (const e of (sg[k] || [])) dodaj(e.text);
+  }
+  return out;
+}
+function _tekstNosiRef(t, refovi) {
+  const T = String(t || "").toUpperCase();
+  for (const r of refovi) {
+    const re = new RegExp("\\b" + r[0] + "[\\s-]?" + r.slice(1) + "\\b");
+    if (re.test(T)) return r;
+  }
+  return null;
+}
+async function graniceNaRuti(route, borders) {
+  // Prelaz se NE trazi iz spiska cekanja (izvor pokriva samo 10 hrvatskih prelaza) nego iz SAME RUTE:
+  // binarnom pretragom se nadje km na kom se menja zemlja. Cekanje se zakaci sa najblizeg poznatog
+  // prelaza (do 15 km); ako ga nema, prelaz se svejedno prikazuje kao "nema prijavljenog cekanja".
+  if (!route) return [];
+  const total = route.totalDist / 1000;
+  // Krecemo od VEC IZRACUNATIH i kesiranih spanova zemalja (routeCountries) - bez novih poziva.
+  const spans = await routeCountries(route);
+  const uzorci = [];
+  let acc = 0;
+  for (const sp of (spans || [])) { uzorci.push({ km: acc + sp.km / 2, cc: sp.cc }); acc += sp.km; }
+  const out = [];
+  for (let i = 1; i < uzorci.length; i++) {
+    const a = uzorci[i - 1], b = uzorci[i];
+    if (!a.cc || !b.cc || a.cc === b.cc) continue;
+    let lo = a.km, hi = b.km;   // fino samo oko prelaza: do 6 poziva, ~1 km tacnosti
+    for (let it = 0; it < 6 && hi - lo > 1; it++) {
+      const mid = (lo + hi) / 2, cm = coordAtKm(route, mid);
+      const cc = await countryAt(cm.lat, cm.lon);
+      if (!cc) break;                       // servis zakazao: ostajemo na gruboj proceni umesto da lazemo tacnost
+      if (cc === a.cc) lo = mid; else hi = mid;
+    }
+    const km = (lo + hi) / 2, c = coordAtKm(route, km);
+    let naj = null;
+    for (const bd of (borders || [])) {
+      if (!Number.isFinite(+bd.lat) || !Number.isFinite(+bd.lon)) continue;
+      const d = haversine(+bd.lat, +bd.lon, c.lat, c.lon);
+      if (!naj || d < naj.d) naj = { d, bd };
+    }
+    const poznat = naj && naj.d <= 15 ? naj.bd : null;
+    out.push({ km, durSec: c.durSec, iz: a.cc, u: b.cc, prelaz: poznat ? poznat.prelaz : null,
+      ulaz_auto: poznat && poznat.ulaz_auto, izlaz_auto: poznat && poznat.izlaz_auto,
+      izvor: poznat && poznat.izvor, ocitano: poznat && poznat.ocitano, dist: naj ? naj.d : null });
+  }
+  return out;
+}
 async function renderRoadStatus(route) {
   const _mySeq = state.planSeq;
   const card = $("card-roads"), list = $("roadsList");
@@ -3907,6 +4039,38 @@ async function renderRoadStatus(route) {
   const ccs = [...new Set((spans || []).map((s) => s.cc).filter(Boolean))];
   if (!rs || !ccs.length) { card.style.display = "none"; return; }
   const rows = [];
+  // 1) GRANICNI PRELAZI NA TVOJOJ RUTI (Boskov zahtev 10.8.) - sa km, satom prolaska i cekanjem
+  const gr = await graniceNaRuti(route, rs.borders || []);
+  if (_seqGuard(_mySeq, route)) return;
+  state._graniceRute = gr;
+  const dep0 = state.lastDeparture ? new Date(state.lastDeparture).getTime() : Date.now();
+  const ZEMLJA = { RS: "Srbije", HR: "Hrvatske", BA: "BiH", ME: "Crne Gore", SI: "Slovenije", MK: "Severne Makedonije",
+    AL: "Albanije", BG: "Bugarske", RO: "Rumunije", GR: "Grčke", XK: "Kosova", HU: "Mađarske", AT: "Austrije", IT: "Italije" };
+  const uZem = (cc) => ZEMLJA[cc] || cc;
+  for (const g of gr) {
+    const cek = [g.ulaz_auto, g.izlaz_auto].filter((x) => x && x !== "-");
+    const sat = new Date(dep0 + (g.durSec || 0) * 1000).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+    rows.push(`<li>${rIco("toll", 14)} <b>Granica ${uZem(g.iz)} - ${uZem(g.u)}</b>${g.prelaz ? " (" + esc(g.prelaz) + ")" : ""}` +
+      ` · km ${Math.round(g.km)} · oko ${sat}` +
+      (cek.length ? ` · <b class="warn-inline">čekanje ${esc(cek.join(" / "))}</b>` : " · nema prijavljenog čekanja") +
+      (g.izvor ? `<span class="poi-dist"> ${esc(g.izvor)}${g.ocitano ? ", očitano " + esc(g.ocitano) : ""}</span>` : "") + `</li>`);
+  }
+  // 2) RADOVI I ZATVARANJA NA PUTEVIMA KOJE RUTA STVARNO KORISTI
+  const refovi = _refoviRute(route);
+  const naRuti = [];
+  for (const cc of ccs) {
+    const c = rs.countries && rs.countries[cc];
+    if (!c || !c.ok || !c.items) continue;
+    for (const it of c.items) {
+      const ref = _tekstNosiRef(it.title + " " + (it.detail || ""), refovi);
+      if (ref) naRuti.push({ ...it, cc, ime: c.name, ref });
+    }
+  }
+  naRuti.sort((a, b) => (ROAD_PRIO[a.type] ?? 9) - (ROAD_PRIO[b.type] ?? 9));
+  const naRutiKljuc = new Set(naRuti.map((x) => x.title));
+  for (const it of naRuti.slice(0, 6))
+    rows.push(`<li>${rIco("roadworks", 14)} <b class="warn-inline">Na tvojoj ruti (${esc(it.ref)})</b> · ${esc(it.title)}` +
+      (it.detail && it.detail !== it.title ? ` <span class="poi-dist">${esc(it.detail.slice(0, 140))}</span>` : "") + `</li>`);
   for (const cc of ccs) {
     // meteo upozorenja prvo (bezbednost)
     for (const w of (rs.meteo && rs.meteo[cc] || []).slice(0, 3))
@@ -3914,13 +4078,13 @@ async function renderRoadStatus(route) {
     const c = rs.countries && rs.countries[cc];
     if (!c || !c.ok || !c.items.length) continue;
     const sorted = [...c.items].sort((a, b) => (ROAD_PRIO[a.type] ?? 9) - (ROAD_PRIO[b.type] ?? 9));
-    for (const it of sorted.slice(0, 5))
+    for (const it of sorted.filter((x) => !naRutiKljuc.has(x.title)).slice(0, 5))
       rows.push(`<li>${rIco("roadworks", 14)} <b>${esc(c.name)}</b> · ${esc(it.title)}${it.detail && it.detail !== it.title ? ` <span class="poi-dist">${esc(it.detail.slice(0, 140))}</span>` : ""}</li>`);
   }
   if (!rows.length) { card.style.display = "none"; return; }
   list.innerHTML = rows.slice(0, 16).join("");
   const upd = rs.updated ? new Date(rs.updated) : null;
-  $("roadsNote").textContent = "Zvanični izvori po zemljama + Meteoalarm meteo-upozorenja." + (upd ? ` Ažurirano: ${upd.toLocaleString("sr-RS", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric" })}.` : "");
+  $("roadsNote").textContent = (gr.length || naRuti.length ? "Prvo ono što je NA tvojoj ruti. " : "") + "Zvanični izvori po zemljama + Meteoalarm meteo-upozorenja." + (upd ? ` Ažurirano: ${upd.toLocaleString("sr-RS", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric" })}.` : "");
   card.style.display = "";
 }
 async function loadEditorial() {
@@ -5808,6 +5972,7 @@ function renderRouteTabs(departure) {
 }
 async function selectRoute(departure) {
   const _seq = ++state.planSeq;   // R13: generacija - stariji async renderi ne smeju da diraju noviju rutu
+  state.lastDeparture = departure || new Date();   // sat prolaska kroz granicu se racuna od polaska (10.8.)
   state._activeSeq = _seq;
   // replan iste relacije: vrati skrol - plan() ga hvata PRE add("hidden") klampa; direktan poziv (varijanta/polazak) hvata ovde
   const _sameRelNow = mqMobile.matches && !isLS() && state._lastRelKey && state._lastRelKey === relKey();
@@ -6221,8 +6386,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.38";
+const APP_VERSION = "0.9.39";
 const CHANGELOG = [
+  { v: "0.9.39", d: "10.08.2026.", stavke: [
+    "<b>Granica na tvojoj ruti</b> (tvoj zahtev): aplikacija sada sama nađe gde ruta prelazi granicu, na kom kilometru i u koliko sati tuda prolaziš, i doda vreme čekanja ako ga izvor prijavljuje.",
+    "<b>Radovi i zatvaranja NA tvojoj ruti</b>: umesto spiska svih radova u zemlji, prvo ide ono što je na putevima kojima stvarno prolaziš (prepoznaje oznake puta - A3, E761, D2...).",
+    "<b>Popravljena ozbiljna greška u pretrazi</b>: upit \"Sarajevo\" je vodio u zaselak kod Subotice umesto u glavni grad BiH, jer je pretraga gledala samo ko je bliži. Sada značaj mesta i tačno ime pobeđuju blizinu - provereno na Sarajevu, Zagrebu, Mostaru, Kotoru i Ohridu.",
+    "<b>Zemlja se sada prepoznaje na telefonu</b>, bez interneta: granice zemalja su ugrađene u aplikaciju (~100 KB). Ranije je to zavisilo od servisa koji ume da odbije zahtev, pa su i trošak po zemljama i granica umeli da izostanu."
+  ] },
   { v: "0.9.38", d: "10.08.2026.", stavke: [
     "<b>Ispravljena naša sopstvena tvrdnja</b>: pisalo je \"vreme na svakom kilometru\", a mi prognozu računamo na svakih ~12 km (8 do 40 tačaka po ruti). Sada piše \"vreme za sat kad tuda prolaziš\" - to je istina i to je ono što niko drugi nema.",
     "<b>Magla je sada upozorenje</b> (WMO 45/48): magla i ledena magla se prikazuju kao oprez na deonici. Bila je jedina rupa u našem spisku opasnosti."
