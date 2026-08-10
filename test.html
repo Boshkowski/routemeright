@@ -1589,6 +1589,12 @@
         <div id="workOut" class="summary-line" style="margin-top:6px"></div>
       </div>
 
+      <div class="card hidden" id="card-stanje">
+        <h3>Stanje puta - iskustvo vozača</h3>
+        <div id="stanjeOut"></div>
+        <div class="note" id="stanjeIzvor"></div>
+      </div>
+
       <div class="card" id="card-fuel">
         <h3>Gorivo</h3>
         <div class="fuellvl" id="fuelLvl"><span>U rezervoaru:</span>
@@ -1870,6 +1876,21 @@
     </div>
     <div class="stub"><b>Dnevnik vožnji</b>
       <div id="jaVoznje" style="margin-top:10px"></div>
+    </div>
+    <div class="stub"><b>Privatnost i uslovi</b>
+      <div class="jset">
+        <a class="jlink" href="privatnost.html" target="_blank" rel="noopener" style="display:block;text-align:left">Politika privatnosti - šta ostaje na telefonu, a šta ne</a>
+        <a class="jlink" href="privatnost.html#odricanje" target="_blank" rel="noopener" style="display:block;text-align:left">Odricanje odgovornosti - ti voziš, ne aplikacija</a>
+        <div class="jnote">GPS trag vožnje i dnevnik ostaju na ovom telefonu i ne šalju se nikome. Bez naloga, bez reklama, bez alata za praćenje.</div>
+      </div>
+    </div>
+    <div class="stub"><b>Izvori podataka</b>
+      <div class="jnote" style="margin-top:8px">
+        Mape i putevi: OpenStreetMap saradnici, prikaz preko OpenFreeMap. Rutiranje: Valhalla moto profil.
+        Prognoza: Open-Meteo i CHMI Aladin 2,3 km, based on data from MET Norway. Radar: RainViewer.<br>
+        <b>Stanje puteva:</b> ocene su uneli motociklisti sa foruma BJBikers, iz teme "Moto putevi - vizuelni vodič"
+        koju vodi Vlajko. Korišćeno uz njihovu dozvolu. Hvala svima koji su uneli svoja iskustva.
+      </div>
     </div>
   </div>
 
@@ -4400,6 +4421,103 @@ async function loadEditorial() {
     try { renderPreporuke(); } catch (e) {}   // 280 KB stize posle prvog rendera - sekcija ne sme ostati na stub-u
   } catch { /* editorial sloj je opcion - bez fajla nema pinova */ }
 }
+/* ---------------- STANJE PUTA: baza znanja zajednice BJBikers ----------------
+   230 deonica koje su motociklisti sa foruma ocenili 1-5, sa asfaltom, saobracajem,
+   krivinama i napomenom. Izvor: tema "Мото путеви - визуелни водич" (Влајко), koriscena
+   uz dozvolu autora. Njihova skala i boje su preuzete namerno - to je jezik kojim ta
+   zajednica vec govori o putevima, pa covek sa foruma razume nasu mapu iz prve.
+   Uvoz: tools/uvoz_bjb.py -> data/bjb_putevi.json */
+const BJP_BOJA = { 1: "#ef4444", 2: "#f97316", 3: "#84cc16", 4: "#16a34a", 5: "#3b82f6" };
+const BJP_IME = { 1: "Loš", 2: "Prosečan", 3: "Dobar", 4: "Odličan", 5: "Ekstra" };
+async function loadPutevi() {
+  if (state.bjp) return state.bjp;
+  try {
+    const d = await fetchData("data/bjb_putevi.json?v=" + APP_VERSION, { timeoutMs: 9000 });
+    state.bjp = d && Array.isArray(d.deonice) ? d : null;
+  } catch { state.bjp = null; }   // bez fajla sloj prosto ne postoji
+  return state.bjp;
+}
+/* Ocena zavisi od motora - to je muka koju je zajednica sama priznala ("isti put je 1/5
+   na FJR-u i 3+/5 na Africa Twinu"). Loš asfalt i slabe krivine kaznjavaju teski turer,
+   a avanturistu skoro ne diraju; mi znamo koji je motor u profilu pa ocenu pomeramo. */
+function bjpZaMotor(d, tip) {
+  const o = d.ocena;
+  if (!o || !tip) return { ocena: o, pomak: 0 };
+  const los = /loš|lose|rupe|zakrp/i.test((d.asfalt || "") + " " + (d.napomena || ""));
+  let p = 0;
+  if (tip === "adv" && los) p = +1;          // avanturista: los asfalt je manji problem
+  if (tip === "tourer" && los) p = -1;       // teski turer: los asfalt boli
+  if (tip === "sport" && /slabe/i.test(d.krivine || "")) p = -1;   // sportski: bez krivina nema sta da trazi
+  if (tip === "adv" && /odlične|dobre/i.test(d.krivine || "") && !los) p = 0;
+  const n = Math.max(1, Math.min(5, o + p));
+  return { ocena: n, pomak: n - o };
+}
+/* Tip motora iz profila: gruba podela po imenu modela i zapremini rezervoara. */
+function mojTipMotora() {
+  try {
+    const b = JSON.parse(localStorage.getItem("mr_bike") || "null");
+    if (!b) return null;
+    const s = ((b.brand || "") + " " + (b.model || "")).toLowerCase();
+    if (/gs|africa|tenere|adventure|adv|v-strom|vstrom|tiger|himalayan|transalp|rally/.test(s)) return "adv";
+    if (/rr|ninja|panigale|gsx-?r|cbr|r1\b|r6\b|zx|supersport|daytona/.test(s)) return "sport";
+    if (/fjr|gtr|gold ?wing|k 16|rt\b|tracer|versys 1000|ninja 1000sx|turer|glide|road ?king/.test(s)) return "tourer";
+    return null;
+  } catch { return null; }
+}
+/* Koje ocenjene deonice leze NA nasoj ruti: uzorak tacaka deonice mora da bude blizu trase.
+   Prag od 250 m hvata isti put i kad su dve linije crtane razlicito, a ne hvata paralelan put. */
+function bjpNaRuti(route, baza) {
+  if (!route || !route.coords || !baza) return [];
+  const R = route.coords;
+  const korak = Math.max(1, Math.floor(R.length / 900));   // duge rute: ne merimo svaku tacku
+  const blizu = (lon, la) => {
+    for (let i = 0; i < R.length; i += korak)
+      if (Math.abs(R[i][1] - la) < 0.006 && Math.abs(R[i][0] - lon) < 0.008 &&
+          haversine(la, lon, R[i][1], R[i][0]) <= 0.25) return true;
+    return false;
+  };
+  const out = [];
+  for (const d of baza.deonice) {
+    const c = d.coords;
+    const uz = Math.max(1, Math.floor(c.length / 12));
+    let pog = 0, uk = 0;
+    for (let i = 0; i < c.length; i += uz) { uk++; if (blizu(c[i][0], c[i][1])) pog++; }
+    if (uk && pog / uk >= 0.6) out.push({ ...d, poklapanje: pog / uk });
+  }
+  return out;
+}
+async function renderStanjePuta(route) {
+  const _seq = state.planSeq;
+  const card = $("card-stanje"), out = $("stanjeOut"), izv = $("stanjeIzvor");
+  if (!card || !out) return;
+  card.classList.add("hidden");
+  const baza = await loadPutevi();
+  if (!baza || _seq !== state.planSeq) return;
+  const na = bjpNaRuti(route, baza);
+  if (!na.length) return;
+  const tip = mojTipMotora();
+  na.sort((a, b) => (a.ocena || 3) - (b.ocena || 3));
+  out.innerHTML = na.slice(0, 8).map((d) => {
+    const m = bjpZaMotor(d, tip);
+    const boja = BJP_BOJA[m.ocena] || "#94a3b8";
+    const detalji = [d.asfalt && "asfalt " + d.asfalt.toLowerCase(),
+                     d.krivine && "krivine " + d.krivine.toLowerCase(),
+                     d.saobracaj && "saobraćaj " + d.saobracaj.toLowerCase()].filter(Boolean).join(" · ");
+    const pom = m.pomak ? `<span class="note" style="color:${m.pomak > 0 ? "#86efac" : "#fca5a5"}"> (za tvoj motor ${m.pomak > 0 ? "+" : ""}${m.pomak})</span>` : "";
+    return `<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(148,163,184,.12)">` +
+      `<span style="flex:none;min-width:30px;height:30px;border-radius:8px;background:${boja};color:#0b1120;` +
+      `display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px">${m.ocena}</span>` +
+      `<span><b>${esc(d.naziv)}</b>${pom}<br>` +
+      `<span class="note">${esc(BJP_IME[m.ocena] || "")}${detalji ? " · " + esc(detalji) : ""}</span>` +
+      (d.napomena ? `<br><span class="note">"${esc(d.napomena)}"</span>` : "") +
+      `<br><span class="note" style="opacity:.75">${esc(d.autor || "")}${d.azurirano ? " · " + esc(d.azurirano) : ""}</span></span></div>`;
+  }).join("");
+  izv.innerHTML = `Ocene su uneli motociklisti sa foruma BJBikers (tema "Moto putevi - vizuelni vodič", ` +
+    `pokrenuo Vlajko), korišćeno uz njihovu dozvolu. ` +
+    (tip ? `Ocena je prilagođena tvom motoru.` : `Izaberi motor u profilu pa se ocena prilagodi tvom motoru.`) +
+    (na.length > 8 ? ` Prikazano 8 od ${na.length} ocenjenih deonica na ruti.` : "");
+  card.classList.remove("hidden");
+}
 /* Pinovi zajednice se dodaju TEK posle prvog planiranja rute (default ekran ostaje cist)
    i idu u postojece kategorije (kafana->food, okupljaliste->meet, upozorenje->hazard). */
 /* Pinovi zajednice SAMO UZ RUTU (<6 km od trase) - osvezavaju se pri svakom planiranju. */
@@ -6319,7 +6437,7 @@ async function selectRoute(departure) {
   if (_seq !== state.planSeq) return;
   try { renderFamousSuggestion(); } catch (e) {}
   await Promise.allSettled([renderCost(route), renderFuel(route, assess, departure), renderFood(route, assess, departure),
-    renderDifficulty(route), renderCameras(route), renderRoadworks(route), renderRoadStatus(route),
+    renderDifficulty(route), renderCameras(route), renderRoadworks(route), renderRoadStatus(route), renderStanjePuta(route),
     (async () => {
       // Druga varijanta koju korisnik izabere klikom nema jos fini sloj - dovuci ga i preracunati,
       // pa TEK ONDA presudu (presuda ide po indeksu tacke, a guscanje menja spisak tacaka).
@@ -6722,8 +6840,17 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.44";
+const APP_VERSION = "0.9.45";
 const CHANGELOG = [
+  { v: "0.9.45", d: "11.08.2026.", stavke: [
+    "<b>Stanje puteva iz zajednice</b>: u aplikaciju je ušlo <b>230 deonica</b> koje su motociklisti sa foruma BJBikers ocenili od 1 do 5, sa asfaltom, saobraćajem, krivinama i napomenom (\"veoma loš put, nema udarnih rupa ali ima zakrpa na svakom koraku\"). Kad tvoja ruta prođe kroz ocenjenu deonicu, to sada piše u kartici <b>Stanje puta</b>. Izvor je tema \"Moto putevi - vizuelni vodič\" koju vodi Vlajko, korišćeno uz njihovu dozvolu.",
+    "<b>Ocena se prilagođava tvom motoru</b> - to je muka koju je zajednica sama priznala: isti put je 1/5 na FJR-u i 3+/5 na Africa Twinu. Kod nas Arilje - Ivanjica (loš asfalt, dobre krivine) daje <b>1 za teški turer i 3 za avanturistu</b>.",
+    "<b>Privatnost i uslovi su u delu Ja</b> (tvoj zahtev), zajedno sa spiskom izvora podataka i zahvalnicom zajednici."
+  ] },
+  { v: "0.9.44", d: "10.08.2026.", stavke: [
+    "<b>Politika privatnosti i odricanje odgovornosti</b>: šta ostaje na telefonu (GPS trag, dnevnik, sačuvane rute, profil motora, fotke), šta odlazi kom servisu i zašto, i šta ide na naš server kad prijaviš opasnost (samo tip i mesto). Bez naloga, bez reklama, bez alata za praćenje.",
+    "<b>Pre prve vožnje</b> aplikacija jednom kaže ono najvažnije: ti voziš, ne aplikacija; prognoza je procena; put ume da bude drugačiji od mape."
+  ] },
   { v: "0.9.43", d: "10.08.2026.", stavke: [
     "<b>Sažetak vožnje više ne izgleda kao planiranje nove</b> (tvoj nalaz sa puta): ispod sažetka je stajao planer, pa je spuštanje kartice pokazivalo traku \"Kreni\", a podizanje ekran za planiranje. Sada je planer sklonjen dok stoji sažetak, a <b>spuštanje kartice je više ne gasi</b> - skupi se u traku, trag vožnje ostaje na mapi, a tap na traku vraća ceo sažetak.",
     "<b>Nova vožnja više ne prikazuje sažetak prethodne.</b>",
