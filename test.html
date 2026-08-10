@@ -1519,7 +1519,7 @@
     </div>
 
     <div class="note" style="margin-top:16px" id="engineNote">
-      Podaci: OpenStreetMap (rute, pumpe, restorani), Open-Meteo (prognoza), based on data from MET Norway (presuda). Rutiranje: Valhalla moto profil - "Vijugava" izbegava autoputeve i naplatu. Procena vremena na planinskim putevima je konzervativna.
+      Podaci: OpenStreetMap (rute, pumpe, restorani), Open-Meteo (prognoza), CHMI Aladin 2,3 km (fina mreža za Balkan), based on data from MET Norway (presuda). Rutiranje: Valhalla moto profil - "Vijugava" izbegava autoputeve i naplatu. Procena vremena na planinskim putevima je konzervativna.
     </div>
     <div id="applog"></div>
     <!-- Faza 3: CTA traka - POSLEDNJE dete panela (7.8.: van #results, sticky se vise ne "otkaci"
@@ -3384,25 +3384,33 @@ function coordAtKm(route, km) {
   if (i < 0) i = route.cumDist.length - 1;
   return { idx: i, lon: route.coords[i][0], lat: route.coords[i][1], durSec: route.cumDur[i] };
 }
+/* Kurs i brzina deonice - za bocni vetar, wind chill i blestanje sunca. */
+function sampleCtx(route, s) {
+  const j = Math.min(s.idx, route.coords.length - 2);
+  s.bearing = bearingDeg(route.coords[j], route.coords[j + 1]);
+  const i1 = Math.max(0, s.idx - 3), i2 = Math.min(route.cumDist.length - 1, s.idx + 3);
+  const dd = route.cumDist[i2] - route.cumDist[i1], dt = route.cumDur[i2] - route.cumDur[i1];
+  s.speedKmh = dt > 0 ? Math.max(20, Math.min(140, dd / dt * 3.6)) : route.totalDist / Math.max(1, route.totalDur) * 3.6;
+  return s;
+}
+function mkSample(route, km) {
+  const c = coordAtKm(route, km);
+  return sampleCtx(route, { km, lat: c.lat, lon: c.lon, idx: c.idx, durSec: c.durSec });
+}
+/* Prvi prolaz: tacka na ~12 km. Stara kapa od 40 tacaka je na dugim rutama razvlacila
+   razmak na 25 km, a IZMERENO je da na 25 km shema vidi samo 51% vrhunca kise
+   (na 12 km vidi 98%) - to je bila jedina prava rupa u gustini. Nova kapa od 90
+   drzi 12 km sve do ~1.080 km rute. Gusce od ovoga radi densifyWeather, i to samo
+   tamo gde prvi prolaz nesto nasluti. */
+const SAMPLE_KM = 12, SAMPLE_MAX = 90;
 function buildSamples(route) {
   const totalKm = route.totalDist / 1000;
-  const n = Math.min(40, Math.max(8, Math.round(totalKm / 12)));
+  const n = Math.min(SAMPLE_MAX, Math.max(8, Math.round(totalKm / SAMPLE_KM)));
   const step = totalKm / n;
   const samples = [];
-  for (let k = 0; k <= n; k++) {
-    const km = Math.min(k * step, totalKm - 0.001);
-    const c = coordAtKm(route, km);
-    samples.push({ km, lat: c.lat, lon: c.lon, idx: c.idx, durSec: c.durSec });
-  }
-  // kurs i brzina deonice - za bočni vetar, wind chill i blještanje sunca
-  for (const s of samples) {
-    const j = Math.min(s.idx, route.coords.length - 2);
-    s.bearing = bearingDeg(route.coords[j], route.coords[j + 1]);
-    const i1 = Math.max(0, s.idx - 3), i2 = Math.min(route.cumDist.length - 1, s.idx + 3);
-    const dd = route.cumDist[i2] - route.cumDist[i1], dt = route.cumDur[i2] - route.cumDur[i1];
-    s.speedKmh = dt > 0 ? Math.max(20, Math.min(140, dd / dt * 3.6)) : route.totalDist / Math.max(1, route.totalDur) * 3.6;
-  }
+  for (let k = 0; k <= n; k++) samples.push(mkSample(route, Math.min(k * step, totalKm - 0.001)));
   route.samples = samples;
+  route._dense = false;
 }
 /* pozicija sunca (aproksimacija ~0.5°): za upozorenje "nisko sunce u oči" */
 function sunPos(date, lat, lon) {
@@ -3422,18 +3430,104 @@ function sunPos(date, lat, lon) {
 }
 
 /* ---------------- prognoza (Open-Meteo) ---------------- */
+const WX_VARS = "temperature_2m,precipitation_probability,precipitation,weather_code,wind_gusts_10m,wind_speed_10m,wind_direction_10m";
+/* Jedan poziv nikad ne sme da nosi previse tacaka: IZMERENO 10.8. da zahtev sa 90-100
+   lokacija obara minutni limit (broji se po lokaciji, ne po HTTP pozivu). Zato serije. */
+const WX_CHUNK = 45;
+async function wxPoints(pts, days, opts) {
+  const out = [];
+  for (let i = 0; i < pts.length; i += WX_CHUNK) {
+    const dl = pts.slice(i, i + WX_CHUNK);
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${dl.map((p) => p.lat.toFixed(3)).join(",")}` +
+      `&longitude=${dl.map((p) => p.lon.toFixed(3)).join(",")}&hourly=${(opts && opts.vars) || WX_VARS}` +
+      ((opts && opts.models) ? `&models=${opts.models}` : "") +
+      `&forecast_days=${days}${(opts && opts.past) ? "&past_days=1" : ""}&timezone=auto`;
+    let j = await fetchJSON(url, (opts && opts.fetchOpts) || { timeoutMs: 10000 });
+    if (!Array.isArray(j)) j = [j];
+    if (j.length !== dl.length) throw new Error("Prognoza: broj tačaka se ne poklapa");
+    for (const w of j) out.push(w && w.hourly && w.hourly.time ? w.hourly : null);
+  }
+  return out;
+}
+function wxDays(route, departure, pad) {
+  const hoursAhead = (departure - Date.now()) / 3600e3 + route.totalDur / 3600 + pad;
+  return Math.min(16, Math.max(2, Math.ceil(hoursAhead / 24) + 1));
+}
 async function fetchWeather(route, departure) {
+  route.weather = await wxPoints(route.samples, wxDays(route, departure, 6), { past: true });
+}
+/* ---------- FINI MODEL: CHMI Aladin Central Europe, 2,3 km ----------
+   Zasto: prognoza se ne meri po tacki nego se racuna na mrezi kvadrata, i ta mreza je plafon
+   tacnosti. Globalni model koji pokriva Balkan ima kvadrate od 7 km i razmaze pljusak preko
+   celog kraja (IZMERENO 10.8.: isti oblak = 24,1 mm/h na mrezi od 1,3 km, 3,1 mm/h na 7 km,
+   1,3 mm/h na 25 km). Aladin je JEDINI model finoce ~2 km koji pokriva celu Srbiju, plus
+   Sarajevo, Podgoricu i Skoplje - nemacki ICON-D2 od 2 km staje PRE Beograda (provereno).
+   Granice: horizont ~2,5 dana (posle toga prazno -> vraca se globalni), osvezava se na 6 h,
+   i NEMA verovatnocu padavina (0 od 168 sati) - zato verovatnoca uvek ostaje globalna.
+   Tiho odustajanje: ako padne, ostaje sve kao pre. */
+const FINE_MODEL = "chmi_aladin_central_europe_2km";
+const FINE_VARS = "precipitation,wind_gusts_10m,temperature_2m,weather_code";
+/* Model daje ~72 h RACUNATO OD PONOCI, a mi merimo sate od sada - zato +1 dan (isto kao wxDays)
+   i konzervativna granica od 48 h: preko toga bi se ionako vratio prazan niz i poziv bi bio bacen. */
+const FINE_MAX_H = 48;
+function fineDays(route, departure) {
+  const h = (departure - Date.now()) / 3600e3 + route.totalDur / 3600 + 2;
+  return h > FINE_MAX_H ? 0 : Math.min(3, Math.max(2, Math.ceil(h / 24) + 1));
+}
+async function finePoints(pts, days) {
+  try {
+    if (!pts.length || !days) return null;
+    return await wxPoints(pts, days, { vars: FINE_VARS, models: FINE_MODEL, fetchOpts: { timeoutMs: 9000, retries: 0 } });
+  } catch { return null; }   // tiho: bez finog sloja sve radi kao pre
+}
+async function fetchFine(route, departure) {
   const s = route.samples;
-  const lats = s.map((p) => p.lat.toFixed(3)).join(",");
-  const lons = s.map((p) => p.lon.toFixed(3)).join(",");
-  const hoursAhead = (departure - Date.now()) / 3600e3 + route.totalDur / 3600 + 6;
-  const days = Math.min(16, Math.max(2, Math.ceil(hoursAhead / 24) + 1));
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}` +
-    `&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_gusts_10m,wind_speed_10m,wind_direction_10m` +
-    `&forecast_days=${days}&past_days=1&timezone=auto`;
-  let j = await fetchJSON(url, { timeoutMs: 10000 });
-  if (!Array.isArray(j)) j = [j];
-  route.weather = j.map((w) => w.hourly);
+  if (!s || !s.length) return null;
+  return await finePoints(s, fineDays(route, departure));
+}
+/* ---------- ADAPTIVNO GUSCANJE ----------
+   Prvi prolaz na 12 km hvata 98% vrhunca na gruboj mrezi od 7 km, ali na finoj mrezi
+   od ~2 km hvata samo 48% (IZMERENO). Zato tamo gde prvi prolaz NASLUTI kisu, jak vetar
+   ili nagli skok izmedju susednih tacaka, ubacujemo tri tacke izmedju (12 km -> 3 km).
+   Na vedroj ruti ne ubacuje nista i ne kosta nista; na kisnoj placamo samo tamo gde treba.
+   Radi se SAMO za prikazanu rutu (kao i presuda modela) - ostale varijante ne placamo. */
+const DENSE_MIN_KM = 3, DENSE_CAP = 150;
+function _sumnjiv(a, b) {
+  if (!a || !b) return false;
+  if (a.outOfRange && b.outOfRange) return false;
+  const p = Math.max(a.precip || 0, b.precip || 0);
+  const g = Math.max(a.gust || 0, b.gust || 0);
+  return Math.max(a.level || 0, b.level || 0) >= 1 || p >= 0.05 || g >= 35 ||
+         Math.abs((a.precip || 0) - (b.precip || 0)) >= 0.15 ||
+         Math.abs((a.temp ?? 15) - (b.temp ?? 15)) >= 4;
+}
+async function densifyWeather(route, departure) {
+  if (route._dense || !route.samples || !route.assess || !route.weather) return false;
+  route._dense = true;
+  const s = route.samples, a = route.assess;
+  const novi = [];
+  for (let i = 0; i + 1 < s.length && s.length + novi.length < DENSE_CAP; i++) {
+    const raz = s[i + 1].km - s[i].km;
+    if (raz < DENSE_MIN_KM * 2 || !_sumnjiv(a[i], a[i + 1])) continue;
+    const kom = Math.min(3, Math.max(1, Math.round(raz / DENSE_MIN_KM) - 1));
+    for (let k = 1; k <= kom; k++) novi.push(mkSample(route, s[i].km + raz * k / (kom + 1)));
+  }
+  if (!novi.length) return false;
+  let wx, fine = null;
+  try { wx = await wxPoints(novi, wxDays(route, departure, 6), { past: true }); }
+  catch (e) { return false; }   // guscanje je dodatak, ne sme da obori vec prikazanu prognozu
+  const fd = fineDays(route, departure);
+  if (fd && route.fine) fine = await finePoints(novi, fd);
+  // spoji i poredjaj po kilometru; svi nizovi vezani za tacke moraju da ostanu poravnati
+  const spoj = s.map((p, i) => ({ p, w: route.weather[i], f: route.fine ? route.fine[i] : null }))
+    .concat(novi.map((p, i) => ({ p, w: wx[i], f: fine ? fine[i] : null })))
+    .sort((x, y) => x.p.km - y.p.km);
+  route.samples = spoj.map((x) => x.p);
+  route.weather = spoj.map((x) => x.w);
+  if (route.fine) route.fine = spoj.map((x) => x.f);
+  route.consensus = undefined; route.metno = null;   // presuda se racuna po indeksu tacke - mora ponovo
+  route._densAdded = novi.length;
+  return true;
 }
 /* ---------- MET Norway (Yr.no) kao cetvrti, NEZAVISAN glas u presudi ----------
    Jedini besplatan meteo izvor koji IZRICITO dozvoljava komercijalnu upotrebu:
@@ -3526,6 +3620,15 @@ function renderConsensus(route, departure) {
   else
     el.innerHTML = `Presuda ${ko}: <span class="warn-inline"><b>razilaze se oko kiše</b></span> kod km ` +
       `${disagree.slice(0, 5).join(", ")}${disagree.length > 5 ? "…" : ""} - proveri radar pred polazak.`;
+  // pokazi kad je ukljucena fina mreza - to je razlog zasto se brojke razlikuju od "obicne" prognoze
+  try {
+    const finih = route.fine ? route.fine.filter(Boolean).length : 0;
+    if (finih) {
+      const gusce = route._densAdded ? ` Tamo gde se nešto sprema tačke su gušće - razmak pada na 3 km.` : "";
+      el.innerHTML += `<div class="note">Kiša i vetar za ovu rutu čitaju se sa mreže od <b>2,3 km</b> (CHMI Aladin, ` +
+        `jedini te finoće koji pokriva ceo Balkan) umesto uobičajenih 7 km.${gusce}</div>`;
+    }
+  } catch (e) {}
 }
 function hourIndex(hourly, when) {
   const t0 = new Date(hourly.time[0]).getTime();
@@ -3533,11 +3636,71 @@ function hourIndex(hourly, when) {
   if (i < 0 || i > hourly.time.length - 1) return null;   // R13: van horizonta prognoze - NE lazi poslednjim satom
   return i;
 }
-function assessHour(h, i, ctx) {
-  const p = h.precipitation[i] ?? 0, pp = h.precipitation_probability[i] ?? 0;
-  const g = h.wind_gusts_10m[i] ?? 0, t = h.temperature_2m[i] ?? 15, wc = h.weather_code[i] ?? 0;
-  const ws = (h.wind_speed_10m && h.wind_speed_10m[i]) ?? 0;
-  const wd = (h.wind_direction_10m && h.wind_direction_10m[i]) ?? null;
+/* ---- tacan trenutak prolaska, bez lepljenja na pun sat ----
+   IZMERENO 10.8.: zaokruzivanje na najblizi pun sat gresi do +/-30 min = +/-35 km puta,
+   a interpolacija ne kosta NIJEDAN novi poziv (isti podaci). Merena razlika: T prosek
+   0,4-0,5 C (max 2,4), udari 0,2-0,5 km/h. Dve vrste velicina se citaju razlicito:
+   - trenutne (temperatura, brzina i smer vetra) = linearno izmedju dva sata
+   - "za prethodni sat" (kisa, verovatnoca, udari) = interval KOJI SADRZI trenutak.
+     Open-Meteo ih deklarise kao "preceding hour", pa je za prolazak u 10:06 merodavan
+     zapis u 11:00 (interval 10-11), a ne stari zaokruzeni 10:00. */
+function hourAt(hourly, when) {
+  if (!hourly || !hourly.time || !hourly.time.length) return null;
+  const t0 = new Date(hourly.time[0]).getTime();
+  const last = hourly.time.length - 1;
+  const x = (when.getTime() - t0) / 3600e3;
+  if (x < -0.5 || x > last) return null;   // van horizonta - NE lazi poslednjim satom
+  const i = Math.max(0, Math.min(last, Math.floor(x)));
+  const f = Math.max(0, Math.min(1, x - i));
+  return { i, j: Math.min(last, i + 1), f, iAcc: f > 0 ? Math.min(last, i + 1) : i };
+}
+function hourT(idx) { return { i: idx, j: idx, f: 0, iAcc: idx }; }   // ceo sat kao "trenutak" (kisna pauza racuna po satima)
+function lerpVal(arr, t) {   // trenutna velicina izmedju dva sata
+  if (!arr) return null;
+  const a = arr[t.i], b = arr[t.j];
+  if (a === null || a === undefined) return (b === null || b === undefined) ? null : b;
+  if (b === null || b === undefined) return a;
+  return a + (b - a) * t.f;
+}
+function accVal(arr, t) {    // velicina "za prethodni sat" - uzima se interval koji sadrzi trenutak
+  if (!arr) return null;
+  const v = arr[t.iAcc];
+  return (v === null || v === undefined) ? null : v;
+}
+/* Ocitavanje jednog trenutka na jednoj tacki.
+   FINI MODEL (Aladin 2,3 km) ima prednost za kisu, udare i temperaturu dok mu traje horizont
+   (~2,5 dana), a VEROVATNOCA uvek dolazi iz globalnog modela - fini je nema
+   (provereno 10.8.: 0 od 168 sati ima vrednost). Prazan podatak se vraca kao null,
+   NIKAD kao nula: nula bi na motoru znacila "nema opasnosti". */
+function wxRead(h, t, fine, ft) {
+  // Fini model se koristi SAMO ako za taj sat ima kisu; ako je van svog horizonta, prelazi se
+  // na globalni u celosti. Mesanje po varijabli (kisa iz jednog, udari iz drugog sata) bi
+  // pravilo nespojive parove.
+  const fp = (fine && ft) ? accVal(fine.precipitation, ft) : null;
+  const ok = fp !== null;
+  return {
+    p: ok ? fp : accVal(h.precipitation, t),
+    pp: accVal(h.precipitation_probability, t),          // uvek globalni model - fini nema verovatnocu
+    g: (ok ? accVal(fine.wind_gusts_10m, ft) : null) ?? accVal(h.wind_gusts_10m, t),
+    t: (ok ? lerpVal(fine.temperature_2m, ft) : null) ?? lerpVal(h.temperature_2m, t),
+    wc: (ok ? accVal(fine.weather_code, ft) : null) ?? accVal(h.weather_code, t),
+    ws: lerpVal(h.wind_speed_10m, t),
+    wd: lerpVal(h.wind_direction_10m, t),
+    fine: ok,
+  };
+}
+function assessHour(h, tt, ctx, fine, ft) {
+  if (typeof tt === "number") tt = hourT(tt);   // stari pozivi sa celim indeksom (kisna pauza)
+  const v = wxRead(h, tt, fine, ft);
+  const i = tt.iAcc;
+  // prazno na SVIM kljucnim velicinama = nemamo prognozu za taj trenutak; posteno je reci to,
+  // a ne prikazati zeleno (nula bi znacila "nema opasnosti")
+  if (v.p === null && v.t === null && v.g === null)
+    return { level: 0, reasons: ["prognoza nedostupna"], outOfRange: true, temp: null, precip: 0, feel: null, gust: 0, wind: 0 };
+  const p = v.p ?? 0, pp = v.pp ?? 0;
+  const g = v.g ?? 0, t = v.t ?? 15, wc = v.wc ?? 0;
+  const ws = v.ws ?? 0;
+  const wd = v.wd;
   let level = 0; const reasons = [];
   if (wc >= 95) { level = 2; reasons.push("grmljavina"); }
   if (wc === 45 || wc === 48) { level = Math.max(level, 1); reasons.push(wc === 48 ? "ledena magla" : "magla"); }   // 10.8.: jedina rupa u hazardima (nalaz analize konkurencije)
@@ -3586,10 +3749,12 @@ function assessRoute(route, departure, shiftHours = 0) {
   return route.samples.map((s, i) => {
     const eta = new Date(departure.getTime() + s.durSec * 1000 + shiftHours * 3600e3);
     const h = route.weather && route.weather[i];   // prognoza pala (429) → "nedostupna" umesto rusenja celog plana
-    const hi = h && h.time ? hourIndex(h, eta) : null;
+    const hi = h && h.time ? hourAt(h, eta) : null;
+    const fine = route.fine && route.fine[i];      // fini model (2,3 km) - vazi ~2,5 dana, dalje je prazan
+    const ft = fine && fine.time ? hourAt(fine, eta) : null;
     const a = hi === null
       ? { level: 0, reasons: [h ? "van horizonta prognoze" : "prognoza nedostupna"], outOfRange: true, km: s.km, eta, lat: s.lat, lon: s.lon, temp: null, feel: null, precip: 0, gust: 0 }
-      : assessHour(h, hi, { bearing: s.bearing, speedKmh: s.speedKmh, lat: s.lat, lon: s.lon, when: eta });
+      : assessHour(h, hi, { bearing: s.bearing, speedKmh: s.speedKmh, lat: s.lat, lon: s.lon, when: eta }, fine, ft);
     return { ...a, eta, km: s.km, lat: s.lat, lon: s.lon, idx: s.idx };
   });
 }
@@ -5970,6 +6135,16 @@ function renderRouteTabs(departure) {
   const act = box.querySelector(".active");
   if (act && act.offsetLeft + act.offsetWidth > box.clientWidth) box.scrollLeft = Math.max(0, act.offsetLeft - 14);
 }
+/* Ponovno iscrtavanje svega sto zavisi od prognoze (posle finog modela ili guscanja tacaka). */
+function redrawWx(route, departure) {
+  const a = route.assess;
+  try { renderVerdict(a, route, departure); } catch (e) {}
+  try { renderTimeline(a); } catch (e) {}
+  try { renderWxCharts(a); } catch (e) {}
+  try { renderGear(a); } catch (e) {}
+  try { drawRoute(route, a); } catch (e) {}
+  try { renderResultHero(route); } catch (e) {}
+}
 async function selectRoute(departure) {
   const _seq = ++state.planSeq;   // R13: generacija - stariji async renderi ne smeju da diraju noviju rutu
   state.lastDeparture = departure || new Date();   // sat prolaska kroz granicu se racuna od polaska (10.8.)
@@ -6009,6 +6184,16 @@ async function selectRoute(departure) {
   await Promise.allSettled([renderCost(route), renderFuel(route, assess, departure), renderFood(route, assess, departure),
     renderDifficulty(route), renderCameras(route), renderRoadworks(route), renderRoadStatus(route),
     (async () => {
+      // Druga varijanta koju korisnik izabere klikom nema jos fini sloj - dovuci ga i preracunati,
+      // pa TEK ONDA presudu (presuda ide po indeksu tacke, a guscanje menja spisak tacaka).
+      if (route.fine === undefined && !route.wxFail) {
+        route.fine = await fetchFine(route, departure);
+        if (_seq !== state.planSeq) return;
+        if (route.fine) route.assess = assessRoute(route, departure);
+        if (await densifyWeather(route, departure)) route.assess = assessRoute(route, departure);
+        if (_seq !== state.planSeq) return;
+        if (route.fine || route._densAdded) redrawWx(route, departure);
+      }
       if (route.consensus === undefined) route.consensus = await fetchConsensus(route, departure);
       if (route.metno === undefined) route.metno = await fetchMetNo(route);   // cetvrti glas
       if (_seq !== state.planSeq) return;
@@ -6157,6 +6342,20 @@ async function plan() {
       .map((r, i) => ({ i, w: Math.max(...r.assess.map((a) => a.level)), d: r.totalDur }))
       .sort((a, b) => a.w - b.w || a.d - b.d)[0].i;
     state.selected = state.recommended;
+
+    // Fini model (2,3 km) i guscanje tacaka SAMO za rutu koja se prikazuje - ostale varijante
+    // se porede grubom prognozom i ne placamo ih. Oba koraka su tiha: ako padnu, ostaje kao pre.
+    const _sel = state.routes[state.selected];
+    if (_sel && !_sel.wxFail) {
+      setStatus("Zumiram prognozu na finiju mrežu (2,3 km)...");
+      try {
+        if (_sel.fine === undefined) _sel.fine = await fetchFine(_sel, horizon);
+        if (_pseq !== state.planSeq) return;
+        if (_sel.fine) _sel.assess = assessRoute(_sel, departure);
+        if (await densifyWeather(_sel, departure)) _sel.assess = assessRoute(_sel, departure);
+      } catch (e) { logState({ phase: "fine-fail", msg: String(e).slice(0, 80) }); }
+      if (_pseq !== state.planSeq) return;
+    }
 
     setStatus("Tražim pumpe i mesta za pauzu...");
     $("results").classList.remove("hidden");
@@ -6386,7 +6585,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.39";
+const APP_VERSION = "0.9.40";
 const CHANGELOG = [
   { v: "0.9.39", d: "10.08.2026.", stavke: [
     "<b>Granica na tvojoj ruti</b> (tvoj zahtev): aplikacija sada sama nađe gde ruta prelazi granicu, na kom kilometru i u koliko sati tuda prolaziš, i doda vreme čekanja ako ga izvor prijavljuje.",
@@ -7576,6 +7775,73 @@ function zoomForSpeed(kmh) {   // 9.8. Google-perspektiva (Boskov zahtev sa test
 }
 const NAV_PITCH = 45;   // bio 56: previse je sabijao daljinu i zgrade su zaklanjale put; 45 = 3D dubina + otvoren horizont
 /* [NAVCORE kraj] */
+/* ---------------- ZIVA PROGNOZA U VOZNJI ----------------
+   Tri stvari se menjaju razlicitim ritmom, pa se i osvezavaju razlicito:
+   1) GDE SI - stalno. Ako stanes na kafu 40 minuta, sva vremena prolaska se pomeraju.
+      To se preracunava iz VEC preuzetih podataka, bez ijednog novog poziva (na 30 s).
+   2) RADAR - stvarno na 5 minuta (RainViewer petlja, postoji odranije).
+   3) SAM MODEL - nove brojke izlaze na 3 h (ICON-EU) do 6 h (Aladin, ECMWF, GFS).
+      Pitanje na svakih 5 minuta vratilo bi 36 puta identican broj i potrosilo bateriju.
+      Zato se sveza prognoza vuce na 20 minuta i SAMO za deo rute ispred vozaca. */
+const WXLIVE = { calcMs: 30000, fetchMs: 20 * 60000, aheadKm: 150, najavaMin: 20, lastCalc: 0, lastFetch: 0, said: null };
+function wxLiveReset() { WXLIVE.lastCalc = 0; WXLIVE.lastFetch = Date.now(); WXLIVE.said = new Set(); }
+async function wxLiveRefetch(route, curKm) {
+  try {
+    const idx = [], pts = [];
+    route.samples.forEach((s, i) => { if (s.km >= curKm - 1 && s.km <= curKm + WXLIVE.aheadKm) { idx.push(i); pts.push(s); } });
+    if (!pts.length) return;
+    const sveze = await wxPoints(pts, 2, { past: true, fetchOpts: { timeoutMs: 9000, retries: 0 } });
+    idx.forEach((gi, k) => { if (sveze[k]) route.weather[gi] = sveze[k]; });
+    if (route.fine) {
+      const fs = await finePoints(pts, 2);
+      if (fs) idx.forEach((gi, k) => { if (fs[k]) route.fine[gi] = fs[k]; });
+    }
+    WXLIVE.lastCalc = 0;   // sledeci otkucaj racuna sa svezim brojkama
+    logState({ phase: "wx-live", tacaka: pts.length, km: Math.round(curKm) });
+  } catch (e) { /* tiho: stara prognoza i dalje vazi, voznja se ne prekida */ }
+}
+/* Cist racun, bez ekrana i glasa (da moze da se testira): "efektivni polazak" je trenutak
+   u koji bi morao da krenes da bi SADA bio bas ovde - iz njega se preracunavaju svi preostali
+   sati prolaska, pa se kasnjenje, pauza na kafi i brza voznja uracunaju sami. Nula poziva. */
+function wxLiveCalc(route, curKm, now) {
+  const c = coordAtKm(route, Math.max(0, curKm));
+  const eff = new Date(now - (c.durSec || 0) * 1000);
+  const assess = assessRoute(route, eff);
+  // ZONA, ne pojedinacna tacka: duga deonica sa niskim suncem inace okine deset najava zaredom
+  const zona = groupZones(assess).find((z) => z.to.km > curKm + 0.3) || null;
+  const prvi = zona ? (zona.from.km > curKm + 0.3 ? zona.from : assess.find((x) => x.km > curKm + 0.3 && x.level >= 1) || zona.from) : null;
+  return {
+    assess, prvi, zona,
+    kljuc: zona ? zona.level + "|" + (zona.reasons[0] || "") + "|" + Math.round(zona.from.km / 10) : null,
+    minuta: prvi ? Math.max(1, Math.round((prvi.eta - now) / 60000)) : null, eff,
+  };
+}
+function wxLiveTick(route, curKm) {
+  if (!route || !route.samples || !route.weather || !RIDE.t0) return;
+  const now = Date.now();
+  if (now - WXLIVE.lastCalc < WXLIVE.calcMs) return;
+  WXLIVE.lastCalc = now;
+  if (!WXLIVE.said) WXLIVE.said = new Set();
+  let r;
+  try { r = wxLiveCalc(route, curKm, now); } catch (e) { return; }
+  RIDE.wx = r.assess;
+  if (r.prvi && r.kljuc) {
+    if (r.minuta <= WXLIVE.najavaMin && !WXLIVE.said.has(r.kljuc)) {
+      WXLIVE.said.add(r.kljuc);
+      try {
+        const ab = document.getElementById("rideAhead");
+        if (ab) {
+          ab.innerHTML = rIco(r.prvi.level >= 2 ? "danger" : "warning", 15) + " " + esc(r.prvi.reasons[0]) +
+            " za ~" + r.minuta + " min";
+          ab.classList.add("on");
+          RIDE.aheadHideAt = now + 15000; RIDE.aheadKm = r.prvi.km;
+        }
+        speakSr((r.prvi.level >= 2 ? "Pažnja. " : "") + r.prvi.reasons[0] + " za " + r.minuta + (r.minuta === 1 ? " minut" : " minuta"), true);
+      } catch (e) {}
+    }
+  }
+  if (now - WXLIVE.lastFetch > WXLIVE.fetchMs) { WXLIVE.lastFetch = now; wxLiveRefetch(route, curKm); }
+}
 function buildAhead(route) {   // najave ispred: kamere sa rute + lokalne prijave (km preko najblize tacke NOVE geometrije)
   try {
     RIDE.ahead = (route._cams || []).map((c) => ({ km: c.km, txt: rIco("camera", 15) + " Kamera", say: "Kamera ispred" }));
@@ -8191,6 +8457,7 @@ function startRide() {
   } catch (e) {}
   buildAhead(route);   // R13: izdvojeno - i reroute mora da rebuild-uje najave na novoj geometriji
   RIDE.announced = new Set(); RIDE.aheadHideAt = 0;
+  wxLiveReset();   // nova voznja: najave krecu iz pocetka, sveza prognoza tek posle prvog intervala
   if (!RIDE._freeReg) {   // registracija OVDE - na load-u je map jos null (tihi catch je gutao dragstart!)
     RIDE._freeReg = true;
     try { map.on("dragstart", rideFree); map.on("zoomstart", rideFree); map.on("rotatestart", rideFree); } catch (e) {}
@@ -8380,6 +8647,7 @@ function startRide() {
       if ((RIDE.aheadHideAt && Date.now() > RIDE.aheadHideAt) || (RIDE.aheadKm != null && curKm > RIDE.aheadKm + 0.05)) {
         ab.classList.remove("on"); RIDE.aheadHideAt = 0; RIDE.aheadKm = null;   // prosao si tacku - baner sa starom distancom vise ne laze
       }
+      wxLiveTick(route, curKm);   // ziva prognoza: preracun na 30 s (bez poziva), sveze brojke na 20 min
     } catch (e) {}
     document.getElementById("rideKmh").textContent = Math.round(spdK);   // brzina je izracunata na vrhu ticka (radi i kad GPS ne da speed - prikaz 5.8. ostajao na "0")
     try {   // statistika voznje (summary): max/prosek brzine; brzina hrani i nagib (gate + kinematicki kanal)
