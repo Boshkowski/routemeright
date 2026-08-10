@@ -736,6 +736,28 @@
   }
   /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
   #rideBar { display: none; }
+  /* sacuvane rute za offline - deli izgled sa #newsSheet */
+  #offSheet { position: fixed; inset: 0; z-index: 65; }
+  #offSheet .back { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+  #offSheet .body { position: absolute; left: 0; right: 0; bottom: 0; background: #0f172a;
+  border-radius: 22px 22px 0 0; border-top: 1px solid rgba(148,163,184,.16);
+  padding: 8px 16px calc(18px + env(safe-area-inset-bottom)); max-height: 72vh; overflow-y: auto; }
+  #offSheet .grab { width: 38px; height: 4px; border-radius: 2px; background: #475569; margin: 4px auto 12px; }
+  #offSheet .ttl { font-size: 16px; font-weight: 900; color: #fff; margin-bottom: 2px; }
+  #offSheet .sub { font-size: 12.5px; color: #94a3b8; line-height: 1.45; }
+  #offSheet .lst { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 4px; }
+  #offSheet .it { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  background: #1e293b; border: 1px solid rgba(148,163,184,.14); border-radius: 14px; padding: 11px 12px; color: #e2e8f0; }
+  #offSheet .it:active { transform: scale(.985); }
+  #offSheet .it .nm { font-size: 14px; font-weight: 800; color: #f1f5f9; }
+  #offSheet .it .mt { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+  #offSheet .it .del { margin-left: auto; background: none; border: 0; color: #64748b; font-size: 18px; padding: 4px 6px; }
+  #offSheet .cancel { width: 100%; margin-top: 12px; background: #1e293b; border: 1px solid rgba(148,163,184,.16);
+  color: #cbd5e1; border-radius: 14px; padding: 12px; font-weight: 800; }
+  #offBadge { position: fixed; left: 50%; transform: translateX(-50%); top: calc(8px + env(safe-area-inset-top));
+  z-index: 70; background: #7c2d12; color: #fed7aa; border: 1px solid #9a3412; border-radius: 999px;
+  padding: 5px 12px; font-size: 12px; font-weight: 800; display: none; }
+  body.offline #offBadge { display: block; }
   @media (max-width: 900px), (max-height: 520px) {
     body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: max(calc(4px + env(safe-area-inset-top)), 14px); z-index: 40; }
     #rideBar .navcard { background: #166534; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
@@ -1534,6 +1556,17 @@
 
   <!-- HOME chrome (kao maketa): pretraga + čipovi -->
   <button id="verBadge" type="button" aria-label="Šta je novo u ovoj verziji"></button>
+  <div id="offBadge">Bez mreže - vozi sačuvanu rutu</div>
+  <div id="offSheet" hidden>
+    <div class="back" id="offBack"></div>
+    <div class="body">
+      <div class="grab"></div>
+      <div class="ttl">Sačuvane rute</div>
+      <div class="sub" id="offSub">Rute sačuvane sa celom geometrijom, manevrima i prognozom - otvaraju se i bez signala.</div>
+      <div class="lst" id="offList"></div>
+      <button class="cancel" id="offCancel">Zatvori</button>
+    </div>
+  </div>
   <div id="newsSheet" hidden>
     <div class="back" id="newsBack"></div>
     <div class="body">
@@ -2247,6 +2280,11 @@ function _seqGuard(mySeq, route) {   // R13v2: true = render pripada staroj gene
   return mySeq !== state.planSeq || (route && state.routes && route !== state.routes[state.selected]);
 }
 async function fetchJSON(url, opts = {}) {   // R13: nijedan mrezni poziv vise ne visi bez ogranicenja (klisura, los signal)
+  // bez mreze nema smisla cekati istek vremena po devet sekundi za svaki servis
+  // (POI, visine, radovi...) - odmah javi da nema veze, aplikacija ionako ima rezervni put
+  if (navigator.onLine === false && /^https?:\/\//.test(url) && !url.startsWith(location.origin)) {
+    const e = new Error("Nema mrežne veze"); e.offline = true; throw e;
+  }
   const { timeoutMs = 9000, retries = 1, ...fo } = opts;
   for (let a = 0; ; a++) {
     const ctl = new AbortController();
@@ -3802,6 +3840,7 @@ function rideScore(route) {
 
 /* ---------------- Overpass POI ---------------- */
 async function overpass(query) {
+  if (navigator.onLine === false) return null;   // bez mreze ne gadjaj cetiri mirrora redom
   for (const base of OVERPASS_MIRRORS) {
     try {
       const ac = new AbortController();   // 8s pa sledeci mirror - POI ne sme da drzi app taocem
@@ -6591,8 +6630,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.40";
+const APP_VERSION = "0.9.41";
 const CHANGELOG = [
+  { v: "0.9.41", d: "10.08.2026.", stavke: [
+    "<b>Sačuvana ruta radi bez signala</b> (tvoj zahtev za offline): dugme <b>Čuvaj</b> više ne pamti samo imena polazišta i cilja nego celu rutu - svaku tačku puta, svih 59 skretanja, prognozu (satnu, sa fine mreže i 15-minutnu), profil visine, pumpe i trošak. U klisuri bez signala otvoriš <b>Sačuvane</b> i ruta je tu za desetinku sekunde, sa preračunatim satom prolaska za novo vreme polaska.",
+    "<b>Aplikacija se sada otvara i bez interneta.</b> Do sada bez signala nije mogla ni da se učita. Sada se sama aplikacija, mapa i podaci o motorima čuvaju na telefonu, a mapa pamti i krajeve koje si već gledao - pa se vidi i podloga, ne samo linija rute.",
+    "<b>Prognoza na 15 minuta u vožnji</b>: dok voziš, najava više ne kaže samo \"kiša oko 14 h\" nego <b>za koliko minuta počinje i koliko traje</b> (\"kiša za 12 minuta, traje oko 45 minuta\"). Fina mreža od 2,3 km i dalje kaže GDE i KOLIKO jako, a 15-minutni sloj KADA.",
+    "<b>Bez signala aplikacija više ne čeka servise</b>: ranije je svaki upit za pumpe ili visine visio po devet sekundi pre nego što odustane."
+  ] },
   { v: "0.9.40", d: "10.08.2026.", stavke: [
     "<b>Prognoza sa finije mreže</b> (tvoj zahtev za tačnošću): prognoza se ne meri po tački nego računa na mreži kvadrata, i ta mreža je plafon tačnosti. Za Balkan smo imali samo mrežu od 7 km, koja pljusak razmaže preko celog kraja. Sada kišu i vetar čitamo sa mreže od <b>2,3 km</b> (CHMI Aladin), jedine te finoće koja pokriva celu Srbiju, Sarajevo, Podgoricu i Skoplje. Provera: isti trenutak nad Ljubljanom, fina mreža vidi 3,1 mm kiše tamo gde gruba vidi nulu.",
     "<b>Gušće tačke tamo gde se nešto sprema</b>: gde se nasluti kiša, jak vetar ili nagli pad temperature, razmak između tačaka pada sa 12 km na 3 km. Na vedroj ruti se ne dodaje ništa. Na Beograd-Sarajevo tako je uhvaćena zona bočnog vetra od 42 km/h koju gruba mreža nije videla.",
@@ -7381,6 +7426,9 @@ function updateQuickLabels() {
     const rb = document.querySelector('[data-quick="recent"] span'); if (rb) rb.textContent = rec.length ? rec[0].from + " → " + rec[0].to : "—";
     const sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
     const sb = document.querySelector('[data-quick="saved"] span'); if (sb) sb.textContent = sv.length ? sv.length + " ruta" : "—";
+    // pravi broj = paketi sa celom rutom (rade bez signala); IndexedDB je asinhron pa stize malo kasnije
+    if (sb && typeof offAll === "function")
+      offAll().then((p) => { if (p.length) sb.textContent = p.length + (p.length === 1 ? " ruta" : " ruta") + " van mreže"; }).catch(() => {});
   } catch (e) {}
 }
 function gpsPrefill(force) {   // polazak = trenutna lokacija: KOORDINATE ODMAH (bez cekanja imena), ime stigne naknadno
@@ -7788,6 +7836,58 @@ function zoomForSpeed(kmh) {   // 9.8. Google-perspektiva (Boskov zahtev sa test
 }
 const NAV_PITCH = 45;   // bio 56: previse je sabijao daljinu i zgrade su zaklanjale put; 45 = 3D dubina + otvoren horizont
 /* [NAVCORE kraj] */
+/* ---------- PROGNOZA NA 15 MINUTA: tajming, ne jacina ----------
+   Podela posla je namerna i vazna:
+   - Aladin 2,3 km daje najbolju SLIKU U PROSTORU (gde tacno pada) - ali po satu.
+   - minutely_15 daje najbolji TAJMING (u kojoj cetvrtini sata pocinje) - ali na gruboj mrezi.
+   Zato 15-minutni sloj NE menja ocenu ni jacinu, nego samo precizira "za koliko minuta"
+   i "koliko ce trajati" u najavi tokom voznje. Provereno 10.8.: radi u Beogradu,
+   svih 5 velicina puno (192/192), tezina 1,4 po tacki umesto 1,0. */
+const M15_VARS = "precipitation,wind_gusts_10m,precipitation_probability";
+const M15_MS = 900000;
+async function min15Points(pts, days) {
+  try {
+    if (!pts.length) return null;
+    const out = [];
+    for (let i = 0; i < pts.length; i += WX_CHUNK) {
+      const dl = pts.slice(i, i + WX_CHUNK);
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${dl.map((p) => p.lat.toFixed(3)).join(",")}` +
+        `&longitude=${dl.map((p) => p.lon.toFixed(3)).join(",")}&minutely_15=${M15_VARS}` +
+        `&forecast_days=${days}&timezone=auto`;
+      let j = await fetchJSON(url, { timeoutMs: 9000, retries: 0 });
+      if (!Array.isArray(j)) j = [j];
+      if (j.length !== dl.length) return null;
+      for (const w of j) out.push(w && w.minutely_15 && w.minutely_15.time ? w.minutely_15 : null);
+    }
+    return out;
+  } catch { return null; }
+}
+function min15At(m, when) {
+  if (!m || !m.time || !m.time.length) return null;
+  const t0 = new Date(m.time[0]).getTime();
+  const last = m.time.length - 1;
+  const x = (when.getTime() - t0) / M15_MS;
+  if (x < -1 || x > last) return null;
+  return Math.max(0, Math.min(last, Math.ceil(x)));   // "za prethodnih 15 min" - interval koji sadrzi trenutak
+}
+/* Kada tacno pocinje i koliko traje neprilika oko procenjenog sata prolaska.
+   Vraca null ako 15-minutni sloj nema podatak - tada najava ostaje na satnoj proceni. */
+function m15Prozor(m, eta, kisa) {
+  const i = min15At(m, eta);
+  if (i === null) return null;
+  const prag = kisa ? 0.1 : 45;                       // mm/15min za kisu, km/h za udare
+  const niz = kisa ? m.precipitation : m.wind_gusts_10m;
+  if (!niz) return null;
+  const jeste = (k) => { const v = niz[k]; return v !== null && v !== undefined && v >= prag; };
+  const okvir = 8;                                    // +/- 2 sata oko procene
+  let poc = null;
+  for (let k = Math.max(0, i - okvir); k <= Math.min(niz.length - 1, i + okvir); k++)
+    if (jeste(k)) { poc = k; break; }
+  if (poc === null) return null;
+  let kraj = poc;
+  while (kraj + 1 < niz.length && jeste(kraj + 1)) kraj++;
+  return { pocetak: new Date(new Date(m.time[0]).getTime() + (poc - 1) * M15_MS), trajanjeMin: (kraj - poc + 1) * 15 };
+}
 /* ---------------- ZIVA PROGNOZA U VOZNJI ----------------
    Tri stvari se menjaju razlicitim ritmom, pa se i osvezavaju razlicito:
    1) GDE SI - stalno. Ako stanes na kafu 40 minuta, sva vremena prolaska se pomeraju.
@@ -7805,6 +7905,21 @@ function wxLiveReset(novaVoznja) {
   WXLIVE.said = new Set();
   if (novaVoznja || !WXLIVE.lastFetch) WXLIVE.lastFetch = Date.now();
 }
+/* 15-minutni sloj na startu voznje: prvo redovno osvezavanje je tek za 20 minuta, a najava
+   treba da bude precizna od prvog kilometra. Vuce SAMO minutni sloj (satni je svez iz plana). */
+async function min15Prime(route) {
+  try {
+    if (!route || !route.samples) return;
+    const idx = [], pts = [];
+    route.samples.forEach((s, i) => { if (s.km <= WXLIVE.aheadKm) { idx.push(i); pts.push(s); } });
+    if (!pts.length) return;
+    const ms = await min15Points(pts, 2);
+    if (!ms || RIDE.route !== route) return;
+    route.min15 = route.min15 || new Array(route.samples.length).fill(null);
+    idx.forEach((gi, k) => { if (ms[k]) route.min15[gi] = ms[k]; });
+    WXLIVE.lastCalc = 0;
+  } catch (e) { /* bez minutnog sloja najava ostaje na satnoj proceni */ }
+}
 async function wxLiveRefetch(route, curKm) {
   try {
     const idx = [], pts = [];
@@ -7816,6 +7931,9 @@ async function wxLiveRefetch(route, curKm) {
       const fs = await finePoints(pts, 2);
       if (fs) idx.forEach((gi, k) => { if (fs[k]) route.fine[gi] = fs[k]; });
     }
+    // 15-minutni sloj samo za deo ispred - on je taj koji pretvara "negde u tom satu" u "za 12 minuta"
+    const ms = await min15Points(pts, 2);
+    if (ms) { route.min15 = route.min15 || new Array(route.samples.length).fill(null); idx.forEach((gi, k) => { if (ms[k]) route.min15[gi] = ms[k]; }); }
     WXLIVE.lastCalc = 0;   // sledeci otkucaj racuna sa svezim brojkama
     logState({ phase: "wx-live", tacaka: pts.length, km: Math.round(curKm) });
   } catch (e) { /* tiho: stara prognoza i dalje vazi, voznja se ne prekida */ }
@@ -7830,10 +7948,26 @@ function wxLiveCalc(route, curKm, now) {
   // ZONA, ne pojedinacna tacka: duga deonica sa niskim suncem inace okine deset najava zaredom
   const zona = groupZones(assess).find((z) => z.to.km > curKm + 0.3) || null;
   const prvi = zona ? (zona.from.km > curKm + 0.3 ? zona.from : assess.find((x) => x.km > curKm + 0.3 && x.level >= 1) || zona.from) : null;
+  let minuta = prvi ? Math.max(1, Math.round((prvi.eta - now) / 60000)) : null;
+  let trajanjeMin = null;
+  // 15-minutni sloj precizira SAMO trenutak i trajanje (jacina i ocena ostaju sa fine mreze)
+  if (prvi && route.min15) {
+    const i = assess.indexOf(prvi);
+    const m = i >= 0 ? route.min15[i] : null;
+    const kisa = /kiša|pljusak|grmljavina/i.test(prvi.reasons[0] || "");
+    const vetar = /vetar/i.test(prvi.reasons[0] || "");
+    if (m && (kisa || vetar)) {
+      const p = m15Prozor(m, prvi.eta, kisa);
+      if (p) {
+        const m2 = Math.round((p.pocetak - now) / 60000);
+        if (m2 >= 0 && m2 < minuta + 90) { minuta = Math.max(1, m2); trajanjeMin = p.trajanjeMin; }
+      }
+    }
+  }
   return {
-    assess, prvi, zona,
+    assess, prvi, zona, minuta, trajanjeMin,
     kljuc: zona ? zona.level + "|" + (zona.reasons[0] || "") + "|" + Math.round(zona.from.km / 10) : null,
-    minuta: prvi ? Math.max(1, Math.round((prvi.eta - now) / 60000)) : null, eff,
+    eff,
   };
 }
 /* Posle reroute-a geometrija je nova, a tacke prognoze nose km i trajanje STARE rute - racun
@@ -7842,7 +7976,7 @@ function wxLiveCalc(route, curKm, now) {
 async function wxLiveRebuild(route) {
   try {
     if (!route || !route.coords) return;
-    RIDE.wx = null; route.weather = null; route.fine = undefined; route._dense = false;
+    RIDE.wx = null; route.weather = null; route.fine = undefined; route.min15 = null; route._dense = false;
     wxLiveReset();
     buildSamples(route);
     const dep = new Date();
@@ -7867,14 +8001,16 @@ function wxLiveTick(route, curKm) {
     if (r.minuta <= WXLIVE.najavaMin && !WXLIVE.said.has(r.kljuc)) {
       WXLIVE.said.add(r.kljuc);
       try {
+        const traje = r.trajanjeMin ? ` · traje ~${r.trajanjeMin} min` : "";
         const ab = document.getElementById("rideAhead");
         if (ab) {
           ab.innerHTML = rIco(r.prvi.level >= 2 ? "danger" : "warning", 15) + " " + esc(r.prvi.reasons[0]) +
-            " za ~" + r.minuta + " min";
+            " za ~" + r.minuta + " min" + traje;
           ab.classList.add("on");
           RIDE.aheadHideAt = now + 15000; RIDE.aheadKm = r.prvi.km;
         }
-        speakSr((r.prvi.level >= 2 ? "Pažnja. " : "") + r.prvi.reasons[0] + " za " + r.minuta + (r.minuta === 1 ? " minut" : " minuta"), true);
+        speakSr((r.prvi.level >= 2 ? "Pažnja. " : "") + r.prvi.reasons[0] + " za " + r.minuta +
+          (r.minuta === 1 ? " minut" : " minuta") + (r.trajanjeMin ? ", traje oko " + r.trajanjeMin + " minuta" : ""), true);
       } catch (e) {}
     }
   }
@@ -8498,6 +8634,7 @@ function startRide() {
   buildAhead(route);   // R13: izdvojeno - i reroute mora da rebuild-uje najave na novoj geometriji
   RIDE.announced = new Set(); RIDE.aheadHideAt = 0;
   wxLiveReset(true);   // nova voznja: najave iz pocetka, sveza prognoza tek posle prvog intervala
+  try { min15Prime(route); } catch (e) {}   // 15-minutni tajming odmah, ne posle 20 minuta
   if (!RIDE._freeReg) {   // registracija OVDE - na load-u je map jos null (tihi catch je gutao dragstart!)
     RIDE._freeReg = true;
     try { map.on("dragstart", rideFree); map.on("zoomstart", rideFree); map.on("rotatestart", rideFree); } catch (e) {}
@@ -9673,8 +9810,13 @@ async function shareRideCard(s) {
         openPlanning();
       }
       if (q === "saved") {
+        // paketi sa celom rutom idu prvi - oni rade i bez signala; stara lista imena je rezerva
+        let paketa = 0;
+        try { paketa = (await offAll()).length; } catch (e) {}
+        if (paketa) { offOpen(); return; }
         const sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
-        if (!sv.length) { openPlanning(); return; }
+        if (!sv.length) { if (!navigator.onLine) { offOpen(); return; } openPlanning(); return; }
+        if (!navigator.onLine) { offOpen(); return; }   // bez mreze planiranje ionako ne moze
         if (sv[0].from) document.getElementById("from").value = sv[0].from;
         if (sv[0].to) document.getElementById("to").value = sv[0].to;
         openPlanning();
@@ -9986,17 +10128,187 @@ async function shareRide() {
   if (d) d.addEventListener("click", () => shareRide());
   if (sb) sb.addEventListener("click", () => shareRide());
   if (k) k.addEventListener("click", () => startRide());   // Kreni = prava vožnja: GPS praćenje + preostalo km + ETA
-  if (s) s.addEventListener("click", () => {   // Čuvaj = sačuvaj relaciju lokalno
+  if (s) s.addEventListener("click", async () => {   // Čuvaj = cela ruta na telefon (radi i bez signala)
+    const vrati = () => setTimeout(() => { s.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Čuvaj'; }, 1800);
     try {
       const g = (typeof state !== "undefined" && state.geocode) || {};
-      const saved = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
+      const saved = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");   // stara lista ostaje za brzo popunjavanje polja
       saved.unshift({ from: g.from && g.from.name, to: g.to && g.to.name, ts: new Date().toISOString() });
       localStorage.setItem("rmr2_saved", JSON.stringify(saved.slice(0, 30)));
-      const q = document.querySelector('[data-quick="saved"] span'); if (q) q.textContent = saved.length + " ruta";
-      s.innerHTML = "✓ Sačuvano";
-      setTimeout(() => { s.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Čuvaj'; }, 1800);
-    } catch (e) {}
+      const r = state.routes && state.routes[state.selected];
+      if (!r) { s.innerHTML = "Nema rute"; return vrati(); }
+      s.innerHTML = "Čuvam...";
+      await offlineSave(r, state.lastDeparture || new Date());
+      s.innerHTML = "✓ Radi i bez signala";
+      updateQuickLabels();
+    } catch (e) {
+      logState({ phase: "offline-save-fail", msg: String(e).slice(0, 80) });
+      s.innerHTML = "Nije uspelo";
+    }
+    vrati();
   });
+})();
+
+/* Service worker: bez njega se bez signala ne ucita ni sama ljuska (HTML, MapLibre, font),
+   pa sacuvane rute nemaju gde da se prikazu. U native omotacu (Capacitor) fajlovi su vec
+   lokalni, pa se ne registruje. */
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol) && !/capacitor/i.test(location.protocol + location.host))
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+
+/* ================= OFFLINE: sacuvana ruta radi bez signala =================
+   Do sada je "Cuvaj" pamtio SAMO imena polazista i cilja, pa je otvaranje sacuvane rute
+   tražilo mrežu kao i svako drugo planiranje - dakle bez signala nije radilo nista.
+   Sada se cuva ceo paket: geometrija, manevri, uzorci, prognoza (satna, fina i 15-minutna),
+   profil visine i pumpe. Paketi idu u IndexedDB jer localStorage ima ~5 MB za sve zajedno,
+   a jedna duza ruta sa prognozom ume da bude blizu pola megabajta. */
+const OFF_DB = "rmr_offline", OFF_STORE = "rute", OFF_MAX = 12;
+function offDB() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(OFF_DB, 1);
+    r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains(OFF_STORE)) r.result.createObjectStore(OFF_STORE, { keyPath: "id" }); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+function offTx(mode, fn) {
+  return offDB().then((db) => new Promise((res, rej) => {
+    const tx = db.transaction(OFF_STORE, mode), st = tx.objectStore(OFF_STORE);
+    const q = fn(st);
+    q.onsuccess = () => res(q.result);
+    q.onerror = () => rej(q.error);
+  }));
+}
+const offAll = () => offTx("readonly", (st) => st.getAll());
+const offGet = (id) => offTx("readonly", (st) => st.get(id));
+const offPut = (v) => offTx("readwrite", (st) => st.put(v));
+const offDel = (id) => offTx("readwrite", (st) => st.delete(id));
+
+/* Cuva se CEO objekat rute (geometrija, maneuvers za navigaciju, uzorci, sve tri prognoze,
+   krivine, kamere, trosak, profil visine) - IndexedDB ume structured clone pa nema rucnog
+   prepisivanja polja i nema sanse da se zaboravi novo polje. Izbacuje se samo "assess",
+   jer se ocena preracunava pri otvaranju da sat prolaska bude tacan i drugog dana. */
+async function offlineSave(route, departure) {
+  const g = (typeof state !== "undefined" && state.geocode) || {};
+  const kopija = { ...route };
+  delete kopija.assess;
+  kopija._gradska = !!state._gradska;
+  const paket = {
+    id: "r" + Date.now(),
+    ts: Date.now(),
+    verzija: APP_VERSION,
+    from: (g.from && g.from.name) || "", to: (g.to && g.to.name) || "",
+    fromP: g.from ? [g.from.lat, g.from.lon] : null, toP: g.to ? [g.to.lat, g.to.lon] : null,
+    departure: (departure || new Date()).toISOString(),
+    wxTs: Date.now(),
+    vias: (state.vias || []).map((v) => ({ ...v })),
+    route: kopija,
+  };
+  await offPut(paket);
+  const svi = await offAll();
+  svi.sort((a, b) => b.ts - a.ts);
+  for (const st of svi.slice(OFF_MAX)) await offDel(st.id);   // drzi poslednjih OFF_MAX
+  return paket.id;
+}
+/* Sacekaj da mapa bude spremna za crtanje. Sacuvana ruta se otvara za desetinku sekunde,
+   dakle moze da stigne PRE nego sto se stil ucita - a addSource tada baca
+   "Style is not done loading" i obara ceo prikaz. */
+function mapaSpremna(msMax = 6000) {
+  return new Promise((res) => {
+    const gotovo = () => { try { return typeof map !== "undefined" && map && map.isStyleLoaded(); } catch (e) { return false; } };
+    if (gotovo()) return res(true);
+    const t0 = Date.now();
+    const i = setInterval(() => {
+      if (gotovo() || Date.now() - t0 > msMax) { clearInterval(i); res(gotovo()); }
+    }, 80);
+  });
+}
+/* Otvaranje BEZ ijednog mreznog poziva: ruta, mapa, prognoza i "Kreni" rade odmah. */
+async function offlineOpen(id) {
+  const p = await offGet(id);
+  if (!p) return false;
+  await mapaSpremna();
+  const r = { ...p.route };
+  r.samples = r.samples || [];
+  state.routes = [r];
+  state.selected = 0;
+  state.recommended = 0;
+  state._gradska = !!r._gradska;
+  state.vias = (p.vias || []).map((v) => ({ ...v }));
+  try { renderViaChips(); } catch (e) {}
+  state.geocode = { from: { name: p.from, lat: p.fromP && p.fromP[0], lon: p.fromP && p.fromP[1] },
+                    to: { name: p.to, lat: p.toP && p.toP[0], lon: p.toP && p.toP[1] } };
+  const dEl = document.getElementById("depart");
+  // polazak: ako je sacuvani vec prosao, racunaj od sada (sat prolaska mora da bude istinit)
+  let dep = new Date(p.departure);
+  if (!(dep > new Date())) dep = new Date();
+  try {
+    const pd2 = (n) => String(n).padStart(2, "0");
+    if (dEl) dEl.value = `${dep.getFullYear()}-${pd2(dep.getMonth() + 1)}-${pd2(dep.getDate())}T${pd2(dep.getHours())}:${pd2(dep.getMinutes())}`;
+  } catch (e) {}
+  document.getElementById("from").value = p.from || "";
+  document.getElementById("to").value = p.to || "";
+  r.assess = assessRoute(r, dep);
+  r._dense = true;      // tacke su vec guscane pre cuvanja
+  document.getElementById("results").classList.remove("hidden");
+  await selectRoute(dep);
+  const star = Math.round((Date.now() - (p.wxTs || p.ts)) / 3600e3);
+  if (star >= 2) {
+    const el = document.getElementById("consensusOut");
+    if (el) el.innerHTML = `<div class="note">Prognoza je preuzeta pre ${star} h i nije osvežavana` +
+      (navigator.onLine ? "." : " - nema signala.") + ` Sat prolaska je preračunat za novi polazak.</div>` + el.innerHTML;
+  }
+  return true;
+}
+function offOpisi(p) {
+  const km = Math.round((p.route.totalDist || 0) / 1000);
+  const h = Math.floor((p.route.totalDur || 0) / 3600), m = Math.round(((p.route.totalDur || 0) % 3600) / 60);
+  const d = new Date(p.ts);
+  const wx = p.route.weather ? "sa prognozom" : "bez prognoze";
+  return { nm: `${p.from || "?"} → ${p.to || "?"}`,
+    mt: `${km} km · ${h ? h + " h " : ""}${m} min · ${wx} · sačuvano ${d.toLocaleDateString("sr-RS", { day: "numeric", month: "numeric" })}` };
+}
+async function offRender() {
+  const lst = document.getElementById("offList");
+  if (!lst) return;
+  let svi = [];
+  try { svi = await offAll(); } catch (e) {}
+  svi.sort((a, b) => b.ts - a.ts);
+  lst.innerHTML = "";
+  if (!svi.length) {
+    lst.innerHTML = `<div class="sub">Još nema sačuvanih ruta. Isplaniraj rutu pa tapni <b>Čuvaj</b> - tada se snima cela ruta sa prognozom i radi bez signala.</div>`;
+    return;
+  }
+  for (const p of svi) {
+    const o = offOpisi(p);
+    const b = document.createElement("button");
+    b.className = "it";
+    b.innerHTML = `<span><span class="nm">${esc(o.nm)}</span><span class="mt" style="display:block">${esc(o.mt)}</span></span>` +
+      `<button class="del" aria-label="Obriši">✕</button>`;
+    b.onclick = async (e) => {
+      if (e.target.classList.contains("del")) { e.stopPropagation(); await offDel(p.id); offRender(); updateQuickLabels(); return; }
+      document.getElementById("offSheet").hidden = true;
+      try { document.body.classList.remove("home"); } catch (er) {}
+      setStatus("Otvaram sačuvanu rutu...");
+      let ok = false;
+      try { ok = await offlineOpen(p.id); }
+      catch (er) { logState({ phase: "offline-open-fail", msg: String(er).slice(0, 90) }); }
+      setStatus(ok ? "" : "Ne mogu da otvorim sačuvanu rutu.");
+    };
+    lst.appendChild(b);
+  }
+}
+function offOpen() { const s = document.getElementById("offSheet"); if (s) { s.hidden = false; offRender(); } }
+(function () {
+  const s = document.getElementById("offSheet");
+  if (!s) return;
+  const zatvori = () => { s.hidden = true; };
+  const b = document.getElementById("offBack"), c = document.getElementById("offCancel");
+  if (b) b.addEventListener("click", zatvori);
+  if (c) c.addEventListener("click", zatvori);
+  const oznaci = () => document.body.classList.toggle("offline", !navigator.onLine);
+  window.addEventListener("online", oznaci);
+  window.addEventListener("offline", oznaci);
+  oznaci();
 })();
 
 /* ---- P3: Ja podesavanja (tema mape + zvuk) ---- */
