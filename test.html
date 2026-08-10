@@ -3494,7 +3494,7 @@ async function fetchFine(route, departure) {
 const DENSE_MIN_KM = 3, DENSE_CAP = 150;
 function _sumnjiv(a, b) {
   if (!a || !b) return false;
-  if (a.outOfRange && b.outOfRange) return false;
+  if (a.outOfRange || b.outOfRange) return false;   // bez podatka nema sta da se gusca (temp null bi se citala kao 15 i lazno okidala)
   const p = Math.max(a.precip || 0, b.precip || 0);
   const g = Math.max(a.gust || 0, b.gust || 0);
   return Math.max(a.level || 0, b.level || 0) >= 1 || p >= 0.05 || g >= 35 ||
@@ -3525,7 +3525,10 @@ async function densifyWeather(route, departure) {
   route.samples = spoj.map((x) => x.p);
   route.weather = spoj.map((x) => x.w);
   if (route.fine) route.fine = spoj.map((x) => x.f);
-  route.consensus = undefined; route.metno = null;   // presuda se racuna po indeksu tacke - mora ponovo
+  // presuda se racuna PO INDEKSU tacke, a guscanje menja spisak tacaka - oba glasa moraju ponovo.
+  // MORA "undefined", ne null: selectRoute proverava `=== undefined` pa bi null trajno ubio
+  // MET Norway, i to bas na kisnim rutama (guscanje se okida samo kad se nesto sprema).
+  route.consensus = undefined; route.metno = undefined;
   route._densAdded = novi.length;
   return true;
 }
@@ -3731,6 +3734,9 @@ function assessHour(h, tt, ctx, fine, ft) {
       if (sp.altDeg > 0 && sp.altDeg <= 12 && dAz <= 25) { level = Math.max(level, 1); reasons.push("nisko sunce pravo u oči"); }
     }
   }
+  // NAPOMENA: dve provere ispod gledaju ISTORIJU iz globalnog modela (fini nema past_days),
+  // a "p" moze da dodje iz finog. Fini vidi ostriji pljusak od razmazane grube istorije, pa
+  // "prva kisa" okine nesto lakse - greska ide na stranu opreza, zato ostaje ovako.
   // prva kiša posle suvog perioda = najklizaviji asfalt (ulje/prašina)
   if (p >= 0.4 && i >= 12) {
     let before = 0;
@@ -6587,6 +6593,13 @@ async function loadBikes() {
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
 const APP_VERSION = "0.9.40";
 const CHANGELOG = [
+  { v: "0.9.40", d: "10.08.2026.", stavke: [
+    "<b>Prognoza sa finije mreže</b> (tvoj zahtev za tačnošću): prognoza se ne meri po tački nego računa na mreži kvadrata, i ta mreža je plafon tačnosti. Za Balkan smo imali samo mrežu od 7 km, koja pljusak razmaže preko celog kraja. Sada kišu i vetar čitamo sa mreže od <b>2,3 km</b> (CHMI Aladin), jedine te finoće koja pokriva celu Srbiju, Sarajevo, Podgoricu i Skoplje. Provera: isti trenutak nad Ljubljanom, fina mreža vidi 3,1 mm kiše tamo gde gruba vidi nulu.",
+    "<b>Gušće tačke tamo gde se nešto sprema</b>: gde se nasluti kiša, jak vetar ili nagli pad temperature, razmak između tačaka pada sa 12 km na 3 km. Na vedroj ruti se ne dodaje ništa. Na Beograd-Sarajevo tako je uhvaćena zona bočnog vetra od 42 km/h koju gruba mreža nije videla.",
+    "<b>Tačan sat prolaska umesto zaokruživanja</b>: vreme se više ne lepi za najbliži pun sat (greška je išla do pola sata, a to je 35 km puta). Kiša se sada čita iz sata u kom stvarno prolaziš.",
+    "<b>Prognoza živi dok voziš</b>: ako staneš na kafu ili kasniš, sva vremena prolaska se sama pomere - bez trošenja interneta, iz podataka koji su već u telefonu. Kad ti je kiša ili jak vetar unutar 20 minuta vožnje, dobiješ traku i glas (\"kiša za 12 minuta\"). Sveže brojke se povlače na 20 minuta i samo za deo puta ispred tebe, jer meteorolozi nove vrednosti objavljuju na 3 do 6 sati.",
+    "<b>Kad podatka nema, to sada i piše</b>: ranije se prazan podatak čitao kao nula, a nula na motoru izgleda kao \"nema opasnosti\"."
+  ] },
   { v: "0.9.39", d: "10.08.2026.", stavke: [
     "<b>Granica na tvojoj ruti</b> (tvoj zahtev): aplikacija sada sama nađe gde ruta prelazi granicu, na kom kilometru i u koliko sati tuda prolaziš, i doda vreme čekanja ako ga izvor prijavljuje.",
     "<b>Radovi i zatvaranja NA tvojoj ruti</b>: umesto spiska svih radova u zemlji, prvo ide ono što je na putevima kojima stvarno prolaziš (prepoznaje oznake puta - A3, E761, D2...).",
@@ -7784,7 +7797,14 @@ const NAV_PITCH = 45;   // bio 56: previse je sabijao daljinu i zgrade su zaklan
       Pitanje na svakih 5 minuta vratilo bi 36 puta identican broj i potrosilo bateriju.
       Zato se sveza prognoza vuce na 20 minuta i SAMO za deo rute ispred vozaca. */
 const WXLIVE = { calcMs: 30000, fetchMs: 20 * 60000, aheadKm: 150, najavaMin: 20, lastCalc: 0, lastFetch: 0, said: null };
-function wxLiveReset() { WXLIVE.lastCalc = 0; WXLIVE.lastFetch = Date.now(); WXLIVE.said = new Set(); }
+/* Reroute takodje prolazi ovuda (zajedno sa buildAhead): tada se cisti samo spisak izgovorenog,
+   a sat svezeg preuzimanja se NE dira - inace bi vijugava ruta sa mnogo reroute-a odlagala
+   svezu prognozu unedogled. */
+function wxLiveReset(novaVoznja) {
+  WXLIVE.lastCalc = 0;
+  WXLIVE.said = new Set();
+  if (novaVoznja || !WXLIVE.lastFetch) WXLIVE.lastFetch = Date.now();
+}
 async function wxLiveRefetch(route, curKm) {
   try {
     const idx = [], pts = [];
@@ -7815,6 +7835,24 @@ function wxLiveCalc(route, curKm, now) {
     kljuc: zona ? zona.level + "|" + (zona.reasons[0] || "") + "|" + Math.round(zona.from.km / 10) : null,
     minuta: prvi ? Math.max(1, Math.round((prvi.eta - now) / 60000)) : null, eff,
   };
+}
+/* Posle reroute-a geometrija je nova, a tacke prognoze nose km i trajanje STARE rute - racun
+   bi najavljivao kisu na pogresnom mestu. Zato se prognoza gasi i tiho gradi ponovo za novu rutu
+   (isto sto kod vec radi sa state._zones: bolje nista nego pogresno). */
+async function wxLiveRebuild(route) {
+  try {
+    if (!route || !route.coords) return;
+    RIDE.wx = null; route.weather = null; route.fine = undefined; route._dense = false;
+    wxLiveReset();
+    buildSamples(route);
+    const dep = new Date();
+    const w = await wxPoints(route.samples, 2, { past: true, fetchOpts: { timeoutMs: 9000, retries: 0 } });
+    if (RIDE.route !== route) return;   // u medjuvremenu jos jedan reroute - ne gazi noviji
+    route.weather = w;
+    route.fine = await finePoints(route.samples, fineDays(route, dep));
+    WXLIVE.lastCalc = 0; WXLIVE.lastFetch = Date.now();
+    navLog("wx-rebuild", { tacaka: route.samples.length });
+  } catch (e) { route.weather = null; }   // bez prognoze radi sve ostalo; sledeci pokusaj ide uz novi reroute
 }
 function wxLiveTick(route, curKm) {
   if (!route || !route.samples || !route.weather || !RIDE.t0) return;
@@ -7924,6 +7962,7 @@ function altApply(nr) {
   route._limits = []; loadSpeedLimits(route);
   route._cams = []; buildAhead(route);
   state._zones = [];                              // vremenske zone su bile na km stare rute
+  wxLiveRebuild(route);                           // ista stvar pri prelasku na drugu rutu
   navPaintRoute(route);
   navLog("alt-apply", { km: +(RIDE.total / 1000).toFixed(2) });
   speakSr("Prelazim na drugu rutu.");
@@ -8216,6 +8255,7 @@ async function rideReroute(route, lo, la, dNow) {
     route._cams = [];   // kamere su imale km stare rute - bolje bez najave nego pogresna
     buildAhead(route);
     state._zones = [];   // wx zone imale km stare rute - traka se gasi umesto da laze
+    wxLiveRebuild(route);   // tacke prognoze su nosile km stare rute - gradi ih ponovo (u pozadini)
     navPaintRoute(route);
     navLog("reroute-ok", { km: +(RIDE.total / 1000).toFixed(2), vias: state.vias.length });
   } catch (e) {
@@ -8457,7 +8497,7 @@ function startRide() {
   } catch (e) {}
   buildAhead(route);   // R13: izdvojeno - i reroute mora da rebuild-uje najave na novoj geometriji
   RIDE.announced = new Set(); RIDE.aheadHideAt = 0;
-  wxLiveReset();   // nova voznja: najave krecu iz pocetka, sveza prognoza tek posle prvog intervala
+  wxLiveReset(true);   // nova voznja: najave iz pocetka, sveza prognoza tek posle prvog intervala
   if (!RIDE._freeReg) {   // registracija OVDE - na load-u je map jos null (tihi catch je gutao dragstart!)
     RIDE._freeReg = true;
     try { map.on("dragstart", rideFree); map.on("zoomstart", rideFree); map.on("rotatestart", rideFree); } catch (e) {}
