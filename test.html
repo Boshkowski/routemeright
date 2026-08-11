@@ -230,16 +230,20 @@
   .endpoint-wrap input { width: 100%; padding-left: 30px; }
   input.drop-target { border-color: var(--c-primary) !important; box-shadow: 0 0 0 3px rgba(249,115,22,.22); }
   .stop-item .stop-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .stop-acts { display: flex; gap: 4px; flex: none; }
+  .stop-acts { display: flex; gap: 6px; flex: none; }
+  /* 44 px, ne 26 (11.8.): ove mete su do danas bile nevidljive na telefonu pa se nikad nisu ni
+     pogadjale. Sad kad se vide, moraju da se pogode i sa rukavicom. */
   .stop-acts button {
-    width: 26px; height: 26px; border-radius: 7px; border: 1px solid rgba(255,255,255,.10);
-    background: rgba(255,255,255,.05); color: var(--c-muted-fg); cursor: pointer; font-size: 12px;
+    width: 44px; height: 44px; border-radius: 11px; border: 1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.05); color: var(--c-muted-fg); cursor: pointer; font-size: 15px;
     transition: background 120ms var(--ease), color 120ms var(--ease), transform 120ms var(--ease);
   }
   @media (hover: hover) and (pointer: fine) { .stop-acts button:hover { background: rgba(255,255,255,.10); color: var(--c-fg); } }
   .stop-acts button:active { transform: scale(.92); }
   .stop-edit { flex: 1; padding: 4px 8px; font-size: 13px; border-radius: 7px; }
-  .clear-stops { font-size: 11.5px; color: var(--c-muted-fg); margin-top: 6px; display: inline-block; }
+  /* 11.8.: bile su 13 i 18 px visoke, prakticno nepogodive - vidi komentar uz .stop-acts */
+  .clear-stops { font-size: 13.5px; color: var(--c-muted-fg); margin-top: 6px; display: inline-block;
+    min-height: 44px; line-height: 44px; padding: 0 4px; }
 
   .when-row {
     display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; margin-top: 6px;
@@ -521,7 +525,6 @@
     #homeSearch .lg { width: 32px; height: 32px; border-radius: 9px; overflow: hidden; flex: none; }
     #homeSearch .lg svg { width: 100%; height: 100%; display: block; }
     #homeSearch .q { flex: 1; color: #94a3b8; font-size: 15px; font-weight: 600; }
-    #homeSearch .av { width: 32px; height: 32px; border-radius: 50%; background: #1e293b; border: 1px solid rgba(148,163,184,.2); color: #f97316; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; flex: none; }
 
     #homeChips { display: flex; gap: 8px; margin-top: 11px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; scrollbar-width: none;
       -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent); }
@@ -4246,7 +4249,7 @@ function initMap() {
     homeLocInit();   // nas puck + auto-centriranje (GeolocateControl ukinut - iOS/teren razmicanje tacke i kruga)
     // kompas ruža (N/E/S/W): rotira se sa mapom, klik vraća na sever (kao Google Maps)
     const comp = document.createElement("button");
-    comp.className = "compass-btn"; comp.title = "Vrati mapu na sever";
+    comp.className = "compass-btn";
     comp.innerHTML = '<div class="rose"><span class="n">N</span><span class="e">E</span><span class="s">S</span><span class="w">W</span><div class="needle"></div></div>';
     comp.title = "2D / 3D pogled (i sever)";
     comp.onclick = () => {
@@ -6401,8 +6404,13 @@ function openOptsSheet() {
   document.body.appendChild(sh);
   const host = sh.querySelector("#optsHost");
   const rg = document.getElementById("roundGen");
+  /* #viaChips ide OVDE (11.8.). Kao direktno dete #panel-a gasilo ga je pravilo 639, pa je na
+     telefonu izgledalo ovako: dodas stanicu, marker padne na mapu, a cip sa "x" i link "ocisti sve
+     stanice" su nevidljivi - stanica se vise NE MOZE skloniti. Sada stoji u istom listu u kom si je
+     i dodao, odmah ispod polja "dodaj destinaciju". */
   const items = [rg ? rg.closest("label") : null, document.getElementById("loopKmWrap"),
     document.getElementById("stopInput") ? document.getElementById("stopInput").closest(".row2") : null,
+    document.getElementById("viaChips"),
     document.getElementById("motoHead"), document.getElementById("motoWrap")].filter(Boolean);
   _optsAnchors = items.map((el) => ({ el, parent: el.parentNode, next: el.nextSibling }));
   for (const el of items) host.appendChild(el);
@@ -7100,8 +7108,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.48";
+const APP_VERSION = "0.9.49";
 const CHANGELOG = [
+  { v: "0.9.49", d: "11.08.2026.", stavke: [
+    "<b>Usputna stanica se konačno može skloniti.</b> Dodaš stanicu preko \"Još\", marker padne na mapu, a čip sa \"✕\" i link \"očisti sve stanice\" su na telefonu bili nevidljivi - stanica je ostajala zauvek. Sada stoje u istom listu u kom si je i dodao, i mete su 44 piksela umesto 26 i 13.",
+    "<b>Svako pokretanje je trošilo jedan poziv prognoze ni za šta.</b> Aplikacija je zvala Open-Meteo da upiše tekst u element koji je na telefonu ugašen. Provera je bila \"da li element postoji\" umesto \"da li se vidi\".",
+    "<b>Kompas više ne laže.</b> Imao je dva naslova, jedan preko drugog, pa je govorio da vraća sever a menjao 2D/3D.",
+    "Uklonjen mrtav kod koji je stajao bez ijednog poziva: kriva nagiba koju si penzionisao 9.8., stara funkcija za deljenje kartice, osluškivač za dugme koje je izbačeno u ranijoj rundi, i prazan prekidač teme."
+  ] },
   { v: "0.9.48", d: "11.08.2026.", stavke: [
     "<b>Pretraga više ne zakopava gradove.</b> Kad si ukucao \"Beograd\", grad je izlazio tek kao 12. red - iznad njega osam kafana čija adresa pominje Beograd, a jedna od njih je kod Paraćina. Enter te je vodio baš u tu kafanu. Uzrok: pretraga je poredila ono što kucaš sa imenom PLUS adresom, bez ikakvog rangiranja. Sada gleda samo ime i boduje ga. Provereno: Beograd, Zlatibor, Tara, Durmitor i Kod Baja - svako je prvi red, a naše ture ostaju odmah ispod.",
     "<b>Pored trajanja piše koliko je duže od autoputa.</b> \"213 km · 4 h 50 min (1 h 17 min duže od autoputa, ali vijugavo)\". Bez toga je čovek poredio naš broj sa Google-om i zaključivao da aplikacija loše računa - najveća prednost je izgledala isto kao kvar.",
@@ -7673,7 +7687,6 @@ function init() {
       if (document.body.classList.contains("riding") && typeof rideRecenter === "function") { rideRecenter(); return; }
       homeLocRecenter();   // nas tok: centriranje + JASNA poruka kad je dozvola odbijena (staro dugme je cutalo)
     },
-    theme: () => { /* dan/noć - poveži se u sledećoj fazi */ },
   };
   document.querySelectorAll("#homeFabs button").forEach((b) => {
     b.addEventListener("click", () => { const f = fabMap[b.dataset.fab]; if (f) f(); });
@@ -7683,7 +7696,11 @@ function init() {
 /* ---- app2 Faza 4.1: ziva prognoza na pocetnom + motor sekcija sklopljena ---- */
 async function homeWxPeek() {
   const el = document.querySelector("#homeSheet .wxpeek .t");
-  if (!el) return;
+  /* Provera VIDLJIVOSTI, ne postojanja (11.8.). #homeSheet je na telefonu ugasen pravilom sa
+     !important, ali element i dalje postoji - pa je stara provera prolazila i svako pokretanje je
+     trosilo jedan poziv Open-Meteo-u da bi upisalo tekst koji niko ne vidi. Open-Meteo se naplacuje
+     po pozivu kad predjemo besplatni prag, pa ovo nije samo neuredno nego i skupo. */
+  if (!el || el.offsetParent === null) return;
   const run = async (lat, lon) => {
     try {
       const j = await fetchJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&hourly=precipitation,precipitation_probability&forecast_hours=12&timezone=auto`, { timeoutMs: 8000, retries: 0 });
@@ -7894,7 +7911,6 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
   const so = document.getElementById("searchOverlay");
   if (!so) return;
   document.getElementById("sBack").addEventListener("click", closeSearch);
-  { const _sadv = document.getElementById("sAdv"); if (_sadv) _sadv.addEventListener("click", () => { closeSearch(); document.body.classList.add("planning"); }); }   // R9: dugme uklonjeno (vreme=qbar, motor/kruzna=Jos opcija)
   const si = document.getElementById("sInput");
   si.addEventListener("input", () => renderSugg(si.value));
   si.addEventListener("keydown", async (e) => {
@@ -9558,19 +9574,6 @@ function rsGaugeSvg(lnL, lnR) {   // polukruzni merac nagiba: levo cyan, desno n
     (lnR ? `<path d="M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${rx} ${ry}" fill="none" stroke="#f97316" stroke-width="7" stroke-linecap="round"/>` : "") +
     `<line x1="110" y1="-5" x2="110" y2="8" stroke="rgba(148,163,184,.5)" stroke-width="2"/></svg>`;
 }
-function rsSparkSvg(smp) {   // kriva nagiba kroz voznju: desno iznad ose narandzasto, levo ispod plavo
-  const W = 320, H = 76, mid = H / 2;
-  const maxA = Math.max(20, ...smp.map((s) => Math.abs(s.ln || 0)));
-  const X = (i) => (4 + (i / Math.max(1, smp.length - 1)) * (W - 8)).toFixed(1);
-  const pD = smp.map((s, i) => X(i) + "," + (mid - (Math.max(0, s.ln || 0) / maxA) * (mid - 8)).toFixed(1)).join(" ");
-  const pL = smp.map((s, i) => X(i) + "," + (mid + (Math.max(0, -(s.ln || 0)) / maxA) * (mid - 8)).toFixed(1)).join(" ");
-  return `<svg viewBox="0 0 ${W} ${H}">` +
-    `<line x1="4" y1="${mid}" x2="${W - 4}" y2="${mid}" stroke="rgba(148,163,184,.25)" stroke-width="1"/>` +
-    `<text x="6" y="12" fill="#94a3b8" font-size="9" font-weight="700">D ${maxA}°</text>` +
-    `<text x="6" y="${H - 5}" fill="#94a3b8" font-size="9" font-weight="700">L ${maxA}°</text>` +
-    `<polyline points="${pD}" fill="none" stroke="#f97316" stroke-width="2" stroke-linejoin="round"/>` +
-    `<polyline points="${pL}" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round"/></svg>`;
-}
 function rsBrzSvg(smp) {   // 9.8. (Boskov nalaz: kriva nagiba neupotrebljiva) - BRZINA kroz voznju, citljiva na prvi pogled
   const W = 320, H = 84;
   const vs = smp.map((s) => Math.max(0, s.v || 0));
@@ -10344,19 +10347,6 @@ async function stplPodeli(kind) {
     } catch (e) { shareToast("Kopiranje ne radi na ovom uređaju - koristi Pečat karticu."); }
   });
 })();
-async function shareRideCard(s) {
-  try {
-    const cv = buildRideCanvas(s, RIDE._sumFoto || null);
-    const blob = await new Promise((res) => cv.toBlob(res, "image/jpeg", 0.92));
-    const file = blob ? new File([blob], "voznja.jpg", { type: "image/jpeg" }) : null;
-    if (file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: "RouteMeRight vožnja" }); return;
-    }
-    if (navigator.share) { await navigator.share({ title: "RouteMeRight vožnja", text: `${s.naz}: ${s.km} km`, url: "https://routemeright.app" }); return; }
-    if (blob) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "voznja.jpg"; a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 5000); shareToast("Slika sačuvana."); }
-  } catch (e) { if (e && e.name !== "AbortError") shareToast("Deljenje nije uspelo."); }
-}
 (function () {
   const el = document.getElementById("rideSum");
   if (!el) return;
