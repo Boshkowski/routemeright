@@ -9,7 +9,7 @@
      dolazi PMTiles paket.
    - SERVISI (prognoza, rutiranje, POI) = nikad iz kesa. Bajata prognoza je gora od nikakve;
      kad nema mreze, aplikacija koristi ono sto je snimljeno uz sacuvanu rutu. */
-const V = "rmr-v7";   /* v7: preimenovani data fajlovi (mesta_zajednice, stanje_puta) - stari kes mora da padne */
+const V = "rmr-v8";   /* v7: preimenovani data fajlovi (mesta_zajednice, stanje_puta) - stari kes mora da padne */
 const LJUSKA = V + "-ljuska";
 const PLOCICE = V + "-plocice";
 const PLOCICA_MAX = 2500;
@@ -22,6 +22,7 @@ const PRECACHE = [
   "./data/bikes.json",
   "./data/prices.json",
   "./data/mesta_zajednice.json",
+  "./data/pumpe.json",
   "./data/countries_bbox.json",
   "./data/manifest.webmanifest",
   "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js",

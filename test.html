@@ -1007,7 +1007,10 @@
        u slobodnoj voznji. Prijavi zato raste, ne pada. */
     #rideBarBottom .rep { width: 64px; height: 64px; }
     #rideBarBottom .rep svg { width: 33px; height: 33px; }
-    body.riding #rideAlt { display: none; }
+    /* 11.8. (Boskova odluka "mozda ga ipak ostaviti"): ovo pravilo je gasilo "Drugu rutu" BAS u
+       .riding, a to je jedino stanje u kom donja traka uopste postoji - dugme se nikad nije videlo
+       i altOpen() se nikad nije pozivao. Sada se vidi. Sirina: pilula 110 + Prijavi 64 + Alt 46 +
+       Pauza 46 + razmaci 30 = 296 px u traci od 366, dakle staje bez smanjivanja. */
     @media (max-width: 400px) {
       body.riding #rideBarBottom { gap: 8px; }
       #rideBarBottom .pill { padding: 8px 11px; }
@@ -1837,11 +1840,9 @@
     <div class="rskol" id="rsKol" hidden></div>
     <div class="tags" id="rsTags"></div>
     <div class="btns">
-      <button class="foto" id="rsFoto" type="button" aria-label="Dodaj fotku za deljivu karticu"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg></button>
       <button class="shr" id="rsShare">Podeli</button><button class="cls" id="rsClose">Zatvori</button>
     </div>
     <div class="rsxtra"><button id="rsGpx" type="button">Izvezi GPX</button><button id="rsRuta" type="button">Sačuvaj kao rutu</button></div>
-    <input type="file" id="rsFotoIn" accept="image/*" hidden>
   </div></div>
   <div id="altSheet" hidden>
     <div class="back" id="altBack"></div>
@@ -1873,6 +1874,8 @@
         <span class="st">Napravi</span>
       </button>
       <div class="opcije">
+        <button class="foto" id="rsFoto" type="button" aria-label="Dodaj fotku za deljivu karticu"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg></button>   <!-- 11.8.: preseljeno iz sazetka; fotka ulazi SAMO u Pecat i Lepezu, pa joj je mesto tamo gde se sablon i bira -->
+        <input type="file" id="rsFotoIn" accept="image/*" hidden>
         <label><input type="checkbox" id="stplHide"> Sakrij start (500 m)</label>
         <button class="klip" id="stplKlip" type="button" hidden>Kopiraj providan stiker</button>
       </div>
@@ -2069,12 +2072,12 @@ const LEVEL_NAMES = ["vedro/suvo", "oprez", "nevreme"];
 const $ = (id) => document.getElementById(id);
 const state = { planSeq: 0, _activeSeq: 0, routes: [], selected: 0, markers: [], geocode: {}, revCache: {},
   vias: [], viaMarkers: [], hazardMode: false, famousApplied: null, pendingFamous: null,
-  catMarkers: { fuel: [], food: [], camp: [], cam: [], pause: [], work: [], hazard: [], meet: [], mesto: [] }, editorialMarkers: [], layerVis: {} };
+  catMarkers: { fuel: [], food: [], camp: [], cam: [], pause: [], work: [], hazard: [], meet: [], mesto: [] }, editorialMarkers: [], layerVis: {}, _mestaUzRutu: new Set() };
 
 /* slojevi mape: koje kategorije markera se prikazuju (pamti se u localStorage) */
 const LAYER_DEFS = [["fuel", "Pumpe"], ["food", "Hrana i pauze"], ["camp", "Kampovi"],
   ["cam", "Kamere"], ["pause", "Predlog pauze"], ["work", "Radovi"], ["hazard", "Opasnosti"],
-  ["meet", "Okupljališta i polasci"], ["mesto", "Mesta sa foruma"]];
+  ["meet", "Okupljališta i polasci"], ["mesto", "Mesta zajednice"]];
 const EMOJI_CAT = { "⛽": "fuel", "🍽": "food", "⛺": "camp", "📷": "cam", "☕": "pause", "🚧": "work" };
 function loadLayerVis() {
   let saved = {};
@@ -2088,6 +2091,8 @@ function applyLayerVis() {
     em.m.getElement().style.display = state.layerVis[em.cat] ? "" : "none";
   for (const m of state.prijaveMarkers || [])   // prijave zajednice prate sloj "Opasnosti"
     m.getElement().style.display = state.layerVis.hazard ? "" : "none";
+    try { mestaSlojFilter(); } catch (e) {}   // isti prekidaci gase i grupisani sloj
+    try { pumpeSlojFilter(); } catch (e) {}   // prekidac "Pumpe" sada stvarno nesto gasi
   localStorage.setItem("mr_layers", JSON.stringify(state.layerVis));
 }
 function isRoundTrip() { return !!($("roundTrip") && $("roundTrip").checked); }
@@ -4513,6 +4518,8 @@ async function loadEditorial() {
        izgleda mrtvo. Zato se kes ponistava cim baza stigne. */
     searchIndex._c = null;
     try { renderPreporuke(); } catch (e) {}   // 280 KB stize posle prvog rendera - sekcija ne sme ostati na stub-u
+    try { mestaSlojCrtaj(); } catch (e) {}   // 11.8.: mesta se crtaju UVEK, ne tek posle planiranja
+    try { pumpeSlojCrtaj(); } catch (e) {}   // 11.8.: pumpe iz lokalnog fajla, uvek na mapi
   } catch { /* editorial sloj je opcion - bez fajla nema pinova */ }
 }
 /* ---------------- STANJE PUTA: baza znanja moto zajednice ----------------
@@ -4628,6 +4635,7 @@ function addEditorialMarkers(route) {
   if (!map || !state.editorial) return;
   for (const em of state.editorialMarkers) em.m.remove();
   state.editorialMarkers = [];
+  state._mestaUzRutu = new Set();
   const near = route ? bjbAlongRoute(route, 6) : [];
   const routeKm = route && route.cumDist ? (route.cumDist[route.cumDist.length - 1] || 0) / 1000 : 0;
   const BJB2ICON = { kafana: "tavern", vidikovac: "viewpoint", okupljaliste: "meetup", upozorenje: "warning", mesto: "curves" };
@@ -4657,8 +4665,138 @@ function addEditorialMarkers(route) {
     placed.push({ lat: e.lat, lon: e.lon, m, html });
     const bcat = BJB_CAT[e.type] || "meet";
     state.editorialMarkers.push({ m, cat: bcat });   // poseban registar - clearMap ih ne dira
+    state._mestaUzRutu.add(e._i);   // grupisani sloj preskace ono sto je vec nacrtano kao pin
     if (!state.layerVis[bcat]) el.style.display = "none";
   }
+  try { mestaSlojFilter(); } catch (er) {}
+}
+
+/* ---------------- Mesta zajednice kao GRUPISAN sloj (11.8., Boskova odluka) ----------------
+   Do danas se 599 kuriranih mesta UCITAVALO pri svakom pokretanju a na pocetnom ekranu se nije
+   crtalo nijedno ("default ekran ostaje cist", stara odluka). Sada se crtaju uvek. Grupisano, a ne
+   599 DOM markera: svaki DOM marker je pozicioniran cvor koji se preracunava na svaki kadar
+   pomeranja mape, sto na telefonu ubija fluidnost. Prekidaci u Slojevima i dalje rade, samo sada
+   imaju sta da gase. Mesta vec nacrtana kao pin uz rutu se ovde izostavljaju da se ne dupliraju. */
+const MESTA_BOJA = { food: "#f97316", pause: "#22c55e", meet: "#38bdf8", hazard: "#ef4444", mesto: "#94a3b8" };
+function mestaPopHtml(e) {
+  const srcOk = /^https?:\/\//i.test(e.source || "");
+  return `<b>${esc(e.name)}</b><br>${esc(e.details || "")}` +
+    `<br><span class="poi-dist">${esc(e.where || "")}${e.loc === "mesto" ? " · lokacija orijentaciona" : ""}` +
+    `${e.year_hint ? " · " + esc(e.year_hint) + "." : ""}</span>` +
+    (srcOk ? `<br><a href="${esc(e.source)}" target="_blank" rel="noopener">izvor ↗</a>` : "");
+}
+function mestaSlojCrtaj() {
+  if (!map || !state.editorial || !state.editorial.length) return;
+  if (!map.isStyleLoaded()) { map.once("idle", () => { try { mestaSlojCrtaj(); } catch (e) {} }); return; }
+  const fc = { type: "FeatureCollection", features: [] };
+  state.editorial.forEach((e, i) => {
+    e._i = i;
+    if (e.lat == null || e.type === "ruta") return;   // preporuke ruta nisu pinovi, one zive u tabu Rute
+    fc.features.push({ type: "Feature",
+      geometry: { type: "Point", coordinates: [e.lon, e.lat] },
+      properties: { i, cat: BJB_CAT[e.type] || "meet" } });
+  });
+  if (!fc.features.length) return;
+  if (map.getSource("mestaSrc")) { map.getSource("mestaSrc").setData(fc); mestaSlojFilter(); return; }
+  map.addSource("mestaSrc", { type: "geojson", data: fc, cluster: true, clusterRadius: 46, clusterMaxZoom: 11 });
+  map.addLayer({ id: "mestaKlaster", type: "circle", source: "mestaSrc", filter: ["has", "point_count"],
+    paint: { "circle-radius": ["step", ["get", "point_count"], 15, 10, 19, 40, 24],
+      "circle-color": "rgba(249,115,22,.88)", "circle-stroke-width": 2, "circle-stroke-color": "#0b1120" } });
+  map.addLayer({ id: "mestaKlasterBroj", type: "symbol", source: "mestaSrc", filter: ["has", "point_count"],
+    layout: { "text-field": ["get", "point_count_abbreviated"], "text-size": 13, "text-font": ["Noto Sans Bold"] },
+    paint: { "text-color": "#fff" } });
+  map.addLayer({ id: "mestaTacka", type: "circle", source: "mestaSrc", filter: ["!", ["has", "point_count"]],
+    paint: { "circle-radius": 7, "circle-stroke-width": 2.5, "circle-stroke-color": "#0b1120",
+      "circle-color": ["match", ["get", "cat"], "food", MESTA_BOJA.food, "pause", MESTA_BOJA.pause,
+        "meet", MESTA_BOJA.meet, "hazard", MESTA_BOJA.hazard, MESTA_BOJA.mesto] } });
+  map.on("click", "mestaKlaster", (ev) => {
+    const f = map.queryRenderedFeatures(ev.point, { layers: ["mestaKlaster"] })[0];
+    if (!f) return;
+    try { map.getSource("mestaSrc").getClusterExpansionZoom(f.properties.cluster_id)
+      .then((z) => map.easeTo({ center: f.geometry.coordinates, zoom: z })).catch(() => {}); } catch (e) {}
+  });
+  map.on("click", "mestaTacka", (ev) => {
+    const f = ev.features && ev.features[0]; if (!f) return;
+    const e = state.editorial[f.properties.i]; if (!e) return;
+    markerPopup(mestaPopHtml(e)).setLngLat(f.geometry.coordinates).addTo(map);
+  });
+  for (const id of ["mestaKlaster", "mestaTacka"]) {
+    map.on("mouseenter", id, () => { map.getCanvas().style.cursor = "pointer"; });
+    map.on("mouseleave", id, () => { map.getCanvas().style.cursor = ""; });
+  }
+  mestaSlojFilter();
+}
+/* ---------------- PUMPE: lokalni fajl, uvek na mapi (11.8., Boskova odluka) ----------------
+   Do sada je sloj "Pumpe" postojao u Slojevima ali je bio PRAZAN bez rute, jer su se pumpe
+   dovlacile sa Overpass-a samo oko tacaka tocenja. Sada se citaju iz `data/pumpe.json`
+   (5.098 pumpi Balkana, 53 KB gzipovano - manje od baze mesta koju ionako saljemo).
+   Razlog nije samo brzina: operater Overpass-a 11.8.2026. izricito trazi da komercijalne
+   aplikacije napuste javnu instancu, a limit je 2 slota po IP. Lokalni fajl usput radi i bez signala.
+   Bez grupisanja, ali sa minzoom 9: na nivou drzave bi 5.098 tacaka bilo zid, a na nivou grada
+   je tacno ono sto vozacu treba. */
+let PUMPE = null;
+/* Cena punog rezervoara ZA TVOJ MOTOR - jedino sto na pumpi ne moze ni Google ni Waze, jer ne znaju
+   koji motor vozis. Obavezno se imenuje gorivo: svaka cena u prices.json je BENZIN 95 (updater cita
+   bas taj red), pa bi "pun rezervoar ~X" bez oznake tvrdilo preciznost koju nemamo - ista greska
+   koju je popravljao 0.9.38. Bez izabranog motora se pokazuje cena po litru, ne izmisljen rezervoar. */
+function pumpaCena(iso) {
+  try {
+    const eur = FUEL_PRICES[iso];
+    if (!eur) return "cenu za ovu zemlju nemamo";
+    const tank = +((document.getElementById("tank") || {}).value || 0);   // polje puni izbor motora iz baze
+    if (!tank || tank < 3) return `benzin 95: ${eur.toFixed(2)} EUR/L`;
+    const bm = document.getElementById("bikeModel");
+    const ime = (bm && bm.value) ? bm.value : "";
+    return `pun rezervoar (${tank} L, benzin 95)${ime ? " za " + ime : ""}: ~${Math.round(eur * tank)} EUR`;
+  } catch (e) { return ""; }
+}
+async function pumpeUcitaj() {
+  if (PUMPE) return PUMPE;
+  try {
+    const d = await fetchData("data/pumpe.json?v=" + APP_VERSION, { timeoutMs: 9000 });
+    PUMPE = d; return d;
+  } catch (e) { return null; }
+}
+async function pumpeSlojCrtaj() {
+  if (!map) return;
+  if (!map.isStyleLoaded()) { map.once("idle", () => { try { pumpeSlojCrtaj(); } catch (e) {} }); return; }
+  const d = await pumpeUcitaj();
+  if (!d || !d.pumpe || !d.pumpe.length) return;
+  if (map.getSource("pumpeSrc")) { pumpeSlojFilter(); return; }
+  const fc = { type: "FeatureCollection", features: d.pumpe.map((z, i) => ({
+    type: "Feature", geometry: { type: "Point", coordinates: [z[1], z[0]] },
+    properties: { i, b: z[2] >= 0 ? (d.brendovi[z[2]] || "") : "", h24: z[3], z: z[4] || "" } })) };
+  map.addSource("pumpeSrc", { type: "geojson", data: fc });
+  map.addLayer({ id: "pumpeTacka", type: "circle", source: "pumpeSrc", minzoom: 9,
+    paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 3.5, 13, 6.5, 16, 9],
+      "circle-color": "#22d3ee", "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 9, 0.8, 14, 2],
+      "circle-stroke-color": "#0b1120", "circle-opacity": 0.95 } });
+  map.on("click", "pumpeTacka", (ev) => {
+    const f = ev.features && ev.features[0]; if (!f) return;
+    const b = f.properties.b, h24 = +f.properties.h24;
+    const c = f.geometry.coordinates;
+    markerPopup(`<b>${esc(b || "Pumpa")}</b>` +
+      (h24 ? '<br><span class="poi-dist">radi non-stop</span>' : "") +
+      `<br><span class="poi-dist">${esc(pumpaCena(f.properties.z))}</span>`).setLngLat(c).addTo(map);
+  });
+  map.on("mouseenter", "pumpeTacka", () => { map.getCanvas().style.cursor = "pointer"; });
+  map.on("mouseleave", "pumpeTacka", () => { map.getCanvas().style.cursor = ""; });
+  pumpeSlojFilter();
+}
+function pumpeSlojFilter() {
+  if (!map || !map.getLayer("pumpeTacka")) return;
+  map.setLayoutProperty("pumpeTacka", "visibility", state.layerVis.fuel ? "visible" : "none");
+}
+function mestaSlojFilter() {
+  if (!map || !map.getLayer("mestaTacka")) return;
+  const upaljene = Object.keys(MESTA_BOJA).filter((c) => state.layerVis[c]);
+  const vecNaRuti = [...(state._mestaUzRutu || [])];
+  const f = ["all", ["!", ["has", "point_count"]], ["in", ["get", "cat"], ["literal", upaljene]]];
+  if (vecNaRuti.length) f.push(["!", ["in", ["get", "i"], ["literal", vecNaRuti]]]);
+  map.setFilter("mestaTacka", f);
+  const nema = upaljene.length === 0;
+  for (const id of ["mestaKlaster", "mestaKlasterBroj"])
+    if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", nema ? "none" : "visible");
 }
 
 function toggleLayersPop(btn) {
@@ -7153,8 +7291,16 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.56";
+const APP_VERSION = "0.9.57";
 const CHANGELOG = [
+  { v: "0.9.57", d: "11.08.2026.", stavke: [
+    "<b>Mapa konačno pokazuje šta aplikacija zna.</b> Do sada se 599 kuriranih mesta učitavalo pri svakom pokretanju a na početnom ekranu se nije crtalo nijedno. Sada su uvek tu, grupisana u krugove sa brojem koji se razlažu kad zumiraš. Prekidači u Slojevima i dalje rade, samo sada imaju šta da gase.",
+    "<b>Pumpe su na mapi, i na svakoj piše koliko te košta pun rezervoar za tvoj motor.</b> \"Pun rezervoar (20 L, benzin 95) za Norden 901: ~34 EUR\". To ne može ni Google ni Waze, jer ne znaju koji motor voziš. U aplikaciju je ušlo <b>5.098 pumpi</b> celog Balkana, iz lokalnog fajla od 53 KB - dakle radi i bez signala, i ne zavisi od tuđeg servera koji nas je danas dvaput odbio.",
+    "<b>Prekidač \"Pumpe\" konačno nešto radi.</b> Do sada je stajao u Slojevima i bio prazan bez rute.",
+    "<b>Uz cenu sada uvek piše koje je gorivo.</b> Svaka cena koju imamo je benzin 95, ali to nigde nije pisalo - pa smo tvrdili preciznost koju nemamo.",
+    "<b>Dugme za fotografiju preseljeno u birač deljenja.</b> Fotka ulazi samo u Pečat i Lepezu, a obe su isključene kad nagib nije meren - pa si na takvoj vožnji mogao da izabereš sliku koja nigde ne može da završi.",
+    "<b>\"Druga ruta\" u vožnji se konačno vidi</b> (tvoja odluka da ostane). Pravilo ju je gasilo baš u stanju u kom donja traka jedino i postoji."
+  ] },
   { v: "0.9.56", d: "11.08.2026.", stavke: [
     "<b>Tap pored sažetka više ne ubija pola aplikacije.</b> Ovo je bio ozbiljan kvar. Kad završiš vožnju i tapneš pored kartice da je skloniš, sažetak nestane ali aplikacija ostane u stanju \"sažetak je otvoren\" - pa nestanu i pretraga, i čip, i ceo planer. Ostanu samo mapa i donji tabovi, i izgleda kao da se aplikacija srušila. Izlaz je bio jedino preko drugog taba. Provereno na živom ekranu, pre i posle.",
     "<b>Kartica sažetka više ne uskače sa strane.</b> Ulazna animacija je zaboravljala vodoravno centriranje, pa je kartica prvih trećinu sekunde stajala 195 piksela udesno pa uskočila na mesto."
@@ -10399,6 +10545,17 @@ function stplOtvori(s) {
   };
   reset("stplPecat", bezNagiba, "nagib nije meren");
   reset("stplLepeza", bezNagiba, "nagib nije meren");
+  /* 11.8.: fotka ulazi iskljucivo u Pecat i Lepezu, a obe su bez nagiba ugasene. Ranije je dugme
+     stajalo na sazetku, pa je na voznji bez nagiba korisnik mogao da izabere sliku koja fizicki
+     nigde ne moze da zavrsi. Sada se dugme skriva istim uslovom, a fotka se resetuje OVDE (ranije
+     u rideSumShow), da ne procuri iz prethodne voznje u sledecu deljenu karticu. */
+  try {
+    RIDE._sumFoto = null;
+    const _f = document.getElementById("rsFoto"), _fi2 = document.getElementById("rsFotoIn");
+    if (_f) { _f.hidden = bezNagiba; _f.classList.remove("has");
+      _f.innerHTML = '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg>'; }
+    if (_fi2) _fi2.value = "";
+  } catch (e) {}
   reset("stplMapa", bezTraga, "nema traga");
   const kl = document.getElementById("stplKlip");
   if (kl) kl.hidden = bezNagiba || !(navigator.clipboard && window.ClipboardItem);
