@@ -1225,7 +1225,12 @@
   #rideSum .grab { width: 44px; height: 4px; border-radius: 3px; background: rgba(148,163,184,.4); margin: 10px auto 0; }
   #rideSum [hidden] { display: none !important; }   /* display:flex na blokovima ne sme da pregazi hidden atribut */
   @media (prefers-reduced-motion: reduce) { #rideSum .card { animation: none; } }
-  @keyframes sumIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  /* 11.8.: keyframe je animirao translateY, a bazno pravilo .card nosi translateX(-50%) za centriranje.
+     Dok animacija traje X centriranje ne postoji, pa kartica krene 195 px udesno i uskoci na mesto.
+     Isti propust je vec pohvatan na .peek i u dragu (xform()), keyframe je ostao. Landscape ima
+     transform:none pa dobija svoj keyframe. */
+  @keyframes sumIn { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translateX(-50%); } }
+  @keyframes sumInLs { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   #rideSum .rsmap { position: relative; background: #0b1426; border-bottom: 1px solid rgba(148,163,184,.14); }
   #rideSum .rsmap svg { display: block; width: 100%; height: auto; }
   #rideSum .rsmap .chip, #rideSum h3 { font-size: 12.5px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: #f97316; }
@@ -1320,7 +1325,8 @@
   .vrow .vx { font-size: 11.5px; color: #94a3b8; font-weight: 700; margin-top: 1px; }
   /* niski ekran (landscape telefon): sheet postaje desna kolona, mapa sa tragom ostaje levo */
   @media (max-height: 520px) { #rideSum .card { left: auto; right: 10px; transform: none; bottom: 10px; top: 10px;
-    width: min(46vw, 400px); max-height: none; border-radius: 18px; border-bottom: 1px solid rgba(148,163,184,.25); } }
+    width: min(46vw, 400px); max-height: none; border-radius: 18px; border-bottom: 1px solid rgba(148,163,184,.25);
+    animation-name: sumInLs; } }   /* landscape nema translateX(-50%) - vidi komentar uz sumIn */
 
   /* ===== LANDSCAPE telefon (npr. 844x390): mapa desno, alat u levom stubu (Google Maps obrazac).
      Ceo blok zatvoren u orientation+max-height pa portret CSS ostaje netaknut. Mobilni mod
@@ -7147,8 +7153,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.55";
+const APP_VERSION = "0.9.56";
 const CHANGELOG = [
+  { v: "0.9.56", d: "11.08.2026.", stavke: [
+    "<b>Tap pored sažetka više ne ubija pola aplikacije.</b> Ovo je bio ozbiljan kvar. Kad završiš vožnju i tapneš pored kartice da je skloniš, sažetak nestane ali aplikacija ostane u stanju \"sažetak je otvoren\" - pa nestanu i pretraga, i čip, i ceo planer. Ostanu samo mapa i donji tabovi, i izgleda kao da se aplikacija srušila. Izlaz je bio jedino preko drugog taba. Provereno na živom ekranu, pre i posle.",
+    "<b>Kartica sažetka više ne uskače sa strane.</b> Ulazna animacija je zaboravljala vodoravno centriranje, pa je kartica prvih trećinu sekunde stajala 195 piksela udesno pa uskočila na mesto."
+  ] },
   { v: "0.9.55", d: "11.08.2026.", stavke: [
     "<b>Ispod pretrage je ostao samo čip \"Snimi vožnju\".</b> Tvoj nalaz sa telefona: red se sekao uz ivicu ekrana. Bila su četiri čipa, četvrti (\"Legendarne rute\") se uopšte nije video, a nije bilo ni znaka da red može da se prevuče. Preostala tri su bila prečice na tab Rute, koji je ionako jedan tap dalje dole. Kad red ne staje, izbacuje se stavka - ne smanjuje se sve.",
     "<b>Ime foruma i ime čoveka koji vodi vodič izbačeni su iz cele aplikacije.</b> Tražio si to ranije, a ja sam u 0.9.47 izbacio pomen samo iz \"Stanja na putevima\". Sada je otišlo i iz dela Ja (\"korišćeno uz njihovu dozvolu\", ime autora), sa kartica mesta (link je sada samo \"izvor\"), iz \"Šta je novo\", iz komentara u kodu i iz samih podataka - uključujući polje sa imenom autora na svih 230 deonica. Naziv fajla se video u mrežnim pozivima, pa su i fajlovi preimenovani u <b>mesta_zajednice</b> i <b>stanje_puta</b>.",
@@ -10532,7 +10542,12 @@ async function stplPodeli(kind) {
       im.src = url;
     });
   }
-  el.addEventListener("click", (e) => { if (e.target === el) el.classList.remove("on"); });   // tap van zatvara (Boskovo pravilo izlaza)
+  /* Tap van kartice mora da zove zatvoriSum(), ne samo da skine klasu "on" (11.8.). Sa golim
+     remove("on") sazetak nestane ali `body.sumopen` OSTANE, a to pravilo (1208-1209) drzi #panel,
+     #qbar, #resCta, #routePill, #homeSheet i #homeChrome na display:none. Posledica: nestane cela
+     gornja polovina aplikacije - nema pretrage, nema cipa, nema planera - ostanu samo mapa i donji
+     tabovi, i izgleda kao da se aplikacija srusila. Provereno na zivom ekranu. */
+  el.addEventListener("click", (e) => { if (e.target === el) zatvoriSum(); });   // tap van zatvara (Boskovo pravilo izlaza)
   document.getElementById("rsShare").addEventListener("click", () => { if (el._sum) stplOtvori(el._sum); });   // v0.9.20: birac template-a (stara kartica penzionisana)
 })();
 (function(){
