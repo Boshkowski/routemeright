@@ -3011,6 +3011,100 @@ const ROUTE_STYLES = [
   { i: 2, label: "Balans", uh: 0.5, ut: 0.5 },
   { i: 3, label: "Najbrža · autoput", uh: 1.0, ut: 1.0 },
 ];
+/* ---- KOMBINOVANA RUTA (Boskov zahtev 11.8.: "treca koja je kombinacija") ----
+   ZASTO je nije bilo: `use_highways` je JEDAN globalni ponder za CELU rutu, ne po deonici.
+   Izmereno 11.8. na zivom ruteru, Beograd - Jadrija: stilovi 0.02 i 0.15 vracaju ISTU rutu
+   (623,8 km / 12,90 h), a 0.5 i 1.0 takodje istu (726,9 km / 7,46 h). Cetiri stila, dva stvarna
+   puta - dedup ih onda svede na dve kartice, i vozac s pravom pita gde je sredina.
+   Valhalla nema rucicu "ovde autoput, onde zaobilaznica", pa sredinu moramo da SASIJEMO sami:
+   vijugava ruta se podeli na komade po gustini krivina, dosadni komadi se prevezu najbrzim stilom,
+   vijugavi se zadrze. Izmereno na istoj relaciji: 613,3 km / 10,55 h - 2 h 21 min krace od vijugave,
+   svih 284 km krivina ostaje, a ukupno je i KRACE od autoputa (613 prema 727 km).
+   Podela izvedena iz podataka poklopila se sa Boskovim opisom skoro tacku u tacku:
+   BG-Loznica brzo, vijugavo do Sarajeva, Sarajevo-Konjic brzo, pa vijugavo, pa Hrvatska brzo. */
+function _kmProfil(r) {   // stepeni skretanja i sekunde po kilometru; uzorak na ~100 m (sirov zapis je gust i sumovit)
+  const uk = r.cumDist[r.cumDist.length - 1] || 0;
+  const N = Math.max(1, Math.floor(uk / 1000) + 1);
+  const st = new Array(N).fill(0), t = new Array(N).fill(0);
+  const uz = [0];
+  for (let i = 1; i < r.coords.length; i++) if (r.cumDist[i] - r.cumDist[uz[uz.length - 1]] > 100) uz.push(i);
+  for (let k = 1; k < uz.length - 1; k++) {
+    const d = Math.abs(((bearingDeg(r.coords[uz[k]], r.coords[uz[k + 1]]) - bearingDeg(r.coords[uz[k - 1]], r.coords[uz[k]])) + 540) % 360 - 180);
+    if (d > 12) st[Math.min(N - 1, Math.floor(r.cumDist[uz[k]] / 1000))] += d;   // ispod 12 stepeni je sum zapisa, ne krivina
+  }
+  for (let i = 0; i < r.coords.length - 1; i++)
+    t[Math.min(N - 1, Math.floor(r.cumDist[i] / 1000))] += (r.cumDur[i + 1] - r.cumDur[i]);
+  return { st, t, N };
+}
+function _komadi(prof) {
+  /* Glaca se SIGNAL, ne klasifikacija. Prvi pokusaj (prag pa spajanje kratkih komada) dao je
+     169 komadica na 624 km - beskorisno. Pokretni prosek +-9 km daje 5 komada koji se poklapaju
+     sa tim kako vozac stvarno dozivljava put. */
+  const { st, N } = prof, W = 9, PRAG = 72, MIN = 18;
+  const gl = [];
+  for (let i = 0; i < N; i++) {
+    let s = 0, n = 0;
+    for (let j = Math.max(0, i - W); j <= Math.min(N - 1, i + W); j++) { s += st[j]; n++; }
+    gl.push(s / Math.max(1, n));
+  }
+  const kl = gl.map((g) => (g >= PRAG ? 1 : 0));
+  const runs = () => { const o = []; let i = 0; while (i < N) { let j = i; while (j < N && kl[j] === kl[i]) j++; o.push([i, j, kl[i]]); i = j; } return o; };
+  const progutaj = (m) => { for (let i = m[0]; i < m[1]; i++) kl[i] = 1 - m[2]; };
+  for (let g = 0; g < 60; g++) {   // komad ispod 18 km nema smisla: niko ne silazi sa autoputa zbog 8 km krivina
+    const R = runs(); if (R.length < 2) break;
+    const kratki = R.filter((x) => x[1] - x[0] < MIN);
+    if (!kratki.length) break;
+    progutaj(kratki.reduce((a, b) => (b[1] - b[0] < a[1] - a[0] ? b : a)));
+  }
+  for (let g = 0; g < 20; g++) {   // gornja granica komada: svaki je jedan poziv ruteru (FOSSGIS limit je stvaran)
+    const R = runs(); if (R.length <= 5) break;
+    progutaj(R.reduce((a, b) => (b[1] - b[0] < a[1] - a[0] ? b : a)));
+  }
+  return runs().map((x) => ({ od: x[0], do: x[1], dobar: !!x[2] }));
+}
+async function hibridnaRuta(from, to, vij, brza) {
+  // kapija PRE trosenja poziva: kratka relacija ili mala razlika ne zasluzuje jos 5 poziva ruteru
+  if (!vij || !brza || !vij.coords || vij.coords.length < 50) return null;
+  if (vij.totalDist < 150000) return null;                       // ispod 150 km nema sta da se kombinuje
+  if (!(vij.totalDur > brza.totalDur * 1.4)) return null;         // vijugava vec jeste blizu najbrze
+  const prof = _kmProfil(vij), kom = _komadi(prof);
+  if (kom.length < 3) return null;                                // nema smene brzo/vijugavo - nema kombinacije
+  const dosKm = kom.reduce((a, k) => a + (k.dobar ? 0 : k.do - k.od), 0);
+  const dobKm = kom.reduce((a, k) => a + (k.dobar ? k.do - k.od : 0), 0);
+  if (dosKm < prof.N * 0.2 || dobKm < 40) return null;            // premalo dosadnog da se skrati, ili premalo krivina da se cuva
+  const naKm = (k) => {
+    const c = k * 1000;
+    for (let i = 0; i < vij.cumDist.length; i++) if (vij.cumDist[i] >= c) return { lat: vij.coords[i][1], lon: vij.coords[i][0] };
+    const z = vij.coords[vij.coords.length - 1]; return { lat: z[1], lon: z[0] };
+  };
+  const seg = { noVias: true, noLoop: true, keepTrip: true };
+  const tripovi = await Promise.all(kom.map(async (k, i) => {
+    await new Promise((rs) => setTimeout(rs, i * 250));           // razmak umesto salve: 5 istovremenih poziva ume da udari u limit
+    const A = i === 0 ? from : naKm(k.od);
+    const B = i === kom.length - 1 ? to : naKm(k.do);
+    const r = await valhallaRoute(A, B, k.dobar ? ROUTE_STYLES[0] : ROUTE_STYLES[3], seg);
+    // posten test po komadu: brzi prevoz koji odluta sa koridora ili nije brzi od originala rusi celu kombinaciju
+    const planKm = k.do - k.od, planS = prof.t.slice(k.od, k.do).reduce((a, b) => a + b, 0);
+    if (!k.dobar && (r.totalDist > planKm * 1400 || r.totalDur > planS)) throw new Error("komad odlutao sa koridora");
+    const tp = r._trip; delete r._trip; return tp;                // sirov trip ne ostaje na objektu rute (memorija)
+  }));
+  const hyb = tripToRoute(spojiTripove(tripovi), "Kombinovana · autoput i krivine");
+  hyb.styleIdx = 2;
+  let acc = 0;   // granice komada u km NOVE rute: reroute u voznji mora da zna KOJI stil vazi TU (bez ovoga
+  hyb.hibrid = tripovi.map((tp, i) => {   // bi reroute na 400. km celu preostalu turu presao u "ekstra vijugavo" i dodao sate)
+    const od = acc; acc += ((tp.summary && tp.summary.length) || 0);
+    return { od, do: acc, styleIdx: kom[i].dobar ? 0 : 3 };
+  });
+  return hyb;
+}
+function stilNaKm(route, km) {   // sasivena ruta NEMA jedan stil - reroute uzima onaj koji vazi na toj deonici
+  if (route && route.hibrid && route.hibrid.length) {
+    const h = route.hibrid.find((x) => km >= x.od && km < x.do) || route.hibrid[route.hibrid.length - 1];
+    if (h && ROUTE_STYLES[h.styleIdx]) return ROUTE_STYLES[h.styleIdx];
+  }
+  return (route && ROUTE_STYLES[route.styleIdx])
+    || ROUTE_STYLES.find((x) => route && route.label && route.label.startsWith(x.label.split(" ")[0])) || ROUTE_STYLES[1];
+}
 function decodeShape(str) { // Valhalla polyline (precision 6)
   let i = 0, lat = 0, lon = 0; const out = [];
   function next() {
@@ -3204,6 +3298,19 @@ async function fetchRoutes(from, to) {
         pun.label = "Predeli · ceo put vijugavo";
         if (!uniq.some((u) => Math.abs(u.totalDist - pun.totalDist) < 500 && Math.abs(u.totalDur - pun.totalDur) < 60)) uniq.push(pun);
       } catch (e) {}
+    }
+    /* KOMBINOVANA (11.8.): sredina izmedju autoputa i vijugave. Isti izlaz kao kod sivenja grada -
+       stanice i povratno zadrzavaju stari tok, jer bi sivenje tuklo sa korisnikovim tackama. */
+    if (!gradska && cistoZaSivenje) {
+      try {
+        const vz = uniq.find((r) => r.styleIdx === 0) || vijugave[0];
+        const hyb = vz ? await hibridnaRuta(from, to, vz, brza) : null;
+        // posten test REZULTATA, ne namere: kartica se prikazuje samo ako je stvarno i osetno brza
+        // od vijugave, a nije autoput prerusen u kombinaciju (isti zakon kao "ne tvrdimo autoput ako ga nema")
+        if (hyb && hyb.totalDur < vz.totalDur * 0.9 && hyb.totalDur > brza.totalDur * 1.08
+          && !uniq.some((u) => Math.abs(u.totalDist - hyb.totalDist) < 500 && Math.abs(u.totalDur - hyb.totalDur) < 60))
+          uniq.splice(Math.min(1, uniq.length), 0, hyb);   // odmah IZA vijugave: to je sredina, ne dodatak na kraju
+      } catch (e) {}   // kombinacija je bonus: njen pad ne sme da odnese vec dobijene rute
     }
     uniq._gradska = gradska;   // presuda putuje UZ rute - commit pod planSeq guardom u plan()
     return uniq;
@@ -5201,12 +5308,26 @@ function renderWhen(route, departure) {
     }
   } else {
     // prozor sa klizacima (od-do, polusatni koraci) umesto fiksnih termina
-    if (!state._whenWin) {
-      const h = Math.floor((departure.getHours() + departure.getMinutes() / 60) * 2);
-      state._whenWin = { od: h, do: Math.min(48, h + 12) };   // podrazumevano: od izabranog polaska + 6 h
+    /* Prozor je SIDRO + polusatni koraci, a sidro je "sad", ne ponoc izabranog dana (Boskov nalaz 11.8.:
+       "daje samo do 00.00 danas, ne da krenem sutra"). Ranije je jedinica 0 bila ponoc tekuceg dana, pa je
+       gornji kraj klizaca (48) padao tacno na 24:00 istog dana - sutrasnji polazak se prosto nije mogao izabrati.
+       Sada jedinica u = sidro + u*30 min, dakle klizaci pokrivaju punih 24 h unapred. */
+    const a0 = (() => {   // sidro: sad, zaokruzeno NANIZE na pola sata (stabilno kroz replan)
+      const d = new Date(); d.setMinutes(d.getMinutes() < 30 ? 0 : 30, 0, 0); return d.getTime();
+    })();
+    // sidro se PONOVO racuna kad je bajato (sesija ostavljena da stoji): inace bi klizaci pokazivali juce
+    if (!state._whenWin || !state._whenWin.a0 || a0 - state._whenWin.a0 > 36e5) {
+      const dep0 = departure && !isNaN(departure.getTime()) ? departure.getTime() : a0;   // prazno polje "Kreni u" -> sidro (bez NaN klizaca)
+      const od = Math.max(0, Math.min(47, Math.round((dep0 - a0) / 18e5)));
+      state._whenWin = { a0, od, do: Math.min(48, od + 12) };   // podrazumevano: od izabranog polaska + 6 h
     }
     const win = state._whenWin;
-    const hhTxt = (u) => `${String(Math.floor(u / 2)).padStart(2, "0")}:${u % 2 ? "30" : "00"}`;
+    const uTime = (u) => new Date(win.a0 + u * 18e5);
+    const hhTxt = (u) => {   // bez oznake dana bi "08:00 sutra" izgledalo isto kao "08:00 danas"
+      const d = uTime(u), dan = new Date(); dan.setHours(0, 0, 0, 0);
+      const raz = Math.round((new Date(d).setHours(0, 0, 0, 0) - dan.getTime()) / 864e5);
+      return (raz === 1 ? "sutra " : raz > 1 ? "preksutra " : "") + fmtTime(d);
+    };
     if (winBox) {
       winBox.style.display = "";
       const so = $("wwOd"), sd = $("wwDo");
@@ -5222,12 +5343,11 @@ function renderWhen(route, departure) {
         sd.addEventListener("input", () => { const v = +sd.value; state._whenWin.do = v; if (state._whenWin.od >= v) state._whenWin.od = Math.max(0, v - 1); rerun(); });
       }
     }
-    const day0 = new Date(departure); day0.setHours(0, 0, 0, 0);
     const spanMin = (win.do - win.od) * 30;
     const stepMin = Math.max(30, Math.ceil(spanMin / 8 / 30) * 30);   // najvise ~9 redova, koraci na pola sata
     cands = [];
     for (let m = win.od * 30; m <= win.do * 30; m += stepMin) {
-      const d = new Date(day0.getTime() + m * 60000);
+      const d = new Date(win.a0 + m * 60000);
       if (d.getTime() >= Date.now() - 60000) cands.push(d);
     }
     if (!cands.length) {
@@ -6295,6 +6415,10 @@ function zabeleziVoznju() {
     // summary ekran: i za kratku probnu voznju (>300 m); dnevnik/poeni ostaju samo za prave (>2 km)
     if (ukupnoD > 300) RIDE.lastSummary = { naz, tip, km: Math.round(km * 10) / 10, min, serp, kriv, poeni: ukupnoD > 2000 ? poeni : 0,
       maxK, avgK, lnL, lnR, lnChk, trag, smp, pauz, momNagib: RIDE.momNagib || null, momBrz: RIDE.momBrz || null,
+      // vreme U POKRETU (min). Bez njega je "prosek u pokretu" broj koji vozac ne moze da proveri:
+      // `min` nosi pauze, pa km/min NIKAD ne daje avgK. Sa `mov` racun se zatvara: km / (mov/60) = avgK.
+      // Napomena: min != mov + pauz - stajanje na semaforu nije ni jedno ni drugo (ni pauza ni pokret).
+      mov: RIDE.movMs > 30000 ? Math.max(1, Math.round(RIDE.movMs / 60000)) : 0,
       momLnL: RIDE.momLnL || null, momLnR: RIDE.momLnR || null,   // GDE je bio najveci nagib levo, a gde desno
       kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
     if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; return; }
@@ -7456,8 +7580,17 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.61";
+const APP_VERSION = "0.9.62";
 const CHANGELOG = [
+  { v: "0.9.62", d: "11.08.2026.", stavke: [
+    "<b>Nova, treća ruta: \"Kombinovana - autoput i krivine\".</b> Tvoj nalaz: na Beograd - Jadrija dobijaš samo vijugavu i autoput, a fali sredina - brzo do Loznice, vijugavo do Sarajeva, brzo Sarajevo-Konjic, pa opet vijugavo, pa autoputem kroz Hrvatsku. Sada je ima: <b>627 km za 11 h 02 min</b>, prema 660 km / 13 h 38 min koliko traje vijugava. Dva i po sata kraće, a sve krivine ostaju - i uz to je najkraća od sve tri.",
+    "<b>Zašto je nije bilo:</b> ruter ima samo JEDAN ponder \"koliko voliš autoput\" za celu rutu, ne po deonici. Izmereno na živom ruteru: stilovi 0,02 i 0,15 vraćaju <b>istu</b> rutu, a 0,5 i 1,0 opet istu. Četiri stila, dva stvarna puta - zato si video dve kartice. Ruter takvu rutu ne ume da napravi, pa je sada <b>šijemo mi</b>: vijugava ruta se podeli po gustini krivina, dosadni delovi se prevežu najbržim stilom, vijugavi ostaju.",
+    "Podela se računa iz same rute, bez ijednog dodatnog upita, i na Jadriji je ispala gotovo tačno onako kako si je ti opisao: km 0-173 brzo, 173-297 krivine, 297-327 brzo, 327-485 krivine, 485-627 brzo.",
+    "<b>Kartica se pojavljuje samo kad stvarno vredi.</b> Beograd - Novi Sad je nema (prekratko), Beograd - Kotor je nema (vijugava je ionako samo 1 h 25 min duža od autoputa, nema šta da se skrati). Traži se najmanje 150 km i vijugava bar 40 posto sporija od najbrže, pa se onda i rezultat proverava: mora biti osetno brža od vijugave, a ne autoput prerušen u kombinaciju.",
+    "<b>Preračunavanje rute u vožnji zna gde si.</b> Sašivena ruta nema jedan stil, pa bi skretanje s puta na 400. kilometru celu preostalu turu prebacilo u \"ekstra vijugavo\" i dodalo sate. Sada se uzima stil deonice na kojoj stvarno jesi.",
+    "<b>Prozor \"Kad krenuti\" pokriva narednih 24 sata.</b> Tvoj nalaz: klizači su išli samo do 00.00 danas, pa sutrašnji polazak nije mogao da se izabere - nula je bila ponoć tekućeg dana. Sada je nula \"sad\", a satnice preko ponoći pišu \"sutra 08:00\" da se ne pomešaju sa današnjim.",
+    "U sažetak vožnje dodato <b>vreme u pokretu</b>. Bez njega \"prosek u pokretu\" nije bio broj koji možeš da proveriš - ukupno vreme nosi pauze, pa km podeljeno vremenom nikad nije davalo taj prosek."
+  ] },
   { v: "0.9.61", d: "11.08.2026.", stavke: [
     "<b>\"Istrpeo kišu\" je do sada tvrdilo više nego što meri.</b> Zastavica se palila kad ti je nevreme <b>najavljeno tri kilometra ispred</b> - a ti si možda skrenuo, stao, ili kiše nije ni bilo. Za to se dodeljivalo priznanje i upisivalo u dnevnik. Ista greška kao \"vreme na svakom kilometru\" koju smo ispravljali u 0.9.38: tvrdnja šira od merenja. Sada se pamti gde zona počinje, pa se pali tek kad stvarno uđeš 500 metara u nju.",
     "Nalaz je došao iz istraživanja za redizajn sažetka: pet najbesnijih recenzija u korpusu od 5.682 su o brojci koja se promeni posle čuvanja. Pravilo koje iz toga sledi: bolje jedna brojka manje nego jedna koju vozač zna da je netačna."
@@ -9110,7 +9243,8 @@ async function altOpen() {
   s.hidden = false;
   if (!pos || !to) { lst.innerHTML = '<div class="prazno">Nemam GPS ili cilj, ne mogu da računam odavde.</div>'; return; }
   lst.innerHTML = '<div class="prazno">Računam rutu odavde…</div>';
-  const sada = ROUTE_STYLES[route.styleIdx] || ROUTE_STYLES.find((x) => route.label && route.label.startsWith(x.label.split(" ")[0])) || ROUTE_STYLES[1];
+  let _kmSad = 0; try { _kmSad = navProject(route, pos.lo, pos.la).d / 1000; } catch (e) {}
+  const sada = stilNaKm(route, _kmSad);   // kod kombinovane rute stil zavisi od toga GDE si (autoput ili krivine)
   const savedVias = state.vias; state.vias = [];   // odavde do cilja, bez starih stanica
   let res = [];
   try {
@@ -9420,7 +9554,7 @@ async function rideReroute(route, lo, la, dNow) {
     document.getElementById("rideShields").innerHTML = "";
     speakSr("Menjam rutu.");
     const to = state.geocode && state.geocode.to; if (!to) return;
-    const style = ROUTE_STYLES[route.styleIdx] || ROUTE_STYLES.find((x) => route.label && route.label.startsWith(x.label.split(" ")[0])) || ROUTE_STYLES[1];
+    const style = stilNaKm(route, (dNow || 0) / 1000);   // sasivena ruta: uzmi stil deonice na kojoj si, ne "prosek rute"
     // NEPROĐENE stanice OSTAJU u ruti - 5.8. je reroute tiho brisao celu turu i vodio pravo na cilj.
     // Prodjenost je TRAJNA oznaka (v._passed): geometrijski test na novoj ruti bi "uskrsnuo"
     // davno prodjenu stanicu preko offM>2000 grane (review nalaz 6.8.)
