@@ -1,5 +1,5 @@
 {
- "updated": "2026-08-11T16:10+00:00",
+ "updated": "2026-08-11T17:10+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -9,19 +9,43 @@
     {
      "type": "Delo",
      "title": "A1-E57, Ljubljana - Maribor: Delo",
+     "detail": "A1, Ljubljana - Maribor, priključek Vransko - priključek Šempeter v smeri Maribora, dela, oviran promet.",
+     "region": "A1-E57, Ljubljana - Maribor"
+    },
+    {
+     "type": "Delo",
+     "title": "A1-E61, E70, Koper - Ljubljana: Delo",
+     "detail": "A1, Koper - Ljubljana, predor Dekani - priključek Črni Kal v smeri Ljubljane, dela, oviran promet.",
+     "region": "A1-E61, E70, Koper - Ljubljana"
+    },
+    {
+     "type": "Ovire",
+     "title": "A4-E59, Gruškovje (Hrvaška) - Maribor: Ovire",
+     "detail": "A4, Gruškovje (Hrvaška) - Maribor, priključek Zlatoličje - priključek Marjeta v smeri Maribora, predmet na vozišču, oviran promet.",
+     "region": "A4-E59, Gruškovje (Hrvaška) - Maribor"
+    },
+    {
+     "type": "Okvara vozila",
+     "title": "A1-E70, Ljubljana - juž. obvoznica: Okvara vozila",
+     "detail": "A1, Ljubljana - južna obvoznica, pred uvozom Ljubljana center v smeri Kozarij, okvara vozila, oviran promet.",
+     "region": "A1-E70, Ljubljana - juž. obvoznica"
+    },
+    {
+     "type": "Okvara vozila",
+     "title": "A1-E61, E70, Koper - Ljubljana: Okvara vozila",
+     "detail": "A1, Koper - Ljubljana, priključek Dragomer - priključek Brezovica v smeri Ljubljane, okvara tovornega vozila, oviran promet.",
+     "region": "A1-E61, E70, Koper - Ljubljana"
+    },
+    {
+     "type": "Delo",
+     "title": "A1-E57, Ljubljana - Maribor: Delo",
      "detail": "A1, Ljubljana - Maribor, razcep Zadobrova - priključek Domžale v smeri Celja, dela, promet poteka po dveh zoženih pasovih.",
      "region": "A1-E57, Ljubljana - Maribor"
     },
     {
      "type": "Zastoj",
-     "title": "A1-E57, Ljubljana - Maribor: Zastoj",
-     "detail": "A1, Ljubljana - Maribor, priključek Dramlje - predor Pletovarje v smeri Maribora, območje zastojev, zamuda: 9 min, dolžina: 3 km in 800 m.",
-     "region": "A1-E57, Ljubljana - Maribor"
-    },
-    {
-     "type": "Zastoj",
      "title": "R1-209, Bohinjska Bela - Bled: Zastoj",
-     "detail": "R1-209, Bohinjska Bela - Bled, območje zastojev, dolžina: 6 km in 600 m.",
+     "detail": "R1-209, Bohinjska Bela - Bled, območje zastojev, dolžina: 5 km in 500 m.",
      "region": "R1-209, Bohinjska Bela - Bled"
     },
     {
@@ -35,18 +59,6 @@
      "title": "G2-103, Plave - Solkan: Delo",
      "detail": "G2-103, Nova Gorica - Tolmin, oviran promet, sanacije drsnih vozišč, do 14. 8. 2026.",
      "region": "G2-103, Plave - Solkan"
-    },
-    {
-     "type": "Zastoj",
-     "title": "R1-209, Lesce - Bled: Zastoj",
-     "detail": "R1-209, Lesce - Bled, zastoj, dolžina: 1 km in 200 m.",
-     "region": "R1-209, Lesce - Bled"
-    },
-    {
-     "type": "Delo",
-     "title": "R3-660, Črnomelj - Dolenjci: Delo",
-     "detail": "R3-660, Črnomelj - Adlešiči, izmenično enosmerni promet, pomična zapora, košnja, do 19:00.",
-     "region": "R3-660, Črnomelj - Dolenjci"
     },
     {
      "type": "Delo",
@@ -233,21 +245,9 @@
      "title": "RT-912, Zali Log - Davča: Delo",
      "detail": "RT-912, Zali log - Davča - Novaki, pri Davči, izmenično enosmerni promet, kratkotrajne popolne zapore (do 20 minut), izvedbe zaščite ceste pred padajočim kamenjem, do 11. 9. 2026.",
      "region": "RT-912, Zali Log - Davča"
-    },
-    {
-     "type": "Delo",
-     "title": "G2-108, Litija - Zagorje: Delo",
-     "detail": "G2-108, Litija - Zagorje, pri Šklendrovcu, izmenično enosmerni promet, gradnje krožišča in rekonstrukcija mostu, do 2. 12. 2026.",
-     "region": "G2-108, Litija - Zagorje"
-    },
-    {
-     "type": "Delo",
-     "title": "R3-677, Pišece - Zgornja Pohanca - Krško: Delo",
-     "detail": "R3-677, Pišece - Zg. Pohanca - Krško, Zdole - Krško, popolna zapora, rekonstrukcija vozišča, do 31. 8. 2026. Obvoz: Zdole - Spodnja Pohanca - Krško in obratno.",
-     "region": "R3-677, Pišece - Zgornja Pohanca - Krško"
     }
    ],
-   "fetched": "2026-08-11T16:10+00:00"
+   "fetched": "2026-08-11T17:10+00:00"
   },
   "HR": {
    "name": "Hrvatska",
@@ -269,31 +269,7 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
-     "detail": "Požar niskog raslinja na autocesti A1 na 55+000 km između čvora Bosiljevo 1 i čvora Novigrad na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 60 km/h. Molimo korisnike za oprez.",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
      "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A1 na 30+000 km između čvora Karlovac i čvora Jastrebarsko na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A1 na 3+050 km na kolniku u smjeru Dubrovnika. Promet se vodi po dvije prometne trake.",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A1 na 336+000 km između čvora Prgomet i čvora Danilo na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
-     "region": "A1"
-    },
-    {
-     "type": "guzva/dogadjaj (Zastoj)",
-     "title": "A1 - Zastoj",
-     "detail": "Povećanje gustoće prometa na autocesti A1 između čvora Karlovac i naplatne postaje ČCP Lučko na kolniku u smjeru Zagreba.",
      "region": "A1"
     },
     {
@@ -395,12 +371,6 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A4 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (teretno vozilo) na autocesti A4 na 67+500 km između čvora Komin i čvora Breznički Hum na kolniku u smjeru Goričana. Promet se vodi po dvije prometne trake uz ograničenje brzine od 60 km/h. Molimo korisnike za oprez.",
-     "region": "A4"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A4 - Izvanredni događaj",
      "detail": "Zbog oštećenja opreme na kolniku na autocesti A4 na 91+500 km između čvora Popovec i čvora Sesvete na kolniku u smjeru Zagreba promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A4"
     },
@@ -442,15 +412,15 @@
     },
     {
      "type": "zatvaranje (Radovi)",
-     "title": "D29-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D29-1"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
      "title": "D33-2 - Radovi",
      "detail": "radovi - cesta zatvorena",
      "region": "D33-2"
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "D29-1 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "D29-1"
     },
     {
      "type": "zatvaranje (Radovi)",
@@ -493,9 +463,39 @@
      "title": "LC65080-1 - Radovi",
      "detail": "Zbog radova zatvorena lokalna cesta LC65080 od mjesta Visoka do granice sa Splitsko-dalmatinskom županijom.",
      "region": "LC65080-1"
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "ŽC4094-1 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "ŽC4094-1"
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "D2-13 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "D2-13"
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "ŽC6055-1 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "ŽC6055-1"
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "1027 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "1027"
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "ŽC3234-3 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "ŽC3234-3"
     }
    ],
-   "fetched": "2026-08-11T16:10+00:00"
+   "fetched": "2026-08-11T17:10+00:00"
   },
   "RS": {
    "name": "Srbija",
@@ -743,7 +743,7 @@
      "region": "Srbija"
     }
    ],
-   "fetched": "2026-08-11T16:10+00:00"
+   "fetched": "2026-08-11T17:10+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -795,7 +795,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Orašje",
-     "detail": "Duga je kolona putničkih vozila na ulazu u Bosnu i Hercegovinu. Zadržavanja putničkih vozila na izlazu nisu duža od 30 minuta.",
+     "detail": "Duga je kolona putničkih vozila na izlazu iz Bosne i Hercegovine. Zadržavanja putničkih vozila na ulazu nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -867,7 +867,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Hum",
-     "detail": "Duge su kolone putničkih vozila u oba smjera.",
+     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -885,13 +885,13 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Zupci",
-     "detail": "Duga je kolona putničkih vozila na izlazu iz Bosne i Hercegovine. Zadržavanja putničkih vozila na ulazu nisu duža od 30 minuta.",
+     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
      "type": "granicni_prelaz",
      "title": "GP Ivanica",
-     "detail": "Duge su kolone putničkih vozila u oba smjera.",
+     "detail": "Duga je kolona putničkih vozila na ulazu u Bosnu i Hercegovinu. Zadržavanja putničkih vozila na izlazu nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -991,12 +991,12 @@
      "region": "Granični prijelazi"
     }
    ],
-   "fetched": "2026-08-11T16:10+00:00"
+   "fetched": "2026-08-11T17:10+00:00"
   },
   "ME": {
    "name": "Crna Gora",
    "source": "AMSCG",
-   "ok": false,
+   "ok": true,
    "items": [
     {
      "type": "radovi",
@@ -1077,9 +1077,7 @@
      "region": "Crna Gora"
     }
    ],
-   "error": "Expecting value: line 1 column 1 (char 0)",
-   "stale": true,
-   "fetched": "2026-08-11T15:14+00:00"
+   "fetched": "2026-08-11T17:10+00:00"
   },
   "MK": {
    "name": "S. Makedonija",
@@ -1165,7 +1163,7 @@
      "region": "Прилеп – Битола"
     }
    ],
-   "fetched": "2026-08-11T16:10+00:00"
+   "fetched": "2026-08-11T17:10+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -1233,7 +1231,7 @@
      "region": "Bërdicës – Ura"
     }
    ],
-   "fetched": "2026-08-11T16:10+00:00"
+   "fetched": "2026-08-11T17:10+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -1313,7 +1311,7 @@
      "region": "Граница с Република Сърбия"
     }
    ],
-   "fetched": "2026-08-11T16:10+00:00"
+   "fetched": "2026-08-11T17:10+00:00"
   },
   "RO": {
    "name": "Rumunija",
@@ -1561,7 +1559,7 @@
      "region": "Neamt"
     }
    ],
-   "fetched": "2026-08-11T16:10+00:00"
+   "fetched": "2026-08-11T17:10+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -1689,13 +1687,67 @@
      "region": "A1 Maliakos-Kleidi (centralna Grcka)"
     },
     {
-     "type": "error",
-     "title": "https://egnatia.eu/category/deltia-typou/feed/",
-     "detail": "mismatched tag: line 93, column 2",
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Tue, 21 Apr 2026 10:14:33 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό, ότι λόγω Άσκησης Πυρασφάλειας που θα διεξαχθεί εντός της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθεί προσωρινή διακοπή της κυκλοφορίας στην Υποθαλάσσια Σήραγγα Ακτίου – Πρέβεζας επί της Ε.Ο Πρέβεζας – Ηγουμενίτσας, στο οδικό τμήμα α",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "info",
+     "title": "Νέος φορέας διαχείρισης του αυτοκινητόδρομου της Εγνατίας οδού, από 31/12/2025",
+     "detail": "Wed, 15 Apr 2026 09:02:25 +0000 - Από τις 31/12/2025 η διαχείριση του αυτοκινητοδρόμου της Εγνατίας Οδού Α2 και των Κάθετων Αξόνων Καστοριάς Α29, Ευζώνων Α1 και Σερρών Α25 ΕΧΕΙ ΜΕΤΑΒΙΒΑΣΤΕΙ μέσω σύμβασης παραχώρησης στην εταιρεία «Νέα Εγνατία Οδός Παραχώρηση Α.Ε.» (https://neodos.gr). Συνεπώς για ζη",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Mon, 10 Nov 2025 13:33:57 +0000 - Η «ΕΓΝΑΤΙΑ ΟΔΟΣ Α.Ε.» κάνει γνωστό ότι, για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών Δομικής Επιθεώρησης εντός της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρίδας κυκλοφορίας, σύμφωνα με το παρακάτω πρόγραμμα: Δε",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Thu, 06 Nov 2025 06:25:36 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό ότι, για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών Συντήρησης Η/Μ εξοπλισμού εντός της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρίδας κυκλοφορίας, σύμφωνα με το παρακάτω πρόγραμ",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "info",
+     "title": "25 Ιουνίου 2025 Ευρωπαϊκή Ημέρα Ευαισθητοποίησης για τους εργαζόμενους πεδίου των αυτοκινητοδρόμων",
+     "detail": "Tue, 24 Jun 2025 08:54:21 +0000 - Ο αυτοκινητόδρομος της Εγνατίας Οδού και των Κάθετων Αξόνων είναι συνολικού μήκους 900 χιλιομέτρων που διατρέχουν το σύνολο της Βόρειας Ελλάδας εξασφαλίζοντας γρήγορες και ασφαλείς μετακινήσεις. Στον αυτοκινητόδρομο της Εγνατίας Οδού και στους Κάθετους Άξονες δουλεύ",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Fri, 06 Jun 2025 04:44:56 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό, ότι για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών εγκατάστασης Σταθμού Βάσης Κινητής Τηλεφωνίας (Victus Networks) για την κάλυψη της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρί",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Tue, 27 May 2025 10:57:16 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό, ότι για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών εγκατάστασης Σταθμού Βάσης Κινητής Τηλεφωνίας (Victus Networks) για την κάλυψη της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρί",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "roadworks",
+     "title": "Εργασίες συντήρησης του οδοστρώματος στην περιοχή του Περιστερίου της ΠΕ Ιωαννίνων",
+     "detail": "Mon, 19 May 2025 08:46:21 +0000 - Η «Εγνατία Οδός Α.Ε.» κάνει γνωστό ότι, για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών συντήρησης του οδοστρώματος στην περιοχή του Περιστερίου της ΠΕ Ιωαννίνων περί την χ.θ. 102+000 του Βορείου Κλάδου (κατεύθυνση προς Ιωάννινα) της Εγνατίας Οδού, θα πραγματοπ",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "ΥΠΟΘΑΛΑΣΣΙΑ ΣΗΡΑΓΓΑ ΑΚΤΙΟΥ – ΠΡΕΒΕΖΑΣ",
+     "detail": "Tue, 01 Apr 2025 10:30:00 +0000 - Η «Εγνατία Οδός ΑΕ» κάνει γνωστό, ότι για τις ανάγκες εκτέλεσης προγραμματισμένων εργασιών εγκατάστασης Σταθμού Βάσης Κινητής Τηλεφωνίας Cosmote για την ραδιοκάλυψη της Υποθαλάσσιας Σήραγγας, θα πραγματοποιηθούν αποκλεισμοί στη θέση των εργασιών της μίας λωρίδας κυκ",
+     "region": "A2 Egnatia (severna Grcka)"
+    },
+    {
+     "type": "closure",
+     "title": "Παράδοση στην κυκλοφορία του νότιου κλάδου (κατεύθυνση προς Θεσσαλονίκη) της γέφυρας Αξιού",
+     "detail": "Thu, 20 Mar 2025 09:27:33 +0000 - Η «Εγνατία Οδός ΑΕ» ενημερώνει ότι, τη Δευτέρα 24 Μαρτίου 2025, θα δοθεί σε κυκλοφορία ο νότιος κλάδος της γέφυρας Αξιού, με κατεύθυνση προς Θεσσαλονίκη. Το οδικό τμήμα που παρέμεινε κλειστό λόγω εργασιών αποκατάστασης της γέφυρας, η οποία έχει κατασκευαστεί τη δεκα",
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-08-11T16:10+00:00"
+   "fetched": "2026-08-11T17:10+00:00"
   }
  },
  "meteo": {
@@ -2030,12 +2082,6 @@
    },
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow High-temperature Warning issued for Slovenia - Slovenia / North-West",
-    "detail": "nivo: zuto | pojava: Moderate High temperature | vazi: 2026-08-11T10:00 do 2026-08-11T16:59",
-    "region": "Slovenia / North-West"
-   },
-   {
-    "type": "meteo-upozorenje",
     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / North-East",
     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-08-11T12:00 do 2026-08-11T18:59",
     "region": "Slovenia / North-East"
@@ -2116,12 +2162,6 @@
    },
    {
     "type": "meteo-upozorenje",
-    "title": "Red High-temperature Warning issued for Bosnia-Herzegovina - Prijedor",
-    "detail": "nivo: crveno | pojava: High-temperature | vazi: 2026-08-11T08:00 do 2026-08-11T17:00",
-    "region": "Prijedor"
-   },
-   {
-    "type": "meteo-upozorenje",
     "title": "Yellow High-temperature Warning issued for Bosnia-Herzegovina - Foca",
     "detail": "nivo: zuto | pojava: High-temperature | vazi: 2026-08-12T09:00 do 2026-08-12T14:59",
     "region": "Foca"
@@ -2148,12 +2188,6 @@
     "type": "meteo-upozorenje",
     "title": "Yellow High-temperature Warning issued for Bosnia-Herzegovina - Banja Luka",
     "detail": "nivo: zuto | pojava: High-temperature | vazi: 2026-08-12T08:00 do 2026-08-12T15:59",
-    "region": "Banja Luka"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Red High-temperature Warning issued for Bosnia-Herzegovina - Banja Luka",
-    "detail": "nivo: crveno | pojava: High-temperature | vazi: 2026-08-11T08:00 do 2026-08-11T17:00",
     "region": "Banja Luka"
    },
    {
@@ -2188,21 +2222,9 @@
    },
    {
     "type": "meteo-upozorenje",
-    "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Banja Luka",
-    "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-08-11T08:00 do 2026-08-11T17:00",
-    "region": "Banja Luka"
-   },
-   {
-    "type": "meteo-upozorenje",
     "title": "Orange High-temperature Warning issued for Bosnia-Herzegovina - Trebinje",
     "detail": "nivo: narandzasto | pojava: High-temperature | vazi: 2026-08-11T08:00 do 2026-08-11T18:00",
     "region": "Trebinje"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Red High-temperature Warning issued for Bosnia-Herzegovina - Prijedor",
-    "detail": "nivo: crveno | pojava: High-temperature | vazi: 2026-08-11T08:00 do 2026-08-11T17:00",
-    "region": "Prijedor"
    },
    {
     "type": "meteo-upozorenje",
