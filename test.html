@@ -5997,12 +5997,15 @@ function zabeleziVoznju() {
     const g = state.geocode || {};
     /* Ako si prekinuo rutu na pola, dnevnik to i kaze (11.8.). Ime se gradilo iz PLANIRANIH krajnjih
        tacaka, pa je vožnja prekinuta u Užicu i dalje pisala "Beograd → Zlatibor" - km i vreme tacni,
-       naslov laze gde si bio. Prag je 92% da normalan dolazak (gde se stane par stotina metara od
-       cilja) ne dobije nepotrebnu napomenu. */
-    const stigao = !RIDE.freeRide && (RIDE.maxD || 0) >= 0.92 * Math.max(1, RIDE.total);
+       naslov laze gde si bio.
+       Merilo je ZASTAVICA koju postavlja sama grana dolaska ("Stigao si!"), ne odnos predjenog i
+       ukupnog. Odnos bi lagao posle preracunavanja rute: `RIDE.maxD` se tada nulira a predjeno se
+       seli u `RIDE.baseD`, pa bi zavrsena voznja umela da dobije netacnu napomenu "(prekinuto)".
+       Iz istog razloga se u napomeni pise `km` (trag + sve etape), a ne `maxD` (samo zadnja etapa). */
+    const stigao = !RIDE.freeRide && !!RIDE.arrived;
     const naz = RIDE.freeRide ? (RIDE.freeNaz || "Slobodna vožnja")
       : (g.from && g.from.name && g.to && g.to.name)
-      ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` + (stigao ? "" : ` (prekinuto na ${Math.round((RIDE.maxD || 0) / 1000)} km)`) : "Vožnja";
+      ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` + (stigao ? "" : ` (prekinuto na ${Math.round(km)} km)`) : "Vožnja";
     const poeni = Math.round(km + serp * 4);
     const maxK = Math.round(RIDE.maxKmh || 0);
     const avgK = RIDE.movMs > 30000 ? Math.round(km / (RIDE.movMs / 3600000)) : 0;   // prosek U POKRETU, tek kad ima bar pola minuta
@@ -6038,7 +6041,7 @@ function zabeleziVoznju() {
       maxK, avgK, lnL, lnR, lnChk, trag, smp, pauz, momNagib: RIDE.momNagib || null, momBrz: RIDE.momBrz || null,
       momLnL: RIDE.momLnL || null, momLnR: RIDE.momLnR || null,   // GDE je bio najveci nagib levo, a gde desno
       kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
-    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; return; }
+    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; RIDE.arrived = false; return; }
     const v0 = _zajCitaj("mr_voznje", []);
     const v = Array.isArray(v0) ? v0 : [];
     v.unshift({ ts: Date.now(), naz, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
@@ -6062,7 +6065,7 @@ function zabeleziVoznju() {
     shareToast(`Vožnja upisana: ${v[0].km} km, +${poeni}p` + (RIDE.kolCnt ? ` · kolekcije: ${RIDE.kolCnt} ${RIDE.kolCnt === 1 ? "nova tačka" : "nove tačke"}` : ""));
     for (const t of RIDE.kolProslave || []) shareToast(t);   // proslave odlozene sa voznje (pogled ne ide na ekran u krivini)
   } catch (e) {}
-  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = [];
+  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; RIDE.arrived = false;
 }
 /* ---- render sekcija taba Zajednica ---- */
 const ZAJ_PREVIEW = new URLSearchParams(location.search).has("preview");
@@ -7143,8 +7146,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.53";
+const APP_VERSION = "0.9.54";
 const CHANGELOG = [
+  { v: "0.9.54", d: "11.08.2026.", stavke: [
+    "<b>Napomena \"prekinuto\" sada se oslanja na to da li si stvarno stigao, ne na procenat.</b> Jučerašnja verzija je poredila pređeno sa ukupnim, a to posle preračunavanja rute laže: kilometraža se tada nuluje i seli u zbir etapa. Završena vožnja je tako umela da dobije netačnu napomenu. Sada odlučuje zastavica koju postavlja sam trenutak dolaska, a u napomeni piše ukupno pređeno, ne samo poslednja etapa. Provereno: prekid na pola daje \"(prekinuto na 4 km)\", dolazak ne daje ništa."
+  ] },
   { v: "0.9.53", d: "11.08.2026.", stavke: [
     "<b>Pauza više ne ume da ti pojede ostatak ture.</b> Najozbiljniji nalaz dana. Dok si u kafani telefon je u džepu, GPS stane, i nadzornik signala prepiše natpis \"Pauza\" tekstom \"Slab GPS signal…\" - a ništa ga nikad ne vrati. Vratiš se, pročitaš da se aplikacija muči, sedneš i voziš dalje, a vožnja je i dalje na pauzi: gube se svi kilometri, ceo trag i statistika do kraja ture. Sada nadzornik u pauzi ćuti.",
     "<b>Ostaci prethodne vožnje više ne ulaze u novu.</b> Znak ograničenja sa starim brojem, crvena \"prekoračio si\" pilula i baner tipa \"Kamera za ~400 m\" nisu bili u spisku za brisanje. Baner je bio najgori: skrivao se samo kad pređeš kilometražu na kojoj je nastao, a taj podatak se nije nulirao - pa je na novoj, kraćoj ruti visio zauvek. To je tačno ono što si prijavio.",
@@ -9156,7 +9162,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.freeRide = true; RIDE.freeNaz = null; RIDE.nav = null; RIDE.route = null; RIDE.total = 0;
   RIDE.offCount = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
-  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = [];
+  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; RIDE.arrived = false;
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;
   RIDE.paused = false; RIDE.pauseMs = 0; RIDE.pauseT0 = null;
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;
@@ -9324,7 +9330,7 @@ function startRide() {
     .forEach((a) => a.classList.remove("maplibregl-compact-show")); } catch (e) {}
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
-  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = [];   // dnevnik voznje + kolekcije
+  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; RIDE.arrived = false;   // dnevnik voznje + kolekcije
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
   RIDE.lastRouteI = null; RIDE.offSt = { offMs: 0 };   // hint prozor projekcije + off-route masina stanja
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE._gpxOffAt = 0; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;   // odometar/trag iz GPS-a + delta-brzina + fizicka provera nagiba
@@ -9518,6 +9524,7 @@ function startRide() {
     // dolazak
     const remM = Math.max(0, total - d);
     if (remM < 35 && (!m || m.sr.arrive)) {
+      RIDE.arrived = true;   // dnevnik po ovoj zastavici odlucuje da li da doda "(prekinuto na X km)"
       document.getElementById("rideArr").innerHTML = arrSvg("flag");
       document.getElementById("rideInstr").textContent = "Stigao si!";
       document.getElementById("rideDist").textContent = "";
