@@ -1296,6 +1296,46 @@
   #shareTpl .kard.nema { opacity: .45; pointer-events: none; }
   /* 11.8.: red je dobio jos jednu stavku (dugme za fotku), pa mora da sme da se prelomi -
      inace natpis pored njega ide u dva reda i deluje stisnuto. */
+  /* ===== Izmeni stanice (11.8.) ===== */
+  #stopsEdit { position: fixed; inset: 0; z-index: 60; background: #0b1120; display: flex; flex-direction: column;
+    padding-top: env(safe-area-inset-top); }
+  #stopsEdit[hidden] { display: none; }
+  #stopsEdit .sehd { display: flex; align-items: center; gap: 6px; padding: 8px 10px; flex: none;
+    border-bottom: 1px solid rgba(148,163,184,.14); }
+  #stopsEdit .sehd button { width: 44px; height: 44px; border-radius: 12px; border: none; background: transparent;
+    color: #e2e8f0; font: 800 20px Archivo, sans-serif; cursor: pointer; }
+  #stopsEdit .set { flex: 1; text-align: center; font: 800 16px Archivo, sans-serif; color: #fff; }
+  #stopsEdit .sebody { flex: 1; overflow-y: auto; padding: 12px 14px 20px; }
+  #stopsEdit .serow { display: flex; align-items: center; gap: 11px; min-height: 56px; padding: 8px 12px;
+    background: #16223c; border: 1px solid rgba(148,163,184,.2); border-radius: 14px; margin-bottom: 9px; cursor: pointer; }
+  #stopsEdit .serow .tx { flex: 1; min-width: 0; }
+  #stopsEdit .serow .tx b { display: block; font: 700 15px Archivo, sans-serif; color: #fff;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #stopsEdit .serow .hint { font: 700 12px Archivo, sans-serif; color: #64748b; flex: none; }
+  #stopsEdit .tacka { width: 14px; height: 14px; border-radius: 50%; background: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.25); flex: none; }
+  #stopsEdit .pin { width: 14px; height: 18px; flex: none; background: #ef4444;
+    clip-path: polygon(50% 100%, 0 38%, 12% 12%, 50% 0, 88% 12%, 100% 38%); }
+  #stopsEdit .seadd { width: 100%; min-height: 56px; display: flex; align-items: center; gap: 11px;
+    padding: 8px 12px; margin-bottom: 9px; background: transparent; color: #94a3b8;
+    border: 1.5px dashed rgba(148,163,184,.35); border-radius: 14px;
+    font: 700 15px Archivo, sans-serif; cursor: pointer; }
+  #stopsEdit .seadd .pl { width: 22px; height: 22px; border-radius: 50%; background: rgba(249,115,22,.16);
+    color: #f97316; display: flex; align-items: center; justify-content: center; font: 800 16px Archivo; flex: none; }
+  #stopsEdit .seft { flex: none; display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid rgba(148,163,184,.14); background: #0f172a; }
+  #stopsEdit .uk { flex: 1; font: 700 13.5px Archivo, sans-serif; color: #cbd5e1; }
+  #stopsEdit #seDone { min-height: 48px; padding: 0 26px; border: none; border-radius: 13px;
+    background: linear-gradient(135deg,#f97316,#ea580c); color: #fff; font: 800 15.5px Archivo, sans-serif; cursor: pointer; }
+  /* #viaChips se dok je ekran otvoren SELI ovamo, pa nasledjuje njegov prostor */
+  #stopsEdit #viaChips { display: block !important; }
+  #stopsEdit .stop-item { min-height: 56px; border-radius: 14px; margin-bottom: 9px; padding: 8px 12px; }
+  #stopsEdit .slovo { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(148,163,184,.5);
+    display: flex; align-items: center; justify-content: center; font: 800 12px Archivo, sans-serif; color: #cbd5e1; flex: none; }
+  .stop-item .slovo { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid rgba(148,163,184,.45);
+    display: inline-flex; align-items: center; justify-content: center; font: 800 11px Archivo, sans-serif;
+    color: #cbd5e1; flex: none; margin-right: 8px; }
+  #stopsEdit .grip { font-size: 19px; padding: 10px 6px; }
   #shareTpl .opcije { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap;
     gap: 10px 12px; margin: 4px 2px 10px; }
   #shareTpl .opcije label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #cbd5e1; font-weight: 700; flex: 1 1 auto; min-width: 0; }
@@ -1857,6 +1897,27 @@
     </div>
     <div class="rsxtra"><button id="rsGpx" type="button">Izvezi GPX</button><button id="rsRuta" type="button">Sačuvaj kao rutu</button></div>
   </div></div>
+  <!-- Izmena stanica (11.8., Boskov zahtev "kao kod Google Maps-a"): pun ekran sa spiskom
+       Od / A / B / C / Do, hvataljka za prevlacenje redosleda, X za brisanje, red za dodavanje,
+       i podnozje sa ukupnim vremenom. Prevlacenje koristi POSTOJECU mehaniku iz renderViaChips -
+       #viaChips se fizicki preseljava ovde dok je ekran otvoren, pa se logika ne duplira. -->
+  <div id="stopsEdit" hidden>
+    <div class="sehd">
+      <button id="seBack" type="button" aria-label="Nazad">‹</button>
+      <div class="set">Izmeni stanice</div>
+      <button id="seClose" type="button" aria-label="Zatvori">✕</button>
+    </div>
+    <div class="sebody">
+      <div class="serow" id="seFrom"><span class="tacka"></span><div class="tx"><b id="seFromTxt">Polazak</b></div><span class="hint">izmeni</span></div>
+      <div id="seViaHost"></div>
+      <button class="seadd" id="seAdd" type="button"><span class="pl">+</span>Dodaj stanicu</button>
+      <div class="serow" id="seTo"><span class="pin"></span><div class="tx"><b id="seToTxt">Odredište</b></div><span class="hint">izmeni</span></div>
+    </div>
+    <div class="seft">
+      <div class="uk" id="seUk">-</div>
+      <button id="seDone" type="button">Gotovo</button>
+    </div>
+  </div>
   <div id="altSheet" hidden>
     <div class="back" id="altBack"></div>
     <div class="body">
@@ -5593,7 +5654,7 @@ function renderViaChips() {
     const label = g.run
       ? `${famous ? famous.name : "deonica rute"} <span class="poi-dist">(${g.idxs.length} ${plSrp(g.idxs.length, "tačka", "tačke", "tačaka")})</span>`
       : `${esc(it.name || "stanica")}`;
-    row.innerHTML = `<span class="grip" aria-hidden="true" title="Prevuci za redosled ili na Od/Do polje">⠿</span><span class="stop-name">${gi + 1}. ${label}</span><span class="stop-acts"></span>`;
+    row.innerHTML = `<span class="grip" aria-hidden="true" title="Prevuci gore ili dole da promeniš redosled">≡</span><span class="slovo">${String.fromCharCode(65 + gi)}</span><span class="stop-name">${label}</span><span class="stop-acts"></span>`;
     row.querySelector(".grip").onpointerdown = (ev) => startRowDrag(ev, row, gi, g, it);
     const acts = row.querySelector(".stop-acts");
     const mk = (txt, title, fn) => {
@@ -6591,6 +6652,53 @@ async function zajMapaUzivo() { await zajModeOn(); }
 })();
 /* R7: "Jos opcija" = mali sheet (kruzna, stanica, motor) - stari formular vise ne postoji na mobilnom */
 let _optsAnchors = null;
+/* ---------------- Izmeni stanice (11.8., Boskov zahtev "kao kod Google Maps-a") ----------------
+   Pun ekran sa spiskom Od / A / B / C / Do. Redosled se menja prevlacenjem hvataljke, X brise,
+   "Dodaj stanicu" otvara pretragu. Prevlacenje NIJE pisano iznova - #viaChips sa svojom postojecom
+   drag mehanikom se dok je ekran otvoren fizicki preseljava ovamo, pa se logika ne duplira.
+   Na zatvaranju se vraca tamo odakle je uzet, da "Jos opcija" i dalje radi. */
+let _seSidro = null;
+function stopsEditOpen() {
+  const el = document.getElementById("stopsEdit");
+  const vc = document.getElementById("viaChips");
+  if (!el || !vc) return;
+  if (!_seSidro) _seSidro = { parent: vc.parentNode, next: vc.nextSibling };
+  document.getElementById("seViaHost").appendChild(vc);
+  el.hidden = false;
+  stopsEditSync();
+}
+function stopsEditClose() {
+  const el = document.getElementById("stopsEdit");
+  const vc = document.getElementById("viaChips");
+  if (el) el.hidden = true;
+  if (vc && _seSidro && _seSidro.parent) _seSidro.parent.insertBefore(vc, _seSidro.next);
+}
+(function(){   // wiring ekrana za izmenu stanica
+  const nadji = (id) => document.getElementById(id);
+  const zatvori = () => { stopsEditClose(); try { if (state.routes.length) plan(); } catch (e) {} };
+  document.addEventListener("DOMContentLoaded", () => {
+    const b1 = nadji("seBack"), b2 = nadji("seClose"), b3 = nadji("seDone");
+    [b1, b2, b3].forEach((b) => { if (b) b.addEventListener("click", zatvori); });
+    const f = nadji("seFrom"), t = nadji("seTo"), a = nadji("seAdd");
+    if (f) f.addEventListener("click", () => { stopsEditClose(); openSearch("from"); });
+    if (t) t.addEventListener("click", () => { stopsEditClose(); openSearch("to"); });
+    if (a) a.addEventListener("click", () => {   // dodavanje ide kroz postojece polje "dodaj destinaciju"
+      stopsEditClose();
+      try { openOptsSheet(); const si = document.getElementById("stopInput"); if (si) { si.focus(); si.scrollIntoView({ block: "center" }); } } catch (e) {}
+    });
+  });
+})();
+function stopsEditSync() {
+  try {
+    const f = ($("from").value || "").trim(), t = ($("to").value || "").trim();
+    document.getElementById("seFromTxt").textContent = f || "Odakle krećeš?";
+    document.getElementById("seToTxt").textContent = t || "Kuda ideš?";
+    const r = state.routes && state.routes[state.selected];
+    document.getElementById("seUk").textContent = r
+      ? `Ukupno: ${(r.totalDist / 1000).toFixed(0)} km · ${fmtDur(r.totalDur)}`
+      : "Ukupno: računamo kad zatvoriš";
+  } catch (e) {}
+}
 function openOptsSheet() {
   let sh = document.getElementById("optsSheet");
   if (sh) { closeOptsSheet(); return; }
@@ -6612,6 +6720,13 @@ function openOptsSheet() {
   for (const el of items) host.appendChild(el);
   sh.querySelector(".lsback").addEventListener("click", closeOptsSheet);
   sh.querySelector("#optsApply").addEventListener("click", () => { closeOptsSheet(); plan(); });
+  /* 11.8.: red "Izmeni stanice" na vrhu lista - nas ekvivalent Google-ovog ⋯ -> Edit stops. */
+  const izm = document.createElement("button");
+  izm.type = "button"; izm.id = "optsStops"; izm.textContent = "Izmeni stanice i redosled";
+  izm.style.cssText = "width:100%;min-height:52px;margin:0 0 12px;border-radius:13px;border:1px solid rgba(148,163,184,.25);" +
+    "background:rgba(15,23,42,.55);color:#e2e8f0;font:800 15px Archivo,sans-serif;cursor:pointer";
+  izm.addEventListener("click", () => { closeOptsSheet(); stopsEditOpen(); });
+  host.parentNode.insertBefore(izm, host);
 }
 function closeOptsSheet() {
   const sh = document.getElementById("optsSheet");
@@ -7304,8 +7419,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.58";
+const APP_VERSION = "0.9.59";
 const CHANGELOG = [
+  { v: "0.9.59", d: "11.08.2026.", stavke: [
+    "<b>Izmeni stanice, po Google obrascu</b> (tvoj zahtev sa slika). Iz \"Još\" se otvara pun ekran sa spiskom: <b>Beograd</b> (plava tačka), pa stanice označene <b>A, B, C</b>, pa <b>Zlatibor</b> (pin). Dole stoji ukupno vreme i dugme Gotovo.",
+    "<b>Redosled se menja prevlačenjem.</b> Uhvatiš hvataljku ≡ i povučeš gore ili dole; slova se odmah prenumerišu. Provereno: Kraljevo prevučeno sa trećeg na prvo mesto, redosled u ruti se stvarno promenio.",
+    "Svaka stanica ima <b>✎ za izmenu</b> i <b>✕ za brisanje</b>, a ispod je red <b>Dodaj stanicu</b>. Tap na Beograd ili Zlatibor otvara pretragu za to polje.",
+    "Prevlačenje nije pisano iznova - postojeća mehanika se koristi na novom ekranu, pa se ista logika ne održava na dva mesta."
+  ] },
   { v: "0.9.58", d: "11.08.2026.", stavke: [
     "<b>Tri popravke iz provere onoga što sam malopre tvrdio da je gotovo</b> (Boškovo pitanje: \"nešto si mi to brzo uradio\").",
     "<b>Ime ulice u vožnji se zavlačilo pod pilulu brzine.</b> Jučerašnja popravka je rešila desnu ivicu, a vertikalno ograničenje je i dalje bila konstanta - promašivala je za šest piksela. Sada se računa od stvarne donje trake.",
