@@ -555,7 +555,10 @@
     body.riding #homeFabs button[data-fab="gps"] { bottom: calc(84px + env(safe-area-inset-bottom)); }
     #homeFabs button[data-fab="gps"].recenter { border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,.35), 0 6px 18px rgba(0,0,0,.35); }
     /* Snimi voznju (6.8.): rec dugme iznad GPS FAB-a; nestaje u planiranju i u voznji */
-    #ridePause.on { border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,.35); }
+    /* 11.8.: `#ridePause.on` (1,1,0) i `#rideBarBottom .alt` (1,1,0) imaju istu specificnost, pa je
+       odlucivao redosled - a `.alt` je nize i njegov skraceni `border` resetuje boju. Zato pauzirano
+       dugme nije dobijalo narandzast okvir. Sa `#rideBarBottom` selektor je (1,2,0) i pobedjuje. */
+    #rideBarBottom #ridePause.on { border-color: #f97316; box-shadow: 0 0 0 2px rgba(249,115,22,.35); }
     body.ridepaused #rideBar .navcard, body.ridepaused #rideBar .then { opacity: .65; }
 
     #homeSheet { display: block; position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 11; background: rgba(15,23,42,.97); border-top: 1px solid rgba(148,163,184,.16); border-radius: 22px 22px 0 0; padding: 8px 16px 18px; box-shadow: 0 -10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
@@ -954,10 +957,18 @@
     /* Snimanje voznje = crveno i pulsira (Boskov predlog): zeleno je boja navigacije,
        a snimanje je drugo stanje i mora da se prepozna na prvi pogled. */
     body.freeride #rideBar .navcard { background: #7f1d1d; animation: recPuls 2.4s ease-in-out infinite; }
+    /* 11.8.: u slobodnoj voznji je crveni pulsirajuci baner gazio sivi "nema signala" - i po
+       specificnosti (1,2,1 vs 1,2,0) i zato sto animacija stoji iznad obicnih deklaracija u kaskadi.
+       Tekst "Slab GPS signal..." je ostajao, boja ne. Ovo vraca boju kad signala nema. */
+    body.freeride #rideBar .navcard.acquiring, body.freeride #rideBar .navcard.nosignal,
+    body.freeride #rideBar .navcard.rerouting { background: linear-gradient(160deg, #475569, #334155); animation: none; }
     body.freeride.ridepaused #rideBar .navcard { animation: none; background: #5b1717; }
     @keyframes recPuls { 0%, 100% { background: #7f1d1d; } 50% { background: #b91c1c; } }
     @media (prefers-reduced-motion: reduce) { body.freeride #rideBar .navcard { animation: none; } }
-    #rideBar .ahead { display: none; background: rgba(180,83,9,.94); color: #fef3c7; padding: 7px 14px; font-size: 13px; font-weight: 800; border-top: 1px solid rgba(249,115,22,.5); }
+    /* 11.8.: 13 px je bilo premalo za traku koja stoji svega 15 sekundi i nosi kameru, prijavu ili
+       ZIVU najavu nevremena ("Pljusak za ~6 min"). Traka #rideWx je podignuta na 16, ali ziva
+       prognoza pise OVDE, pa je bez ovoga popravka pokrivala samo pola slucajeva. */
+    #rideBar .ahead { display: none; background: rgba(180,83,9,.94); color: #fef3c7; padding: 8px 14px; font-size: 15.5px; font-weight: 800; border-top: 1px solid rgba(249,115,22,.5); }
     #rideBar .ahead.on { display: block; }
     /* 11.8.: bilo je 12,5 px / 600, najsitniji tekst na celom ekranu vožnje - a to je jedina poruka
        koju nijedna druga navigacija ne ume da napiše ("Pljusak za ~6 km"). Brzina je 26 px, preostali
@@ -1373,7 +1384,7 @@
     #rideBar .nt b { font-size: 26px; }
     #rideBar .nt span, #rideBar .nt .sub { font-size: 14px; }
     #rideBar .then { padding: 5px 12px; font-size: 12px; }
-    #rideBar .ahead { padding: 5px 12px; font-size: 11.5px; }
+    #rideBar .ahead { padding: 6px 12px; font-size: 14px; }   /* landscape je uzi, ali najava ostaje citljiva */
     #rideBar .wx { padding: 6px 12px; font-size: 14px; }   /* landscape je uzi, ali nevreme ostaje citljivo */
     body.riding #rideBarBottom { left: calc(10px + var(--sl)); right: auto; width: var(--col);
       bottom: calc(8px + var(--sb)); gap: 8px; }
@@ -1382,7 +1393,7 @@
     #rideBarBottom .pill .v { font-size: 22px; }
     #rideBarBottom .pill .ln .v { font-size: 18px; }
     #rideBarBottom .lim { width: 40px; height: 40px; border-width: 4px; margin-left: 8px; }
-    #rideBarBottom .eta .t { font-size: 18px; }
+    #rideEtaRow .eta .t { font-size: 18px; }
     #rideBarBottom .rep { position: fixed; right: calc(14px + var(--sr)); bottom: calc(10px + var(--sb));
       width: 54px; height: 54px; margin: 0; z-index: 41; border-radius: 50%;
       font-size: 0; gap: 0; justify-content: center; }   /* samo ikonica: palac desne ruke */
@@ -5984,9 +5995,14 @@ function zabeleziVoznju() {
     const serp = c ? Math.round((c.sharp || 0) * frac) : 0;
     const kriv = c ? Math.round(((c.L || 0) + (c.R || 0)) * frac) : 0;
     const g = state.geocode || {};
+    /* Ako si prekinuo rutu na pola, dnevnik to i kaze (11.8.). Ime se gradilo iz PLANIRANIH krajnjih
+       tacaka, pa je vožnja prekinuta u Užicu i dalje pisala "Beograd → Zlatibor" - km i vreme tacni,
+       naslov laze gde si bio. Prag je 92% da normalan dolazak (gde se stane par stotina metara od
+       cilja) ne dobije nepotrebnu napomenu. */
+    const stigao = !RIDE.freeRide && (RIDE.maxD || 0) >= 0.92 * Math.max(1, RIDE.total);
     const naz = RIDE.freeRide ? (RIDE.freeNaz || "Slobodna vožnja")
       : (g.from && g.from.name && g.to && g.to.name)
-      ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` : "Vožnja";
+      ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` + (stigao ? "" : ` (prekinuto na ${Math.round((RIDE.maxD || 0) / 1000)} km)`) : "Vožnja";
     const poeni = Math.round(km + serp * 4);
     const maxK = Math.round(RIDE.maxKmh || 0);
     const avgK = RIDE.movMs > 30000 ? Math.round(km / (RIDE.movMs / 3600000)) : 0;   // prosek U POKRETU, tek kad ima bar pola minuta
@@ -7127,8 +7143,16 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.52";
+const APP_VERSION = "0.9.53";
 const CHANGELOG = [
+  { v: "0.9.53", d: "11.08.2026.", stavke: [
+    "<b>Pauza više ne ume da ti pojede ostatak ture.</b> Najozbiljniji nalaz dana. Dok si u kafani telefon je u džepu, GPS stane, i nadzornik signala prepiše natpis \"Pauza\" tekstom \"Slab GPS signal…\" - a ništa ga nikad ne vrati. Vratiš se, pročitaš da se aplikacija muči, sedneš i voziš dalje, a vožnja je i dalje na pauzi: gube se svi kilometri, ceo trag i statistika do kraja ture. Sada nadzornik u pauzi ćuti.",
+    "<b>Ostaci prethodne vožnje više ne ulaze u novu.</b> Znak ograničenja sa starim brojem, crvena \"prekoračio si\" pilula i baner tipa \"Kamera za ~400 m\" nisu bili u spisku za brisanje. Baner je bio najgori: skrivao se samo kad pređeš kilometražu na kojoj je nastao, a taj podatak se nije nulirao - pa je na novoj, kraćoj ruti visio zauvek. To je tačno ono što si prijavio.",
+    "<b>Živa najava nevremena podignuta sa 13 na 15,5 piksela.</b> Jučerašnja popravka je pokrila samo najave iz plana; žive najave (\"Pljusak za ~6 min\") idu kroz drugu traku, koja je ostala sitna. Istom trakom stižu i kamere i prijave sa puta.",
+    "<b>Prekinuta vožnja se u dnevniku više ne predstavlja kao odvezena.</b> Prekineš rutu Beograd - Zlatibor u Užicu, a dnevnik je i dalje pisao \"Beograd → Zlatibor\". Sada stoji i \"(prekinuto na 87 km)\".",
+    "<b>U slobodnoj vožnji vreme više ne skoči posle pauze.</b> Prikaz je stajao dok si u kafani pa na prvom kilometru skočio za celu dužinu pauze - posle 40 minuta sa 1:10 na 1:50.",
+    "Sitnije: na cilju više ne piše \"još 0,0 km\" uz \"Stigao si!\"; u slobodnoj vožnji se pri gubitku signala vidi i po boji banera, ne samo po tekstu; pauzirano dugme dobija narandžast okvir; u pauzi se ne poziva mreža na svakih 45 sekundi."
+  ] },
   { v: "0.9.52", d: "11.08.2026.", stavke: [
     "<b>Uz ocenu vožnje sada stoji i skala.</b> Stajalo je golo \"89\" i niko sa strane ne zna je li to od 100, od 10 ili nešto treće. Sada piše <b>89/100</b>. Broj bez merila je tvrdnja koju ne možeš da proveriš, isto kao trajanje bez poređenja sa autoputem."
   ] },
@@ -9156,6 +9180,19 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   document.getElementById("rideShields").innerHTML = "";
   document.getElementById("rideThen").textContent = "";
   document.getElementById("rideWx").classList.remove("on");
+  /* Ostaci PROSLE voznje (11.8.). Ova tri su nedostajala u resetu, pa su preziveli u novu voznju:
+     znak ogranicenja sa starim brojem, crvena "prekoracio si" pilula, i baner "Kamera za ~400 m".
+     Baner je bio najgori: skrivao se samo uslovom `curKm > RIDE.aheadKm + 0.05`, a `aheadKm` se nije
+     nulirao - u novoj voznji curKm krece od nule, pa je stari tekst visio dok ne predjes staru
+     kilometrazu, a na kracoj ruti zauvek. To je Boskovo "izbacuje nam ovo od prethodne voznje". */
+  try {
+    const _lim = document.getElementById("rideLim");
+    if (_lim) { _lim.classList.remove("on"); if (_lim.firstElementChild) _lim.firstElementChild.textContent = ""; }
+    const _pill = document.querySelector("#rideBarBottom .pill"); if (_pill) _pill.classList.remove("over");
+    const _ah = document.getElementById("rideAhead");
+    if (_ah) { _ah.classList.remove("on"); _ah.innerHTML = ""; }
+    RIDE.aheadKm = null; RIDE.aheadHideAt = 0;
+  } catch (e) {}
   document.getElementById("rideKmh").textContent = "0";
   document.getElementById("rideEta").textContent = "0 min";
   document.getElementById("rideRem").textContent = "0,0 km";
@@ -9230,7 +9267,10 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
         if (RIDE.samples.length > 2400) RIDE.samples = RIDE.samples.filter((_, i) => i % 2 === 0);
       }
     } catch (e) {}
-    const elMs = Date.now() - RIDE.t0, mm = Math.floor(elMs / 60000), hh = Math.floor(mm / 60);   // desna pilula: proteklo vreme + km
+    /* Pauza se ODUZIMA (11.8.). Bez ovoga je prikaz stajao dok si u kafani, pa na prvom fiksu posle
+       nastavka skocio za celu duzinu pauze odjednom - posle 40 min sa 1:10 na 1:50. Poruka pauze
+       izricito obecava da vreme miruje, pa je skok bio i lazan i zbunjujuc. */
+    const elMs = Date.now() - RIDE.t0 - (RIDE.pauseMs || 0), mm = Math.floor(Math.max(0, elMs) / 60000), hh = Math.floor(mm / 60);   // desna pilula: proteklo vreme + km
     document.getElementById("rideEta").textContent = hh ? hh + ":" + String(mm % 60).padStart(2, "0") : mm + " min";
     document.getElementById("rideRem").textContent = ((RIDE.trkM || 0) / 1000).toFixed(1).replace(".", ",") + " km";
     RIDE.lastPos = [lo, la, (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : null];
@@ -9252,7 +9292,11 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   RIDE.watch = navigator.geolocation.watchPosition(RIDE._onFix, RIDE._onFixErr, NAV_GPS_OPTS);
   clearInterval(RIDE.wdInt);
   RIDE.wdInt = setInterval(() => { try {
-    if (!document.body.classList.contains("riding") || !RIDE.gotFix) return;
+    /* U pauzi watchdog cuti (11.8.). Bez ovog garda: telefon ode u dzep, fiksevi stanu, watchdog
+       prepise "Pauza" tekstom "Slab GPS signal..." - i nista ga nikad ne vrati. Covek se vrati iz
+       kafane, procita da se aplikacija muci, sedne i vozi DALJE U PAUZI, pa se gubi ostatak ture:
+       km, trag i statistika. Nije kozmetika nego gubitak podataka. */
+    if (!document.body.classList.contains("riding") || !RIDE.gotFix || RIDE.paused) return;
     const age = Date.now() - (RIDE.lastFixTs || 0);
     if (age > 5000) {
       const nc3 = document.querySelector("#rideBar .navcard"); if (nc3) nc3.classList.add("nosignal");
@@ -9293,7 +9337,10 @@ function startRide() {
   try {   // svezе prijave zajednice na start + osvezavanje na 45 s tokom voznje
     loadPrijave(route, true);
     clearInterval(RIDE.prijInt);
-    RIDE.prijInt = setInterval(() => { try { flushPrijave(); loadPrijave(RIDE.route || route, true); } catch (e2) {} }, 45000);
+    /* U pauzi se ne poziva mreza (11.8.): stojis u kafani, a aplikacija je na svakih 45 sekundi
+       povlacila prijave zajednice. Pauza obecava da sve miruje, pa neka i ovo miruje - svez set
+       stize na prvom otkucaju posle nastavka. */
+    RIDE.prijInt = setInterval(() => { if (RIDE.paused) return; try { flushPrijave(); loadPrijave(RIDE.route || route, true); } catch (e2) {} }, 45000);
   } catch (e) {}
   buildAhead(route);   // R13: izdvojeno - i reroute mora da rebuild-uje najave na novoj geometriji
   RIDE.announced = new Set(); RIDE.aheadHideAt = 0;
@@ -9319,6 +9366,19 @@ function startRide() {
     document.getElementById("rideShields").innerHTML = "";
   document.getElementById("rideThen").textContent = "";
   document.getElementById("rideWx").classList.remove("on");
+  /* Ostaci PROSLE voznje (11.8.). Ova tri su nedostajala u resetu, pa su preziveli u novu voznju:
+     znak ogranicenja sa starim brojem, crvena "prekoracio si" pilula, i baner "Kamera za ~400 m".
+     Baner je bio najgori: skrivao se samo uslovom `curKm > RIDE.aheadKm + 0.05`, a `aheadKm` se nije
+     nulirao - u novoj voznji curKm krece od nule, pa je stari tekst visio dok ne predjes staru
+     kilometrazu, a na kracoj ruti zauvek. To je Boskovo "izbacuje nam ovo od prethodne voznje". */
+  try {
+    const _lim = document.getElementById("rideLim");
+    if (_lim) { _lim.classList.remove("on"); if (_lim.firstElementChild) _lim.firstElementChild.textContent = ""; }
+    const _pill = document.querySelector("#rideBarBottom .pill"); if (_pill) _pill.classList.remove("over");
+    const _ah = document.getElementById("rideAhead");
+    if (_ah) { _ah.classList.remove("on"); _ah.innerHTML = ""; }
+    RIDE.aheadKm = null; RIDE.aheadHideAt = 0;
+  } catch (e) {}
   document.getElementById("rideKmh").textContent = "0";
   document.getElementById("rideEta").textContent = "-";
   document.getElementById("rideRem").textContent = "-";
@@ -9469,8 +9529,12 @@ function startRide() {
     // meta traka
     try { navProgress(d / Math.max(1, total), total); } catch (e) {}   // predjeni deo rute plavi (fallback; rAF petlja vodi glatku granicu)
     const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total));
-    document.getElementById("rideRem").textContent = "još " + (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
-    document.getElementById("rideEta").textContent = new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+    /* Na cilju NE prepisuj (11.8.): grana dolaska iznad je ocistila polje, a ovaj red ga je u istom
+       otkucaju bezuslovno vracao, pa je uz "Stigao si!" pisalo "još 0,0 km". */
+    if (!(remM < 35 && (!m || m.sr.arrive))) {
+      document.getElementById("rideRem").textContent = "još " + (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
+      document.getElementById("rideEta").textContent = new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+    }
     try {   // najave ispred (kamera / prijava zajednice)
       const curKm = Math.max(0, (total - remM) / 1000);
       const ab = document.getElementById("rideAhead");
@@ -9538,7 +9602,11 @@ function startRide() {
   RIDE.watch = navigator.geolocation.watchPosition(RIDE._onFix, RIDE._onFixErr, NAV_GPS_OPTS);
   clearInterval(RIDE.wdInt);   // GPS watchdog - 5.8. je banner samouvereno cutao dok fiksevi ne stizu
   RIDE.wdInt = setInterval(() => { try {
-    if (!document.body.classList.contains("riding") || !RIDE.gotFix) return;
+    /* U pauzi watchdog cuti (11.8.). Bez ovog garda: telefon ode u dzep, fiksevi stanu, watchdog
+       prepise "Pauza" tekstom "Slab GPS signal..." - i nista ga nikad ne vrati. Covek se vrati iz
+       kafane, procita da se aplikacija muci, sedne i vozi DALJE U PAUZI, pa se gubi ostatak ture:
+       km, trag i statistika. Nije kozmetika nego gubitak podataka. */
+    if (!document.body.classList.contains("riding") || !RIDE.gotFix || RIDE.paused) return;
     const age = Date.now() - (RIDE.lastFixTs || 0);
     if (age > 5000) {
       const nc3 = document.querySelector("#rideBar .navcard"); if (nc3) nc3.classList.add("nosignal");
