@@ -9,7 +9,7 @@
      dolazi PMTiles paket.
    - SERVISI (prognoza, rutiranje, POI) = nikad iz kesa. Bajata prognoza je gora od nikakve;
      kad nema mreze, aplikacija koristi ono sto je snimljeno uz sacuvanu rutu. */
-const V = "rmr-v5";
+const V = "rmr-v6";
 const LJUSKA = V + "-ljuska";
 const PLOCICE = V + "-plocice";
 const PLOCICA_MAX = 2500;
@@ -92,9 +92,11 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // SAMA APLIKACIJA (HTML): mreza prvo, kes samo kao rezerva. Aplikacija se menja svakog dana,
-  // pa cache-first ovde znaci da bi vozac danima gledao staru verziju.
-  if (req.mode === "navigate" || (istiKoren && /\.html($|\?)/.test(url.pathname + url.search))) {
+  // APLIKACIJA I PODACI: mreza prvo, kes samo kao rezerva.
+  // Podaci se menjaju (road_status se puni vise puta dnevno, bjb_putevi uz svaki uvoz), a
+  // aplikacija ih trazi sa "?v=VERZIJA". Kes ih je nalazio preko ignoreSearch, pa je nova
+  // verzija dobijala STARI fajl - tako je novi uvoz stigao na disk a u pregledacu se nije video.
+  if (req.mode === "navigate" || (istiKoren && /\.(html|json)($|\?)/.test(url.pathname + url.search))) {
     e.respondWith((async () => {
       const c = await caches.open(LJUSKA);
       try {

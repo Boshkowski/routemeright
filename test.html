@@ -1590,7 +1590,7 @@
       </div>
 
       <div class="card hidden" id="card-stanje">
-        <h3>Stanje puta - iskustvo vozača</h3>
+        <h3>Šta kažu vozači</h3>
         <div id="stanjeOut"></div>
         <div class="note" id="stanjeIzvor"></div>
       </div>
@@ -4427,8 +4427,13 @@ async function loadEditorial() {
    uz dozvolu autora. Njihova skala i boje su preuzete namerno - to je jezik kojim ta
    zajednica vec govori o putevima, pa covek sa foruma razume nasu mapu iz prve.
    Uvoz: tools/uvoz_bjb.py -> data/bjb_putevi.json */
-const BJP_BOJA = { 1: "#ef4444", 2: "#f97316", 3: "#84cc16", 4: "#16a34a", 5: "#3b82f6" };
-const BJP_IME = { 1: "Loš", 2: "Prosečan", 3: "Dobar", 4: "Odličan", 5: "Ekstra" };
+/* Prikazuju se REČI KOJE SU VOZAČI SAMI NAPISALI, ne brojevi. Skala 1-5 je ostala u fajlu
+   radi provere, ali ne ide na ekran: aplikacija već ima svoju četvorostepenu ocenu
+   ("Zahtevnost rute"), pa bi druga četvorostepena skala pored nje samo pravila sumnju
+   u onu koja je tačna. Reči su prebrojane u samim podacima: Dobar 155, Nov 37, Loš 34,
+   Makadam 4 - "Krpljena" se ne javlja nijednom, pa je i nema. */
+const BJP_BOJA = { "Nov": "#3b82f6", "Dobar": "#16a34a", "Loš": "#f97316", "Makadam": "#a16207" };
+const BJP_LOSE = { "Loš": 1, "Makadam": 1 };   // motor se pominje SAMO na lošoj strani
 async function loadPutevi() {
   if (state.bjp) return state.bjp;
   try {
@@ -4437,20 +4442,22 @@ async function loadPutevi() {
   } catch { state.bjp = null; }   // bez fajla sloj prosto ne postoji
   return state.bjp;
 }
-/* Ocena zavisi od motora - to je muka koju je zajednica sama priznala ("isti put je 1/5
-   na FJR-u i 3+/5 na Africa Twinu"). Loš asfalt i slabe krivine kaznjavaju teski turer,
-   a avanturistu skoro ne diraju; mi znamo koji je motor u profilu pa ocenu pomeramo. */
-function bjpZaMotor(d, tip) {
-  const o = d.ocena;
-  if (!o || !tip) return { ocena: o, pomak: 0 };
-  const los = /loš|lose|rupe|zakrp/i.test((d.asfalt || "") + " " + (d.napomena || ""));
-  let p = 0;
-  if (tip === "adv" && los) p = +1;          // avanturista: los asfalt je manji problem
-  if (tip === "tourer" && los) p = -1;       // teski turer: los asfalt boli
-  if (tip === "sport" && /slabe/i.test(d.krivine || "")) p = -1;   // sportski: bez krivina nema sta da trazi
-  if (tip === "adv" && /odlične|dobre/i.test(d.krivine || "") && !los) p = 0;
-  const n = Math.max(1, Math.min(5, o + p));
-  return { ocena: n, pomak: n - o };
+/* Motor se pominje SAMO kad je put loš, i to kao rečenica a ne kao ocena. Na dobroj strani
+   se ćuti, jer bi "za tvoj motor odlično" bila presuda umesto podatka. Zajednica je sama
+   opisala problem: isti put je drugačiji na FJR-u i na Africa Twinu. */
+function bjpMotorNapomena(d, tip) {
+  if (!tip || !BJP_LOSE[d.asfalt]) return null;
+  if (d.asfalt === "Makadam")
+    return tip === "adv" ? null : "za tvoj motor ovo je problem";
+  return tip === "tourer" || tip === "sport" ? "za tvoj motor ovo je problem" : null;
+}
+/* Koliko je podatak star. Zima pojede asfalt, pa je "Dobar" od prošlog leta u aprilu laž. */
+function bjpStarost(mg) {
+  if (!mg || !mg.length) return null;
+  const [g, m] = mg;
+  const sad = new Date();
+  const preZime = (g < sad.getFullYear() && sad.getMonth() >= 2) || (g === sad.getFullYear() - 1 && m >= 11);
+  return preZime ? "pre zime" : null;
 }
 /* Tip motora iz profila: gruba podela po imenu modela i zapremini rezervoara. */
 function mojTipMotora() {
@@ -4496,26 +4503,28 @@ async function renderStanjePuta(route) {
   const na = bjpNaRuti(route, baza);
   if (!na.length) return;
   const tip = mojTipMotora();
-  na.sort((a, b) => (a.ocena || 3) - (b.ocena || 3));
+  const red = { "Makadam": 0, "Loš": 1, "Dobar": 2, "Nov": 3 };   // loše prvo - to menja odluku
+  na.sort((a, b) => (red[a.asfalt] ?? 9) - (red[b.asfalt] ?? 9));
   out.innerHTML = na.slice(0, 8).map((d) => {
-    const m = bjpZaMotor(d, tip);
-    const boja = BJP_BOJA[m.ocena] || "#94a3b8";
-    const detalji = [d.asfalt && "asfalt " + d.asfalt.toLowerCase(),
-                     d.krivine && "krivine " + d.krivine.toLowerCase(),
-                     d.saobracaj && "saobraćaj " + d.saobracaj.toLowerCase()].filter(Boolean).join(" · ");
-    const pom = m.pomak ? `<span class="note" style="color:${m.pomak > 0 ? "#86efac" : "#fca5a5"}"> (za tvoj motor ${m.pomak > 0 ? "+" : ""}${m.pomak})</span>` : "";
-    return `<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(148,163,184,.12)">` +
-      `<span style="flex:none;min-width:30px;height:30px;border-radius:8px;background:${boja};color:#0b1120;` +
-      `display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px">${m.ocena}</span>` +
-      `<span><b>${esc(d.naziv)}</b>${pom}<br>` +
-      `<span class="note">${esc(BJP_IME[m.ocena] || "")}${detalji ? " · " + esc(detalji) : ""}</span>` +
+    const boja = BJP_BOJA[d.asfalt] || "#94a3b8";
+    const rec = d.asfalt === "Makadam" ? "Makadam" : (d.asfalt ? d.asfalt + " asfalt" : "");
+    const mot = bjpMotorNapomena(d, tip);
+    const star = bjpStarost(d.mg);
+    const glava = [rec, d.km ? Math.round(d.km) + " km" : null,
+                   [d.autor, d.azurirano].filter(Boolean).join(", ")].filter(Boolean);
+    return `<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(148,163,184,.12)">` +
+      `<span style="flex:none;width:4px;align-self:stretch;border-radius:3px;background:${boja}"></span>` +
+      `<span><b>${esc(glava[0])}</b><span class="note"> · ${esc(glava.slice(1).join(" · "))}` +
+      (star ? ` · ${esc(star)}` : "") + `</span><br>` +
+      `<span class="note" style="color:#cbd5e1">${esc(d.naziv)}</span>` +
+      (mot ? `<br><span class="note" style="color:#fca5a5">${esc(mot)}</span>` : "") +
       (d.napomena ? `<br><span class="note">"${esc(d.napomena)}"</span>` : "") +
-      `<br><span class="note" style="opacity:.75">${esc(d.autor || "")}${d.azurirano ? " · " + esc(d.azurirano) : ""}</span></span></div>`;
+      `</span></div>`;
   }).join("");
-  izv.innerHTML = `Ocene su uneli motociklisti sa foruma BJBikers (tema "Moto putevi - vizuelni vodič", ` +
-    `pokrenuo Vlajko), korišćeno uz njihovu dozvolu. ` +
-    (tip ? `Ocena je prilagođena tvom motoru.` : `Izaberi motor u profilu pa se ocena prilagodi tvom motoru.`) +
-    (na.length > 8 ? ` Prikazano 8 od ${na.length} ocenjenih deonica na ruti.` : "");
+  const vozaca = new Set(na.map((d) => d.autor).filter(Boolean)).size;
+  izv.innerHTML = `${vozaca === 1 ? "1 vozač" : vozaca + " vozača"} sa foruma BJBikers, iz vodiča koji vodi Vlajko. ` +
+    `Korišćeno uz njihovu dozvolu.` +
+    (na.length > 8 ? ` Prikazano 8 od ${na.length} deonica na ruti.` : "");
   card.classList.remove("hidden");
 }
 /* Pinovi zajednice se dodaju TEK posle prvog planiranja rute (default ekran ostaje cist)
@@ -6840,8 +6849,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.45";
+const APP_VERSION = "0.9.46";
 const CHANGELOG = [
+  { v: "0.9.46", d: "11.08.2026.", stavke: [
+    "<b>Stanje puta sada govori našim rečima</b> (tvoj zahtev): umesto tuđe skale 1-5 stoje četiri reči koje su vozači i sami napisali - <b>Nov asfalt, Dobar asfalt, Loš asfalt, Makadam</b>. Brojevi su nestali sa ekrana jer aplikacija već ima svoju ocenu \"Zahtevnost rute\", pa bi druga skala pored nje samo pravila sumnju u onu koja je tačna.",
+    "Kartica se zove <b>Šta kažu vozači</b>. Piše koliko je deonica dugačka, ko ju je opisao i kada, i da li je podatak od pre zime. Loše deonice idu prvo, jer one menjaju odluku.",
+    "<b>Motor se pominje samo kad je put loš</b> (\"za tvoj motor ovo je problem\"). Na dobrom putu se ćuti - tamo bi to bila presuda, a ne podatak.",
+    "Popravka u pozadini: podaci su se učitavali iz keša i nova verzija je znala da dobije stari fajl. Sada uvek idu sa mreže, a keš služi samo kad nema signala."
+  ] },
   { v: "0.9.45", d: "11.08.2026.", stavke: [
     "<b>Stanje puteva iz zajednice</b>: u aplikaciju je ušlo <b>230 deonica</b> koje su motociklisti sa foruma BJBikers ocenili od 1 do 5, sa asfaltom, saobraćajem, krivinama i napomenom (\"veoma loš put, nema udarnih rupa ali ima zakrpa na svakom koraku\"). Kad tvoja ruta prođe kroz ocenjenu deonicu, to sada piše u kartici <b>Stanje puta</b>. Izvor je tema \"Moto putevi - vizuelni vodič\" koju vodi Vlajko, korišćeno uz njihovu dozvolu.",
     "<b>Ocena se prilagođava tvom motoru</b> - to je muka koju je zajednica sama priznala: isti put je 1/5 na FJR-u i 3+/5 na Africa Twinu. Kod nas Arilje - Ivanjica (loš asfalt, dobre krivine) daje <b>1 za teški turer i 3 za avanturistu</b>.",
