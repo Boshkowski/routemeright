@@ -643,7 +643,11 @@
     body.qplan.planning #panel { height: 54vh; height: 54dvh; padding-bottom: 0; display: flex; flex-direction: column; }   /* do pola kao Google; detalji sire; flex kolona = CTA footer uvek na dnu */
     body.qplan.planning.qdetails #panel { height: 86vh; height: 86dvh; }
     body.qplan.planning #resCta { margin-top: auto; }   /* kratak sadrzaj (kompaktni mod): traka svejedno na dnu sheeta */
-    body.qplan.planning:not(.qdetails) #results > .card:not(#card-routes) { display: none !important; }
+    /* 11.8.: uz Rute stoji i presuda. Do sada je posle planiranja bila otvorena SAMO kartica Rute
+       (186 px), a presuda je jedino mesto gde pise KAD STIZES - taj podatak je bio sakriven iza
+       "Svi detalji". Vece je trazilo cetiri kartice; stalo je na dve, jer istrazivanje pokazuje da
+       kazna dolazi od PROMENE gustine, pa se ide malim korakom. */
+    body.qplan.planning:not(.qdetails) #results > .card:not(#card-routes):not(#card-summary) { display: none !important; }
     body.qplan.planning:not(.qdetails) #resHero .rslide { height: 158px; }
     body.qplan.planning:not(.qdetails) #resHero .rslide .rcard { height: calc(100% - 25px); overflow: hidden; }
     body.qplan.planning:not(.qdetails) #resHero #rhScoreSlide .rcard { height: 100%; }
@@ -858,7 +862,12 @@
     /* Ogranicenje brzine: prikazuje se SAMO kad OSM zna podatak, nikad se ne pogadja */
     #rideBarBottom .lim { display: none; margin-left: 11px; width: 46px; height: 46px; border-radius: 50%;
       background: #fff; border: 5px solid #dc2626; align-items: center; justify-content: center; }
-    #rideBarBottom .lim.on { display: flex; }
+    /* 11.8.: `#rideBarBottom .lim` (1,1,0) je gubio od `#rideBarBottom .pill > div` (1,1,1) koje
+       stoji nize u istom bloku, pa je znak ogranicenja bio UVEK vidljiv - beo krug u crvenom
+       prstenu, prazan, pored brzine. U voznji to izgleda kao pokvaren instrument. Selektor sada
+       nosi i .pill (1,2,0) i pobedjuje. Sirina ostaje u starom pravilu da mobilni override radi. */
+    #rideBarBottom .pill .lim { display: none; }
+    #rideBarBottom .pill .lim.on { display: flex; }
     #rideBarBottom .lim span { font-size: 19px; font-weight: 900; color: #111827; line-height: 1;
       font-variant-numeric: tabular-nums; }
     #rideBarBottom .pill.over { border-color: rgba(239,68,68,.85); }
@@ -880,9 +889,11 @@
     #rideRoad { display: none; position: fixed; z-index: 39; transform: translate(-50%, 0);
       background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.22); border-radius: 999px;
       padding: 4px 10px; align-items: center; gap: 6px; pointer-events: none;
-      box-shadow: 0 4px 14px rgba(0,0,0,.5); white-space: nowrap; }
+      box-shadow: 0 4px 14px rgba(0,0,0,.5); white-space: nowrap;
+      max-width: calc(100vw - 100px); }   /* dugo ime ulice ne sme da preraste ekran - vidi drawRoadLabel */
     body.riding #rideRoad.on { display: flex; }
-    #rideRoad b { font-size: 13px; font-weight: 900; color: #f1f5f9; letter-spacing: .01em; }
+    #rideRoad b { font-size: 13px; font-weight: 900; color: #f1f5f9; letter-spacing: .01em;
+      min-width: 0; overflow: hidden; text-overflow: ellipsis; }
     #rideRoad i { font-style: normal; font-size: 12px; font-weight: 900; padding: 2px 6px; border-radius: 4px;
       border: 2px solid #fff; font-variant-numeric: tabular-nums; }
     #rideRoad i.e, #rideRoad i.a { background: #15803d; color: #fff; }
@@ -948,7 +959,10 @@
     @media (prefers-reduced-motion: reduce) { body.freeride #rideBar .navcard { animation: none; } }
     #rideBar .ahead { display: none; background: rgba(180,83,9,.94); color: #fef3c7; padding: 7px 14px; font-size: 13px; font-weight: 800; border-top: 1px solid rgba(249,115,22,.5); }
     #rideBar .ahead.on { display: block; }
-    #rideBar .wx { display: none; background: rgba(153,27,27,.92); color: #fee2e2; padding: 7px 14px; font-size: 12.5px; font-weight: 600; line-height: 1.3; border-top: 1px solid rgba(239,68,68,.5); }
+    /* 11.8.: bilo je 12,5 px / 600, najsitniji tekst na celom ekranu vožnje - a to je jedina poruka
+       koju nijedna druga navigacija ne ume da napiše ("Pljusak za ~6 km"). Brzina je 26 px, preostali
+       km 19, sat 15,5. Sada 16 px / 800, i dalje jedan red, i dalje ispod zelenog banera. */
+    #rideBar .wx { display: none; background: rgba(153,27,27,.92); color: #fee2e2; padding: 8px 14px; font-size: 16px; font-weight: 800; line-height: 1.25; border-top: 1px solid rgba(239,68,68,.5); }
     #rideBar .wx.on { display: block; }
     #rideBarBottom { display: none; }
     body.riding #rideBarBottom { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 40; align-items: stretch; gap: 10px; }
@@ -1359,7 +1373,8 @@
     #rideBar .nt b { font-size: 26px; }
     #rideBar .nt span, #rideBar .nt .sub { font-size: 14px; }
     #rideBar .then { padding: 5px 12px; font-size: 12px; }
-    #rideBar .ahead, #rideBar .wx { padding: 5px 12px; font-size: 11.5px; }
+    #rideBar .ahead { padding: 5px 12px; font-size: 11.5px; }
+    #rideBar .wx { padding: 6px 12px; font-size: 14px; }   /* landscape je uzi, ali nevreme ostaje citljivo */
     body.riding #rideBarBottom { left: calc(10px + var(--sl)); right: auto; width: var(--col);
       bottom: calc(8px + var(--sb)); gap: 8px; }
     body.riding #rideEtaRow { left: calc(10px + var(--sl)); bottom: calc(70px + var(--sb)); max-width: var(--col); }
@@ -7112,8 +7127,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.50";
+const APP_VERSION = "0.9.51";
 const CHANGELOG = [
+  { v: "0.9.51", d: "11.08.2026.", stavke: [
+    "<b>Prazan znak ograničenja brzine je nestao sa ekrana vožnje.</b> Beo krug u crvenom prstenu, bez broja, stajao je pored brzine na SVAKOJ vožnji - izgledao je kao pokvaren instrument. Uzrok: pravilo koje ga gasi bilo je slabije od pravila koje pali sve u toj traci, pa se nikad nije primenilo. Sada se pojavljuje samo tamo gde ograničenje stvarno znamo.",
+    "<b>Najava nevremena je sa 12,5 podignuta na 16 piksela.</b> Bila je najsitniji tekst na celom ekranu vožnje, a jedina je koju nijedna druga navigacija ne ume da napiše. Brzina je 26, preostali kilometri 19.",
+    "<b>Ime ulice više ne beži van ekrana.</b> Nalepnica ispod strelice bila je pozicionirana bez ikakvog ograničenja u širinu - izmereno 77 piksela preko desne ivice, a delom je ležala i ispod dugmeta za GPS. Sada se drži ekrana i sklanja se sa dugmadi, a predugačko ime se skraćuje.",
+    "<b>Atribucija mape se skuplja čim krene vožnja.</b> Njen tekst je ležao tačno ispod pilule \"još X km · HH:MM\" i mešao se sa njom. Tap na (i) je i dalje otvara.",
+    "<b>Posle planiranja se vidi i presuda, ne samo izbor rute.</b> Podatak kad stižeš bio je sakriven iza \"Svi detalji\"."
+  ] },
   { v: "0.9.50", d: "11.08.2026.", stavke: [
     "<b>Lista u pretrazi se više ne pomera pod prstom.</b> Novo rangiranje je blok mrežnih rezultata premeštalo sa vrha na dno usred kucanja - \"Zlat\" jedno, \"Zlati\" drugo - pa su se redovi pomerali između dva slova i lako si tapnuo pogrešan. Sada se premesti najviše jednom, na poslednjem slovu, kad se ime poklopi tačno.",
     "<b>Ne tvrdimo \"autoput\" ako ga nema.</b> Poređenje uz trajanje je uvek pisalo \"duže od autoputa\", i na relacijama gde nijedna varijanta ne ide autoputem. Sada u tom slučaju piše \"duže od najbrže rute\"."
@@ -8290,9 +8312,15 @@ function drawRoadLabel(route, dMeters, lo, la) {
   if (el.dataset.h !== html) { el.innerHTML = html; el.dataset.h = html; }
   try {   // ispod strelice vozila, u ekranskim koordinatama
     const p = map.project([lo, la]);
-    el.style.left = Math.round(p.x) + "px";
+    el.classList.add("on");   // mora biti vidljiv pre merenja sirine, inace je offsetWidth = 0
+    /* Vodoravno ogranicenje (11.8.). Do sada je stajalo samo `left = p.x` uz translate(-50%), pa je
+       nalepnica sa imenom ulice izlazila van desne ivice ekrana i lezala ispod dugmeta za GPS -
+       izmereno: sirina 183 px na poziciji 284, dakle 77 px preko ivice od 390. Desna kolona dugmadi
+       (Slojevi, kompas, GPS, pauza) je siroka 46 px uz ivicu, pa se drzimo 66 px od nje. */
+    const w = el.offsetWidth || 0;
+    const minX = 12 + w / 2, maxX = window.innerWidth - 66 - w / 2;
+    el.style.left = Math.round(maxX < minX ? minX : Math.max(minX, Math.min(p.x, maxX))) + "px";
     el.style.top = Math.round(Math.min(p.y + 40, window.innerHeight - 96)) + "px";   // na niskom (landscape) ekranu ne sme ispod donje trake
-    el.classList.add("on");
   } catch (e) { el.classList.remove("on"); }
 }
 function limitAt(route, dMeters) {
@@ -9241,6 +9269,12 @@ function startRide() {
   try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
   rideSensorsInit();
   document.body.classList.remove("planning"); document.body.classList.add("riding");
+  /* Atribucija se skuplja na (i) cim krene voznja (11.8.). Kontrola jeste compact, ali stoji
+     otvorena dok je korisnik ne dodirne - a otvoren tekst "OpenFreeMap (c) OpenMapTiles / from
+     OpenStreetMap" lezi tacno ispod pilule "jos X km · HH:MM" i meša se sa njom. Tap na (i) je i
+     dalje otvara, pa je atribucija i dalje dostupna. */
+  try { document.querySelectorAll(".maplibregl-ctrl-attrib.maplibregl-compact-show")
+    .forEach((a) => a.classList.remove("maplibregl-compact-show")); } catch (e) {}
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = [];   // dnevnik voznje + kolekcije
