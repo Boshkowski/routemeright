@@ -3084,11 +3084,32 @@ function _komadi(prof) {
   }
   return runs().map((x) => ({ od: x[0], do: x[1], dobar: !!x[2] }));
 }
+function _seciNaStanicama(kom, stanice, N) {
+  /* Svaka korisnikova stanica postaje SAV. Bez toga komad koji je preskace ne bi imao razloga da
+     kroz nju prodje - komadi se voze bez stanica (`noVias`), pa bi stanica prosto nestala iz rute.
+     Vraca null kad bi seckanje dalo vise od 8 komada (svaki komad = jedan poziv ruteru). */
+  const out = kom.map((k) => ({ ...k }));
+  const red = (stanice || [])
+    .filter((x) => x && x.off < 3000 && x.km > 3 && x.km < N - 3)   // van koridora ili prilepljena uz kraj: ne seca se
+    .sort((a, b) => a.km - b.km);
+  for (const st of red) {
+    const km = Math.round(st.km);
+    const i = out.findIndex((k) => km > k.od + 1 && km < k.do - 1);
+    if (i < 0) continue;                                            // vec pada na sav - nema sta da se seca
+    const k = out[i];
+    out.splice(i, 1, { od: k.od, do: km, dobar: k.dobar }, { od: km, do: k.do, dobar: k.dobar, stanica: st.v, ime: st.ime });
+  }
+  return out.length > 8 ? null : out;
+}
 async function hibridnaRuta(from, to, vij, brza) {
   // kapija PRE trosenja poziva: kratka relacija ili mala razlika ne zasluzuje jos 5 poziva ruteru
   if (!vij || !brza || !vij.coords || vij.coords.length < 50) return null;
   if (vij.totalDist < 150000) return null;                       // ispod 150 km nema sta da se kombinuje
-  if (!(vij.totalDur > brza.totalDur * 1.4)) return null;         // vijugava vec jeste blizu najbrze
+  /* Kapija na 1,25 (12.8.). Bila je 1,40 i tada je Boskov sopstveni primer - Beograd - Jadrija SA
+     stanicom u Sarajevu - ispadao napolje: kad se koridor fiksira stanicom, vijugava i najbrza se
+     priblize (13 h 05 prema 10 h 16, odnos 1,27) iako izmedju njih i dalje stoje skoro tri sata.
+     Beograd - Kotor (odnos 1,15) i dalje ostaje napolju, i to s pravom - tamo nema sta da se skrati. */
+  if (!(vij.totalDur > brza.totalDur * 1.25)) return null;
   const prof = _kmProfil(vij), kom = _komadi(prof);
   if (kom.length < 3) return null;                                // nema smene brzo/vijugavo - nema kombinacije
   const dosKm = kom.reduce((a, k) => a + (k.dobar ? 0 : k.do - k.od), 0);
@@ -3099,9 +3120,27 @@ async function hibridnaRuta(from, to, vij, brza) {
     for (let i = 0; i < vij.cumDist.length; i++) if (vij.cumDist[i] >= c) return { lat: vij.coords[i][1], lon: vij.coords[i][0] };
     const z = vij.coords[vij.coords.length - 1]; return { lat: z[1], lon: z[0] };
   };
+  /* TVOJE STANICE (Boskov zahtev 12.8.: "hocu i jedno i drugo" - i da vidi gde se menja, i da
+     sam steruje rutu preko Loznice, Sarajeva, Konjica). Do sada je kombinovana ruta bila iskljucena
+     cim postoji stanica, jer se komadi voze BEZ stanica (`noVias`), pa bi stanica koja padne unutar
+     komada prosto nestala. Resenje bez novog rutiranja: svaka stanica postaje SAV. Komad se preseca
+     na njenom kilometru, a tacka sava je bas ta stanica - pa je nijedan komad ne moze preskociti.
+     Vijugava ruta (`vij`) stanice vec postuje, jer se ona vuce sa njima. */
+  const stanice = ((state.vias || []).map((it) => {
+    try { const p = navProject(vij, it.v[0], it.v[1]); return { km: p.d / 1000, off: p.offM, v: it.v, ime: it.name || null }; }
+    catch (e) { return null; }
+  }).filter(Boolean));
+  const komS = _seciNaStanicama(kom, stanice, prof.N);
+  if (!komS) return null;   // vise od osam komada = vise od osam poziva ruteru za jedno planiranje
+  kom.length = 0; kom.push(...komS);
   const seg = { noVias: true, noLoop: true, keepTrip: true };
-  // tacke savova se racunaju UNAPRED: trebaju i za pozive i kasnije za imena mesta u sastavu rute
-  const tacke = kom.map((k, i) => (i === 0 ? from : naKm(k.od))).concat([to]);
+  /* Tacke savova se racunaju UNAPRED: trebaju i za pozive i kasnije za imena mesta u sastavu rute.
+     Sav koji je nastao od tvoje stanice ide na BAS TU tacku, ne na najblizu tacku rute - inace bi
+     ruter zavrsio "kod" stanice umesto na njoj. Kraj se uzima sa same vijugave rute: kod povratnog
+     kruga cilj nije `to` nego dom, a ruta vec zna gde se zatvara. */
+  const _z = vij.coords[vij.coords.length - 1];
+  const KRAJ = isRoundTrip() ? { lat: _z[1], lon: _z[0] } : to;
+  const tacke = kom.map((k, i) => (i === 0 ? from : k.stanica ? { lat: k.stanica[1], lon: k.stanica[0] } : naKm(k.od))).concat([KRAJ]);
   const tripovi = await Promise.all(kom.map(async (k, i) => {
     await new Promise((rs) => setTimeout(rs, i * 250));           // razmak umesto salve: 5 istovremenih poziva ume da udari u limit
     const A = tacke[i], B = tacke[i + 1];
@@ -3117,8 +3156,13 @@ async function hibridnaRuta(from, to, vij, brza) {
   hyb.hibrid = tripovi.map((tp, i) => {   // bi reroute na 400. km celu preostalu turu presao u "ekstra vijugavo" i dodao sate)
     const od = acc; acc += ((tp.summary && tp.summary.length) || 0);
     // `tacka` = pocetak komada: sluzi da se sastav rute kasnije ispise imenima mesta, a ne kilometrima
-    return { od, do: acc, styleIdx: kom[i].dobar ? 0 : 3, tacka: tacke[i], kraj: tacke[i + 1] };
+    // `ime` postoji samo za savove koji su TVOJE stanice - njih ne geokodiramo unazad nego pisemo
+    // ime koje si sam upisao (geokoder je za Sarajevo vratio "Trg oslobodjenja-Centar", 12.8.)
+    return { od, do: acc, styleIdx: kom[i].dobar ? 0 : 3, tacka: tacke[i], kraj: tacke[i + 1], ime: kom[i].ime || null };
   });
+  // koliko kilometara ove rute se STVARNO vozi krivinama - po tome se sudi da li je kombinacija
+  // zaista kombinacija, a ne po tome koliko je sporija od autoputa (vidi belesku na pozivu)
+  hyb.krivKm = hyb.hibrid.reduce((a, h) => a + (h.styleIdx === 0 ? h.do - h.od : 0), 0);
   return hyb;
 }
 function stilNaKm(route, km) {   // sasivena ruta NEMA jedan stil - reroute uzima onaj koji vazi na toj deonici
@@ -3323,15 +3367,23 @@ async function fetchRoutes(from, to) {
         if (!uniq.some((u) => Math.abs(u.totalDist - pun.totalDist) < 500 && Math.abs(u.totalDur - pun.totalDur) < 60)) uniq.push(pun);
       } catch (e) {}
     }
-    /* KOMBINOVANA (11.8.): sredina izmedju autoputa i vijugave. Isti izlaz kao kod sivenja grada -
-       stanice i povratno zadrzavaju stari tok, jer bi sivenje tuklo sa korisnikovim tackama. */
-    if (!gradska && cistoZaSivenje) {
+    /* KOMBINOVANA (11.8.): sredina izmedju autoputa i vijugave.
+       12.8. (Boskov zahtev): radi i SA stanicama - svaka stanica postaje sav, vidi hibridnaRuta.
+       Povratni krug ostaje izuzet, i to ne iz opreza nego iz smisla: kruzna tura je sastavljena od
+       kuriranih lepih tacaka, pa bi zamena "dosadnih" delova autoputem pojela bas ono zbog cega
+       se takva tura i pravi. */
+    if (!gradska && !isRoundTrip()) {
       try {
         const vz = uniq.find((r) => r.styleIdx === 0) || vijugave[0];
         const hyb = vz ? await hibridnaRuta(from, to, vz, brza) : null;
-        // posten test REZULTATA, ne namere: kartica se prikazuje samo ako je stvarno i osetno brza
-        // od vijugave, a nije autoput prerusen u kombinaciju (isti zakon kao "ne tvrdimo autoput ako ga nema")
-        if (hyb && hyb.totalDur < vz.totalDur * 0.9 && hyb.totalDur > brza.totalDur * 1.08
+        /* Posten test REZULTATA, ne namere. Merilo "nije autoput prerusen u kombinaciju" je do 12.8.
+           bilo VREME (moralo je biti bar 8% sporije od najbrze) i to je bilo pogresno: kad je obilazak
+           autoputem dugacak, vijugavi put kosta malo dodatnog vremena. Boskov primer sa stanicom u
+           Sarajevu je tako bio odbacen - hibrid 600 km / 10 h 54 sa 296 km krivina, prema autoputu
+           614 km / 10 h 16 bez ijedne. Odlicna ruta, izbacena zbog 38 minuta.
+           Sada se sudi po SASTAVU: koliko se kilometara stvarno vozi krivinama. */
+        const krivDosta = hyb && hyb.krivKm >= 40 && hyb.krivKm >= (hyb.totalDist / 1000) * 0.25;
+        if (hyb && krivDosta && hyb.totalDur < vz.totalDur * 0.9
           && !uniq.some((u) => Math.abs(u.totalDist - hyb.totalDist) < 500 && Math.abs(u.totalDur - hyb.totalDur) < 60))
           uniq.splice(Math.min(1, uniq.length), 0, hyb);   // odmah IZA vijugave: to je sredina, ne dodatak na kraju
       } catch (e) {}   // kombinacija je bonus: njen pad ne sme da odnese vec dobijene rute
@@ -3841,11 +3893,13 @@ async function hibridImena(route) {
   if (!route || !route.hibrid || route._hibNaz || route._hibNazRadi) return false;
   route._hibNazRadi = true;
   try {
-    const tk = route.hibrid.map((h) => h.tacka).concat([route.hibrid[route.hibrid.length - 1].kraj]);
+    const zad = route.hibrid[route.hibrid.length - 1];
+    const tk = route.hibrid.map((h) => ({ t: h.tacka, ime: h.ime })).concat([{ t: zad.kraj, ime: null }]);
     const im = [];
-    for (const t of tk) {   // redom, ne u salvi: Nominatim trazi 1 upit/s i ovo nikoga ne ceka
+    for (const x of tk) {   // redom, ne u salvi: Nominatim trazi 1 upit/s i ovo nikoga ne ceka
+      if (x.ime) { im.push(String(x.ime).split(",")[0].trim()); continue; }   // tvoja stanica: tvoje ime
       let n = null;
-      try { n = await reverseName(t.lat, t.lon, 10); } catch (e) {}
+      try { n = await reverseName(x.t.lat, x.t.lon, 10); } catch (e) {}
       im.push(n ? String(n).split(",")[0].trim() : null);
     }
     if (im.some((x) => x)) { route._hibNaz = im; return true; }   // bar jedno ime - inace ostaju kilometri
@@ -7645,8 +7699,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.64";
+const APP_VERSION = "0.9.65";
 const CHANGELOG = [
+  { v: "0.9.65", d: "12.08.2026.", stavke: [
+    "<b>Kombinovanu rutu sada možeš da steruješ svojim stanicama.</b> Do sada je nestajala čim dodaš stanicu. Sada svaka tvoja stanica postaje šav, pa je nijedan deo rute ne može preskočiti. Beograd - Jadrija sa stanicom u Sarajevu: <b>599 km za 10 h 53 min</b>, najkraća od sve četiri ponuđene rute i dva sata brža od vijugave, a sve krivine ostaju.",
+    "U sastavu tada stoji tvoje ime mesta, ne ono što vrati geokoder: \"Novi Beograd - Mali Zvornik brzo · Mali Zvornik - Sarajevo krivinama · Sarajevo - Jablanica krivinama · Jablanica - Tomislavgrad brzo · Tomislavgrad - Tijarica krivinama · Tijarica - Šibenik brzo\". (Geokoder je za Sarajevo vraćao \"Trg oslobođenja-Centar\".)",
+    "<b>Ispravljeno merilo koje je bacalo dobre rute.</b> Kombinovana se prikazivala samo ako je bar 8 posto sporija od autoputa - ideja je bila da autoput ne bude prerušen u kombinaciju. Merilo je pogrešno: kad je obilazak autoputem dug, vijugavi put košta malo dodatnog vremena. Baš tvoj primer sa Sarajevom je tako propadao - ruta sa 296 km krivina odbačena zbog 38 minuta razlike. Sada se sudi po <b>sastavu</b>: bar 40 km i bar četvrtina rute mora stvarno da se vozi krivinama.",
+    "Prag za pokušaj spušten sa 40 na 25 posto razlike. Kad stanica fiksira koridor, vijugava i najbrža se približe iako između njih i dalje stoje sati. Beograd - Kotor i dalje nema kombinovanu, i to s pravom - tamo nema šta da se skrati.",
+    "Povratni krug i dalje nema kombinovanu, i to namerno: kružna tura je sastavljena od kuriranih lepih tačaka, pa bi zamena \"dosadnih\" delova autoputem pojela baš ono zbog čega se takva tura i pravi."
+  ] },
   { v: "0.9.64", d: "11.08.2026.", stavke: [
     "<b>Kombinovana ruta sada piše od kog do kog mesta ide svaki deo.</b> Tvoje pitanje \"kako da imamo ovu rutu koju sam ja rekao\": ruta JESTE bila ta, samo je pisala \"km 0-173, 173-297\" pa se nije prepoznavala kao tvoja. Sada u detaljima stoji, na primer, \"Novi Beograd - Zvornik brzo · Zvornik - Lovreć krivinama\". Imena se dovlače tek kad rutu pogledaš, da planiranje ne bi bilo sporije.",
     "<b>Ograničenje koje treba da znaš:</b> kombinovana ruta se NE pravi kad dodaš svoju stanicu ili uključiš povratno. Šivenje bi se tuklo sa tvojim tačkama, pa se u tom slučaju ponaša kao ranije.",
