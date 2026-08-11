@@ -1733,7 +1733,9 @@
     <div id="homeSearch" role="button" tabindex="0" aria-label="Pretraga - kuda ćeš danas?">
       <span class="lg"><svg viewBox="0 0 512 512" fill="none"><rect width="512" height="512" rx="112" fill="#0b1120"/><g stroke-linecap="butt" stroke-linejoin="round"><path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#c2570a" stroke-width="80"/><path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#f97316" stroke-width="66"/><path d="M170 407 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L333 421" stroke="#fff" stroke-width="7" stroke-dasharray="17 24"/></g><circle cx="170" cy="414" r="12" fill="#22c55e"/><circle cx="340" cy="430" r="13" fill="#fff"/></svg></span>
       <span class="q">Kuda ćeš danas?</span>
-      <span class="av">B</span>
+      <!-- 11.8.: kruzic sa zakucanim slovom "B" (Boskov inicijal) je uklonjen. Bio je mrtav - bez
+           ijednog handlera - a stajao je na mestu gde svako ocekuje nalog ili podesavanja, pa je
+           svaki stranac tapkao nesto sto ne postoji. Profil zivi u tabu "Ja". -->
     </div>
     <div id="homeChips">
       <!-- Opcija A (Boskov izbor 9.8.): snimanje voznje = prvi cip, crveni akcenat; FAB na mapi ostaje kao precica -->
@@ -4449,24 +4451,20 @@ async function renderRoadStatus(route) {
     }
   }
   naRuti.sort((a, b) => (ROAD_PRIO[a.type] ?? 9) - (ROAD_PRIO[b.type] ?? 9));
-  const naRutiKljuc = new Set(naRuti.map((x) => x.title));
   for (const it of naRuti.slice(0, 6))
     rows.push(`<li>${rIco("roadworks", 14)} <b class="warn-inline">Na tvojoj ruti (${esc(it.ref)})</b> · ${esc(it.title)}` +
       (it.detail && it.detail !== it.title ? ` <span class="poi-dist">${esc(it.detail.slice(0, 140))}</span>` : "") + `</li>`);
-  for (const cc of ccs) {
-    // meteo upozorenja prvo (bezbednost)
+  /* Samo ono sto te DODIRUJE (11.8.). Ovde je do danas isla i druga petlja koja je dodavala do pet
+     radova PO ZEMLJI bez obzira na rutu - zatvoren put kod Vranja dok vozis na Zlatibor. Ta petlja
+     je sama nosila najveci deo kartice od 1502 px, a nijedan njen red nije bio na tvom putu.
+     Meteo upozorenja ostaju: nose ime regiona, ticu se bezbednosti i ima ih najvise tri. */
+  for (const cc of ccs)
     for (const w of (rs.meteo && rs.meteo[cc] || []).slice(0, 3))
       rows.push(`<li>${rIco("storm", 14)} <b>${esc(w.region)}</b>: ${esc(w.detail || w.title)}</li>`);
-    const c = rs.countries && rs.countries[cc];
-    if (!c || !c.ok || !c.items.length) continue;
-    const sorted = [...c.items].sort((a, b) => (ROAD_PRIO[a.type] ?? 9) - (ROAD_PRIO[b.type] ?? 9));
-    for (const it of sorted.filter((x) => !naRutiKljuc.has(x.title)).slice(0, 5))
-      rows.push(`<li>${rIco("roadworks", 14)} <b>${esc(c.name)}</b> · ${esc(it.title)}${it.detail && it.detail !== it.title ? ` <span class="poi-dist">${esc(it.detail.slice(0, 140))}</span>` : ""}</li>`);
-  }
   if (!rows.length) { card.style.display = "none"; return; }
-  list.innerHTML = rows.slice(0, 16).join("");
+  list.innerHTML = rows.slice(0, 8).join("");
   const upd = rs.updated ? new Date(rs.updated) : null;
-  $("roadsNote").textContent = (gr.length || naRuti.length ? "Prvo ono što je NA tvojoj ruti. " : "") + "Zvanični izvori po zemljama + Meteoalarm meteo-upozorenja." + (upd ? ` Ažurirano: ${upd.toLocaleString("sr-RS", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric" })}.` : "");
+  $("roadsNote").textContent = "Radovi i zatvaranja na putevima kojima stvarno prolaziš, plus meteo-upozorenja za te krajeve." + (upd ? ` Ažurirano: ${upd.toLocaleString("sr-RS", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric" })}.` : "");
   card.style.display = "";
 }
 async function loadEditorial() {
@@ -4774,12 +4772,26 @@ function renderVerdict(assess, route, departure) {
   try { renderResultHero(route); } catch (e) {}   // pilula + hero cim su rezultati tu (nezavisno od sporednih fetch-eva)
   $("summary").innerHTML =
     `<b>${esc(routeTxt)}</b>${rt ? " (povratno)" : ""} · ${(route.totalDist / 1000).toFixed(0)} km · ` +
-    `${fmtDur(route.totalDur)}<br>Polazak ${fmtTime(departure)} → dolazak ~<b>${fmtTime(arrive)}</b> (bez pauza)` +
+    `${fmtDur(route.totalDur)}${esc(vsNajbrza(route))}<br>Polazak ${fmtTime(departure)} → dolazak ~<b>${fmtTime(arrive)}</b> (bez pauza)` +
     (state.arriveTarget ? ` · cilj: do ${fmtTime(state.arriveTarget)}` : "");
   setPeek(route.wxFail ? 1 : worst, routeTxt,
-    `${(route.totalDist / 1000).toFixed(0)} km · ${fmtDur(route.totalDur)} · kreni ${fmtTime(departure)}` +
+    `${(route.totalDist / 1000).toFixed(0)} km · ${fmtDur(route.totalDur)}${vsNajbrza(route)} · kreni ${fmtTime(departure)}` +
     (state.arriveTarget ? ` (stižeš do ${fmtTime(state.arriveTarget)})` : ""));
   return worst;
+}
+/* "Zasto 4 h 54 kad Google kaze 3 h" (11.8.). Bez ovoga najveca prednost izgleda kao kvar: covek
+   uporedi broj sa Google-om, zakljuci da aplikacija lose racuna i zatvori je. Autoput vec racunamo
+   kao varijantu, samo nije stajao pored velikog broja. */
+function vsNajbrza(route) {
+  try {
+    const rs = state.routes || [];
+    if (rs.length < 2 || !route) return "";
+    const naj = rs.reduce((m, x) => (x.totalDur < m.totalDur ? x : m), rs[0]);
+    const d = Math.round((route.totalDur - naj.totalDur) / 60);
+    if (d < 10) return "";   // ista stvar - nema sta da se pravda
+    const h = Math.floor(d / 60), mn = d % 60;
+    return ` (${h ? h + " h " : ""}${mn ? mn + " min" : ""} duže od autoputa, ali vijugavo)`;
+  } catch (e) { return ""; }
 }
 function renderTimeline(assess) {
   const tl = $("timeline"); tl.innerHTML = "";
@@ -6463,8 +6475,14 @@ function closeOptsSheet() {
     const fv = $("from").value.trim();
     if (fv && !/^moja lokacija$/i.test(fv)) return;   // "Moja lokacija" bez fiksa = i dalje treba izlaz
     try { if (typeof setSheet === "function") setSheet(true); } catch (e) {}   // skupljen sheet bi sakrio i poruku i polje
+    /* Odrediste mora da OSTANE na ekranu (11.8.). Ranije je covek izabrao Zlatibor, GPS je bio
+       odbijen, i dobijao je crveni tekst na praznom ekranu - Zlatibora nigde, ni u pristupacnom
+       stablu. Izgledalo je kao da je nesto pokvario i da mu je izbor propao. */
+    const tv = ($("to").value || "").trim();
+    if (qf) qf.innerHTML = (tv ? `<span style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:3px">Ideš u: <b style="color:#e2e8f0">${esc(tv)}</b></span>` : "") +
+      "Odakle krećeš? · dodirni da upišeš polazak";
     if (qf) qf.classList.add("show");
-    setStatus("Ne znamo odakle krećeš - uključi lokaciju ili dodirni narandžasto polje iznad.", true);
+    setStatus(tv ? `Još samo polazak, pa računamo rutu do ${tv}.` : "Reci nam odakle krećeš - dodirni narandžasto polje iznad.", true);
   };
   window.qplanFromOk = () => { if (qf) qf.classList.remove("show"); };
   const qd = document.getElementById("qDet");
@@ -7082,8 +7100,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.47";
+const APP_VERSION = "0.9.48";
 const CHANGELOG = [
+  { v: "0.9.48", d: "11.08.2026.", stavke: [
+    "<b>Pretraga više ne zakopava gradove.</b> Kad si ukucao \"Beograd\", grad je izlazio tek kao 12. red - iznad njega osam kafana čija adresa pominje Beograd, a jedna od njih je kod Paraćina. Enter te je vodio baš u tu kafanu. Uzrok: pretraga je poredila ono što kucaš sa imenom PLUS adresom, bez ikakvog rangiranja. Sada gleda samo ime i boduje ga. Provereno: Beograd, Zlatibor, Tara, Durmitor i Kod Baja - svako je prvi red, a naše ture ostaju odmah ispod.",
+    "<b>Pored trajanja piše koliko je duže od autoputa.</b> \"213 km · 4 h 50 min (1 h 17 min duže od autoputa, ali vijugavo)\". Bez toga je čovek poredio naš broj sa Google-om i zaključivao da aplikacija loše računa - najveća prednost je izgledala isto kao kvar.",
+    "<b>Odredište više ne nestaje kad odbiješ lokaciju.</b> Ranije si izabrao Zlatibor, dobio crveni tekst i prazan ekran. Sada stoji \"Ideš u: Zlatibor\" iznad polja za polazak, a poruka je mirna umesto crvene.",
+    "<b>\"Stanje na putevima\" pokazuje samo tvoj put.</b> Kartica je nosila do pet radova PO ZEMLJI bez veze sa rutom - zatvoren put kod Vranja dok voziš na Zlatibor. Pala je sa 1502 na 939 piksela, a sve u njoj je sada na tvojoj ruti.",
+    "Uklonjen kružić sa slovom \"B\" na početnom ekranu (bio je zakucan i ništa nije radio), i reč \"TEST\" iz oznake verzije."
+  ] },
   { v: "0.9.47", d: "11.08.2026.", stavke: [
     "<b>\"Prikaži na mapi\" je sada pravi režim, ne jednosmerna ulica</b> (tvoj nalaz): ranije te je prebacilo na Planer, upalilo sloj i tu se priča završavala. Sada gore stoji traka <b>‹ Zajednica · 3 aktivne prijave · 150 km</b> koja te vraća nazad na isto mesto i isti skrol, a dole je lista istih tih prijava koja se prevlačenjem skuplja u traku.",
     "<b>Tap na pin otvara karticu</b> sa vremenom, udaljenošću i brojem potvrda, i dva velika dugmeta: <b>Tu je</b> / <b>Nema je</b>.",
@@ -7349,7 +7374,9 @@ const CHANGELOG = [
 function initVerBadge() {
   const b = document.getElementById("verBadge");
   if (!b) return;
-  b.textContent = "TEST v" + APP_VERSION;
+  /* Bez reci "TEST" (11.8.): stranac je citao "ne veruj ovome na putu" bas dok procenjuje da li da
+     ti veruje. Verzija ostaje vidljiva jer je nama potrebna za proveru sta je stvarno na telefonu. */
+  b.textContent = "v" + APP_VERSION;
   const sheet = document.getElementById("newsSheet"), lst = document.getElementById("newsList");
   b.onclick = () => {
     lst.innerHTML = CHANGELOG.map((c) =>
@@ -7768,10 +7795,15 @@ function scheduleNetSugg(q) {   // FAZA 1 typeahead (9.8., Google princip "biras
         .filter((x) => { const f = SFOLD(x.n); if (!x.n || seen.has(f)) return false; seen.add(f); return true; })
         .slice(0, 6);
       sugg._net = net;
-      sugg.querySelectorAll("[data-net]").forEach((r) => r.remove());   // svez set, ne lepljenje na staro
-      if (!net.length) return;
       const html = net.map((h, i) =>
         `<div class="srow" data-net="${i}"><span class="sic">${rIco("pin", 18)}</span><div class="st"><b>${esc(h.n)}</b><span>${esc(h.sub)}</span></div></div>`).join("");
+      /* Stalno mesto u listi (11.8.): renderSugg je vec ostavio prazan #sNet tamo gde ovi redovi
+         pripadaju - na vrhu kad nema jakog lokalnog pogotka, inace ispod lokalnih. Ranije su isli
+         uvek na dno, pa je ukucani grad zavrsavao ispod svake kafane koja ga pominje u adresi. */
+      const slot = sugg.querySelector("#sNet");
+      if (slot) { slot.innerHTML = html; return; }
+      sugg.querySelectorAll("[data-net]").forEach((r) => r.remove());   // svez set, ne lepljenje na staro
+      if (!net.length) return;
       const geoRow = sugg.querySelector("[data-geo]");
       if (geoRow) geoRow.insertAdjacentHTML("beforebegin", html);
       else sugg.insertAdjacentHTML("beforeend", html);
@@ -7791,20 +7823,38 @@ function renderSugg(q) {
   }
   const kk = parseKoord(q);   // nalepljene koordinate ili link (WhatsApp/Google/Apple) - prvi red, bez mreze (9.8.)
   const fq = SFOLD(q.trim());
-  let hits = searchIndex().filter((x) => x.f.includes(fq)).slice(0, 8);
-  if (kk) hits = [{ n: koordIme(kk), lat: kk.lat, lon: kk.lon, sub: "koordinate iz poruke ili linka", t: "koord" }].concat(hits).slice(0, 8);
+  /* Rangiranje po imenu (11.8.). Ranije je ovde stajalo `x.f.includes(fq)`, a x.f je ime PLUS adresa -
+     pa je na upit "Beograd" grad ispadao tek 12. red: iznad njega osam kafana cija adresa pominje
+     Beograd ("put Mladenovac-Beograd", "kod Paracina, na putu Bor-Beograd"). Enter je tada vodio
+     u kafanu kod Paracina. U kucanju sada vazi SAMO ime; adresa vise ne kvalifikuje red. */
+  const rxq = new RegExp("(^|[^a-z0-9])" + fq.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  /* Pocetak imena vredi samo ako upit POKRIVA vecinu tog imena. Bez toga je "Beograd" dizao sest
+     nasih kuriranih tura ("Beograd - Durmitor bez autoputa", "Beograd - Pozarevac - Veliko
+     Gradiste - ...") iznad samog grada: sve pocinju na "Beograd", a nijedna nije ono sto je covek
+     trazio kad je ukucao sedam slova. */
+  const bod = (n) => n === fq ? 100 : n.startsWith(fq) ? (fq.length >= n.length * 0.55 ? 80 : 55) : rxq.test(n) ? 50 : n.includes(fq) ? 40 : 0;
+  let sc = searchIndex().map((x) => ({ x, s: bod(SFOLD(x.n)) })).filter((h) => h.s > 0).sort((a, b) => b.s - a.s);
+  let jak = sc.length > 0 && sc[0].s >= 80;   // tacno ime ili pocetak imena - samo to sme ispred mreznih rezultata
+  let hits = sc.slice(0, 8).map((h) => h.x);
+  if (kk) { hits = [{ n: koordIme(kk), lat: kk.lat, lon: kk.lon, sub: "koordinate iz poruke ili linka", t: "koord" }].concat(hits).slice(0, 8); jak = true; }
+  let recN = 0;
   try {   // Faza 1: Nedavno se MESA u rezultate dok kucas (Google princip - istorija je najjaci signal)
     const rec = (JSON.parse(localStorage.getItem("rmr2_recent") || "[]"))
       .filter((r) => r.to && SFOLD(r.to).includes(fq)).slice(0, 2)
       .map((r) => ({ n: r.to, lat: r.tp ? r.tp[0] : null, lon: r.tp ? r.tp[1] : null, sub: "nedavno · iz: " + (r.from || ""), t: "recent" }));
     const seenR = new Set(rec.map((r) => SFOLD(r.n)));
+    recN = rec.length;
     hits = rec.concat(hits.filter((h) => !seenR.has(SFOLD(h.n)))).slice(0, 8);
   } catch (e) {}
-  sugg.innerHTML = hits.map((h, i) =>
-    `<div class="srow" data-hit="${i}"><span class="sic">${h.t === "recent" ? rIco("saved", 18) : (SICONS[h.t] || rIco("route", 18))}</span><div class="st"><b>${esc(h.n)}</b><span>${esc(h.sub || "")}</span></div></div>`).join("") +
+  const red = hits.map((h, i) =>
+    `<div class="srow" data-hit="${i}"><span class="sic">${h.t === "recent" ? rIco("saved", 18) : (SICONS[h.t] || rIco("route", 18))}</span><div class="st"><b>${esc(h.n)}</b><span>${esc(h.sub || "")}</span></div></div>`);
+  /* Mrezni (Photon) rezultati imaju stalno mesto u listi umesto da se lepe na dno: kad nemamo jak
+     lokalni pogodak, to mesto je odmah ispod "Nedavno" - grad koji si ukucao je tako prvi red. */
+  const gde = jak ? red.length : Math.min(recN, red.length);
+  sugg.innerHTML = red.slice(0, gde).join("") + `<div id="sNet"></div>` + red.slice(gde).join("") +
     `<div class="srow" data-geo="1"><span class="sic">${rIco("route", 18)}</span><div class="st"><b>Traži "${esc(q.trim())}"</b><span>mesta i adrese (OpenStreetMap)</span></div></div>` +
     `<div class="srow" data-pickmap="1"><span class="sic">${rIco("pin", 18)}</span><div class="st"><b>Izaberi na mapi</b><span>drži prst na mapi - "Vodi me ovde"</span></div></div>`;   // nikad corsokak (6.8.)
-  sugg._hits = hits; sugg._q = q.trim(); sugg._net = [];
+  sugg._hits = hits; sugg._q = q.trim(); sugg._net = []; sugg._jak = jak;
   scheduleNetSugg(sugg._q);
 }
 async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
@@ -7849,7 +7899,11 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
   si.addEventListener("input", () => renderSugg(si.value));
   si.addEventListener("keydown", async (e) => {
     if (e.key !== "Enter" || !si.value.trim()) return;
-    const hits = document.getElementById("sSugg")._hits || [];
+    const sg = document.getElementById("sSugg");
+    const hits = sg._hits || [];
+    /* Enter uzima PRVI red onako kako ga korisnik vidi (11.8.). Dok je lista bila rangirana po
+       adresi, Enter na "Beograd" je vodio u kafanu kod Paracina jer je ona bila hits[0]. */
+    if (!sg._jak && (sg._net || []).length) { pickDestination(sg._net[0]); return; }
     if (hits.length) { pickDestination(hits[0]); return; }
     try { const g = await geocode(si.value.trim()); pickDestination({ n: g.name, lat: g.lat, lon: g.lon }); }
     catch (er) { alert(er && er.geo ? er.message : "Ne mogu da nađem to mesto - probaj drugačiji naziv."); renderSugg(si.value); }   // posle greske: Trazi ponovo + Izaberi na mapi ostaju na ekranu
