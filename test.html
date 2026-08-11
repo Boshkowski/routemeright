@@ -1274,9 +1274,13 @@
   #rideSum .rshead { padding: 12px 20px 0; }
   #rideSum .rel { font-size: 21px; font-weight: 800; color: #f8fafc; letter-spacing: -.01em; }
   #rideSum .dt { font-size: 12.5px; color: #94a3b8; margin-top: 1px; }
-  #rideSum .rstats { display: flex; align-items: stretch; padding: 14px 14px 0; font-variant-numeric: tabular-nums; }
-  #rideSum .s { flex: 1; text-align: center; padding: 2px 4px; }
-  #rideSum .s + .s { border-left: 1px solid rgba(148,163,184,.18); }
+  #rideSum .rstats { padding: 14px 14px 0; font-variant-numeric: tabular-nums; }
+  /* dva reda kad ima vise od 4 brojke: 6 celija u jednom redu na 390 px daje 65 px po celiji,
+     a broj je 21 px - "prosek u pokretu" tu vise nije citljiv nego naslucen (11.8.) */
+  #rideSum .rsrow { display: flex; align-items: stretch; }
+  #rideSum .rsrow + .rsrow { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(148,163,184,.12); }
+  #rideSum .s { flex: 1; min-width: 0; text-align: center; padding: 2px 4px; }
+  #rideSum .rsrow .s + .s { border-left: 1px solid rgba(148,163,184,.18); }
   #rideSum .s .v { font-size: 21px; font-weight: 800; color: #f8fafc; }
   #rideSum .s .v small { font-size: 11.5px; font-weight: 700; color: #94a3b8; margin-left: 1px; }
   #rideSum .s .l { font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #94a3b8; margin-top: 3px; }
@@ -6451,8 +6455,11 @@ function zabeleziVoznju() {
 const ZAJ_PREVIEW = new URLSearchParams(location.search).has("preview");
 if (ZAJ_PREVIEW) window._zajGps = { lat: 44.8125, lon: 20.4612 };   // preview: centar BG, da sort po blizini i "km od tebe" rade
 function _vozUzorak() {   // preview=1: primer da dizajn ima sta da pokaze (nikad u localStorage)
-  return [{ ts: Date.now() - 36e5, naz: "Kotor → Cetinje", km: 69, min: 118, serp: 25, poeni: 169, kol: 1, kisa: false },
-          { ts: Date.now() - 864e5, naz: "Beograd → Zlatibor", km: 192, min: 205, serp: 6, poeni: 216, kol: 0, kisa: false }];
+  // brojke su medjusobno SAGLASNE (km / (mov/60) = avgK), da uzorak ne uci lose citanje ekrana
+  return [{ ts: Date.now() - 36e5, naz: "Kotor → Cetinje", km: 69, min: 118, mov: 96, pauz: 18,
+            avgK: 43, maxK: 88, lnL: 34, lnR: 39, serp: 25, poeni: 169, kol: 1, kisa: false },
+          { ts: Date.now() - 864e5, naz: "Beograd → Zlatibor", km: 192, min: 205, mov: 178, pauz: 22,
+            avgK: 65, maxK: 121, lnL: 28, lnR: 31, serp: 6, poeni: 216, kol: 0, kisa: false }];
 }
 function renderVoznje(targetId, limit) {
   const box = document.getElementById(targetId || "jaVoznje");
@@ -7580,8 +7587,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.62";
+const APP_VERSION = "0.9.63";
 const CHANGELOG = [
+  { v: "0.9.63", d: "11.08.2026.", stavke: [
+    "<b>Sažetak vožnje sada pokazuje sve brojke koje si tražio</b>, u dva reda: pređeno, trajanje, vreme u pokretu, pauza, prosek u pokretu, najbrže - a nagib levo i desno stoji na instrumentu ispod, sa tapom na broj da vidiš gde je taj nagib i bio.",
+    "<b>Zašto je dodato \"u pokretu\" i \"pauza\":</b> trajanje nosi pauze, a prosek se računa samo iz vremena u pokretu. Jedno do drugog bez te dve brojke, čovek podeli kilometre trajanjem, dobije drugi broj i zaključi da aplikacija loše računa. Sada se račun zatvara sam. (Trajanje nije zbir pokreta i pauze: stajanje na semaforu nije ni jedno ni drugo.)",
+    "Čip \"pauza X min\" na dnu je uklonjen - ista brojka je sada gore, među ostalima.",
+    "Stari zapisi u dnevniku nemaju mereno vreme u pokretu, pa im se te ćelije ne prikazuju umesto da se izmišljaju."
+  ] },
   { v: "0.9.62", d: "11.08.2026.", stavke: [
     "<b>Nova, treća ruta: \"Kombinovana - autoput i krivine\".</b> Tvoj nalaz: na Beograd - Jadrija dobijaš samo vijugavu i autoput, a fali sredina - brzo do Loznice, vijugavo do Sarajeva, brzo Sarajevo-Konjic, pa opet vijugavo, pa autoputem kroz Hrvatsku. Sada je ima: <b>627 km za 11 h 02 min</b>, prema 660 km / 13 h 38 min koliko traje vijugava. Dva i po sata kraće, a sve krivine ostaju - i uz to je najkraća od sve tri.",
     "<b>Zašto je nije bilo:</b> ruter ima samo JEDAN ponder \"koliko voliš autoput\" za celu rutu, ne po deonici. Izmereno na živom ruteru: stilovi 0,02 i 0,15 vraćaju <b>istu</b> rutu, a 0,5 i 1,0 opet istu. Četiri stila, dva stvarna puta - zato si video dve kartice. Ruter takvu rutu ne ume da napravi, pa je sada <b>šijemo mi</b>: vijugava ruta se podeli po gustini krivina, dosadni delovi se prevežu najbržim stilom, vijugavi ostaju.",
@@ -10472,12 +10485,24 @@ function rideSumShow(sIn) {
   document.getElementById("rsDt").textContent = (s.tip ? s.tip + " · " : "") + d.toLocaleDateString("sr-RS") + " · " + d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
   const M = [];   // metrike u redu bez kutijica (V1)
   M.push([s.km, "km", "pređeno"]);
-  M.push([s.min >= 60 ? Math.floor(s.min / 60) + "h " + (s.min % 60) : s.min, s.min >= 60 ? "" : "min", "trajanje"]);
-  if (s.avgK) M.push([s.avgK, "km/h", "prosek"]);
+  const hm = (m) => (m >= 60 ? Math.floor(m / 60) + "h " + (m % 60) : m);
+  M.push([hm(s.min), s.min >= 60 ? "" : "min", "trajanje"]);
+  /* "trajanje" nosi pauze, a "prosek" se racuna SAMO iz vremena u pokretu - jedno do drugog bez
+     ovih dveju celija poziva vozaca da podeli km sa trajanjem i zakljuci da lazemo. Zato se pokazuje
+     i vreme u pokretu i pauza, a prosek je izricito oznacen. (`min` nije `mov + pauz`: stajanje na
+     semaforu nije ni pauza ni pokret, pa se ne poklapa ni sa jednim.) Stari zapisi iz dnevnika
+     nemaju `mov` - njima se celija preskace umesto da se izmislja. */
+  if (s.mov) M.push([hm(s.mov), s.mov >= 60 ? "" : "min", "u pokretu"]);
+  if (s.pauz) M.push([hm(s.pauz), s.pauz >= 60 ? "" : "min", "pauza"]);
+  if (s.avgK) M.push([s.avgK, "km/h", s.mov ? "prosek u pokretu" : "prosek"]);
   if (s.maxK) M.push([s.maxK, "km/h", "max"]);
-  document.getElementById("rsGrid").innerHTML = M.map(([v, u, l]) =>
+  const cel = ([v, u, l]) =>
     `<div class="s"${l === "max" && s.momBrz ? ' data-go="brz" role="button" tabindex="0" style="cursor:pointer"' : ""}>` +
-    `<div class="v">${v}${u ? `<small>${u}</small>` : ""}</div><div class="l">${l}</div></div>`).join("");
+    `<div class="v">${v}${u ? `<small>${u}</small>` : ""}</div><div class="l">${l}</div></div>`;
+  const red = (a) => `<div class="rsrow">${a.map(cel).join("")}</div>`;
+  const pola = Math.ceil(M.length / 2);
+  document.getElementById("rsGrid").innerHTML = M.length <= 4   // do 4 brojke ostaje jedan red (stari izgled)
+    ? red(M) : red(M.slice(0, pola)) + red(M.slice(pola));
   {   // tap na "max" vodi na mesto gde je ta brzina i postignuta
     const gb = document.querySelector('#rsGrid [data-go="brz"]');
     if (gb) gb.addEventListener("click", () => sumLetiNa(s.momBrz, "Najbrže: " + s.maxK + " km/h"));
@@ -10536,7 +10561,7 @@ function rideSumShow(sIn) {
   if (s.kriv) tg.push(`<span>${s.kriv} ${plSrp(s.kriv, "krivina", "krivine", "krivina")}</span>`);
   if (s.kol) tg.push(`<span>${s.kol} ${s.kol === 1 ? "nova tačka kolekcije" : "nove tačke kolekcija"}</span>`);
   if (s.kisa) tg.push("<span>" + rIco("rain", 12) + " istrpeo kišu</span>");
-  if (s.pauz) tg.push(`<span>pauza ${s.pauz} min</span>`);
+  // pauza je od 0.9.62 sopstvena brojka u redu iznad - cip bi je pisao dvaput
   if (naMapi === "best") tg.push("<span>najvijugavijih 3 km - plavo na mapi</span>");
   if (s.lnL == null) tg.push("<span>nagib: senzor nije bio dostupan</span>");
   document.getElementById("rsTags").innerHTML = tg.join("");
