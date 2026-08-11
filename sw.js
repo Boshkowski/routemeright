@@ -9,7 +9,7 @@
      dolazi PMTiles paket.
    - SERVISI (prognoza, rutiranje, POI) = nikad iz kesa. Bajata prognoza je gora od nikakve;
      kad nema mreze, aplikacija koristi ono sto je snimljeno uz sacuvanu rutu. */
-const V = "rmr-v6";
+const V = "rmr-v7";   /* v7: preimenovani data fajlovi (mesta_zajednice, stanje_puta) - stari kes mora da padne */
 const LJUSKA = V + "-ljuska";
 const PLOCICE = V + "-plocice";
 const PLOCICA_MAX = 2500;
@@ -21,7 +21,7 @@ const PRECACHE = [
   "./test.html",
   "./data/bikes.json",
   "./data/prices.json",
-  "./data/editorial_bjbikers.json",
+  "./data/mesta_zajednice.json",
   "./data/countries_bbox.json",
   "./data/manifest.webmanifest",
   "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js",
@@ -93,7 +93,7 @@ self.addEventListener("fetch", (e) => {
   }
 
   // APLIKACIJA I PODACI: mreza prvo, kes samo kao rezerva.
-  // Podaci se menjaju (road_status se puni vise puta dnevno, bjb_putevi uz svaki uvoz), a
+  // Podaci se menjaju (road_status se puni vise puta dnevno, stanje puta uz svaki uvoz), a
   // aplikacija ih trazi sa "?v=VERZIJA". Kes ih je nalazio preko ignoreSearch, pa je nova
   // verzija dobijala STARI fajl - tako je novi uvoz stigao na disk a u pregledacu se nije video.
   if (req.mode === "navigate" || (istiKoren && /\.(html|json)($|\?)/.test(url.pathname + url.search))) {

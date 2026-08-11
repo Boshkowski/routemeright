@@ -1767,11 +1767,12 @@
            svaki stranac tapkao nesto sto ne postoji. Profil zivi u tabu "Ja". -->
     </div>
     <div id="homeChips">
-      <!-- Opcija A (Boskov izbor 9.8.): snimanje voznje = prvi cip, crveni akcenat; FAB na mapi ostaje kao precica -->
+      <!-- 11.8.: ostao je SAMO "Snimi voznju". Cetiri cipa nisu stala u sirinu ekrana pa je poslednji
+           bio odsecen ivicom, a "Legendarne rute" se nisu ni videle - bez ikakvog znaka da red moze da
+           se prevuce. Preostala tri (Kafane, Vidikovci, Legendarne rute) bila su samo precice na tab
+           "Rute", koji je ionako jedan tap dalje u donjoj navigaciji. Pravilo: kad red ne staje,
+           izbaci stavku - ne smanjuj sve. -->
       <button class="chip rec" data-chip="snimi"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4" fill="#ef4444" stroke="none"/></svg>Snimi vožnju</button>
-      <button class="chip" data-chip="mkafana"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M4 8h13v5a5 5 0 01-5 5H9a5 5 0 01-5-5zM17 9h2a2 2 0 010 4h-2M6 2v2M10 2v2M14 2v2"/></svg>Kafane</button>
-      <button class="chip" data-chip="mvidikovac"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 20l6-11 4 7 3-4 5 8z"/><circle cx="17.5" cy="6" r="2.5"/></svg>Vidikovci</button>
-      <button class="chip" data-chip="lrute"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Legendarne rute</button>
     </div>
   </div>
   <div id="routePill"><div class="rpin"><b id="rpTxt">-</b><span id="rpSub"></span></div><button id="rpX" aria-label="Poništi rutu">✕</button></div>
@@ -1979,8 +1980,8 @@
         Prognoza: Open-Meteo i CHMI Aladin 2,3 km, based on data from MET Norway. Radar: RainViewer.<br>
         <b>Stanje na putevima</b> (zatvaranja, radovi, gužve na granici): zvanični izvori po zemljama -
         HAK, Putevi Srbije, AMSS, promet.si, BIHAMK, AMSCG, plus Meteoalarm upozorenja državnih meteo zavoda.<br>
-        <b>Ocene kvaliteta puta</b> (kakav je asfalt): uneli motociklisti, iz vodiča koji vodi Vlajko na
-        BJBikers forumu. Korišćeno uz njihovu dozvolu. Hvala svima koji su uneli svoja iskustva.
+        <b>Ocene kvaliteta puta</b> (kakav je asfalt): uneli motociklisti koji su tuda prošli, uz njihovu
+        dozvolu. Hvala svima koji su podelili svoje iskustvo.
       </div>
     </div>
   </div>
@@ -4367,7 +4368,7 @@ function emojiMarker(lat, lon, emoji, title) {
   }
   state.markers.push(m);
 }
-/* ---------------- editorial sloj: kafane/okupljalista iz BJBikers zajednice ----------------
+/* ---------------- editorial sloj: kafane/okupljalista iz moto zajednice ----------------
    Trajni markeri (ne brisu se pri ponovnom planiranju) - zato NE idu u state.markers. */
 const BJB_CAT = { kafana: "food", okupljaliste: "meet", upozorenje: "hazard", vidikovac: "pause", mesto: "mesto" };
 /* ---- stanje na putevima + meteo upozorenja (robot puni data/road_status.json 5x dnevno) ---- */
@@ -4498,7 +4499,7 @@ async function renderRoadStatus(route) {
 }
 async function loadEditorial() {
   try {
-    const d = await fetchData("data/editorial_bjbikers.json?v=" + APP_VERSION + "-" + new Date().toISOString().slice(0, 10), { timeoutMs: 8000 });   // cache-bust: dnevni + verzija (fix podataka u toku dana stigne uz update)
+    const d = await fetchData("data/mesta_zajednice.json?v=" + APP_VERSION + "-" + new Date().toISOString().slice(0, 10), { timeoutMs: 8000 });   // cache-bust: dnevni + verzija (fix podataka u toku dana stigne uz update)
     state.editorial = (d.entries || []).filter((e) => e.lat !== undefined);
     /* searchIndex() kesira rezultat u _c pri prvom pozivu. Ako korisnik kucne u
        pretragu pre nego sto ovaj fajl stigne (na mobilnoj mrezi je ~330 KB), indeks
@@ -4508,12 +4509,12 @@ async function loadEditorial() {
     try { renderPreporuke(); } catch (e) {}   // 280 KB stize posle prvog rendera - sekcija ne sme ostati na stub-u
   } catch { /* editorial sloj je opcion - bez fajla nema pinova */ }
 }
-/* ---------------- STANJE PUTA: baza znanja zajednice BJBikers ----------------
+/* ---------------- STANJE PUTA: baza znanja moto zajednice ----------------
    230 deonica koje su motociklisti sa foruma ocenili 1-5, sa asfaltom, saobracajem,
-   krivinama i napomenom. Izvor: tema "Мото путеви - визуелни водич" (Влајко), koriscena
+   krivinama i napomenom. Uneli motociklisti koji su tuda prosli, koriscena
    uz dozvolu autora. Njihova skala i boje su preuzete namerno - to je jezik kojim ta
    zajednica vec govori o putevima, pa covek sa foruma razume nasu mapu iz prve.
-   Uvoz: tools/uvoz_bjb.py -> data/bjb_putevi.json */
+   Uvoz: tools/uvoz_bjb.py -> data/stanje_puta.json */
 /* Prikazuju se REČI KOJE SU VOZAČI SAMI NAPISALI, ne brojevi. Skala 1-5 je ostala u fajlu
    radi provere, ali ne ide na ekran: aplikacija već ima svoju četvorostepenu ocenu
    ("Zahtevnost rute"), pa bi druga četvorostepena skala pored nje samo pravila sumnju
@@ -4524,7 +4525,7 @@ const BJP_LOSE = { "Loš": 1, "Makadam": 1 };   // motor se pominje SAMO na loš
 async function loadPutevi() {
   if (state.bjp) return state.bjp;
   try {
-    const d = await fetchData("data/bjb_putevi.json?v=" + APP_VERSION, { timeoutMs: 9000 });
+    const d = await fetchData("data/stanje_puta.json?v=" + APP_VERSION, { timeoutMs: 9000 });
     state.bjp = d && Array.isArray(d.deonice) ? d : null;
   } catch { state.bjp = null; }   // bez fajla sloj prosto ne postoji
   return state.bjp;
@@ -4629,7 +4630,7 @@ function addEditorialMarkers(route) {
     return `<b>${esc(e.name)}</b><br>${esc(e.details)}` +
       `<br><span class="poi-dist">${esc(e.where)}${e.loc === "mesto" ? " · lokacija orijentaciona" : ""}` +
       `${e.year_hint ? " · " + esc(e.year_hint) + "." : ""}</span>` +
-      (srcOk ? `<br><a href="${esc(e.source)}" target="_blank" rel="noopener">izvor: ${esc(e.source_forum || "BJBikers")} ↗</a>` : "");
+      (srcOk ? `<br><a href="${esc(e.source)}" target="_blank" rel="noopener">izvor ↗</a>` : "");   // 11.8.: bez imena foruma
   };
   near.sort((a, b) => (a.type === "upozorenje" ? 0 : 1) - (b.type === "upozorenje" ? 0 : 1));   // upozorenje "poseduje" pin pri spajanju
   const placed = [];
@@ -5257,7 +5258,7 @@ async function renderFood(route, assess, departure) {
       rows.slice(0, 4).forEach((p) => emojiMarker(p.lat, p.lon, "⛺", p.name));
     }
   }
-  // preporuke zajednice (BJBikers) uz rutu - kratko "zašto" za svako mesto
+  // preporuke zajednice uz rutu - kratko "zašto" za svako mesto
   const bjb = bjbAlongRoute(route);
   if (bjb.length) {
     const li = document.createElement("li");
@@ -5286,7 +5287,7 @@ async function renderFood(route, assess, departure) {
     ul.appendChild(li);
   }
 }
-/* BJBikers mesta na <6 km od trase, sortirano po kilometraži rute */
+/* Mesta zajednice na <6 km od trase, sortirano po kilometraži rute */
 function bjbAlongRoute(route, maxKm = 6) {
   if (!state.editorial || !state.editorial.length) return [];
   const totalKm = route.totalDist / 1000;
@@ -7146,8 +7147,13 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.54";
+const APP_VERSION = "0.9.55";
 const CHANGELOG = [
+  { v: "0.9.55", d: "11.08.2026.", stavke: [
+    "<b>Ispod pretrage je ostao samo čip \"Snimi vožnju\".</b> Tvoj nalaz sa telefona: red se sekao uz ivicu ekrana. Bila su četiri čipa, četvrti (\"Legendarne rute\") se uopšte nije video, a nije bilo ni znaka da red može da se prevuče. Preostala tri su bila prečice na tab Rute, koji je ionako jedan tap dalje dole. Kad red ne staje, izbacuje se stavka - ne smanjuje se sve.",
+    "<b>Ime foruma i ime čoveka koji vodi vodič izbačeni su iz cele aplikacije.</b> Tražio si to ranije, a ja sam u 0.9.47 izbacio pomen samo iz \"Stanja na putevima\". Sada je otišlo i iz dela Ja (\"korišćeno uz njihovu dozvolu\", ime autora), sa kartica mesta (link je sada samo \"izvor\"), iz \"Šta je novo\", iz komentara u kodu i iz samih podataka - uključujući polje sa imenom autora na svih 230 deonica. Naziv fajla se video u mrežnim pozivima, pa su i fajlovi preimenovani u <b>mesta_zajednice</b> i <b>stanje_puta</b>.",
+    "Zahvalnica ostaje, ali bez imena: \"uneli motociklisti koji su tuda prošli, uz njihovu dozvolu\"."
+  ] },
   { v: "0.9.54", d: "11.08.2026.", stavke: [
     "<b>Napomena \"prekinuto\" sada se oslanja na to da li si stvarno stigao, ne na procenat.</b> Jučerašnja verzija je poredila pređeno sa ukupnim, a to posle preračunavanja rute laže: kilometraža se tada nuluje i seli u zbir etapa. Završena vožnja je tako umela da dobije netačnu napomenu. Sada odlučuje zastavica koju postavlja sam trenutak dolaska, a u napomeni piše ukupno pređeno, ne samo poslednja etapa. Provereno: prekid na pola daje \"(prekinuto na 4 km)\", dolazak ne daje ništa."
   ] },
@@ -7200,7 +7206,7 @@ const CHANGELOG = [
     "Popravka u pozadini: podaci su se učitavali iz keša i nova verzija je znala da dobije stari fajl. Sada uvek idu sa mreže, a keš služi samo kad nema signala."
   ] },
   { v: "0.9.45", d: "11.08.2026.", stavke: [
-    "<b>Stanje puteva iz zajednice</b>: u aplikaciju je ušlo <b>230 deonica</b> koje su motociklisti sa foruma BJBikers ocenili od 1 do 5, sa asfaltom, saobraćajem, krivinama i napomenom (\"veoma loš put, nema udarnih rupa ali ima zakrpa na svakom koraku\"). Kad tvoja ruta prođe kroz ocenjenu deonicu, to sada piše u kartici <b>Stanje puta</b>. Izvor je tema \"Moto putevi - vizuelni vodič\" koju vodi Vlajko, korišćeno uz njihovu dozvolu.",
+    "<b>Stanje puteva iz zajednice</b>: u aplikaciju je ušlo <b>230 deonica</b> koje su motociklisti ocenili od 1 do 5, sa asfaltom, saobraćajem, krivinama i napomenom (\"veoma loš put, nema udarnih rupa ali ima zakrpa na svakom koraku\"). Kad tvoja ruta prođe kroz ocenjenu deonicu, to sada piše u kartici <b>Stanje puta</b>. Korišćeno uz dozvolu vozača koji su ocene uneli.",
     "<b>Ocena se prilagođava tvom motoru</b> - to je muka koju je zajednica sama priznala: isti put je 1/5 na FJR-u i 3+/5 na Africa Twinu. Kod nas Arilje - Ivanjica (loš asfalt, dobre krivine) daje <b>1 za teški turer i 3 za avanturistu</b>.",
     "<b>Privatnost i uslovi su u delu Ja</b> (tvoj zahtev), zajedno sa spiskom izvora podataka i zahvalnicom zajednici."
   ] },
@@ -7390,7 +7396,7 @@ const CHANGELOG = [
     "<b>85 kafana, kampova i vidikovaca</b> koje je moto zajednica stvarno preporučila - od restorana Vrelo na Perućcu do Franz-Josefs-Höhe na Grossglockneru.",
   ] },
   { v: "0.9.9", d: "04.08.2026.", stavke: [
-    "<b>161 mesto sa foruma</b> u bazi: prevoji, planine, kanjoni i gradovi koje moto zajednica stvarno pominje. Izvučeno iz 2.712 tema sa BJBikers-a, motori.hr i evropskih putopisa.",
+    "<b>161 mesto sa foruma</b> u bazi: prevoji, planine, kanjoni i gradovi koje moto zajednica stvarno pominje. Izvučeno iz 2.712 tema moto zajednice i evropskih putopisa.",
     "<b>Pretraga ih zna</b>: ukucaj Stelvio, Furka, Nordkapp ili Kanjon Tare i planer ide pravo tamo. Radi i po tipu - upiši \"prevoj\" i dobiješ prevoje.",
     "<b>Pinovi uz rutu</b> pokazuju koliko puta je mesto pomenuto i kakva je podloga (asfalt, makadam, rupe, odroni). Gase se u Slojevima pod \"Mesta sa foruma\".",
     "<b>Naša baza sad ima prednost kod tačnog imena.</b> Ranije je \"Šarganska\" vodila na ulicu u Beogradu umesto na Šargansku osmicu kod Mokre Gore.",
@@ -7733,13 +7739,7 @@ function init() {
   // čipovi
   document.querySelectorAll("#homeChips .chip").forEach((c) => {
     c.addEventListener("click", () => {
-      const chip = c.dataset.chip;
-      if (chip === "snimi") { try { startFreeRide(); } catch (e) {} return; }   // Opcija A (9.8.)
-      const ruteTab = document.querySelector('#bottomnav a[data-tab="rute"]');
-      if (ruteTab) ruteTab.click();
-      if (chip === "lrute") { const rb2 = document.querySelector('#ruteSeg [data-seg="rute"]'); if (rb2) rb2.click(); return; }
-      const mb = document.querySelector('#ruteSeg [data-seg="mesta"]'); if (mb) mb.click();
-      renderMesta(chip === "mkafana" ? "kafana" : "vidikovac");
+      if (c.dataset.chip === "snimi") { try { startFreeRide(); } catch (e) {} }   // jedini cip (Opcija A 9.8.; ostala tri izbacena 11.8.)
     });
   });
   // FAB dugmad -> postojeće kontrole mape
