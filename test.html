@@ -3165,10 +3165,18 @@ async function hibridnaRuta(from, to, vij, brza) {
   hyb.krivKm = hyb.hibrid.reduce((a, h) => a + (h.styleIdx === 0 ? h.do - h.od : 0), 0);
   return hyb;
 }
-function stilNaKm(route, km) {   // sasivena ruta NEMA jedan stil - reroute uzima onaj koji vazi na toj deonici
+/* Stil kojim se preracunava OSTATAK rute od zadatog kilometra. Ime kaze "na km", ali pitanje je
+   uvek "cime dalje", jer reroute jednim pozivom pravi celu preostalu rutu do cilja.
+   Zato se stil komada uzima SAMO ako taj komad ide do kraja rute. Inace bi skretanje s puta na
+   200. km kombinovane rute - usred komada "Mali Zvornik - Sarajevo krivinama" - preracunalo svih
+   preostalih 400 km kao ekstra vijugavo i dodalo sate. Kad ostatak prelazi preko vise komada,
+   nijedan pojedinacni stil nije posten, pa se vraca stil same rute (Balans).
+   Pravo resenje je ponovno sivenje ostatka, ali to je 3-6 poziva usred voznje - zabelezeno kao TODO. */
+function stilNaKm(route, km) {
   if (route && route.hibrid && route.hibrid.length) {
-    const h = route.hibrid.find((x) => km >= x.od && km < x.do) || route.hibrid[route.hibrid.length - 1];
-    if (h && ROUTE_STYLES[h.styleIdx]) return ROUTE_STYLES[h.styleIdx];
+    const zad = route.hibrid[route.hibrid.length - 1];
+    const h = route.hibrid.find((x) => km >= x.od && km < x.do) || zad;
+    if (h === zad && ROUTE_STYLES[h.styleIdx]) return ROUTE_STYLES[h.styleIdx];   // ostatak je ceo u jednom komadu
   }
   return (route && ROUTE_STYLES[route.styleIdx])
     || ROUTE_STYLES.find((x) => route && route.label && route.label.startsWith(x.label.split(" ")[0])) || ROUTE_STYLES[1];
@@ -7699,8 +7707,13 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.65";
+const APP_VERSION = "0.9.66";
 const CHANGELOG = [
+  { v: "0.9.66", d: "12.08.2026.", stavke: [
+    "<b>Popravljeno preračunavanje kombinovane rute usred vožnje</b> - greška koja se ne bi videla u planeru nego tek na putu. Ako skreneš s puta, aplikacija jednim potezom pravi celu preostalu rutu do cilja. Uzimala je stil deonice na kojoj se <b>trenutno nalaziš</b>, pa bi skretanje na 200. kilometru - usred dela \"Mali Zvornik - Sarajevo krivinama\" - preračunalo svih preostalih 400 km kao ekstra vijugavo i dodalo sate.",
+    "Sada se stil deonice uzima samo kad ta deonica ide do samog cilja. Kad ostatak prelazi preko više deonica, nijedan pojedinačni stil nije pošten, pa se uzima stil same rute.",
+    "<b>Šta ovo znači u vožnji:</b> ako te ruta preračuna usred kombinovane ture, ostatak više neće biti sašiven - dobićeš jednu rutu srednjeg stila do cilja. To je i dalje razumna ruta, ali nije više kombinacija. Ponovno šivenje u vožnji traži 3 do 6 upita serveru i doći će kasnije."
+  ] },
   { v: "0.9.65", d: "12.08.2026.", stavke: [
     "<b>Kombinovanu rutu sada možeš da steruješ svojim stanicama.</b> Do sada je nestajala čim dodaš stanicu. Sada svaka tvoja stanica postaje šav, pa je nijedan deo rute ne može preskočiti. Beograd - Jadrija sa stanicom u Sarajevu: <b>599 km za 10 h 53 min</b>, najkraća od sve četiri ponuđene rute i dva sata brža od vijugave, a sve krivine ostaju.",
     "U sastavu tada stoji tvoje ime mesta, ne ono što vrati geokoder: \"Novi Beograd - Mali Zvornik brzo · Mali Zvornik - Sarajevo krivinama · Sarajevo - Jablanica krivinama · Jablanica - Tomislavgrad brzo · Tomislavgrad - Tijarica krivinama · Tijarica - Šibenik brzo\". (Geokoder je za Sarajevo vraćao \"Trg oslobođenja-Centar\".)",
