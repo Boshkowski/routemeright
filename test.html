@@ -651,7 +651,7 @@
     body.qplan.planning:not(.qdetails) #resHero .rslide { height: 158px; }
     body.qplan.planning:not(.qdetails) #resHero .rslide .rcard { height: calc(100% - 25px); overflow: hidden; }
     body.qplan.planning:not(.qdetails) #resHero #rhScoreSlide .rcard { height: 100%; }
-    body.qplan.planning:not(.qdetails) #resHero .rscore .sc-num { font-size: 40px; min-width: 64px; }
+    body.qplan.planning:not(.qdetails) #resHero .rscore .sc-num { font-size: 40px; min-width: 92px; }   /* 11.8.: "/100" uz broj traži širu kutiju, inače viri preko teksta */
     body.qplan.planning:not(.qdetails) #resHero .rscore .why { font-size: 12px; }
     body.qplan.planning:not(.qdetails) #resHero .rcurv .top { margin-bottom: 7px; }
     body.qplan.planning:not(.qdetails) #resHero .rcurv .lr .b svg { display: none; }
@@ -1060,7 +1060,7 @@
     #resHero .rslide .rcard { height: calc(100% - 25px); box-sizing: border-box; }
     #resHero #rhScoreSlide .rcard { height: 100%; }
     #resHero .rscore { display: flex; align-items: center; gap: 14px; padding: 12px 15px; }
-    #resHero .rscore .sc-num { font-size: 47px; font-weight: 900; line-height: 1; min-width: 76px; text-align: center; letter-spacing: -.02em; }
+    #resHero .rscore .sc-num { font-size: 47px; font-weight: 900; line-height: 1; min-width: 108px; text-align: center; letter-spacing: -.02em; }
     #resHero .rscore .sc-txt { min-width: 0; }
     #resHero .rscore .k { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--c-muted-fg); margin-bottom: 5px; }
     #resHero .rscore .why { font-size: 13px; line-height: 1.35; color: var(--c-fg); font-weight: 600;
@@ -4782,7 +4782,7 @@ function renderVerdict(assess, route, departure) {
       else {
         el.style.display = "";
         const col = sc.score >= 85 ? "#4ade80" : sc.score >= 60 ? "#fcd34d" : "#fca5a5";
-        el.innerHTML = `<b style="color:${col}">${sc.score}</b><span class="sw"><span class="sk">Ocena vožnje</span>${esc(sc.why)}</span>`;
+        el.innerHTML = `<b style="color:${col}">${sc.score}<span style="font-size:.5em;font-weight:800;opacity:.6">/100</span></b><span class="sw"><span class="sk">Ocena vožnje</span>${esc(sc.why)}</span>`;
       }
     }
   } catch (e) {}
@@ -7127,8 +7127,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.51";
+const APP_VERSION = "0.9.52";
 const CHANGELOG = [
+  { v: "0.9.52", d: "11.08.2026.", stavke: [
+    "<b>Uz ocenu vožnje sada stoji i skala.</b> Stajalo je golo \"89\" i niko sa strane ne zna je li to od 100, od 10 ili nešto treće. Sada piše <b>89/100</b>. Broj bez merila je tvrdnja koju ne možeš da proveriš, isto kao trajanje bez poređenja sa autoputem."
+  ] },
   { v: "0.9.51", d: "11.08.2026.", stavke: [
     "<b>Prazan znak ograničenja brzine je nestao sa ekrana vožnje.</b> Beo krug u crvenom prstenu, bez broja, stajao je pored brzine na SVAKOJ vožnji - izgledao je kao pokvaren instrument. Uzrok: pravilo koje ga gasi bilo je slabije od pravila koje pali sve u toj traci, pa se nikad nije primenilo. Sada se pojavljuje samo tamo gde ograničenje stvarno znamo.",
     "<b>Najava nevremena je sa 12,5 podignuta na 16 piksela.</b> Bila je najsitniji tekst na celom ekranu vožnje, a jedina je koju nijedna druga navigacija ne ume da napiše. Brzina je 26, preostali kilometri 19.",
@@ -10596,7 +10599,10 @@ function renderResultHero(route) {
       else {
         sl.style.display = "";
         const n = document.getElementById("rhScoreN");
-        n.textContent = sc.score;
+        /* Skala uz broj (11.8.): stajalo je golo "89" i niko sa strane ne zna je li to od 100, od
+           10 ili nesto trece. Broj bez skale je tvrdnja bez merila - ista zamerka koju je vece
+           imalo na trajanje bez poredjenja sa autoputem. */
+        n.innerHTML = esc(String(sc.score)) + `<span style="font-size:.42em;font-weight:800;opacity:.6">/100</span>`;
         n.style.color = sc.score >= 85 ? "#4ade80" : sc.score >= 60 ? "#fcd34d" : "#fca5a5";
         document.getElementById("rhScoreWhy").textContent = sc.why;
       }
