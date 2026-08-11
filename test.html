@@ -744,6 +744,49 @@
   }
   /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
   #rideBar { display: none; }
+  /* ---- REZIM "PRIJAVE ZAJEDNICE" nad mapom ----
+     Ranije je "Prikazi na mapi" samo upalilo sloj i prebacilo na Planer: bez traga gde si,
+     bez liste i bez povratka (Boskov nalaz 11.8.). Sada je to pravi rezim: traka gore koja
+     imenuje gde si i vraca nazad, lista dole nad ISTIM skupom koji je na mapi, i izlaz koji
+     vraca sloj u stanje pre ulaska. Mete su velike jer se ovo koristi u rukavicama. */
+  #zajBar { display: none; }
+  body.zajmap #zajBar { display: flex; position: fixed; left: 12px; right: 12px;
+    top: calc(74px + env(safe-area-inset-top)); z-index: 26; align-items: center; gap: 10px;
+    background: rgba(15,23,42,.96); border: 1.5px solid rgba(239,68,68,.55); border-radius: 16px;
+    padding: 10px 8px 10px 12px; box-shadow: 0 8px 22px rgba(0,0,0,.45); }
+  #zajBar .nazad { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+    background: none; border: 0; color: #fff; font: 800 14.5px Archivo, sans-serif; text-align: left;
+    padding: 4px 6px; min-height: 48px; justify-content: center; cursor: pointer; }
+  #zajBar .nazad small { display: block; font-size: 11.5px; font-weight: 700; color: #fca5a5; }
+  #zajBar .zx { flex: none; width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2); color: #fff; font-size: 18px; font-weight: 900; cursor: pointer; }
+  #zajSheet { display: none; }
+  body.zajmap #zajSheet { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+    background: #0f172a; border-radius: 20px 20px 0 0; border-top: 1px solid rgba(148,163,184,.18);
+    box-shadow: 0 -10px 30px rgba(0,0,0,.5); max-height: 52dvh; display: flex; flex-direction: column;
+    transition: transform .28s cubic-bezier(.23,1,.32,1); padding-bottom: env(safe-area-inset-bottom); }
+  body.zajmap #zajSheet.peek { transform: translateY(calc(100% - 108px)); }
+  #zajSheet .grab { width: 40px; height: 4px; border-radius: 2px; background: #475569; margin: 8px auto 6px; flex: none; }
+  #zajSheet .zhead { padding: 2px 16px 8px; font: 900 14.5px Archivo, sans-serif; color: #f1f5f9; flex: none; }
+  #zajSheet .zchips { display: flex; gap: 8px; padding: 0 16px 10px; overflow-x: auto; flex: none; }
+  #zajSheet .zchips button { flex: none; min-height: 40px; padding: 0 16px; border-radius: 999px;
+    background: #1e293b; border: 1px solid rgba(148,163,184,.22); color: #cbd5e1;
+    font: 800 13px Archivo, sans-serif; cursor: pointer; }
+  #zajSheet .zchips button.on { background: #f97316; border-color: #f97316; color: #fff; }
+  #zajSheet .zlist { overflow-y: auto; padding: 0 16px 14px; -webkit-overflow-scrolling: touch; }
+  #zajSheet .zprazno { padding: 6px 16px 18px; color: #cbd5e1; font-size: 14px; line-height: 1.5; }
+  #zajSheet .zprazno b { color: #f1f5f9; }
+  #zajSheet .zprazno button { margin-top: 12px; width: 100%; min-height: 48px; border-radius: 14px;
+    background: #1e293b; border: 1px solid rgba(148,163,184,.22); color: #e2e8f0;
+    font: 800 14px Archivo, sans-serif; cursor: pointer; }
+  body.zajmap #bottomnav { display: none; }        /* traka gore je jedini put nazad - bez dva izlaza */
+  body.zajmap #homeSheet, body.zajmap #homeChrome { display: none !important; }
+  body.zajmap #homeFabs { top: calc(74px + 71px + 12px + env(safe-area-inset-top)); }   /* Slojevi ispod trake, ne pod njom */
+  body.zajmap #verBadge { display: none; }         /* oznaka verzije je stajala preko liste */
+  /* mete u listi: rukavice i sunce - visina 44, razmak 10 (bilo 19 px, neupotrebljivo) */
+  body.zajmap #zajList .zbtns { gap: 10px; margin-top: 8px; }
+  body.zajmap #zajList .zbtns button { min-height: 44px; padding: 0 14px; font-size: 13.5px; font-weight: 800; }
+  body.zajmap #zajList .zrow { padding: 12px; margin-bottom: 10px; }
   /* odricanje odgovornosti pre prve voznje */
   #discSheet { position: fixed; inset: 0; z-index: 340; }
   #discSheet .back { position: absolute; inset: 0; background: rgba(2,6,16,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
@@ -1651,6 +1694,21 @@
       <button class="ok" id="discOk">Razumem, vozi</button>
     </div>
   </div>
+  <!-- rezim prijava zajednice nad mapom: traka gore (jedini put nazad) + lista dole -->
+  <div id="zajBar">
+    <button class="nazad" id="zajNazad" type="button">‹ Zajednica<small id="zajBarSub">učitavam...</small></button>
+    <button class="zx" id="zajX" type="button" aria-label="Zatvori prikaz zajednice">✕</button>
+  </div>
+  <div id="zajSheet">
+    <div class="grab" id="zajGrab"></div>
+    <div class="zhead" id="zajHead">Na putu oko tebe</div>
+    <div class="zchips" id="zajChips">
+      <button type="button" data-km="50">50 km</button>
+      <button type="button" data-km="150" class="on">150 km</button>
+      <button type="button" data-km="0">Sve</button>
+    </div>
+    <div class="zlist" id="zajList"></div>
+  </div>
   <div id="offBadge">Bez mreže - vozi sačuvanu rutu</div>
   <div id="offSheet" hidden>
     <div class="back" id="offBack"></div>
@@ -1888,8 +1946,10 @@
       <div class="jnote" style="margin-top:8px">
         Mape i putevi: OpenStreetMap saradnici, prikaz preko OpenFreeMap. Rutiranje: Valhalla moto profil.
         Prognoza: Open-Meteo i CHMI Aladin 2,3 km, based on data from MET Norway. Radar: RainViewer.<br>
-        <b>Stanje puteva:</b> ocene su uneli motociklisti sa foruma BJBikers, iz teme "Moto putevi - vizuelni vodič"
-        koju vodi Vlajko. Korišćeno uz njihovu dozvolu. Hvala svima koji su uneli svoja iskustva.
+        <b>Stanje na putevima</b> (zatvaranja, radovi, gužve na granici): zvanični izvori po zemljama -
+        HAK, Putevi Srbije, AMSS, promet.si, BIHAMK, AMSCG, plus Meteoalarm upozorenja državnih meteo zavoda.<br>
+        <b>Ocene kvaliteta puta</b> (kakav je asfalt): uneli motociklisti, iz vodiča koji vodi Vlajko na
+        BJBikers forumu. Korišćeno uz njihovu dozvolu. Hvala svima koji su uneli svoja iskustva.
       </div>
     </div>
   </div>
@@ -4510,8 +4570,8 @@ async function renderStanjePuta(route) {
     const rec = d.asfalt === "Makadam" ? "Makadam" : (d.asfalt ? d.asfalt + " asfalt" : "");
     const mot = bjpMotorNapomena(d, tip);
     const star = bjpStarost(d.mg);
-    const glava = [rec, d.km ? Math.round(d.km) + " km" : null,
-                   [d.autor, d.azurirano].filter(Boolean).join(", ")].filter(Boolean);
+    // bez potpisa vozača u kartici (Boškova odluka 11.8.) - atribucija ostaje u delu Ja
+    const glava = [rec, d.km ? Math.round(d.km) + " km" : null, d.azurirano].filter(Boolean);
     return `<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(148,163,184,.12)">` +
       `<span style="flex:none;width:4px;align-self:stretch;border-radius:3px;background:${boja}"></span>` +
       `<span><b>${esc(glava[0])}</b><span class="note"> · ${esc(glava.slice(1).join(" · "))}` +
@@ -4522,8 +4582,8 @@ async function renderStanjePuta(route) {
       `</span></div>`;
   }).join("");
   const vozaca = new Set(na.map((d) => d.autor).filter(Boolean)).size;
-  izv.innerHTML = `${vozaca === 1 ? "1 vozač" : vozaca + " vozača"} sa foruma BJBikers, iz vodiča koji vodi Vlajko. ` +
-    `Korišćeno uz njihovu dozvolu.` +
+  izv.innerHTML = `Ocene su unosili motociklisti koji su tuda prošli` +
+    (vozaca > 1 ? ` (${vozaca} vozača na ovoj ruti)` : "") + `.` +
     (na.length > 8 ? ` Prikazano 8 od ${na.length} deonica na ruti.` : "");
   card.classList.remove("hidden");
 }
@@ -6105,11 +6165,12 @@ async function proveriPotvrde() {
 /* pod-tabovi: Oko tebe / Prijatelji */
 /* bez isplanirane rute markeri prijava ne postoje (crtaju se duz rute) - dugme je
    vodilo na PRAZNU mapu (PM nalaz 4.8). Zato: povuci SVE aktivne i nacrtaj ih. */
-async function zajSveAktivne() {
+async function zajSveAktivne(samoRedovi) {
   const q = `?select=id,tip,lat,lon,created_at,istice_at&istice_at=gt.${encodeURIComponent(new Date().toISOString())}&limit=200`;
   let rows;
   try { rows = await supa("prijave_javno" + q); }
   catch (e1) { rows = await supa("prijave" + q); }   // fallback dok dopuna #3 SQL nije pusten
+  if (samoRedovi) return rows || [];   // rezim zajednice crta svoje markere iz svog registra
   for (const m of state.prijaveMarkers || []) m.remove();
   state.prijaveMarkers = [];
   for (const p of rows || []) {
@@ -6121,21 +6182,192 @@ async function zajSveAktivne() {
     state.prijaveMarkers.push(m);
   }
 }
-async function zajMapaUzivo() {
+/* ================= REZIM "PRIJAVE ZAJEDNICE" NAD MAPOM =================
+   Ranije je "Prikazi na mapi" bilo jednosmerno: upali sloj, prebaci na Planer, kraj.
+   Sada je pravi rezim sa tri pravila:
+   1. Uvek se VIDI da si u njemu (traka gore) i uvek postoji put nazad.
+   2. Lista i mapa gledaju ISTI skup (state.zajRows) - broj u traci i broj pinova se poklapaju.
+      Ranije su renderFeed (60 redova, i istekle) i zajSveAktivne (200, samo aktivne) vukli
+      razlicite skupove, pa bi lista i mapa pokazivale razlicite brojeve.
+   3. Izlaz vraca sloj "Opasnosti" u stanje pre ulaska. applyLayerVis pise u localStorage,
+      pa bi bez ovoga ulazak trajno pregazio korisnikovo iskljuceno stanje.
+   Markeri rezima imaju SVOJ registar (state.zajMarkers): state.prijaveMarkers brise i
+   prepisuje loadPrijave() pri svakom planiranju rute. */
+const ZAJ = { on: false, rows: [], markers: [], sel: null, km: 150, prevHazard: null, prevScroll: 0 };
+
+function zajFiltrirane() {
+  const g = window._zajGps || state.gpsFrom;
+  if (!ZAJ.km || !g) return ZAJ.rows;
+  return ZAJ.rows.filter((r) => haversine(g.lat, g.lon, r.lat, r.lon) <= ZAJ.km);
+}
+function zajCrtaj() {
+  for (const m of ZAJ.markers) m.remove();
+  ZAJ.markers = [];
+  const g = window._zajGps || state.gpsFrom;
+  const red = zajFiltrirane();
+  for (const r of red) {
+    const tip = DB2TIP[r.tip] || r.tip;
+    const d = markerBadge(HZ2ICON[tip] || "warning", "danger");
+    d.style.cursor = "pointer";
+    d.addEventListener("click", (e) => { e.stopPropagation(); zajOtvoriPrijavu(r); });
+    ZAJ.markers.push(new maplibregl.Marker({ element: d }).setLngLat([r.lon, r.lat]).addTo(map));
+  }
+  // traka i lista uvek govore isti broj kao mapa
+  const sub = document.getElementById("zajBarSub");
+  if (sub) sub.textContent = red.length
+    ? `${red.length} ${plSrp(red.length, "aktivna prijava", "aktivne prijave", "aktivnih prijava")}` +
+      (ZAJ.km ? ` · ${ZAJ.km} km` : "")
+    : (ZAJ.km ? `mirno je u krugu od ${ZAJ.km} km` : "nema aktivnih prijava");
+  zajListaRender(red, g);
+  if (red.length) {
+    const b = new maplibregl.LngLatBounds();
+    red.forEach((r) => b.extend([r.lon, r.lat]));
+    if (g) b.extend([g.lon, g.lat]);
+    map.fitBounds(b, { padding: { top: 150, left: 50, right: 50, bottom: Math.round(window.innerHeight * 0.5) },
+      maxZoom: 11, duration: 700 });
+  } else if (g) map.flyTo({ center: [g.lon, g.lat], zoom: 9, duration: 700 });
+}
+function zajListaRender(red, g) {
+  const lst = document.getElementById("zajList"), hd = document.getElementById("zajHead");
+  if (!lst) return;
+  if (hd) hd.textContent = red.length ? `Na putu oko tebe · ${red.length}` : "Mirno je oko tebe";
+  if (!red.length) {
+    lst.innerHTML = `<div class="zprazno"><b>Nema aktivnih prijava</b>` +
+      (ZAJ.km ? ` u krugu od ${ZAJ.km} km` : "") + `. To je dobra vest.` +
+      (g ? "" : `<br>Uključi lokaciju da bismo znali gde si.`) +
+      `<button type="button" data-z="sve">Proširi na sve</button>` +
+      `<button type="button" data-z="prijavi">Prijavi šta vidiš</button></div>`;
+    return;
+  }
+  let glasovi = {}; try { glasovi = JSON.parse(localStorage.getItem("rmr2_glasovi") || "{}"); } catch (e) {}
+  const moje = (typeof mojePrijave === "function" ? mojePrijave() : []) || [];
+  lst.innerHTML = red.map((r) => {
+    const tip = DB2TIP[r.tip] || r.tip;
+    const d = g ? haversine(g.lat, g.lon, r.lat, r.lon) : null;
+    const moj = glasovi[r.id];
+    return `<div class="zrow" data-id="${r.id}">
+      <div class="zic">${rIco(HZ2ICON[tip] || "warning", 19)}</div>
+      <div class="zin">
+        <div class="znm">${esc(tip)}</div>
+        <div class="zsub">${esc(prijavaStarost(r.created_at))}${d != null ? " · <b>" + Math.round(d) + " km od tebe</b>" : ""}${r.potvrde ? " · potvrdilo " + r.potvrde : ""}</div>
+        <div class="zbtns">
+          <button data-a="mapa">Na mapi</button>
+          ${moje.includes(r.id) ? '<span style="font-size:11px;color:#94a3b8;font-weight:700;align-self:center">tvoja prijava</span>'
+            : `<button class="ok" data-a="tu" ${moj ? "disabled" : ""}>${moj === "tu" ? "✓ glasao si" : "Tu je"}</button>
+               <button class="ne" data-a="ne" ${moj ? "disabled" : ""}>${moj === "ne" ? "✓ glasao si" : "Nema je"}</button>`}
+        </div>
+      </div></div>`;
+  }).join("");
+}
+/* Tap na pin: kartica sa dve velike mete (Tu je / Nema je). Koristi postojeci .hz-pop izgled. */
+function zajOtvoriPrijavu(r) {
+  const tip = DB2TIP[r.tip] || r.tip;
+  const g = window._zajGps || state.gpsFrom;
+  const d = g ? Math.round(haversine(g.lat, g.lon, r.lat, r.lon)) : null;
+  document.querySelectorAll(".zajpop, .zajpop-back").forEach((x) => x.remove());
+  const back = document.createElement("div");
+  back.className = "hz-back zajpop-back";
+  const pop = document.createElement("div");
+  pop.className = "hz-pop zajpop";
+  pop.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:239";
+  let glasovi = {}; try { glasovi = JSON.parse(localStorage.getItem("rmr2_glasovi") || "{}"); } catch (e) {}
+  const moj = glasovi[r.id];
+  const moje = (typeof mojePrijave === "function" ? mojePrijave() : []) || [];
+  pop.innerHTML = `<div style="display:flex;gap:11px;align-items:center;margin:0 2px 14px">
+      <span style="flex:none;color:#f97316">${rIco(HZ2ICON[tip] || "warning", 26)}</span>
+      <span><b style="color:#fff;font-size:16px">${esc(tip)}</b><br>
+      <span style="color:#94a3b8;font-size:12.5px">${esc(prijavaStarost(r.created_at))}` +
+      (d != null ? ` · ${d} km od tebe` : "") + (r.potvrde ? ` · potvrdilo ${r.potvrde}` : "") + `</span></span></div>` +
+    (moje.includes(r.id) || moj
+      ? `<button class="hzcancel" data-z="zatvori">Zatvori</button>`
+      : `<div class="hzgrid" style="grid-template-columns:1fr 1fr">
+           <button data-z="tu" style="min-height:64px">Tu je</button>
+           <button data-z="ne" style="min-height:64px">Nema je</button>
+         </div><button class="hzcancel" data-z="zatvori">Zatvori</button>`);
+  const zatvori = () => { pop.remove(); back.remove(); };
+  back.addEventListener("click", zatvori);
+  pop.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-z]"); if (!b) return;
+    const a = b.dataset.z;
+    if (a === "zatvori") return zatvori();
+    zatvori();
+    if (await glasajPrijava(r.id, a === "tu")) zajCrtaj();
+  });
+  document.body.appendChild(back); document.body.appendChild(pop);
+  map.flyTo({ center: [r.lon, r.lat], zoom: Math.max(map.getZoom(), 12.5), duration: 600 });
+}
+async function zajModeOn() {
+  if (ZAJ.on) return;
+  const sc = document.getElementById("screen-zajednica");
+  ZAJ.prevScroll = sc ? sc.scrollTop : 0;
+  ZAJ.prevHazard = state.layerVis.hazard;      // izlaz mora da vrati kako je bilo
+  ZAJ.on = true;
+  document.body.classList.add("zajmap");
   const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
   try { state.layerVis.hazard = true; applyLayerVis(); } catch (e) {}
+  const sh = document.getElementById("zajSheet"); if (sh) sh.classList.remove("peek");
   try {
-    if (!(state.prijaveMarkers || []).length) await zajSveAktivne();
-    const ms = state.prijaveMarkers || [];
-    const g = window._zajGps || state.gpsFrom;
-    if (ms.length) {
-      const b = new maplibregl.LngLatBounds();
-      ms.forEach((m) => b.extend(m.getLngLat()));
-      if (g) b.extend([g.lon, g.lat]);   // i ti si na slici - vidi se koliko je sta daleko
-      map.fitBounds(b, { padding: 70, maxZoom: 11, duration: 800 });
-    } else if (g) map.flyTo({ center: [g.lon, g.lat], zoom: 9, duration: 800 });
-  } catch (e) {}
+    ZAJ.rows = await zajSveAktivne(true);       // vraca redove, ne crta (rezim crta svoje)
+    zajCrtaj();
+  } catch (e) { ZAJ.rows = []; zajCrtaj(); }
 }
+function zajModeOff(kuda) {
+  if (!ZAJ.on) return;
+  ZAJ.on = false;
+  document.body.classList.remove("zajmap");
+  for (const m of ZAJ.markers) m.remove();
+  ZAJ.markers = [];
+  document.querySelectorAll(".zajpop, .zajpop-back").forEach((x) => x.remove());
+  if (ZAJ.prevHazard !== null) { state.layerVis.hazard = ZAJ.prevHazard; try { applyLayerVis(); } catch (e) {} }
+  ZAJ.prevHazard = null;
+  if (kuda === "zajednica") {
+    const za = document.querySelector('#bottomnav a[data-tab="zajednica"]'); if (za) za.click();
+    const sc = document.getElementById("screen-zajednica");
+    if (sc) requestAnimationFrame(() => { sc.scrollTop = ZAJ.prevScroll; });
+  }
+}
+async function zajMapaUzivo() { await zajModeOn(); }
+(function () {
+  const nz = document.getElementById("zajNazad");
+  if (nz) nz.addEventListener("click", () => zajModeOff("zajednica"));
+  const zx = document.getElementById("zajX");
+  if (zx) zx.addEventListener("click", () => zajModeOff("mapa"));
+  const ch = document.getElementById("zajChips");
+  if (ch) ch.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-km]"); if (!b) return;
+    ch.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+    ZAJ.km = +b.dataset.km || 0;
+    zajCrtaj();
+  });
+  const lst = document.getElementById("zajList");
+  if (lst) lst.addEventListener("click", async (e) => {
+    const pz = e.target.closest("[data-z]");
+    if (pz) {
+      if (pz.dataset.z === "sve") { ZAJ.km = 0; document.querySelectorAll("#zajChips button").forEach((x) => x.classList.toggle("on", x.dataset.km === "0")); return zajCrtaj(); }
+      if (pz.dataset.z === "prijavi") { zajModeOff("mapa"); const hb = document.querySelector(".hz-btn"); if (hb) hb.click(); return; }
+    }
+    const b = e.target.closest("button[data-a]"); if (!b) return;
+    const row = b.closest(".zrow"); if (!row) return;
+    const r = ZAJ.rows.find((x) => String(x.id) === row.dataset.id); if (!r) return;
+    if (b.dataset.a === "mapa") {
+      document.getElementById("zajSheet").classList.add("peek");
+      return zajOtvoriPrijavu(r);
+    }
+    b.disabled = true;
+    if (await glasajPrijava(r.id, b.dataset.a === "tu")) zajCrtaj();
+  });
+  // prevlacenje sheeta: otvoren <-> skupljen u traku
+  const sh = document.getElementById("zajSheet"), gb = document.getElementById("zajGrab");
+  if (sh && gb) {
+    let y0 = null;
+    gb.addEventListener("pointerdown", (e) => { y0 = e.clientY; try { e.target.setPointerCapture(e.pointerId); } catch (er) {} });
+    gb.addEventListener("pointerup", (e) => {
+      if (y0 == null) return; const dy = e.clientY - y0; y0 = null;
+      if (dy > 30) sh.classList.add("peek"); else if (dy < -30) sh.classList.remove("peek");
+      else sh.classList.toggle("peek");
+    });
+  }
+})();
 (function () {
   // pod-tabovi ukinuti 4.8.2026 (PM: pola navigacije za "coming soon" je RideCast
   // anti-pattern) - Prijatelji su kartica-najava na dnu dok ne stignu nalozi
@@ -6564,6 +6796,7 @@ async function plan() {
     logState({ phase: "route" });
     const _rts = await fetchRoutes(from, to);
     if (_pseq !== state.planSeq) return;   // R13v2: prvo provera, PA commit (stari fetch ne sme da pregazi nove rute)
+    try { if (typeof zajModeOff === "function") zajModeOff("mapa"); } catch (e) {}   // planiranje gasi rezim zajednice
     state.routes = _rts;
     state._gradska = !!_rts._gradska;   // presuda "gradska relacija" commituje se ZAJEDNO sa rutama
     state.routes.forEach(buildSamples);
@@ -6849,8 +7082,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.46";
+const APP_VERSION = "0.9.47";
 const CHANGELOG = [
+  { v: "0.9.47", d: "11.08.2026.", stavke: [
+    "<b>\"Prikaži na mapi\" je sada pravi režim, ne jednosmerna ulica</b> (tvoj nalaz): ranije te je prebacilo na Planer, upalilo sloj i tu se priča završavala. Sada gore stoji traka <b>‹ Zajednica · 3 aktivne prijave · 150 km</b> koja te vraća nazad na isto mesto i isti skrol, a dole je lista istih tih prijava koja se prevlačenjem skuplja u traku.",
+    "<b>Tap na pin otvara karticu</b> sa vremenom, udaljenošću i brojem potvrda, i dva velika dugmeta: <b>Tu je</b> / <b>Nema je</b>.",
+    "<b>Izlaz vraća sve kako je bilo.</b> Ranije je ulazak trajno palio sloj Opasnosti i upisivao to u podešavanja - ako si ga ti bio isključio, ostajao bi upaljen zauvek.",
+    "Filter blizine (50 / 150 km / sve), pošteno prazno stanje (\"Mirno je oko tebe\") i mete od 44 piksela u listi umesto dosadašnjih 19.",
+    "Planiranje rute i polazak u vožnju sami gase režim, da traka ne ostane bez izlaza."
+  ] },
   { v: "0.9.46", d: "11.08.2026.", stavke: [
     "<b>Stanje puta sada govori našim rečima</b> (tvoj zahtev): umesto tuđe skale 1-5 stoje četiri reči koje su vozači i sami napisali - <b>Nov asfalt, Dobar asfalt, Loš asfalt, Makadam</b>. Brojevi su nestali sa ekrana jer aplikacija već ima svoju ocenu \"Zahtevnost rute\", pa bi druga skala pored nje samo pravila sumnju u onu koja je tačna.",
     "Kartica se zove <b>Šta kažu vozači</b>. Piše koliko je deonica dugačka, ko ju je opisao i kada, i da li je podatak od pre zime. Loše deonice idu prvo, jer one menjaju odluku.",
@@ -8769,6 +9009,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   if (!disclaimerOK(startFreeRide)) return;   // jednom, pre prve voznje
   // sazetak PRETHODNE voznje ne sme da ostane preko nove (Boskov nalaz sa puta 10.8.)
   try { if (window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
+  try { if (typeof zajModeOff === "function") zajModeOff("mapa"); } catch (e) {}   // u voznji nema bottomnav-a, pa ni izlaza iz rezima
   if (document.body.classList.contains("riding")) return;
   if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
   try { homeLocHide(); } catch (e) {}
@@ -8912,6 +9153,7 @@ function startRide() {
   if (!disclaimerOK(startRide)) return;   // jednom, pre prve voznje
   // sazetak PRETHODNE voznje ne sme da ostane preko nove (Boskov nalaz sa puta 10.8.)
   try { if (window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
+  try { if (typeof zajModeOff === "function") zajModeOff("mapa"); } catch (e) {}   // u voznji nema bottomnav-a, pa ni izlaza iz rezima
   if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
   try { homeLocHide(); } catch (e) {}   // u voznji navigacioni marker preuzima; kucni puck + watch se gase
   try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
