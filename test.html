@@ -4793,7 +4793,11 @@ function vsNajbrza(route) {
     const d = Math.round((route.totalDur - naj.totalDur) / 60);
     if (d < 10) return "";   // ista stvar - nema sta da se pravda
     const h = Math.floor(d / 60), mn = d % 60;
-    return ` (${h ? h + " h " : ""}${mn ? mn + " min" : ""} duže od autoputa, ali vijugavo)`;
+    /* Ne tvrdi "autoput" ako ga nema (11.8., druga runda). Na kratkoj ili potpuno sporednoj relaciji
+       nijedna varijanta ne ide autoputem, pa bi to bila tvrdnja koju ne mozemo da potkrepimo - ista
+       greska kao "vreme na svakom kilometru" iz 0.9.38. */
+    const ap = /autoput/i.test(naj.label || "") || naj.tollKm > 0;
+    return ` (${h ? h + " h " : ""}${mn ? mn + " min" : ""} duže od ${ap ? "autoputa" : "najbrže rute"}, ali vijugavo)`;
   } catch (e) { return ""; }
 }
 function renderTimeline(assess) {
@@ -7108,8 +7112,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.49";
+const APP_VERSION = "0.9.50";
 const CHANGELOG = [
+  { v: "0.9.50", d: "11.08.2026.", stavke: [
+    "<b>Lista u pretrazi se više ne pomera pod prstom.</b> Novo rangiranje je blok mrežnih rezultata premeštalo sa vrha na dno usred kucanja - \"Zlat\" jedno, \"Zlati\" drugo - pa su se redovi pomerali između dva slova i lako si tapnuo pogrešan. Sada se premesti najviše jednom, na poslednjem slovu, kad se ime poklopi tačno.",
+    "<b>Ne tvrdimo \"autoput\" ako ga nema.</b> Poređenje uz trajanje je uvek pisalo \"duže od autoputa\", i na relacijama gde nijedna varijanta ne ide autoputem. Sada u tom slučaju piše \"duže od najbrže rute\"."
+  ] },
   { v: "0.9.49", d: "11.08.2026.", stavke: [
     "<b>Usputna stanica se konačno može skloniti.</b> Dodaš stanicu preko \"Još\", marker padne na mapu, a čip sa \"✕\" i link \"očisti sve stanice\" su na telefonu bili nevidljivi - stanica je ostajala zauvek. Sada stoje u istom listu u kom si je i dodao, i mete su 44 piksela umesto 26 i 13.",
     "<b>Svako pokretanje je trošilo jedan poziv prognoze ni za šta.</b> Aplikacija je zvala Open-Meteo da upiše tekst u element koji je na telefonu ugašen. Provera je bila \"da li element postoji\" umesto \"da li se vidi\".",
@@ -7851,7 +7859,11 @@ function renderSugg(q) {
      trazio kad je ukucao sedam slova. */
   const bod = (n) => n === fq ? 100 : n.startsWith(fq) ? (fq.length >= n.length * 0.55 ? 80 : 55) : rxq.test(n) ? 50 : n.includes(fq) ? 40 : 0;
   let sc = searchIndex().map((x) => ({ x, s: bod(SFOLD(x.n)) })).filter((h) => h.s > 0).sort((a, b) => b.s - a.s);
-  let jak = sc.length > 0 && sc[0].s >= 80;   // tacno ime ili pocetak imena - samo to sme ispred mreznih rezultata
+  /* Samo TACNO ime sme ispred mreznih rezultata (11.8., druga runda). Sa pragom >= 80 se `jak`
+     prevrtao usred kucanja - "Zlat" je davao 55, "Zlati" vec 80 - pa je blok mreznih rezultata
+     skakao sa vrha na dno izmedju dva slova i redovi su se pomerali pod prstom. Tacan pogodak se
+     desava najvise jednom, na poslednjem slovu, i tada je pomeranje ocekivano a ne zbunjujuce. */
+  let jak = sc.length > 0 && sc[0].s === 100;
   let hits = sc.slice(0, 8).map((h) => h.x);
   if (kk) { hits = [{ n: koordIme(kk), lat: kk.lat, lon: kk.lon, sub: "koordinate iz poruke ili linka", t: "koord" }].concat(hits).slice(0, 8); jak = true; }
   let recN = 0;
