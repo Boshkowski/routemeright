@@ -1294,9 +1294,22 @@
   #shareTpl .kard.spremno .st { color: #f97316; background: rgba(249,115,22,.15); border: 1px solid rgba(249,115,22,.5);
     border-radius: 999px; padding: 7px 12px; margin: -4px -4px -4px 0; }   /* prava meta za palac: deljenje ide SAMO ovde */
   #shareTpl .kard.nema { opacity: .45; pointer-events: none; }
-  #shareTpl .opcije { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 4px 2px 10px; }
-  #shareTpl .opcije label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #cbd5e1; font-weight: 700; }
+  /* 11.8.: red je dobio jos jednu stavku (dugme za fotku), pa mora da sme da se prelomi -
+     inace natpis pored njega ide u dva reda i deluje stisnuto. */
+  #shareTpl .opcije { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap;
+    gap: 10px 12px; margin: 4px 2px 10px; }
+  #shareTpl .opcije label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: #cbd5e1; font-weight: 700; flex: 1 1 auto; min-width: 0; }
   #shareTpl .opcije input { accent-color: #f97316; width: 16px; height: 16px; }
+  /* Dugme za fotku je 11.8. preseljeno iz sazetka. Tamo je zivelo u redu dugmadi (.btns) i
+     odatle je vuklo sirinu; u ovom listu je bez tih pravila ispalo 4x19 px, dakle nepogodivo.
+     Ovde dobija svoje mere: 44 px kao i svaka druga meta koja se pogadja sa rukavicom. */
+  #shareTpl .opcije .foto { flex: none; width: 44px; height: 44px; padding: 0; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.22); color: #cbd5e1; cursor: pointer; }
+  #shareTpl .opcije .foto svg { width: 21px; height: 21px; stroke: currentColor; fill: none; }
+  #shareTpl .opcije .foto img { width: 100%; height: 100%; object-fit: cover; }
+  #shareTpl .opcije .foto.has { border-color: rgba(249,115,22,.6); }
+  #shareTpl .opcije input[type="file"] { display: none; }
   #shareTpl .klip { background: none; border: none; color: #38bdf8; font: 700 12.5px Archivo, sans-serif; cursor: pointer; padding: 4px; }
   #shareTpl .cancel { width: 100%; height: 44px; border-radius: 12px; background: transparent; color: #e2e8f0;
     border: 1px solid rgba(148,163,184,.35); font: 800 14px Archivo, sans-serif; cursor: pointer; margin-top: 2px; }
@@ -7291,8 +7304,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.57";
+const APP_VERSION = "0.9.58";
 const CHANGELOG = [
+  { v: "0.9.58", d: "11.08.2026.", stavke: [
+    "<b>Tri popravke iz provere onoga što sam malopre tvrdio da je gotovo</b> (Boškovo pitanje: \"nešto si mi to brzo uradio\").",
+    "<b>Ime ulice u vožnji se zavlačilo pod pilulu brzine.</b> Jučerašnja popravka je rešila desnu ivicu, a vertikalno ograničenje je i dalje bila konstanta - promašivala je za šest piksela. Sada se računa od stvarne donje trake.",
+    "<b>Dugme za fotografiju je posle selidbe ispalo 4x19 piksela.</b> U sažetku je vuklo širinu iz reda dugmadi, a u biraču deljenja tih pravila nema. Sada je 44x44, kao svaka meta koja se pogađa sa rukavicom. Uz to je natpis pored njega bio stisnut u dva reda, pa red sada sme da se prelomi.",
+    "Provereno merenjem, ne na reč: mesta uz rutu se NE dupliraju sa grupisanim slojem (25 pinova, 0 duplikata), \"Druga ruta\" se stvarno vidi (46x46, ceo red staje u 366 px), a u vožnji na mapi nema zatrpavanja pumpama."
+  ] },
   { v: "0.9.57", d: "11.08.2026.", stavke: [
     "<b>Mapa konačno pokazuje šta aplikacija zna.</b> Do sada se 599 kuriranih mesta učitavalo pri svakom pokretanju a na početnom ekranu se nije crtalo nijedno. Sada su uvek tu, grupisana u krugove sa brojem koji se razlažu kad zumiraš. Prekidači u Slojevima i dalje rade, samo sada imaju šta da gase.",
     "<b>Pumpe su na mapi, i na svakoj piše koliko te košta pun rezervoar za tvoj motor.</b> \"Pun rezervoar (20 L, benzin 95) za Norden 901: ~34 EUR\". To ne može ni Google ni Waze, jer ne znaju koji motor voziš. U aplikaciju je ušlo <b>5.098 pumpi</b> celog Balkana, iz lokalnog fajla od 53 KB - dakle radi i bez signala, i ne zavisi od tuđeg servera koji nas je danas dvaput odbio.",
@@ -8509,7 +8528,20 @@ function drawRoadLabel(route, dMeters, lo, la) {
     const w = el.offsetWidth || 0;
     const minX = 12 + w / 2, maxX = window.innerWidth - 66 - w / 2;
     el.style.left = Math.round(maxX < minX ? minX : Math.max(minX, Math.min(p.x, maxX))) + "px";
-    el.style.top = Math.round(Math.min(p.y + 40, window.innerHeight - 96)) + "px";   // na niskom (landscape) ekranu ne sme ispod donje trake
+    /* Vertikalno ogranicenje se racuna od STVARNE donje trake, ne od konstante (11.8., druga
+       runda). Sa `innerHeight - 96` je nalepnica zavrsavala na 772 px dok traka pocinje na 766 -
+       sest piksela preklopa, taman da ime ulice zavuce pod pilulu brzine. */
+    let dno = window.innerHeight - 96;
+    try {
+      const bb = document.getElementById("rideBarBottom");
+      const er = document.getElementById("rideEtaRow");
+      for (const q of [bb, er]) {
+        if (!q) continue;
+        const rr = q.getBoundingClientRect();
+        if (rr.height > 0) dno = Math.min(dno, rr.top - el.offsetHeight - 8);
+      }
+    } catch (e2) {}
+    el.style.top = Math.round(Math.min(p.y + 40, dno)) + "px";   // nikad ispod (ni preko) donjih traka
   } catch (e) { el.classList.remove("on"); }
 }
 function limitAt(route, dMeters) {
