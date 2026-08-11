@@ -6297,7 +6297,7 @@ function zabeleziVoznju() {
       maxK, avgK, lnL, lnR, lnChk, trag, smp, pauz, momNagib: RIDE.momNagib || null, momBrz: RIDE.momBrz || null,
       momLnL: RIDE.momLnL || null, momLnR: RIDE.momLnR || null,   // GDE je bio najveci nagib levo, a gde desno
       kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
-    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; RIDE.arrived = false; return; }
+    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; return; }
     const v0 = _zajCitaj("mr_voznje", []);
     const v = Array.isArray(v0) ? v0 : [];
     v.unshift({ ts: Date.now(), naz, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
@@ -6321,7 +6321,7 @@ function zabeleziVoznju() {
     shareToast(`Vožnja upisana: ${v[0].km} km, +${poeni}p` + (RIDE.kolCnt ? ` · kolekcije: ${RIDE.kolCnt} ${RIDE.kolCnt === 1 ? "nova tačka" : "nove tačke"}` : ""));
     for (const t of RIDE.kolProslave || []) shareToast(t);   // proslave odlozene sa voznje (pogled ne ide na ekran u krivini)
   } catch (e) {}
-  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; RIDE.arrived = false;
+  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false;
 }
 /* ---- render sekcija taba Zajednica ---- */
 const ZAJ_PREVIEW = new URLSearchParams(location.search).has("preview");
@@ -7456,8 +7456,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.60";
+const APP_VERSION = "0.9.61";
 const CHANGELOG = [
+  { v: "0.9.61", d: "11.08.2026.", stavke: [
+    "<b>\"Istrpeo kišu\" je do sada tvrdilo više nego što meri.</b> Zastavica se palila kad ti je nevreme <b>najavljeno tri kilometra ispred</b> - a ti si možda skrenuo, stao, ili kiše nije ni bilo. Za to se dodeljivalo priznanje i upisivalo u dnevnik. Ista greška kao \"vreme na svakom kilometru\" koju smo ispravljali u 0.9.38: tvrdnja šira od merenja. Sada se pamti gde zona počinje, pa se pali tek kad stvarno uđeš 500 metara u nju.",
+    "Nalaz je došao iz istraživanja za redizajn sažetka: pet najbesnijih recenzija u korpusu od 5.682 su o brojci koja se promeni posle čuvanja. Pravilo koje iz toga sledi: bolje jedna brojka manje nego jedna koju vozač zna da je netačna."
+  ] },
   { v: "0.9.60", d: "11.08.2026.", stavke: [
     "<b>Početni ekran više nije prazna mapa.</b> Donji panel je vraćen - postojao je i bio stilizovan, samo je bio ugašen jednom linijom u ranijoj rundi, pa je posle izbacivanja čipova ekran ostao go.",
     "<b>Gore stoji ili živa prognoza ili tvoj sinoćni plan.</b> Ako si nešto planirao u poslednjih 20 sati, piše \"Nastavi gde si stao: Beograd → Zlatibor\" sa dugmetom <b>Kreni</b>. Ako nisi, piše činjenicu za tvoju lokaciju: \"Suvo narednih 12h - savršen dan za vožnju\". Kutija je ISTE visine u oba slučaja (171 px), da ekran ne skače između dva otvaranja.",
@@ -9582,7 +9586,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.freeRide = true; RIDE.freeNaz = null; RIDE.nav = null; RIDE.route = null; RIDE.total = 0;
   RIDE.offCount = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
-  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; RIDE.arrived = false;
+  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false;
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;
   RIDE.paused = false; RIDE.pauseMs = 0; RIDE.pauseT0 = null;
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;
@@ -9750,7 +9754,7 @@ function startRide() {
     .forEach((a) => a.classList.remove("maplibregl-compact-show")); } catch (e) {}
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
-  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kolProslave = []; RIDE.arrived = false;   // dnevnik voznje + kolekcije
+  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false;   // dnevnik voznje + kolekcije
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
   RIDE.lastRouteI = null; RIDE.offSt = { offMs: 0 };   // hint prozor projekcije + off-route masina stanja
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE._gpxOffAt = 0; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;   // odometar/trag iz GPS-a + delta-brzina + fizicka provera nagiba
@@ -9938,8 +9942,17 @@ function startRide() {
         const rz = (z.reasons && z.reasons[0]) || "Nevreme";
         wxEl.innerHTML = wxIco(rz, 1, 15) + " " + esc(rz) + " za ~" + (inKm < 1 ? "manje od 1" : Math.round(inKm)) + " km";
         wxEl.classList.add("on");
-        if (inKm < 3 && /kiš|pljus|nevreme|grmljav/i.test(rz)) RIDE.kisa = true;   // "Istrpeo kisu" - vozio je kroz to
+        /* Zastavica "istrpeo kisu" se pali tek kad si STVARNO usao u zonu, ne kad ti je najavljena
+           (11.8.). Ranije je uslov bio `inKm < 3`, dakle "nevreme pocinje 3 km ispred tebe" - a ti
+           si mozda skrenuo, stao, ili kise nije ni bilo. Za to se dodeljivalo priznanje i pisalo u
+           dnevnik. Ista klasa greske kao "vreme na svakom kilometru" iz 0.9.38: tvrdnja sira od
+           merenja. Sada se pamti pocetak zone, pa se zastavica pali tek kad predjes 500 m U nju. */
+        if (/kiš|pljus|nevreme|grmljav/i.test(rz)) RIDE.kisaZona = z.from.km * 1000;
       } else wxEl.classList.remove("on");
+      if (RIDE.kisaZona != null && d > RIDE.kisaZona + 500 && !RIDE.kisa) {
+        RIDE.kisa = true;
+        RIDE.kisaAt = Math.round(RIDE.kisaZona / 1000);   // km na kom je usao - koristi sazetak
+      }
     } catch (e) {}
     // dolazak
     const remM = Math.max(0, total - d);
