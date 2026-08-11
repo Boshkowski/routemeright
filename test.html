@@ -532,8 +532,13 @@
     #homeSearch .lg svg { width: 100%; height: 100%; display: block; }
     #homeSearch .q { flex: 1; color: #94a3b8; font-size: 15px; font-weight: 600; }
 
-    #homeChips { display: flex; gap: 8px; margin-top: 11px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; scrollbar-width: none;
-      -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent); }
+    /* 12.8. - OVO je bio uzrok "levi deo Snimi voznju nestaje uz rub", koji je Bosko prijavio VISE PUTA.
+       Ovde je stajala maska `linear-gradient(90deg, transparent, #000 4%, #000 92%, transparent)`.
+       Ona je gasila levih 4% i desnih 8% trake da nagovesti da red moze da se prevlaci - imalo je
+       smisla dok su cipa bila cetiri. Kad je 11.8. ostao SAMO jedan cip, nema sta da se prevlaci,
+       a maska je i dalje jela levu ivicu jedinog dugmeta. Tri puta sam gledao broj cipova i razmak,
+       a uzrok je bio efekat prelaza koji sam zaboravio da sklonim uz njih. */
+    #homeChips { display: flex; gap: 8px; margin-top: 11px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; scrollbar-width: none; }
     #homeChips::-webkit-scrollbar { display: none; }
     #homeChips::-webkit-scrollbar { display: none; }
     /* Cipovi su PUNI, bez prozirnosti: na 92% je mapa probijala kroz njih i "Snimi voznju"
@@ -7707,8 +7712,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.66";
+const APP_VERSION = "0.9.67";
 const CHANGELOG = [
+  { v: "0.9.67", d: "12.08.2026.", stavke: [
+    "<b>Čip \"Snimi vožnju\" se konačno vidi ceo.</b> Prijavio si to više puta, a ja sam tri puta gledao pogrešnu stvar - broj čipova i razmake. Uzrok je bio efekat prelaza u CSS-u koji je gasio levih 4 posto trake da nagovesti da red može da se prevlači. Imalo je smisla dok su čipa bila četiri. Kad je ostao samo jedan, prevlačenja više nema, a maska je i dalje jela levu ivicu jedinog dugmeta. Maska je sklonjena.",
+    "<b>\"Nastavi gde si stao\" je uklonjeno sa početnog ekrana</b> (tvoj zahtev). Gornji red je sada uvek živa prognoza. Poslednja relacija nije izgubljena - stoji u \"Nedavno\" u pretrazi, tamo gde je i tražiš kad ti treba.",
+    "<b>Izbačen unos \"Vidikovac kod picerije O la la\".</b> Bio je označen kao okupljalište, a u samom podatku je pisalo da je to <b>pretpostavka niske pouzdanosti</b> - u forumskoj temi (tri poruke, sve o nesreći) o okupljalištu se uopšte ne govori. Uz to, Vidikovac je naselje u Rakovici, pa je red na početnom ekranu izgledao kao da ti nudi vidikovac. Upozorenje na istom mestu (raskrsnica gde automobili uskraćuju prvenstvo) OSTAJE - ono je stvarno i korisno.",
+    "Red na početnom ekranu sada <b>piše vrstu rečima</b>: \"Kafana · ...\", \"Vidikovac · ...\", \"Okupljalište · ...\". Ikonica nije oznaka vrste ako je čovek mora prevoditi u glavi.",
+    "Provereno je i ostalo: u celoj bazi od 639 unosa samo je taj jedan sam sebe označio kao pretpostavku. Još jednom je očišćen naziv koji je nosio nagađanje (\"Etno restoran u Mataruškoj Banji (moguće Bajka)\" - nesigurno ime prešlo je u opis)."
+  ] },
   { v: "0.9.66", d: "12.08.2026.", stavke: [
     "<b>Popravljeno preračunavanje kombinovane rute usred vožnje</b> - greška koja se ne bi videla u planeru nego tek na putu. Ako skreneš s puta, aplikacija jednim potezom pravi celu preostalu rutu do cilja. Uzimala je stil deonice na kojoj se <b>trenutno nalaziš</b>, pa bi skretanje na 200. kilometru - usred dela \"Mali Zvornik - Sarajevo krivinama\" - preračunalo svih preostalih 400 km kao ekstra vijugavo i dodalo sate.",
     "Sada se stil deonice uzima samo kad ta deonica ide do samog cilja. Kad ostatak prelazi preko više deonica, nijedan pojedinačni stil nije pošten, pa se uzima stil same rute.",
@@ -8388,43 +8400,15 @@ function init() {
 })();
 
 /* ---- app2 Faza 4.1: ziva prognoza na pocetnom + motor sekcija sklopljena ---- */
-/* ---------------- Donji list pocetnog ekrana (11.8.) ----------------
-   Gornji red nosi ILI zivu prognozu ILI sinocnji plan sa dugmetom Kreni; donji red je najblize
-   nase kurirano mesto. Kutija je ista u oba slucaja - istrazivanje 5.682 recenzije kaznjava
-   PROMENU gustine, a ekran koji menja izgled po dobu dana je redizajn dvaput dnevno.
-   Waze isti obrazac stavlja prvi u svojoj listi predloga ("Planned drives" pre svega ostalog). */
-function homeSlotPlan() {
-  try {
-    const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
-    const r = rec[0];
-    if (!r || !r.ts || Date.now() - r.ts > 20 * 3600e3) return null;   // stariji od 20 h nije "sinoc"
-    if (!r.from || !r.to) return null;
-    return r;
-  } catch (e) { return null; }
-}
 function homeSlotA() {
+  /* 12.8. (Boskov zahtev): "Nastavi gde si stao" je izbaceno. Gornji red je sada UVEK ziva prognoza.
+     Poslednja relacija nije izgubljena - stoji u "Nedavno" u pretrazi, tamo gde je i trazis kad ti
+     treba, umesto da doceka na pocetnom ekranu svaki put. */
   const box = document.querySelector("#homeSheet .wxpeek");
-  const t = document.querySelector("#homeSheet .wxpeek .t");
-  if (!box || !t) return;
-  const r = homeSlotPlan();
+  if (!box) return;
   const staro = box.querySelector(".go");
   if (staro) staro.remove();
-  if (!r) { homeWxPeek(); return; }   // nema sveze relacije - ide ziva prognoza
-  t.innerHTML = `<b>Nastavi gde si stao</b><br>${esc(r.from)} → ${esc(r.to)}`;
-  const b = document.createElement("button");
-  b.className = "go"; b.type = "button"; b.textContent = "Kreni";
-  b.addEventListener("click", (ev) => {
-    ev.stopPropagation();
-    try {
-      document.body.classList.add("planning");
-      if (mqMobile.matches) document.body.classList.add("qplan");
-      $("from").value = r.from; $("to").value = r.to;
-      if (r.fp && r.fp[0] != null && !/^moja lokacija$/i.test(r.from)) state.fromOverride = { name: r.from, lat: r.fp[0], lon: r.fp[1] };
-      if (r.tp && r.tp[0] != null) state.searchTo = { name: r.to, lat: r.tp[0], lon: r.tp[1] };
-      $("planBtn").click();
-    } catch (e) {}
-  });
-  box.appendChild(b);
+  homeWxPeek();
 }
 function homeSlotB() {
   const el = document.getElementById("hsB");
@@ -8439,8 +8423,13 @@ function homeSlotB() {
   }
   if (!naj || najD > 120) { el.hidden = true; return; }   // preko 120 km nije "oko tebe"
   el.hidden = false;
+  /* Vrsta se ISPISUJE (12.8., Boskov nalaz): red je pokazivao mesto sa ikonicom i imenom, pa je
+     beogradsko naselje Vidikovac izgledalo kao vidikovac-vidikovac. Ikonica nije oznaka vrste
+     ako je covek ne prevede u glavi - pise se recima. */
+  const vrsta = naj.type === "kafana" ? "Kafana" : naj.type === "vidikovac" ? "Vidikovac"
+    : naj.type === "okupljaliste" ? "Okupljalište" : naj.type === "servis" ? "Servis" : "Mesto";
   el.innerHTML = `<span class="ic">${rIco(naj.type === "kafana" ? "tavern" : naj.type === "vidikovac" ? "viewpoint" : "meetup", 22)}</span>` +
-    `<div class="tx"><b>${esc(naj.name)}</b><span>${esc(naj.details || naj.where || "")}</span></div>` +
+    `<div class="tx"><b>${esc(vrsta)} · ${esc(naj.name)}</b><span>${esc(naj.details || naj.where || "")}</span></div>` +
     `<span class="km">${najD < 1 ? "manje od 1" : Math.round(najD)} km</span>`;
   el.onclick = () => { try { map.easeTo({ center: [naj.lon, naj.lat], zoom: 13 }); markerPopup(mestaPopHtml(naj)).setLngLat([naj.lon, naj.lat]).addTo(map); } catch (e) {} };
 }
