@@ -1244,11 +1244,27 @@
   body.sumopen #panel, body.sumopen #resCta, body.sumopen #qbar,
   body.sumopen #routePill, body.sumopen #homeSheet, body.sumopen #homeChrome { display: none !important; }
   /* Spustanje sazetka ga vise ne gasi nego skuplja u traku - trag voznje ostaje na mapi. */
+  /* Replay voznje (13.8.): dok ide, kartica je niska traka preko mape - trag i marker su heroj */
+  #rideSum .rsreplay { display: flex; align-items: center; gap: 12px; margin: 12px 20px 0; padding: 10px 12px;
+    background: rgba(15,23,42,.6); border: 1px solid rgba(148,163,184,.16); border-radius: 14px; }
+  #rideSum #rrPlay { width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer; flex: none;
+    background: linear-gradient(135deg,#f97316,#ea580c); color: #fff; display: flex; align-items: center; justify-content: center; }
+  #rideSum #rrPlay svg { width: 22px; height: 22px; }
+  #rideSum .rrmid { flex: 1; min-width: 0; }
+  #rideSum #rrSlider { width: 100%; accent-color: #f97316; height: 26px; margin: 0; }
+  #rideSum .rrnum { display: flex; gap: 12px; font: 700 12px Archivo,system-ui,sans-serif; color: #94a3b8;
+    font-variant-numeric: tabular-nums; margin-top: 1px; }
+  #rideSum .rrnum b { color: #f8fafc; font-size: 13px; margin-left: auto; }
+  #rideSum.peek.replaying .card { transform: translate(-50%, calc(100% - 196px)); }
+  @media (max-height: 520px) { #rideSum.peek.replaying .card { transform: translateY(calc(100% - 196px)); } }
   #rideSum.peek { pointer-events: none; }
   #rideSum.peek .card { transform: translate(-50%, calc(100% - 74px)); pointer-events: auto;
     transition: transform .28s cubic-bezier(.23,1,.32,1); cursor: pointer; }
   @media (max-height: 520px) { #rideSum.peek .card { transform: translateY(calc(100% - 74px)); } }
   #rideSum.peek .card > *:not(.grab):not(#rsKick):not(.rshead) { display: none !important; }
+  /* replay traka prezivljava peek SAMO u replay rezimu; stoji POSLE none-pravila i nosi 2 ID-a
+     da tie po specificnosti (2,4,0) resi redosled (13.8. - u QA je gubila bitku i bila nevidljiva) */
+  #rideSum#rideSum.peek.replaying .card > #rsReplay { display: flex !important; }
   #rideSum.peek #rsKick { margin-bottom: 2px; }
   #rideSum.dim { pointer-events: auto; background: rgba(4,8,18,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }   /* stari dnevnik zapis bez mape: zatamni, tap van zatvara */
   /* Sazetak v3 A+B (Boskov izbor 7.8.): trag ide na GLAVNU mapu (heroj), kartica je donji sheet;
@@ -1989,6 +2005,14 @@
     <div class="rsprica" id="rsPrica" hidden></div>
     <div class="rstats" id="rsGrid"></div>
     <div class="rstraka" id="rsTraka" hidden></div>
+    <!-- Replay voznje (13.8., Boskov zahtev "kao u demou"): marker putuje tragom po VREMENU voznje -->
+    <div class="rsreplay" id="rsReplay" hidden>
+      <button id="rrPlay" type="button" aria-label="Pusti replay"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg></button>
+      <div class="rrmid">
+        <input type="range" id="rrSlider" min="0" max="1000" value="0" step="1" aria-label="Trenutak vožnje">
+        <div class="rrnum"><span id="rrTime">0:00</span><span id="rrKm">0 km</span><b id="rrSpd">0 km/h</b><span id="rrLean" hidden>0°</span></div>
+      </div>
+    </div>
     <div class="rspark" id="rsSpark" hidden></div>
     <div class="rskol" id="rsKol" hidden></div>
     <div class="tags" id="rsTags"></div>
@@ -8075,8 +8099,13 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.74";
+const APP_VERSION = "0.9.75";
 const CHANGELOG = [
+  { v: "0.9.75", d: "13.08.2026.", stavke: [
+    "<b>Replay vožnje u sažetku - ono što si tražio, kao u demou.</b> Dugme ▶ i slajder preko cele širine: strelica putuje tvojim tragom po STVARNOM vremenu vožnje, uz žive brojeve - vreme, kilometar, brzina u tom trenutku, i nagib kad ga ima. Cela vožnja prođe za ~40 sekundi, slajderom skačeš na bilo koji trenutak, pauze su prirodno preskočene.",
+    "Radi i za vožnje koje su već u dnevniku - i one nose trag i uzorke brzine. Za jučerašnju turu do Jadrije radi takođe (uz njen ređi trag).",
+    "Dok replay ide, kartica se spusti u nisku traku - mapa i strelica su glavni. Tap na pauzu zaustavlja, novi tap nastavlja; na kraju stane, ▶ kreće iz početka."
+  ] },
   { v: "0.9.74", d: "13.08.2026.", stavke: [
     "<b>Preokret po tvojoj viziji: pumpe, hrana, vidikovci i sva mesta se sada UVEK vide na mapi</b> - sa našim ikonicama, bez ikakvog paljenja. Gustinu drže zum i samo-proređivanje (kao Google). Isto važi i u vožnji.",
     "<b>Bočna dugmad su sada AKCIJE, ne prekidači:</b> tapneš pumpu ili hranu i aplikacija ti ponudi do tri najbliža NAPRED UZ RUTU (\"za 12 km uz rutu · +0,4 km s puta · non-stop\"). Tap na jedan = postaje STANICA i ruta se odmah preračuna kroz njega - Add stop kao kod Google-a, i u vožnji (glasom potvrdi \"Dodajem stanicu\"). Naše kurirane kafane imaju prednost u ponudi. Bez rute: tri najbliža oko tebe, tap pokreće plan do tamo; u slobodnoj vožnji tap samo pokaže na mapi, snimanje ide dalje.",
@@ -10998,6 +11027,7 @@ function best3km(pts) {   // najvijugavija ~3 km deonica traga (gustina skretanj
 let SUMMARK = [];
 let SUMHID = [];   // elementi markera sakrivenih zbog svezeg sazetka (vracaju se u sumTragSkini)
 function sumTragSkini() {
+  try { sumReplayStop(); } catch (e) {}   // replay marker + petlja idu zajedno sa tragom
   for (const m of SUMMARK) { try { m.remove(); } catch (e) {} }
   SUMMARK = [];
   for (const el of SUMHID) { try { el.style.display = ""; } catch (e) {} }   // vrati sakrivene markere planirane rute (review 9.8.)
@@ -11283,6 +11313,129 @@ async function sumMaketa(s, pts, svez) {
     });
   }
 }
+/* ---------------- REPLAY VOZNJE u sazetku (13.8., Boskov zahtev "kao u demou") ----------------
+   Marker putuje tragom po VREMENU voznje: iz uzoraka brzine (smp: t sekunde, v km/h) integrali se
+   predjeni put, normalizuje na duzinu traga, pa se za svaki trenutak zna tacka na tragu, brzina i
+   nagib. Pauze prirodno preskace (u pauzi se uzorci ne pisu). Cela voznja traje ~40 s, slajder
+   skace bilo gde. Radi i za stare zapise iz dnevnika - i oni nose trag + uzorke. */
+const RRPL = { on: false, raf: 0, t: 0, dur: 1, speed: 1, pts: null, cum: null, tl: null, mk: null, lastTs: 0, frame: 0 };
+function sumReplayStop() {
+  RRPL.on = false;
+  try { cancelAnimationFrame(RRPL.raf); } catch (e) {}
+  try { if (RRPL.mk) { RRPL.mk.remove(); RRPL.mk = null; } } catch (e) {}
+  const el = document.getElementById("rideSum");
+  if (el) el.classList.remove("replaying");
+  const pb = document.getElementById("rrPlay");
+  if (pb) pb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg>';
+}
+function sumReplayPoz(simT) {   // trenutak -> {km, lo, la, brg, v, ln}
+  const tl = RRPL.tl;
+  let km, v = null, ln = null;
+  if (tl) {   // vremenska linija iz uzoraka: interpoliran put + brzina + nagib
+    let i = 1;
+    while (i < tl.t.length - 1 && tl.t[i] < simT) i++;
+    const t0 = tl.t[i - 1], t1 = tl.t[i], f = t1 > t0 ? Math.min(1, Math.max(0, (simT - t0) / (t1 - t0))) : 0;
+    km = (tl.d[i - 1] + (tl.d[i] - tl.d[i - 1]) * f) * RRPL.skala;
+    v = Math.round(tl.v[i - 1] + (tl.v[i] - tl.v[i - 1]) * f);
+    if (tl.ln) { const a = tl.ln[i - 1], b = tl.ln[i]; if (a != null && b != null) ln = Math.round(a + (b - a) * f); else ln = b != null ? b : a; }
+  } else {
+    km = RRPL.kmUk * (simT / RRPL.dur);   // bez uzoraka: ravnomerno (prosecna brzina)
+  }
+  km = Math.min(RRPL.kmUk, Math.max(0, km));
+  const c = RRPL.cum, p = RRPL.pts;
+  let j = 1;
+  while (j < c.length - 1 && c[j] < km) j++;
+  const k0 = c[j - 1], k1 = c[j], g = k1 > k0 ? (km - k0) / (k1 - k0) : 0;
+  const lo = p[j - 1][0] + (p[j][0] - p[j - 1][0]) * g, la = p[j - 1][1] + (p[j][1] - p[j - 1][1]) * g;
+  const brg = Math.atan2((p[j][0] - p[j - 1][0]) * Math.cos(la * Math.PI / 180), p[j][1] - p[j - 1][1]) * 180 / Math.PI;
+  return { km, lo, la, brg, v, ln };
+}
+function sumReplayCrtaj(simT) {
+  const z = sumReplayPoz(simT);
+  if (!RRPL.mk) {
+    const el = document.createElement("div");
+    el.style.cssText = "width:26px;height:26px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.7))";
+    el.innerHTML = '<svg viewBox="0 0 24 24" style="width:100%;height:100%"><path d="M12 2 L19 20 L12 15.5 L5 20 Z" fill="#38bdf8" stroke="#0b1120" stroke-width="1.4"/></svg>';
+    RRPL.mk = new maplibregl.Marker({ element: el, rotationAlignment: "map", pitchAlignment: "map" }).setLngLat([z.lo, z.la]).addTo(map);
+  } else RRPL.mk.setLngLat([z.lo, z.la]);
+  try { RRPL.mk.setRotation(z.brg); } catch (e) {}
+  if (RRPL.on && !RRPL.rm) { try { map.jumpTo({ center: [z.lo, z.la] }); } catch (e) {} }   // kamera prati (sem reduced-motion)
+  if ((RRPL.frame++ & 3) === 0) {   // brojevi i slajder na svaki 4. kadar - dovoljno, jeftinije
+    const mm = Math.floor(simT / 60), hh = Math.floor(mm / 60);
+    document.getElementById("rrTime").textContent = hh ? hh + ":" + String(mm % 60).padStart(2, "0") : mm + ":" + String(Math.floor(simT % 60)).padStart(2, "0");
+    document.getElementById("rrKm").textContent = z.km.toFixed(1).replace(".", ",") + " km";
+    document.getElementById("rrSpd").textContent = (z.v != null ? z.v : Math.round(RRPL.kmUk / (RRPL.dur / 3600))) + " km/h";
+    const le = document.getElementById("rrLean");
+    if (z.ln != null && Math.abs(z.ln) >= 3) { le.hidden = false; le.textContent = Math.abs(z.ln) + "° " + (z.ln < 0 ? "levo" : "desno"); }
+    else le.hidden = true;
+    const sl = document.getElementById("rrSlider");
+    if (sl && !RRPL.drag) sl.value = Math.round(simT / RRPL.dur * 1000);
+  }
+}
+function sumReplayTick(ts) {
+  if (!RRPL.on) return;
+  const dt = RRPL.lastTs ? Math.min(0.1, (ts - RRPL.lastTs) / 1000) : 0;
+  RRPL.lastTs = ts;
+  RRPL.t = Math.min(RRPL.dur, RRPL.t + dt * RRPL.speed);
+  sumReplayCrtaj(RRPL.t);
+  if (RRPL.t >= RRPL.dur) { sumReplayPauza(); return; }   // kraj: stani, marker ostaje na cilju
+  RRPL.raf = requestAnimationFrame(sumReplayTick);
+}
+function sumReplayPauza() {
+  RRPL.on = false;
+  try { cancelAnimationFrame(RRPL.raf); } catch (e) {}
+  const pb = document.getElementById("rrPlay");
+  if (pb) pb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg>';
+}
+function sumReplayPlay() {
+  const el = document.getElementById("rideSum");
+  if (RRPL.t >= RRPL.dur - 0.2) RRPL.t = 0;   // ponovo od pocetka
+  RRPL.on = true; RRPL.lastTs = 0;
+  el.classList.add("peek", "replaying");   // mapa je heroj, kartica = niska traka sa kontrolama
+  const pb = document.getElementById("rrPlay");
+  if (pb) pb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+  try { if (map.getZoom() > 13.5) map.jumpTo({ zoom: 12 }); } catch (e) {}   // da se kretanje VIDI, ne juri
+  RRPL.raf = requestAnimationFrame(sumReplayTick);
+}
+function sumReplayInit(s, pts) {
+  sumReplayStop();
+  const box = document.getElementById("rsReplay");
+  if (!box) return;
+  if (!pts || pts.length < 3 || !map) { box.hidden = true; return; }
+  RRPL.pts = pts;
+  RRPL.cum = sumCum(pts);
+  RRPL.kmUk = RRPL.cum[RRPL.cum.length - 1];
+  RRPL.rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // vremenska linija iz uzoraka brzine: integral puta, pa normalizacija na duzinu traga
+  RRPL.tl = null;
+  const smp = s.smp;
+  if (smp && smp.length > 4) {
+    const t = [], d = [], v = [], ln = [];
+    let dd = 0;
+    for (let i = 0; i < smp.length; i++) {
+      const dt = i ? Math.max(0, (smp[i].t || 0) - (smp[i - 1].t || 0)) : 0;
+      dd += (i ? (((smp[i - 1].v || 0) + (smp[i].v || 0)) / 2) : 0) * dt / 3600;
+      t.push(smp[i].t || 0); d.push(dd); v.push(smp[i].v || 0); ln.push(smp[i].ln != null ? smp[i].ln : null);
+    }
+    if (dd > 0.3) { RRPL.tl = { t, d, v, ln: ln.some((x) => x != null) ? ln : null }; RRPL.skala = RRPL.kmUk / dd; RRPL.dur = t[t.length - 1] || 60; }
+  }
+  if (!RRPL.tl) RRPL.dur = Math.max(60, (s.mov || s.min || 1) * 60);   // bez uzoraka: ravnomerno po trajanju
+  RRPL.speed = Math.max(1, RRPL.dur / 40);   // cela voznja ~40 s
+  RRPL.t = 0; RRPL.frame = 0;
+  box.hidden = false;
+  if (!box._wired) {   // elementi su staticni - handleri se vezuju jednom, podaci zive u RRPL
+    box._wired = true;
+    document.getElementById("rrPlay").addEventListener("click", (e) => { e.stopPropagation(); RRPL.on ? sumReplayPauza() : sumReplayPlay(); });
+    const sl = document.getElementById("rrSlider");
+    sl.addEventListener("input", (e) => { e.stopPropagation();
+      RRPL.drag = true; RRPL.t = (+sl.value / 1000) * RRPL.dur;
+      const el = document.getElementById("rideSum"); el.classList.add("peek", "replaying");   // i seek bez play pokazuje mapu
+      sumReplayCrtaj(RRPL.t); RRPL.drag = false; });
+    ["click", "pointerdown", "touchstart"].forEach((ev) => box.addEventListener(ev, (e) => e.stopPropagation()));   // tap na kontrole ne sme da vrati/skupi list
+  }
+  sumReplayCrtaj(0);   // marker odmah na start (i pre play-a se vidi odakle krece)
+  document.getElementById("rrSlider").value = 0;
+}
 function rideSumShow(sIn) {
   // bez argumenta: svez sazetak posle voznje; sa argumentom: zapis iz dnevnika (tap na vrow - Boskov nalaz 6.8.)
   const s = sIn || RIDE.lastSummary;
@@ -11356,6 +11509,7 @@ function rideSumShow(sIn) {
   });
   // rečenica vožnje + traka trenutaka (maketa B) - pune se asinhrono kad baza deonica stigne
   try { sumMaketa(s, pts, !sIn); } catch (e) {}
+  try { sumReplayInit(s, pts); } catch (e) {}   // replay voznje (13.8.): slajder + brzine, kao demo
   const sp = document.getElementById("rsSpark");   // 9.8.: BRZINA kroz voznju (kriva nagiba penzionisana - "neupotrebljiva", Bosko)
   if (sp) {
     if (s.smp && s.smp.length > 5 && s.smp.some((x) => (x.v || 0) > 0)) {
