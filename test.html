@@ -553,9 +553,7 @@
     #homeChips .chip.on { background: #f97316; border-color: #f97316; color: #fff; }
     #homeChips .chip.rec { border-color: #ef4444; color: #fff;
       box-shadow: 0 3px 10px rgba(0,0,0,.35), 0 0 0 3px rgba(239,68,68,.14); }
-    #homeChips .chip.wx { border-color: rgba(249,115,22,.45); color: #fdba74; }
-    #homeChips .chip.wx svg { stroke: #f97316; }
-    #homeChips .chip.wx b { color: #fff; font-weight: 800; }
+    /* .chip.wx uklonjen 13.8. - cip vremena vise ne postoji na pocetnom */
     #homeChips .chip.rec svg { stroke: #ef4444; }
     #homeChips .chip.on svg { stroke: #fff; }
 
@@ -567,13 +565,15 @@
     #homeFabs button { width: 46px; height: 46px; border-radius: 14px; background: rgba(15,23,42,.92); border: 1px solid rgba(148,163,184,.2); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,0,0,.35); cursor: pointer; }
     #homeFabs button svg { width: 22px; height: 22px; stroke: #e2e8f0; fill: none; }
     #homeFabs button[data-fab="tilt"] { display: none; }   /* 3D toggle = kompas dugme */
-    /* POI cipovi (13.8.): malo manji od alatki, upaljen = narandzast okvir i ikonica */
+    /* POI dugmad (13.8.): AKCIJE - nadji pumpu/hranu napred i dodaj stanicu; vidljive i U VOZNJI
+       (Boskova vizija: "dugmad sa strane su kada si vec na ruti i vozis"). */
     #homeFabs button.poi { width: 40px; height: 40px; border-radius: 12px; align-self: flex-end; }
-    #homeFabs button[data-fab="poi-fuel"] { margin-top: 56px; }   /* kompas (.compass-btn, fiksiran na 178px) stoji izmedju Slojeva i cipova */
+    #homeFabs button[data-fab="poi-fuel"] { margin-top: 56px; }   /* kompas (.compass-btn, fiksiran na 178px) stoji izmedju Slojeva i dugmadi */
+    body.riding #homeFabs button[data-fab="poi-fuel"] { margin-top: 0; }   /* u voznji kompas sidje dole - rupa ne treba */
     #homeFabs button.poi svg { width: 19px; height: 19px; }
-    #homeFabs button.poi.on { border-color: #f97316; background: rgba(124,45,10,.55); }
-    #homeFabs button.poi.on svg { stroke: #f97316; }
-    body.riding #homeFabs button.poi, body.zajmap #homeFabs button.poi { display: none; }   /* u voznji i u Zajednici mapa ima svoja pravila */
+    body.riding #homeFabs button.poi { width: 46px; height: 46px; }   /* rukavice */
+    body.riding #homeFabs button.poi svg { width: 22px; height: 22px; }
+    body.riding #homeFabs button[data-fab="poi-saved"], body.zajmap #homeFabs button.poi { display: none; }   /* sacuvano nije akcija voznje; Zajednica ima svoja pravila */
     /* moja lokacija: donji desni ugao (kao Google) */
     /* 11.8.: sve troje se dize iznad donjeg lista. Atribucija NIJE ukras nego uslov licence
        OpenFreeMap/OSM - izmereno je da bi je list pokrio 100%. Visina lista je ~200 px. */
@@ -739,6 +739,8 @@
   #layersSheet .grab { width: 38px; height: 4px; border-radius: 2px; background: #475569; margin: 4px auto 12px; }
   #layersSheet .lst { font-size: 16px; font-weight: 900; color: #fff; margin-bottom: 8px; }
   #layersSheet .lrow { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid rgba(148,163,184,.1); font-size: 14px; font-weight: 700; color: #e2e8f0; }
+  #layersSheet .lsbtn { width: 100%; background: transparent; border: 0; border-bottom: 1px solid rgba(148,163,184,.1); cursor: pointer; text-align: left; font: inherit; }
+  #layersSheet .lsbtn .chev { color: #f97316; font-size: 18px; font-weight: 800; }
   #layersSheet .lrow input { appearance: none; -webkit-appearance: none; width: 44px; height: 26px; border-radius: 999px; background: #334155; position: relative; transition: background .2s; margin: 0; cursor: pointer; flex: none; }
   #layersSheet .lrow input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #94a3b8; transition: transform .2s, background .2s; }
   #layersSheet .lrow input:checked { background: rgba(249,115,22,.9); }
@@ -1311,7 +1313,7 @@
   #rideSum .rspark svg { display: block; width: 100%; height: auto; }
   #rideSum .rspark .gl { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin-top: 4px; text-align: center; }
   /* .rsrek uklonjen 13.8. - licni rekord je trenutak u traci trenutaka */
-  /* List prognoze za tacku (14.8.) */
+  /* List prognoze za tacku (13.8.) */
   #wxSheet { position: fixed; inset: 0; z-index: 340; }
   #wxSheet .wxback { position: absolute; inset: 0; background: rgba(4,8,18,.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
   #wxSheet .wxbody { position: absolute; left: 0; right: 0; bottom: 0; background: #101a30; border-top: 1px solid rgba(148,163,184,.22);
@@ -1335,6 +1337,21 @@
   #wxSheet .wxn { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-top: 10px; }
   #wxSheet .wxcta { width: 100%; height: 46px; margin-top: 12px; border-radius: 13px; border: 0; cursor: pointer;
     background: linear-gradient(135deg,#f97316,#ea580c); color: #fff; font: 800 14.5px Archivo,system-ui,sans-serif; }
+  /* List "nadji pumpu/hranu" (13.8.) - isti okvir kao list vremena, krupni redovi za rukavice */
+  #poiSheet { position: fixed; inset: 0; z-index: 340; }
+  #poiSheet .wxback { position: absolute; inset: 0; background: rgba(4,8,18,.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  #poiSheet .wxbody { position: absolute; left: 0; right: 0; bottom: 0; background: #101a30; border-top: 1px solid rgba(148,163,184,.22);
+    border-radius: 20px 20px 0 0; padding: 4px 18px calc(18px + env(safe-area-inset-bottom)); }
+  #poiSheet .grab { width: 44px; height: 4px; border-radius: 3px; background: rgba(148,163,184,.4); margin: 10px auto 12px; }
+  #poiSheet .wxt { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 800; color: #f8fafc; }
+  #poiSheet .wxt svg { width: 20px; height: 20px; stroke: #f97316; fill: none; }
+  #poiSheet .wxs { font-size: 14px; color: #cbd5e1; margin-top: 8px; }
+  #poiSheet .prow { display: block; width: 100%; text-align: left; margin-top: 10px; padding: 12px 14px; min-height: 58px;
+    background: rgba(15,23,42,.6); border: 1px solid rgba(148,163,184,.18); border-radius: 14px; cursor: pointer; }
+  #poiSheet .prow:active { border-color: #f97316; background: rgba(124,45,10,.35); }
+  #poiSheet .prow b { display: block; font: 800 15.5px Archivo,system-ui,sans-serif; color: #f8fafc; }
+  #poiSheet .prow span { display: block; font: 600 12.5px Archivo,system-ui,sans-serif; color: #94a3b8; margin-top: 3px; }
+  #poiSheet .wxn { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-top: 12px; }
   #rideSum .rskol { margin: 12px 20px 0; background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.14);
     border-radius: 14px; padding: 10px 14px; font-size: 13px; color: #cbd5e1; font-weight: 600; line-height: 1.5; }
   #rideSum .rskol b { color: #f8fafc; }
@@ -1914,11 +1931,9 @@
            "Rute", koji je ionako jedan tap dalje u donjoj navigaciji. Pravilo: kad red ne staje,
            izbaci stavku - ne smanjuj sve. -->
       <button class="chip rec" data-chip="snimi"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4" fill="#ef4444" stroke="none"/></svg>Snimi vožnju</button>
-      <!-- 12.8.: vremenska presuda je presla OVDE iz donjeg lista, u kratkom obliku ("Suvo narednih 12h").
-           Stoji DRUGA jer je Boskov raniji izbor da crveni "Snimi voznju" bude prvi (0.9.24), a uz to
-           ovaj cip prvi odlazi ako red ne stane - vidi wxChipStane(). Kad red ne staje, izbacuje se
-           stavka; maska prelaza preko ivice je bila greska koja je tri puta secla "Snimi voznju". -->
-      <button class="chip wx" id="wxChip" type="button" hidden></button>
+      <!-- 13.8.: cip vremena ("Suvo narednih 12h") UKLONJEN sa pocetnog - Bosko dvaput: pocetni je
+           mapa kao Google, bez vremenskog teksta. Prognoza za tacku zivi u Slojevima ("Vreme za ovu
+           tacku" -> list po satima) i vise se NE dohvata na svako pokretanje nego tek na zahtev. -->
     </div>
   </div>
   <div id="routePill"><div class="rpin"><b id="rpTxt">-</b><span id="rpSub"></span></div><button id="rpX" aria-label="Poništi rutu">✕</button></div>
@@ -2245,8 +2260,7 @@ const $ = (id) => document.getElementById(id);
 const state = { planSeq: 0, _activeSeq: 0, routes: [], selected: 0, markers: [], geocode: {}, revCache: {},
   vias: [], viaMarkers: [], hazardMode: false, famousApplied: null, pendingFamous: null,
   catMarkers: { fuel: [], food: [], camp: [], cam: [], pause: [], work: [], hazard: [], meet: [], mesto: [] }, editorialMarkers: [], layerVis: {},
-  mapPoi: { fuel: 0, food: 0, saved: 0 },   // cipovi na mapi (13.8., Google obrazac): tepih POI po izboru
-  nearMarkers: [], _mestaUzRutu: new Set() };
+  _mestaUzRutu: new Set() };   // 13.8.: mapPoi/nearMarkers uklonjeni - POI slojevi su uvek upaljeni
 
 /* slojevi mape: koje kategorije markera se prikazuju (pamti se u localStorage) */
 const LAYER_DEFS = [["fuel", "Pumpe"], ["food", "Hrana i pauze"], ["camp", "Kampovi"],
@@ -2257,7 +2271,6 @@ function loadLayerVis() {
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem("mr_layers") || "{}"); } catch { }
   for (const [cat] of LAYER_DEFS) state.layerVis[cat] = saved[cat] !== undefined ? saved[cat] : 1;
-  try { Object.assign(state.mapPoi, JSON.parse(localStorage.getItem("mr_mappoi") || "{}")); } catch { }
 }
 function applyLayerVis() {
   for (const [cat] of LAYER_DEFS)
@@ -5055,7 +5068,7 @@ function addEditorialMarkers(route) {
    Istorija smera: "default cist" (R5) -> "crtaju se uvek" (11.8.) -> 13.8. Bosko sa telefona:
    "previše onih tačaka na početnom ekranu... poenta je da se vide kada vozimo blizu".
    Sada: tepih se NE crta sam od sebe. Pali ga čip "Hrana" na mapi (samo kafane), a u vožnji
-   se najbliža mesta pokazuju kao prave ikonice (nearPinsTick). Tab Zajednica ima svoj prikaz
+   POI slojevi uvek vide (13.8.). Tab Zajednica ima svoj prikaz
    (ZAJ.markers) i tepih mu ne treba. Grupisano preko GL sloja, ne 599 DOM markera - DOM marker
    se preracunava na svaki kadar pomeranja mape, sto na telefonu ubija fluidnost. */
 const MESTA_BOJA = { food: "#f97316", pause: "#22c55e", meet: "#38bdf8", hazard: "#ef4444", mesto: "#94a3b8" };
@@ -5095,11 +5108,12 @@ function slojnaIkona(imeSlike, kljucIkone, boja) {   // jedna pilula -> slika sl
 function mestaIkoneUcitaj() {
   return Promise.all(Object.keys(MESTA_IKONA).map((cat) => slojnaIkona("mesta-" + cat, MESTA_IKONA[cat], MESTA_BOJA[cat] || "#f97316")));
 }
-function mestaAktivneKat() {   // koje kategorije tepiha su upaljene (13.8.: podrazumevano NIJEDNA)
-  // Zajednica mapa = PUN prikaz mesta: njeni sopstveni markeri (ZAJ.markers) su samo prijave,
-  // kurirana mesta je oduvek nosio ovaj sloj - gasenje ovde bi ispraznilo ceo rezim
-  if (document.body.classList.contains("zajmap")) return Object.keys(MESTA_BOJA);
-  return (state.mapPoi && state.mapPoi.food) ? ["food"] : [];
+function mestaAktivneKat() {
+  /* 13.8., Boskova odluka (preokret posle ikonica): mesta se UVEK vide, u svim rezimima -
+     "pumpe, restorani, vidikovci... sve to treba da se uvek vidi sa ovim ikonicama".
+     Gustinu drze klasteri do z11 + collision simbola; cipovi sa strane vise NISU prekidaci
+     slojeva nego akcije (nadji napred + dodaj stanicu). */
+  return Object.keys(MESTA_BOJA);
 }
 function mestaSlojCrtaj() {
   if (!map || !state.editorial || !state.editorial.length) return;
@@ -5176,10 +5190,14 @@ function pumpaCena(iso) {
 }
 async function pumpeUcitaj() {
   if (PUMPE) return PUMPE;
-  try {
-    const d = await fetchData("data/pumpe.json?v=" + APP_VERSION, { timeoutMs: 9000 });
-    PUMPE = d; return d;
-  } catch (e) { return null; }
+  if (pumpeUcitaj._p) return pumpeUcitaj._p;   // paralelni pozivi dele JEDAN fetch (13.8.)
+  pumpeUcitaj._p = (async () => {
+    try {
+      const d = await fetchData("data/pumpe.json?v=" + APP_VERSION, { timeoutMs: 9000 });
+      PUMPE = d; return d;
+    } catch (e) { return null; } finally { pumpeUcitaj._p = null; }
+  })();
+  return pumpeUcitaj._p;
 }
 async function pumpeSlojCrtaj() {
   if (!map) return;
@@ -5191,7 +5209,7 @@ async function pumpeSlojCrtaj() {
     type: "Feature", geometry: { type: "Point", coordinates: [z[1], z[0]] },
     properties: { i, b: z[2] >= 0 ? (d.brendovi[z[2]] || "") : "", h24: z[3], z: z[4] || "" } })) };
   map.addSource("pumpeSrc", { type: "geojson", data: fc });
-  // pumpa nosi NASU ikonicu (14.8., Boskov nalaz sa Jadrije: "zasto su pumpe plavi krugovi
+  // pumpa nosi NASU ikonicu (13.8., Boskov nalaz sa Jadrije: "zasto su pumpe plavi krugovi
   // a ne ikonice pumpe koje smo uradili") - ista pilula kao mesta, cyan okvir da se razlikuje od kafana
   await slojnaIkona("pumpa-pin", "fuel", "#22d3ee");
   map.addLayer({ id: "pumpeTacka", type: "symbol", source: "pumpeSrc", minzoom: 9,
@@ -5210,40 +5228,38 @@ async function pumpeSlojCrtaj() {
   map.on("mouseleave", "pumpeTacka", () => { map.getCanvas().style.cursor = ""; });
   pumpeSlojFilter();
 }
-/* ---------------- Čipovi na mapi: Pumpe / Hrana / Sačuvano (13.8., Boskov zahtev sa vožnje:
-   "kako Google ima one kartice gore, tako i mi treba da imamo... možda sa desne strane ispod
-   layers"). Svaki čip pali svoj tepih na mapi; podrazumevano su svi ugašeni, pa je početni
-   ekran čist - to je odgovor i na "previše onih tačaka na početnom ekranu". ---------------- */
-function toggleMapPoi(k) {
-  state.mapPoi[k] = state.mapPoi[k] ? 0 : 1;
-  try { localStorage.setItem("mr_mappoi", JSON.stringify(state.mapPoi)); } catch (e) {}
-  applyMapPoi();
-}
-function applyMapPoi() {
-  document.querySelectorAll('#homeFabs button[data-fab^="poi-"]').forEach((b) => {
-    b.classList.toggle("on", !!state.mapPoi[b.dataset.fab.slice(4)]);
-  });
-  try { if (state.mapPoi.fuel) pumpeSlojCrtaj(); else pumpeSlojFilter(); } catch (e) {}
+/* ---------------- POI slojevi: UVEK na mapi (13.8., Boskova vizija) ----------------
+   "Pumpe, restorani, vidikovci... sve to treba da se uvek vidi sa ovim ikonicama. Ova dugmad
+   sa strane su kada si vec na ruti i vozis i zanima te gde je pumpa - kliknes pumpu i on te
+   vodi kao ADD STOP, ili ti da vise pumpi pa izaberes."
+   Dakle: slojevi se crtaju bezuslovno (gustinu drze minzoom + klasteri + collision), a bocna
+   dugmad su AKCIJE - poiNadji() nadje kandidate napred uz rutu / oko tebe i doda stanicu. */
+function applyMapPoi() {   // ime zadrzano zbog poziva sa vise mesta; sada = "nacrtaj sve POI slojeve"
+  try { pumpeSlojCrtaj(); } catch (e) {}
   try { mestaSlojCrtaj(); } catch (e) {}
-  try { if (state.mapPoi.food) restoraniSlojCrtaj(); else restoraniSlojFilter(); } catch (e) {}   // 14.8.: cip Hrana = i OSM restorani, svuda
+  // restorani su 1,25 MB - lenjo, par sekundi posle starta; tajmer se NE resetuje na ponovne
+  // pozive (styledata stize na svaki tile - resetovanje bi ga odlagalo unedogled)
+  try { if (!map.getLayer("restTacka") && !applyMapPoi._rt)
+    applyMapPoi._rt = setTimeout(() => { applyMapPoi._rt = null; try { restoraniSlojCrtaj(); } catch (e) {} }, 3500); } catch (e) {}
   try { savedSlojCrtaj(); } catch (e) {}
-  /* Reload stila (izgubljen WebGL kontekst) brise nase izvore, slojeve I slike - cip bi ostao
-     upaljen a mapa prazna. Isti stit kao za nav slojeve: cim se primeti da fale, vrate se.
-     getLayer provera cuva od petlje (styledata okida i nase addLayer/addImage). */
+  /* Reload stila (izgubljen WebGL kontekst) brise nase izvore, slojeve I slike - mapa bi ostala
+     bez POI. ⚠ styledata se okida na SVAKI tile/sprite load, a nase crtanje samo okida nove
+     styledata dogadjaje - bez brane je to bila petlja koja gusi glavnu nit (uhvaceno u QA 13.8.).
+     Zato: reaguj samo kad sloj STVARNO fali, i najvise jednom u sekundi. */
   if (!applyMapPoi._sd && map) {
     applyMapPoi._sd = true;
     try { map.on("styledata", () => { try {
-      if ((state.mapPoi.fuel && !map.getLayer("pumpeTacka")) ||
-          (state.mapPoi.food && !map.getLayer("restTacka")) ||
-          (mestaAktivneKat().length && !map.getLayer("mestaTacka"))) applyMapPoi();
+      if (applyMapPoi._deb) return;
+      if (map.getLayer("pumpeTacka") && map.getLayer("mestaTacka") && (!RESTORANI || map.getLayer("restTacka"))) return;
+      applyMapPoi._deb = setTimeout(() => { applyMapPoi._deb = null; try { applyMapPoi(); } catch (e2) {} }, 1000);
     } catch (e) {} }); } catch (e) {}
   }
 }
 let SAVEDMARK = [];
-async function savedSlojCrtaj() {   // cip "Sačuvano": kuća + sačuvane (offline) rute, kao pinovi
+async function savedSlojCrtaj() {   // kuća + sačuvane (offline) rute - uvek na mapi (13.8.)
   for (const m of SAVEDMARK) { try { m.remove(); } catch (e) {} }
   SAVEDMARK = [];
-  if (!state.mapPoi.saved || !map) return;
+  if (!map) return;
   const pinS = (lat, lon, label, svg) => {
     if (lat == null || lon == null) return;
     const el = document.createElement("div");
@@ -5260,7 +5276,6 @@ async function savedSlojCrtaj() {   // cip "Sačuvano": kuća + sačuvane (offli
   } catch (e) {}
   try {
     const svi = await offAll();
-    if (!state.mapPoi.saved) return;   // u međuvremenu ugašen
     for (const p of (svi || []))
       if (p.fromP) pinS(p.fromP[0], p.fromP[1], "Sačuvana ruta: " + (p.from || "").split(",")[0] + " → " + (p.to || "").split(",")[0],
         '<path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>');
@@ -5271,59 +5286,29 @@ async function savedSlojCrtaj() {   // cip "Sačuvano": kuća + sačuvane (offli
    planiranja; ovo pokriva slobodnu vožnju: najbližih ~10 kuriranih mesta u krugu 4 km, sa
    pravim ikonicama, osvežava se na 30 s i tek kad se mrdneš 800 m. DOM markera je malo (<=10),
    pa fluidnost ne trpi. */
-function nearPinsTick(lo, la) {
-  const N = RIDE._near || (RIDE._near = { t: 0, at: null });
-  const now = Date.now();
-  if (now - N.t < 30000) return;
-  if (N.at && haversine(N.at[1], N.at[0], la, lo) < 0.8) { N.t = now; return; }
-  N.t = now; N.at = [lo, la];
-  try {
-    if (!map || !state.editorial || !state.editorial.length) return;
-    const blizu = [];
-    const tepih = mestaAktivneKat();   // kategorije koje tepih vec crta (cip upaljen) - bez duplog pina
-    state.editorial.forEach((e, i) => {
-      if (e.lat == null || e.type === "ruta") return;
-      if (state._mestaUzRutu && state._mestaUzRutu.has(i)) return;   // vec stoji kao pin uz rutu
-      if (tepih.includes(BJB_CAT[e.type] || "meet")) return;
-      const d = haversine(la, lo, e.lat, e.lon);
-      if (d <= 4) blizu.push({ e, d });
-    });
-    blizu.sort((a, b) => a.d - b.d);
-    const nova = blizu.slice(0, 10);
-    for (const m of state.nearMarkers || []) { try { m.remove(); } catch (e) {} }
-    state.nearMarkers = [];
-    const IK = { kafana: "tavern", vidikovac: "viewpoint", okupljaliste: "meetup", upozorenje: "warning", mesto: "curves" };
-    for (const { e } of nova) {
-      const el = markerBadge(IK[e.type] || "route", e.type === "upozorenje" ? "danger" : undefined);
-      el.title = e.name;
-      const m = new maplibregl.Marker({ element: el }).setLngLat([e.lon, e.lat]).addTo(map);
-      m.setPopup(markerPopup(mestaPopHtml(e)));
-      state.nearMarkers.push(m);
-    }
-  } catch (e) {}
-}
-function nearPinsSkini() {
-  for (const m of state.nearMarkers || []) { try { m.remove(); } catch (e) {} }
-  state.nearMarkers = []; RIDE._near = null;
-}
-/* ---------------- RESTORANI: lokalni fajl, cip "Hrana" radi SVUDA (14.8.) ----------------
-   Boskov nalaz sa Jadrije: cip Hrana je palio samo nasa kurirana mesta (skoro sva u Srbiji),
-   pa je na moru bio prazan - prekidac koji laze. Isti model kao pumpe: jednokratni OSM izvod
-   (samo objekti SA imenom) u data/restorani.json, ucitava se LENJO tek na prvi klik cipa.
-   Bez klasterisanja: symbol sloj sa iskljucenim preklapanjem sam proredjuje guzvu po zumu. */
+/* nearPinsTick/nearPinsSkini uklonjeni 13.8.: POI slojevi su sada UVEK na mapi (simboli sa
+   collision proredjivanjem), pa dinamicki DOM pinovi "blizu tebe" vise nemaju sta da dodaju. */
+/* ---------------- RESTORANI: lokalni fajl, hrana se vidi SVUDA ----------------
+   (Boskov nalaz sa Jadrije: hrana je postojala samo kroz nasa kurirana mesta, skoro sva u
+   Srbiji.) Jednokratni OSM izvod - samo objekti SA imenom - u data/restorani.json; ucitava se
+   LENJO (1,25 MB) par sekundi posle starta. Symbol sloj sa iskljucenim preklapanjem sam
+   proredjuje guzvu po zumu. */
 let RESTORANI = null;
 const REST_TIP = ["restoran", "kafić", "brza hrana"];
 async function restoraniUcitaj() {
   if (RESTORANI) return RESTORANI;
-  try {
-    const d = await fetchData("data/restorani.json?v=" + APP_VERSION, { timeoutMs: 12000 });
-    RESTORANI = d; return d;
-  } catch (e) { return null; }
+  if (restoraniUcitaj._p) return restoraniUcitaj._p;   // paralelni pozivi dele JEDAN fetch (1,25 MB!)
+  restoraniUcitaj._p = (async () => {
+    try {
+      const d = await fetchData("data/restorani.json?v=" + APP_VERSION, { timeoutMs: 12000 });
+      RESTORANI = d; return d;
+    } catch (e) { return null; } finally { restoraniUcitaj._p = null; }
+  })();
+  return restoraniUcitaj._p;
 }
 async function restoraniSlojCrtaj() {
   if (!map) return;
   if (!map.isStyleLoaded()) { map.once("idle", () => { try { restoraniSlojCrtaj(); } catch (e) {} }); return; }
-  if (!(state.mapPoi && state.mapPoi.food)) { restoraniSlojFilter(); return; }   // ne vuci 35k tacaka dok cip ne zatrazi
   const d = await restoraniUcitaj();
   if (!d || !d.restorani || !d.restorani.length) return;
   await slojnaIkona("hrana-pin", "tavern", "#fbbf24");   // OSM hrana zuta; kurirane kafane ostaju narandzaste
@@ -5347,13 +5332,102 @@ async function restoraniSlojCrtaj() {
 }
 function restoraniSlojFilter() {
   if (!map || !map.getLayer("restTacka")) return;
-  const vidljiv = (state.mapPoi && state.mapPoi.food) && !document.body.classList.contains("zajmap");
-  map.setLayoutProperty("restTacka", "visibility", vidljiv ? "visible" : "none");
+  map.setLayoutProperty("restTacka", "visibility", "visible");   // 13.8.: uvek vidljivi (minzoom 10 + collision drze red)
+}
+/* ---------------- "Nadji mi pumpu / hranu" - akcija bocnih dugmadi (13.8., Boskova vizija) ----------------
+   Sa rutom (planiranje ili voznja): do 3 kandidata NAPRED uz rutu (blizu trase, ispred tebe),
+   tap = postaje STANICA i ruta se preracuna kroz nju (Add stop, kao Google).
+   Bez rute: do 3 najbliza od tvoje pozicije; tap pokrece plan ka njemu ("idem na pumpu").
+   U slobodnoj voznji: tap samo pokaze na mapi (snimanje se ne prekida). */
+async function poiNadji(vrsta) {
+  const stari = document.getElementById("poiSheet"); if (stari) { stari.remove(); return; }
+  const jeGorivo = vrsta === "fuel";
+  let kand = [];
+  if (jeGorivo) {
+    const pd = await pumpeUcitaj();
+    if (pd && pd.pumpe) kand = pd.pumpe.map((z) => ({ lat: z[0], lon: z[1],
+      ime: (z[2] >= 0 ? (pd.brendovi[z[2]] || "Pumpa") : "Pumpa"), pod: z[3] ? "non-stop" : "" }));
+  } else {
+    const rd = await restoraniUcitaj();
+    if (rd && rd.restorani) kand = rd.restorani.map((z) => ({ lat: z[0], lon: z[1], ime: z[2], pod: REST_TIP[z[3]] || "" }));
+    for (const e of (state.editorial || []))   // nase kurirane kafane imaju prednost u prikazu (nose pricu)
+      if (e.type === "kafana" && e.lat != null) kand.push({ lat: e.lat, lon: e.lon, ime: e.name, pod: "preporuka zajednice", zaj: 1 });
+  }
+  if (!kand.length) { shareToast("Podaci trenutno nisu dostupni - proveri vezu."); return; }
+  const uVoznji = document.body.classList.contains("riding") && !RIDE.freeRide && RIDE.route;
+  const uFree = document.body.classList.contains("riding") && RIDE.freeRide;
+  const ruta = uVoznji ? RIDE.route : (!document.body.classList.contains("riding") && state.routes && state.routes[state.selected]) || null;
+  const poz = (RIDE.pos && RIDE.pos.la != null) ? [RIDE.pos.la, RIDE.pos.lo]
+    : (HOMELOC.fix ? [HOMELOC.fix.lat, HOMELOC.fix.lon] : (map ? [map.getCenter().lat, map.getCenter().lng] : null));
+  let lista = [], naslov = "", rezim = "";
+  if (ruta && ruta.coords && ruta.cumDist) {
+    rezim = uVoznji ? "voznja" : "plan";
+    naslov = (jeGorivo ? "Pumpe" : "Hrana") + " napred uz rutu";
+    const curKm = uVoznji ? Math.max(0, ((RIDE.cam && RIDE.cam.d) || 0) / 1000) : 0;
+    // uzorci preostale rute na ~2 km + bbox prefilter kandidata: 31k kandidata pada na par stotina
+    const uz = [];
+    for (let d = curKm * 1000; d <= ruta.cumDist[ruta.cumDist.length - 1]; d += 2000) {
+      let i = ruta.cumDist.findIndex((x) => x >= d); if (i < 0) i = ruta.coords.length - 1;
+      uz.push({ km: d / 1000, la: ruta.coords[i][1], lo: ruta.coords[i][0] });
+      if (i >= ruta.coords.length - 1) break;
+    }
+    if (uz.length) {
+      let laMin = 90, laMax = -90, loMin = 180, loMax = -180;
+      for (const u of uz) { laMin = Math.min(laMin, u.la); laMax = Math.max(laMax, u.la); loMin = Math.min(loMin, u.lo); loMax = Math.max(loMax, u.lo); }
+      const M = 0.05;   // ~5 km rezerve oko koridora
+      for (const k of kand) {
+        if (k.lat < laMin - M || k.lat > laMax + M || k.lon < loMin - M || k.lon > loMax + M) continue;
+        let bd = 1e9, bkm = 0;
+        for (const u of uz) { const dd = haversine(k.lat, k.lon, u.la, u.lo); if (dd < bd) { bd = dd; bkm = u.km; } }
+        if (bd <= 2.5 && bkm > curKm + 0.2) { k._za = bkm - curKm; k._s = bd; lista.push(k); }
+      }
+      lista.sort((a, b) => (a.zaj ? -0.5 : 0) - (b.zaj ? -0.5 : 0) + a._za - b._za);
+      lista = lista.slice(0, 3);
+    }
+    if (!lista.length) naslov = (jeGorivo ? "Nema pumpe" : "Nema lokala") + " blizu preostale rute";
+  } else if (poz) {
+    rezim = uFree ? "free" : "idle";
+    naslov = (jeGorivo ? "Pumpe" : "Hrana") + " blizu tebe";
+    for (const k of kand) { k._d = haversine(poz[0], poz[1], k.lat, k.lon); }
+    lista = kand.filter((k) => k._d <= 30).sort((a, b) => a._d - b._d).slice(0, 3);
+    if (!lista.length) naslov = (jeGorivo ? "Nema pumpe" : "Nema lokala") + " u krugu od 30 km";
+  } else { shareToast("Ne znam gde si - uključi lokaciju."); return; }
+  const sh = document.createElement("div");
+  sh.id = "poiSheet";
+  const red = (k, i) => `<button class="prow" type="button" data-i="${i}">` +
+    `<b>${esc(k.ime)}</b><span>` +
+    (k._za != null ? `za ${Math.round(k._za)} km uz rutu` + (k._s > 0.15 ? ` · +${k._s.toFixed(1).replace(".", ",")} km s puta` : "") : `${k._d.toFixed(1).replace(".", ",")} km od tebe`) +
+    (k.pod ? ` · ${esc(k.pod)}` : "") + `</span></button>`;
+  sh.innerHTML = `<div class="wxback"></div><div class="wxbody"><div class="grab"></div>` +
+    `<div class="wxt">${rIco(jeGorivo ? "fuel" : "tavern", 18)} ${esc(naslov)}</div>` +
+    (lista.length ? lista.map(red).join("") : `<div class="wxs">Pokušaj kad budeš bliže putu ili proveri vezu.</div>`) +
+    `<div class="wxn">${rezim === "voznja" ? "tap = stanica na ruti, vodim te do nje" : rezim === "plan" ? "tap = stanica na ruti" : rezim === "free" ? "tap = pokaži na mapi (snimanje ide dalje)" : "tap = isplaniraj do tamo"}</div></div>`;
+  document.body.appendChild(sh);
+  sh.querySelector(".wxback").addEventListener("click", () => sh.remove());
+  sh.querySelectorAll(".prow").forEach((b) => b.addEventListener("click", () => {
+    const k = lista[+b.dataset.i]; if (!k) return;
+    sh.remove();
+    try {
+      if (rezim === "voznja") {
+        state.vias.push({ t: "stop", v: [k.lon, k.lat], name: k.ime });
+        speakSr("Dodajem stanicu. " + k.ime + ".");
+        rideReroute(RIDE.route, RIDE.pos.lo, RIDE.pos.la, (RIDE.cam && RIDE.cam.d) || 0, true);
+      } else if (rezim === "plan") {
+        state.vias.push({ t: "stop", v: [k.lon, k.lat], name: k.ime });
+        try { renderViaChips(); } catch (e) {}
+        plan();
+      } else if (rezim === "free") {
+        map.flyTo({ center: [k.lon, k.lat], zoom: Math.max(map.getZoom(), 14.5), duration: 800 });
+        markerPopup(`<b>${esc(k.ime)}</b>${k.pod ? `<br><span class="poi-dist">${esc(k.pod)}</span>` : ""}`).setLngLat([k.lon, k.lat]).addTo(map);
+      } else {
+        pickDestination({ n: k.ime, lat: k.lat, lon: k.lon });
+      }
+    } catch (e) {}
+  }));
 }
 function pumpeSlojFilter() {
   if (!map || !map.getLayer("pumpeTacka")) return;
-  // 13.8.: tepih pumpi pali cip na mapi (mapPoi.fuel), ne Slojevi - Slojevi i dalje gase pumpe UZ RUTU
-  map.setLayoutProperty("pumpeTacka", "visibility", (state.mapPoi && state.mapPoi.fuel) ? "visible" : "none");
+  map.setLayoutProperty("pumpeTacka", "visibility", "visible");   // 13.8.: uvek vidljive (minzoom 9)
 }
 function mestaSlojFilter() {
   if (!map || !map.getLayer("mestaTacka")) return;
@@ -5951,7 +6025,7 @@ async function renderFood(route, assess, departure) {
       targets.push({ km: route.cumDist[i] / 1000, lat: route.coords[i][1], lon: route.coords[i][0],
         eta: new Date(departure.getTime() + t * 1000) });
     }
-    /* Lokali uz pauzu iz NASEG fajla (14.8.) - isti model kao pumpe: radi svuda i bez signala.
+    /* Lokali uz pauzu iz NASEG fajla (13.8.) - isti model kao pumpe: radi svuda i bez signala.
        Overpass ostaje samo rezerva ako fajl ikad ne stigne. */
     let pois = null;
     const _rd = await restoraniUcitaj();
@@ -6782,7 +6856,7 @@ function zabeleziVoznju() {
       : "Otvoreni put";
     // fizicka provera nagiba: prosecno odstupanje senzora od atan(v*omega/g) po krivinama (stepeni)
     const lnChk = (RIDE.leanChk && RIDE.leanChk.n > 20) ? Math.round((RIDE.leanChk.sum / RIDE.leanChk.n) * 10) / 10 : null;
-    /* Trag za "ruta je heroj": gustina SKALIRA sa duzinom (14.8., Boskov nalaz: 373 km sa 150
+    /* Trag za "ruta je heroj": gustina SKALIRA sa duzinom (13.8., Boskov nalaz: 373 km sa 150
        tacaka u dnevniku = tacka na 2,5 km, pa linija ide PRAVOLINIJSKI preko brda, a
        "najvijugavija" meri sum). Cilj ~165 m po tacki, plafon 1600 (RAM, ne localStorage). */
     const tragCilj = Math.min(1600, Math.max(400, Math.round(km * 6)));
@@ -6805,7 +6879,7 @@ function zabeleziVoznju() {
     const v = Array.isArray(v0) ? v0 : [];
     v.unshift({ ts: Date.now(), naz, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
       kriv, maxK, avgK, lnL, lnR, lnChk, pauz,
-      /* Trag i u dnevnik - gustina skalira sa duzinom (14.8.): 150 tacaka je za 373 km davalo
+      /* Trag i u dnevnik - gustina skalira sa duzinom (13.8.): 150 tacaka je za 373 km davalo
          korak od 2,5 km i pravolinijski crtez. Cilj ~455 m po tacki, plafon 800 (~17 KB po
          voznji, 20 voznji ~340 KB - localStorage to nosi). */
       trag: trag ? (() => { const c = Math.min(800, Math.max(150, Math.round(km * 2.2)));
@@ -7623,7 +7697,7 @@ async function selectRoute(departure) {
     if (_tn.length >= 3 && !/^[\d\s.,-]+$/.test(_tn))   // "10" i slicni geocode-ostaci ne idu u istoriju
       rec.unshift({ from: state.geocode.from.name, to: _tn, ts: Date.now(),
         fp: [state.geocode.from.lat, state.geocode.from.lon], tp: [state.geocode.to.lat, state.geocode.to.lon] });   // koordinate: replay ne zavisi od geokodera ni od imena
-    // dedupe po DESTINACIJI (14.8.): "Jadrija iz Beograda" i "Jadrija iz Zvornika" su ista stavka - Jadrija
+    // dedupe po DESTINACIJI (13.8.): "Jadrija iz Beograda" i "Jadrija iz Zvornika" su ista stavka - Jadrija
     localStorage.setItem("rmr2_recent", JSON.stringify(rec.filter((x, i, a) => a.findIndex((y) => y.to === x.to) === i).slice(0, 10)));
     if (typeof updateQuickLabels === "function") updateQuickLabels();
   } catch (e) {}
@@ -8001,15 +8075,22 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.73";
+const APP_VERSION = "0.9.74";
 const CHANGELOG = [
-  { v: "0.9.73", d: "14.08.2026.", stavke: [
+  { v: "0.9.74", d: "13.08.2026.", stavke: [
+    "<b>Preokret po tvojoj viziji: pumpe, hrana, vidikovci i sva mesta se sada UVEK vide na mapi</b> - sa našim ikonicama, bez ikakvog paljenja. Gustinu drže zum i samo-proređivanje (kao Google). Isto važi i u vožnji.",
+    "<b>Bočna dugmad su sada AKCIJE, ne prekidači:</b> tapneš pumpu ili hranu i aplikacija ti ponudi do tri najbliža NAPRED UZ RUTU (\"za 12 km uz rutu · +0,4 km s puta · non-stop\"). Tap na jedan = postaje STANICA i ruta se odmah preračuna kroz njega - Add stop kao kod Google-a, i u vožnji (glasom potvrdi \"Dodajem stanicu\"). Naše kurirane kafane imaju prednost u ponudi. Bez rute: tri najbliža oko tebe, tap pokreće plan do tamo; u slobodnoj vožnji tap samo pokaže na mapi, snimanje ide dalje.",
+    "<b>\"Suvo narednih 12h\" više ne stoji na početnom ekranu</b> - tvoje pitanje \"zašto to imamo\" je bilo tačno, to je bio moj ostatak starog lista. Početni je čista mapa. Prognoza po satima za tvoju tačku živi u Slojevima (\"Vreme za ovu tačku\") i dohvata se tek kad je zatražiš - nula poziva na svako pokretanje.",
+    "Dugme Sačuvano vodi na sačuvane rute; kuća i sačuvane rute su ionako uvek na mapi.",
+    "Ispod haube: dva ozbiljna kvara uhvaćena i popravljena u testiranju pre nego što su stigla do tebe - beskonačna petlja koja je gušila mapu (samopopravka slojeva se okidala na svaki delić učitavanja), i namerna komanda \"dodaj stanicu\" koju je gutala zaštita od GPS šuma (probija je sada). I datumi u beleškama od danas su bili pogrešno zavedeni kao 14.8. - ispravljeno na 13.8."
+  ] },
+  { v: "0.9.73", d: "13.08.2026.", stavke: [
     "<b>Trag vožnje se čuva mnogo gušće</b> - tvoj nalaz sa jučerašnje ture: linija je išla pravolinijski preko brda. Uzrok: 373 km je bilo sabijeno u 150 tačaka (tačka na 2,5 km), pa je crtež spajao tačke pravim linijama. Sada gustina prati dužinu vožnje - duga tura nosi do 800 tačaka u dnevniku i do 1.600 u svežem sažetku.",
     "<b>\"Najvijugavija tri kilometra\" više ne sme da laže:</b> na tako retkom tragu ta mera računa šum, pa ti je pokazala pravu liniju. Sada se na retkom tragu ta stavka i njen oreol jednostavno ne prikazuju - bolje ništa nego netačno. Na novim vožnjama, sa gustim tragom, radi normalno.",
     "<b>Plavi oreol je pojačan</b> - bio je prebled na tamnoj mapi, sad se jasno vidi oko vijugavog dela.",
     "<b>Pošteno o jučerašnjem zapisu:</b> njegov trag je snimljen starom verzijom sa 150 tačaka i to ne mogu naknadno da zgusnem - te tačke ne postoje. Zato njegova traka sada pokazuje samo ono što je istinito (redni broj vožnje), a kroz Bosnu nemamo ni ocenjene deonice ni kurirana mesta pa je traka tanja nego u Srbiji. Nove vožnje od ove verzije nose i gust trag i mesta momenata."
   ] },
-  { v: "0.9.72", d: "14.08.2026.", stavke: [
+  { v: "0.9.72", d: "13.08.2026.", stavke: [
     "<b>Četiri tvoja nalaza sa Jadrije, sva četiri u korenu:</b>",
     "<b>Pumpe su sada prave pumpice</b>, ne plavi krugovi - ista pilula kao sva ostala mesta, samo u plavozelenoj boji da se razlikuje od hrane.",
     "<b>Čip Hrana sada radi svuda, ne samo u Srbiji.</b> Palio je samo naša kurirana mesta, pa je na moru bio prazan. Sada uz njih pali i 31.242 restorana, kafića i pekara iz OpenStreetMap-a za ceo region (Srbija, Hrvatska, BiH, Crna Gora, Makedonija, Slovenija, Kosovo) - iz našeg fajla, bez ijednog spoljnog servisa, radi i bez signala. Učitava se tek kad prvi put tapneš čip. Iz istog fajla sada dolaze i predlozi lokala uz pauze na ruti.",
@@ -8720,9 +8801,10 @@ function init() {
   // FAB dugmad -> postojeće kontrole mape
   const fabMap = {
     layers: () => openLayersSheet(),
-    "poi-fuel": () => toggleMapPoi("fuel"),
-    "poi-food": () => toggleMapPoi("food"),
-    "poi-saved": () => toggleMapPoi("saved"),
+    // 13.8.: dugmad su AKCIJE, ne prekidaci slojeva (slojevi su uvek upaljeni)
+    "poi-fuel": () => { try { poiNadji("fuel"); } catch (e) {} },
+    "poi-food": () => { try { poiNadji("food"); } catch (e) {} },
+    "poi-saved": () => { const sb = document.querySelector('[data-quick="saved"]'); if (sb) sb.click(); },   // precica na sacuvane rute
     tilt: () => { try { const p = map.getPitch() > 20; map.easeTo({ pitch: p ? 0 : 55, duration: 500 }); } catch (e) {} },
     gps: () => {
       if (document.body.classList.contains("riding") && typeof rideRecenter === "function") { rideRecenter(); return; }
@@ -8737,66 +8819,51 @@ function init() {
 /* ---- app2 Faza 4.1: motor sekcija sklopljena; prognoza je sada cip ispod pretrage ---- */
 const WX_SUN = '<svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></svg>';
 const WX_RAIN = '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M7 16a4 4 0 010-8 5 5 0 019.6-1A3.5 3.5 0 1117.5 16z"/><path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2"/></svg>';
-/* Cip sa vremenom se SAM SKLANJA ako red ne bi stao (12.8.). Ovo je isti kvar zbog kog je
-   "Snimi voznju" tri puta bio odsecen: kad red ne staje, izbacuje se stavka - ne smanjuje se
-   sve i ne stavlja se maska prelaza preko ivice. Meri se stvarna sirina, ne pretpostavlja. */
-function wxChipStane() {
-  const row = document.getElementById("homeChips"), c = document.getElementById("wxChip");
-  if (!row || !c || c.hidden) return;
-  c.hidden = false;
-  const uk = [...row.children].filter((x) => !x.hidden)
-    .reduce((a, x) => a + x.getBoundingClientRect().width, 0) + 8 * Math.max(0, row.children.length - 1);
-  if (uk > row.clientWidth - 2) c.hidden = true;   // ne stane - cip vremena odlazi, "Snimi voznju" ostaje
-}
-async function homeWxPeek() {
-  const chip = document.getElementById("wxChip"), row = document.getElementById("homeChips");
-  /* Provera VIDLJIVOSTI, ne postojanja (11.8.). Element postoji i kad je ugasen pravilom sa
-     !important, pa je stara provera prolazila i svako pokretanje je trosilo jedan naplativ
-     Open-Meteo poziv da bi upisalo tekst koji niko ne vidi. */
-  if (!chip || !row || row.offsetParent === null) return;
+/* Prognoza za TACKU se dohvata TEK NA ZAHTEV (13.8., Bosko: "zasto imamo i dalje na home
+   screenu suvo narednih 12h" - cip je uklonjen, pocetni je mapa kao Google). Ulaz je red
+   "Vreme za ovu tacku" u Slojevima; kes 45 min po zaokruzenoj lokaciji ostaje, pa ponovno
+   otvaranje ne kosta nista. Na svako POKRETANJE aplikacije ne ide vise nijedan poziv. */
+async function wxTacka() {
   const kljuc = (lat, lon) => "rmr2_wxpeek_" + lat.toFixed(1) + "_" + lon.toFixed(1);
-  const crtaj = (d) => {
-    chip.innerHTML = (d.kisa ? WX_RAIN : WX_SUN) + "<b>" + esc(d.kratko) + "</b>";
-    chip.hidden = false;
-    chip.title = d.puno.replace(/<[^>]+>/g, "");   // pun tekst ostaje kao objasnjenje na dugi pritisak
-    /* Tap otvara PRAVU prognozu po satima (14.8., Boskov nalaz sa Jadrije: "klikneš to suvo i
-       šta? Vodi te opet na search" - vodio je u pretragu, sto ne znaci nista). */
-    chip.onclick = () => { try { wxSheetOtvori(d); } catch (e) {} };
-    wxChipStane();
-  };
   const run = async (lat, lon) => {
-    try {   // kes 45 min: list/cip se crtaju na svako pokretanje, bez ovoga bi svako bilo naplativ poziv
-      const c = JSON.parse(localStorage.getItem(kljuc(lat, lon)) || "null");
-      if (c && Date.now() - c.t < 45 * 60e3 && c.puno && c.h) { crtaj(c); return; }
-    } catch (e) {}
     try {
-      const j = await fetchJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&hourly=temperature_2m,precipitation,precipitation_probability,wind_gusts_10m&forecast_hours=24&timezone=auto`, { timeoutMs: 8000, retries: 0 });
-      const h = j.hourly;
-      let rainAt = -1;
-      for (let i = 0; i < Math.min(12, h.precipitation.length); i++)
-        if (h.precipitation[i] >= 0.2 || (h.precipitation_probability && h.precipitation_probability[i] >= 60)) { rainAt = i; break; }
-      let d;
-      if (rainAt < 0) d = { kratko: "Suvo narednih 12h", kisa: false,
-        puno: "<b>Suvo narednih 12h</b> - savršen dan za vožnju. Isplaniraj rutu za detalje po deonicama." };
-      else {
-        const hh = new Date(h.time ? h.time[rainAt] : Date.now() + rainAt * 3600e3).getHours();
-        d = rainAt >= 5
-          ? { kratko: `Suvo do ~${hh}h`, kisa: false, puno: `<b>Suvo do ~${hh}h</b> - dobar prozor za vožnju, kiša stiže kasnije.` }
-          : { kratko: `Kiša oko ${hh}h`, kisa: true, puno: `<b>Kiša oko ${hh}h</b> kod tebe - proveri radar i isplaniraj pametno.` };
-      }
-      // satni niz ide uz kes - list prognoze se otvara i bez novog poziva
-      d.h = { time: h.time, t: h.temperature_2m, p: h.precipitation, pp: h.precipitation_probability, g: h.wind_gusts_10m };
-      crtaj(d);
-      try { localStorage.setItem(kljuc(lat, lon), JSON.stringify({ t: Date.now(), ...d })); } catch (e2) {}
-    } catch (e) { /* zadrzi postojece */ }
+      const c = JSON.parse(localStorage.getItem(kljuc(lat, lon)) || "null");
+      if (c && Date.now() - c.t < 45 * 60e3 && c.puno && c.h) return c;
+    } catch (e) {}
+    const j = await fetchJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&hourly=temperature_2m,precipitation,precipitation_probability,wind_gusts_10m&forecast_hours=24&timezone=auto`, { timeoutMs: 8000, retries: 0 });
+    const h = j.hourly;
+    let rainAt = -1;
+    for (let i = 0; i < Math.min(12, h.precipitation.length); i++)
+      if (h.precipitation[i] >= 0.2 || (h.precipitation_probability && h.precipitation_probability[i] >= 60)) { rainAt = i; break; }
+    let d;
+    if (rainAt < 0) d = { kratko: "Suvo narednih 12h", kisa: false,
+      puno: "<b>Suvo narednih 12h</b> - savršen dan za vožnju. Isplaniraj rutu za detalje po deonicama." };
+    else {
+      const hh = new Date(h.time ? h.time[rainAt] : Date.now() + rainAt * 3600e3).getHours();
+      d = rainAt >= 5
+        ? { kratko: `Suvo do ~${hh}h`, kisa: false, puno: `<b>Suvo do ~${hh}h</b> - dobar prozor za vožnju, kiša stiže kasnije.` }
+        : { kratko: `Kiša oko ${hh}h`, kisa: true, puno: `<b>Kiša oko ${hh}h</b> kod tebe - proveri radar i isplaniraj pametno.` };
+    }
+    d.h = { time: h.time, t: h.temperature_2m, p: h.precipitation, pp: h.precipitation_probability, g: h.wind_gusts_10m };
+    try { localStorage.setItem(kljuc(lat, lon), JSON.stringify({ t: Date.now(), ...d })); } catch (e2) {}
+    return d;
   };
-  if (navigator.geolocation) navigator.geolocation.getCurrentPosition(
-    (p) => run(p.coords.latitude, p.coords.longitude),
-    () => { try { const c = map.getCenter(); run(c.lat, c.lng); } catch (e) {} },
-    { maximumAge: 600000, timeout: 8000 });
-  else { try { const c = map.getCenter(); run(c.lat, c.lng); } catch (e) {} }
+  const poz = await new Promise((res) => {
+    if (navigator.geolocation) navigator.geolocation.getCurrentPosition(
+      (p) => res([p.coords.latitude, p.coords.longitude]),
+      () => { try { const c = map.getCenter(); res([c.lat, c.lng]); } catch (e) { res(null); } },
+      { maximumAge: 600000, timeout: 8000 });
+    else { try { const c = map.getCenter(); res([c.lat, c.lng]); } catch (e) { res(null); } }
+  });
+  if (!poz) return null;
+  try { return await run(poz[0], poz[1]); } catch (e) { return null; }
 }
-/* List prognoze za TVOJU tacku (14.8.): naredna 24 sata po satima - sat, ikonica, temperatura,
+async function wxTackaOtvori() {   // ulaz iz Slojeva: dohvati (ili iz kesa) pa otvori list
+  const d = await wxTacka();
+  if (d) { try { wxSheetOtvori(d); } catch (e) {} }
+  else shareToast("Prognoza trenutno nije dostupna - proveri vezu.");
+}
+/* List prognoze za TVOJU tacku (13.8.): naredna 24 sata po satima - sat, ikonica, temperatura,
    kisa u mm kad je ima. Odgovor na "sta nam znaci ono suvo narednih 12 sati": sada znaci ovo. */
 function wxSheetOtvori(d) {
   const staro = document.getElementById("wxSheet"); if (staro) { staro.remove(); return; }
@@ -8826,8 +8893,8 @@ function wxSheetOtvori(d) {
   document.body.appendChild(sh);
   sh.querySelector(".wxback").addEventListener("click", () => sh.remove());
   sh.querySelector(".wxcta").addEventListener("click", () => { sh.remove(); try { document.getElementById("homeSearch").click(); } catch (e) {} });
-  // star kes bez satnog niza (pre 14.8.): svez fetch ce ga doneti, list ostaje sa porukom - bez auto-petlje
-  if (!redovi) try { Object.keys(localStorage).filter((k) => k.startsWith("rmr2_wxpeek_")).forEach((k) => localStorage.removeItem(k)); homeWxPeek(); } catch (e) {}
+  // star kes bez satnog niza (pre 13.8. podne): ocisti ga da sledece otvaranje povuce svez - bez auto-petlje
+  if (!redovi) try { Object.keys(localStorage).filter((k) => k.startsWith("rmr2_wxpeek_")).forEach((k) => localStorage.removeItem(k)); } catch (e) {}
 }
 (function(){
   // motor sekcija -> sklopljena kartica (fabricki podaci rade i sklopljeni)
@@ -8851,7 +8918,7 @@ function wxSheetOtvori(d) {
     ["bikeBrand", "bikeModel", "bikeYear"].forEach((id) => { const e = document.getElementById(id); if (e) e.addEventListener("change", sum); });
     setTimeout(sum, 1500); setTimeout(sum, 4000);
   }
-  if (mqMobile.matches) setTimeout(() => { try { homeWxPeek(); } catch (e) {} }, 1200);   // cip sa prognozom ispod pretrage
+  // 13.8.: cip vremena uklonjen sa pocetnog - prognoza za tacku se dohvata tek na zahtev (Slojevi)
 })();
 
 /* ---- app2 Faza 4: cist ekran pretrage (Google/Waze stil + NASA BAZA u predlozima) ---- */
@@ -9068,7 +9135,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
       const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
       const r = rec[+row.dataset.recent]; if (!r) return;
       closeSearch(); document.body.classList.add("planning");
-      /* Nedavno pamti DESTINACIJU, ne relaciju (14.8., Boskov nalaz sa Jadrije: sve je bilo
+      /* Nedavno pamti DESTINACIJU, ne relaciju (13.8., Boskov nalaz sa Jadrije: sve je bilo
          "iz: Beograd", pa je plan sa mora krenuo od Beograda - otud i "Beograd → Jadrija
          (prekinuto)" od 12.8). Polazak je UVEK tvoja trenutna lokacija; za polazak od kuce
          postoji red Kuca. "Moja lokacija" je kljucna rec - plan saceka GPS fix. */
@@ -9102,7 +9169,7 @@ function updateQuickLabels() {
     const h = JSON.parse(localStorage.getItem("rmr2_home") || "null");
     const hb = document.querySelector('[data-quick="home"] span'); if (hb) hb.textContent = h ? h.name : "postavi";
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
-    const rb = document.querySelector('[data-quick="recent"] span'); if (rb) rb.textContent = rec.length ? rec[0].to : "—";   // destinacija, ne relacija (14.8.)
+    const rb = document.querySelector('[data-quick="recent"] span'); if (rb) rb.textContent = rec.length ? rec[0].to : "—";   // destinacija, ne relacija (13.8.)
     const sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
     const sb = document.querySelector('[data-quick="saved"] span'); if (sb) sb.textContent = sv.length ? sv.length + " ruta" : "—";
     // pravi broj = paketi sa celom rutom (rade bez signala); IndexedDB je asinhron pa stize malo kasnije
@@ -10126,9 +10193,10 @@ function startNavCam() {
   };
   RIDE.camRAF = requestAnimationFrame(loop);
 }
-async function rideReroute(route, lo, la, dNow) {
+async function rideReroute(route, lo, la, dNow, force) {
   const now = Date.now();
-  if (now - RIDE.lastReroute < 20000) return;
+  // throttle cuva od GPS suma; NAMERNA komanda (add stop sa dugmeta, 13.8.) ga preskace
+  if (!force && now - RIDE.lastReroute < 20000) return;
   RIDE.lastReroute = now; RIDE.rerouting = true;
   navLog("reroute-start", { d: Math.round(dNow || 0) });
   const savedVias = state.vias;
@@ -10317,7 +10385,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.freeRide = true; RIDE.freeNaz = null; RIDE.nav = null; RIDE.route = null; RIDE.total = 0;
   RIDE._flim = null; RIDE._flimV = 0;   // svež limit-stroj (znak prošle vožnje ne sme da preživi)
-  RIDE._fwx = null; RIDE._near = null;  // sveza kisna najava i svezi "blizu tebe" pinovi
+  RIDE._fwx = null;   // sveza kisna najava
   RIDE.offCount = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false;
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;
@@ -10422,7 +10490,6 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
       const _fl = RIDE._flimV || 0;
       document.querySelector("#rideBarBottom .pill").classList.toggle("over", !!_fl && spdK > _fl + 7);
     } catch (e) {}
-    try { nearPinsTick(lo, la); } catch (e) {}   // ikonice mesta blizu tebe (13.8.) - slobodna voznja nema pinove uz rutu
     try { freeWxTick(lo, la); } catch (e) {}     // kisna najava i bez rute (13.8.)
     try {   // baner najave mora i ovde da se gasi - rutirana petlja koja ga gasi u slobodnoj voznji ne radi
       const _ab = document.getElementById("rideAhead");
@@ -10827,7 +10894,6 @@ function stopRide() {
   try { clearInterval(RIDE.wdInt); RIDE.wdInt = null; } catch (e) {}
   try { cancelAnimationFrame(RIDE.camRAF); RIDE.camRAF = null; } catch (e) {}
   try { navRideLayersOff(); } catch (e) {}   // vrati planersku (weather) liniju rute
-  try { nearPinsSkini(); } catch (e) {}   // ikonice "blizu tebe" zive samo u voznji (13.8.)
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
   try { clearInterval(RIDE.prijInt); RIDE.prijInt = null; } catch (e) {}
   try { nightRoads(false); } catch (e) {}   // svetlina mape nazad na pregledni nivo
@@ -10916,7 +10982,7 @@ function best3km(pts) {   // najvijugavija ~3 km deonica traga (gustina skretanj
     turn.push(turn[i - 1] + dv);
   }
   if (cum[cum.length - 1] < 4) return null;
-  /* Redak trag ne sme da tvrdi vijugavost (14.8., Boskov nalaz: stari zapis 373 km sa 150
+  /* Redak trag ne sme da tvrdi vijugavost (13.8., Boskov nalaz: stari zapis 373 km sa 150
      tacaka = korak 2,5 km, pa je "najvijugavija" pokazivala PRAVOLINIJSKU vezu dve tacke).
      Preko ~250 m po tacki uglovi mere sum a ne krivine - bolje bez trenutka nego lazan. */
   if (cum[cum.length - 1] / (pts.length - 1) > 0.25) return null;
@@ -10960,7 +11026,7 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
     if (b3) {
       map.addSource("sumtrag-best", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: pts.slice(b3.a, b3.b + 1) } } });
       map.addLayer({ id: "sumtrag-bestln", type: "line", source: "sumtrag-best", layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": "#38bdf8", "line-width": 16, "line-opacity": .62, "line-blur": 1.2 } });   // 14.8.: bio prebled ("nema ga, ne vidi se")
+        paint: { "line-color": "#38bdf8", "line-width": 16, "line-opacity": .62, "line-blur": 1.2 } });   // 13.8.: bio prebled ("nema ga, ne vidi se")
     }
     // 9.8. (Boskov zahtev "gde je tacka obaranja i koji ugao"): trag obojen PO NAGIBU, deonicu po deonicu
     const imaNagib = pts.some((p) => p.length > 2 && p[2] != null);
@@ -11975,7 +12041,7 @@ async function stplPodeli(kind) {
       if (q === "recent") {
         const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
         if (!rec.length) { openPlanning(); return; }
-        // destinacija iz istorije, polazak = moja lokacija (14.8., isto pravilo kao u pretrazi)
+        // destinacija iz istorije, polazak = moja lokacija (13.8., isto pravilo kao u pretrazi)
         state.fromOverride = null;
         document.getElementById("from").value = "Moja lokacija";
         gpsPrefill(true);
@@ -12679,11 +12745,15 @@ function openLayersSheet() {
   const rows = LAYER_DEFS.map(([cat, label]) =>
     `<label class="lrow"><span>${label}</span><input type="checkbox" data-cat="${cat}" ${state.layerVis[cat] ? "checked" : ""}></label>`).join("");
   sh.innerHTML = `<div class="lsback"></div><div class="lsbody"><div class="grab"></div><div class="lst">Slojevi mape</div>
+    <button class="lrow lsbtn" id="lsWx" type="button"><span>${rIco("rain", 15)} Vreme za ovu tačku</span><span class="chev">›</span></button>
     <label class="lrow"><span>${rIco("rain", 15)} Kišni radar (uživo)</span><input type="checkbox" id="lsRadar" ${radar.on ? "checked" : ""}></label>
     <label class="lrow"><span>${rIco("viewpoint", 15)} 3D pogled (nagib mape)</span><input type="checkbox" id="lsTilt" ${map.getPitch() > 20 ? "checked" : ""}></label>${rows}
     <div class="lsleg">Boja rute = prognoza u satu prolaska: <i style="background:#22c55e"></i> vedro · <i style="background:#f59e0b"></i> oprez · <i style="background:#ef4444"></i> nevreme</div></div>`;
   document.body.appendChild(sh);
   sh.querySelector(".lsback").addEventListener("click", () => sh.remove());
+  // 13.8.: prognoza po satima za tacku - dohvata se TEK ovde, ne na pokretanje aplikacije
+  const lw = sh.querySelector("#lsWx");
+  if (lw) lw.addEventListener("click", () => { sh.remove(); try { wxTackaOtvori(); } catch (e) {} });
   sh.addEventListener("change", (e) => {
     const c = e.target;
     if (c.id === "lsTilt") {
