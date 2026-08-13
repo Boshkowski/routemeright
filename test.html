@@ -5041,6 +5041,33 @@ function mestaPopHtml(e) {
     `${e.year_hint ? " · " + esc(e.year_hint) + "." : ""}</span>` +
     (srcOk ? `<br><a href="${esc(e.source)}" target="_blank" rel="noopener">izvor ↗</a>` : "");
 }
+/* Tepih mesta nosi NASE ikonice (13.8., Boskovo pitanje "da li mesta imaju nase ikonice?" - nisu:
+   sloj je crtao gole krugove u boji, dok pinovi uz rutu i "blizu tebe" nose badge). Ista pilula
+   kao markerBadge (zaobljen kvadrat + ikonica u boji kategorije) rasterizuje se JEDNOM po
+   kategoriji i registruje kao slika sloja - simboli ostaju GL sloj, fluidnost kao krugovi,
+   a jezik ikonica je svuda isti. hasImage se proverava svaki put jer reload stila brise slike. */
+const MESTA_IKONA = { food: "tavern", pause: "viewpoint", meet: "meetup", hazard: "warning", mesto: "curves" };
+function mestaIkoneUcitaj() {
+  return Promise.all(Object.keys(MESTA_IKONA).map((cat) => new Promise((res) => {
+    try {
+      if (map.hasImage && map.hasImage("mesta-" + cat)) { res(); return; }
+      const boja = MESTA_BOJA[cat] || "#f97316";
+      const ik = (RMR_ICONS[MESTA_IKONA[cat]] || RMR_ICONS.route)
+        .replace(/currentColor/g, boja)
+        .replace("<svg ", '<svg x="14" y="14" width="32" height="32" ');
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">' +
+        `<rect x="3" y="3" width="54" height="54" rx="17" fill="rgba(15,23,42,.9)" stroke="${boja}" stroke-width="4"/>` + ik + "</svg>";
+      const img = new Image();
+      img.onload = () => { try {
+        const c = document.createElement("canvas"); c.width = 60; c.height = 60;
+        const cx = c.getContext("2d"); cx.drawImage(img, 0, 0);
+        if (!map.hasImage("mesta-" + cat)) map.addImage("mesta-" + cat, cx.getImageData(0, 0, 60, 60), { pixelRatio: 2 });
+      } catch (e) {} res(); };
+      img.onerror = () => res();
+      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    } catch (e) { res(); }
+  })));
+}
 function mestaAktivneKat() {   // koje kategorije tepiha su upaljene (13.8.: podrazumevano NIJEDNA)
   // Zajednica mapa = PUN prikaz mesta: njeni sopstveni markeri (ZAJ.markers) su samo prijave,
   // kurirana mesta je oduvek nosio ovaj sloj - gasenje ovde bi ispraznilo ceo rezim
@@ -5050,6 +5077,9 @@ function mestaAktivneKat() {   // koje kategorije tepiha su upaljene (13.8.: pod
 function mestaSlojCrtaj() {
   if (!map || !state.editorial || !state.editorial.length) return;
   if (!map.isStyleLoaded()) { map.once("idle", () => { try { mestaSlojCrtaj(); } catch (e) {} }); return; }
+  mestaIkoneUcitaj().then(() => { try { _mestaCrtajCore(); } catch (e) {} });   // slike sloja moraju biti spremne pre addLayer
+}
+function _mestaCrtajCore() {
   /* Izvor dobija SAMO upaljene kategorije (ne filter na sloju): klaster-krugovi broje sve sto je
      u izvoru, pa bi filter na sloju ostavio balone sa brojkama koje lazu. */
   const cats = mestaAktivneKat();
@@ -5072,10 +5102,10 @@ function mestaSlojCrtaj() {
   map.addLayer({ id: "mestaKlasterBroj", type: "symbol", source: "mestaSrc", filter: ["has", "point_count"],
     layout: { "text-field": ["get", "point_count_abbreviated"], "text-size": 13, "text-font": ["Noto Sans Bold"] },
     paint: { "text-color": "#fff" } });
-  map.addLayer({ id: "mestaTacka", type: "circle", source: "mestaSrc", filter: ["!", ["has", "point_count"]],
-    paint: { "circle-radius": 7, "circle-stroke-width": 2.5, "circle-stroke-color": "#0b1120",
-      "circle-color": ["match", ["get", "cat"], "food", MESTA_BOJA.food, "pause", MESTA_BOJA.pause,
-        "meet", MESTA_BOJA.meet, "hazard", MESTA_BOJA.hazard, MESTA_BOJA.mesto] } });
+  map.addLayer({ id: "mestaTacka", type: "symbol", source: "mestaSrc", filter: ["!", ["has", "point_count"]],
+    layout: { "icon-image": ["concat", "mesta-", ["get", "cat"]],
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 9, 0.66, 13, 0.9, 16, 1],
+      "icon-allow-overlap": true } });   // nase pilule sa ikonicama (13.8.), ne goli krugovi
   map.on("click", "mestaKlaster", (ev) => {
     const f = map.queryRenderedFeatures(ev.point, { layers: ["mestaKlaster"] })[0];
     if (!f) return;
@@ -5166,6 +5196,16 @@ function applyMapPoi() {
   try { if (state.mapPoi.fuel) pumpeSlojCrtaj(); else pumpeSlojFilter(); } catch (e) {}
   try { mestaSlojCrtaj(); } catch (e) {}
   try { savedSlojCrtaj(); } catch (e) {}
+  /* Reload stila (izgubljen WebGL kontekst) brise nase izvore, slojeve I slike - cip bi ostao
+     upaljen a mapa prazna. Isti stit kao za nav slojeve: cim se primeti da fale, vrate se.
+     getLayer provera cuva od petlje (styledata okida i nase addLayer/addImage). */
+  if (!applyMapPoi._sd && map) {
+    applyMapPoi._sd = true;
+    try { map.on("styledata", () => { try {
+      if ((state.mapPoi.fuel && !map.getLayer("pumpeTacka")) ||
+          (mestaAktivneKat().length && !map.getLayer("mestaTacka"))) applyMapPoi();
+    } catch (e) {} }); } catch (e) {}
+  }
 }
 let SAVEDMARK = [];
 async function savedSlojCrtaj() {   // cip "Sačuvano": kuća + sačuvane (offline) rute, kao pinovi
@@ -5208,9 +5248,11 @@ function nearPinsTick(lo, la) {
   try {
     if (!map || !state.editorial || !state.editorial.length) return;
     const blizu = [];
+    const tepih = mestaAktivneKat();   // kategorije koje tepih vec crta (cip upaljen) - bez duplog pina
     state.editorial.forEach((e, i) => {
       if (e.lat == null || e.type === "ruta") return;
       if (state._mestaUzRutu && state._mestaUzRutu.has(i)) return;   // vec stoji kao pin uz rutu
+      if (tepih.includes(BJB_CAT[e.type] || "meet")) return;
       const d = haversine(la, lo, e.lat, e.lon);
       if (d <= 4) blizu.push({ e, d });
     });
@@ -7867,8 +7909,13 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.70";
+const APP_VERSION = "0.9.71";
 const CHANGELOG = [
+  { v: "0.9.71", d: "13.08.2026.", stavke: [
+    "<b>Mesta na mapi sada svuda nose naše ikonice.</b> Tvoje pitanje \"da li mesta imaju naše ikonice\" - nisu imala svuda: sloj koji pali čip Hrana crtao je gole krugove u boji, dok pinovi uz rutu i \"blizu tebe\" nose značke. Sada i taj sloj crta iste pilule (kafana sa kriglom, upozorenje crveni trougao, okupljalište, vidikovac) - jedan jezik ikonica na celoj mapi, uključujući i Zajednicu.",
+    "<b>Pritisni test cele 0.9.70 (tvoj nalog), sa dva stvarna nalaza uz ikonice:</b> (1) ako mapa usred rada ponovo učita stil, čipovi bi ostali upaljeni a slojevi prazni - sada se pumpe, mesta i njihove slike same vrate (isto već važi za liniju rute u vožnji); (2) kad je čip Hrana upaljen a kreneš u vožnju, kafane bi se crtale duplo (sloj + pin blizu tebe) - pin sada preskače ono što sloj već crta.",
+    "Provereno pod pritiskom i izdržalo: pauza zamrzava i nove pozive (ograničenje, kiša, pinovi blizu); tuđa rečenica ne može da upadne u pogrešan sažetak (ni kod starih zapisa bez vremena); posle preračunavanja rute bela osa dobija istu novu geometriju kao i ruta; stari zapisi iz dnevnika bez traga ne prave prazne kutije; ceo tok vožnje od starta do sažetka prošao bez ijedne greške u konzoli."
+  ] },
   { v: "0.9.70", d: "13.08.2026.", stavke: [
     "<b>Odgovor na tvoju vožnju Beograd - Jadrija.</b> Devet nalaza sa puta, svaki obrađen u korenu - ne flasterom.",
     "<b>Sažetak vožnje je konačno po maketi koju smo dogovorili:</b> rečenica vožnje (\"Najbolje ti je bilo...\" iz ocenjenih deonica, sa doslovnim rečima vozača iz baze), traka trenutaka po kilometrima (loš asfalt, najbolja deonica, kafana kod koje si stao, najdublji nagib, najvijugavija tri kilometra, lični rekord, redni broj vožnje - bira se 5 najređih, prazne kutije ne postoje), i dva reda brojki: pređeno · ukupno · u pokretu · pauza / najbrže · prosek · levo° · desno°. Tap na trenutak ili brojku vodi na mapu.",
@@ -10996,8 +11043,9 @@ async function sumMaketa(s, pts, svez) {
     prica = `Najdublje si legao na <b>${Math.max(1, Math.round(t.km))}. kilometru</b>, ${lnMom[2] || Math.max(s.lnL || 0, s.lnR || 0)}° ${lnMom === s.momLnR ? "udesno" : "ulevo"}.`;
   }
   // asinhroni smo: ako je korisnik u međuvremenu otvorio DRUGI sažetak, ne upisujemo u tuđi ekran
+  // (poredi se i kad je ts prazan - stari zapisi bez ts ne smeju da pišu preko tuđeg ekrana)
   const rel = document.getElementById("rsRel");
-  if (rel && rel.dataset.ts && mojTs && rel.dataset.ts !== mojTs) return;
+  if (rel && (rel.dataset.ts || "") !== mojTs) return;
   if (prica) { pricaEl.innerHTML = prica; pricaEl.hidden = false; }
   if (tren.length) {
     trEl.innerHTML = '<div class="kicma"></div>' + tren.map((t, i) => {
