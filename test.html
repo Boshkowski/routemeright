@@ -6782,9 +6782,12 @@ function zabeleziVoznju() {
       : "Otvoreni put";
     // fizicka provera nagiba: prosecno odstupanje senzora od atan(v*omega/g) po krivinama (stepeni)
     const lnChk = (RIDE.leanChk && RIDE.leanChk.n > 20) ? Math.round((RIDE.leanChk.sum / RIDE.leanChk.n) * 10) / 10 : null;
-    // trag za "ruta je heroj" u sazetku (samo u RAM lastSummary - u localStorage dnevnik NE ide, prevelik)
+    /* Trag za "ruta je heroj": gustina SKALIRA sa duzinom (14.8., Boskov nalaz: 373 km sa 150
+       tacaka u dnevniku = tacka na 2,5 km, pa linija ide PRAVOLINIJSKI preko brda, a
+       "najvijugavija" meri sum). Cilj ~165 m po tacki, plafon 1600 (RAM, ne localStorage). */
+    const tragCilj = Math.min(1600, Math.max(400, Math.round(km * 6)));
     const trag = (RIDE.trace && RIDE.trace.length > 1)
-      ? RIDE.trace.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 400)) === 0 || i === a.length - 1) : null;
+      ? RIDE.trace.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / tragCilj)) === 0 || i === a.length - 1) : null;
     const smp = (RIDE.samples && RIDE.samples.length > 5)   // kriva nagiba: proredi na ~240 tacaka za sparkline
       ? RIDE.samples.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 240)) === 0 || i === a.length - 1) : null;
     // summary ekran: i za kratku probnu voznju (>300 m); dnevnik/poeni ostaju samo za prave (>2 km)
@@ -6802,8 +6805,12 @@ function zabeleziVoznju() {
     const v = Array.isArray(v0) ? v0 : [];
     v.unshift({ ts: Date.now(), naz, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
       kriv, maxK, avgK, lnL, lnR, lnChk, pauz,
-      // mali trag (~150 tacaka, ~4KB) i u dnevnik - da sacuvana voznja iz profila ima mapu kao svez sazetak (Boskov nalaz 7.8.)
-      trag: trag ? trag.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 150)) === 0 || i === a.length - 1).map((p) => (p.length > 2 && p[2] != null) ? [+p[0].toFixed(5), +p[1].toFixed(5), p[2]] : [+p[0].toFixed(5), +p[1].toFixed(5)]) : undefined,
+      /* Trag i u dnevnik - gustina skalira sa duzinom (14.8.): 150 tacaka je za 373 km davalo
+         korak od 2,5 km i pravolinijski crtez. Cilj ~455 m po tacki, plafon 800 (~17 KB po
+         voznji, 20 voznji ~340 KB - localStorage to nosi). */
+      trag: trag ? (() => { const c = Math.min(800, Math.max(150, Math.round(km * 2.2)));
+        return trag.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / c)) === 0 || i === a.length - 1)
+          .map((p) => (p.length > 2 && p[2] != null) ? [+p[0].toFixed(5), +p[1].toFixed(5), p[2]] : [+p[0].toFixed(5), +p[1].toFixed(5)]); })() : undefined,
       // kompaktni uzorci (~120 tacaka, ~1.5KB) - da i sacuvana voznja ima grafik brzine (Boskov nalaz 9.8.: "kad udjem u voznje, ne vidim ga")
       smp: smp ? smp.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 120)) === 0 || i === a.length - 1).map((x) => ({ t: x.t, v: x.v, ln: x.ln })) : undefined,
       /* Momenti idu i u dnevnik (13.8., Boskov nalaz sa treće vožnje: "kada kliknem ne izbacuje mi
@@ -7994,8 +8001,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.72";
+const APP_VERSION = "0.9.73";
 const CHANGELOG = [
+  { v: "0.9.73", d: "14.08.2026.", stavke: [
+    "<b>Trag vožnje se čuva mnogo gušće</b> - tvoj nalaz sa jučerašnje ture: linija je išla pravolinijski preko brda. Uzrok: 373 km je bilo sabijeno u 150 tačaka (tačka na 2,5 km), pa je crtež spajao tačke pravim linijama. Sada gustina prati dužinu vožnje - duga tura nosi do 800 tačaka u dnevniku i do 1.600 u svežem sažetku.",
+    "<b>\"Najvijugavija tri kilometra\" više ne sme da laže:</b> na tako retkom tragu ta mera računa šum, pa ti je pokazala pravu liniju. Sada se na retkom tragu ta stavka i njen oreol jednostavno ne prikazuju - bolje ništa nego netačno. Na novim vožnjama, sa gustim tragom, radi normalno.",
+    "<b>Plavi oreol je pojačan</b> - bio je prebled na tamnoj mapi, sad se jasno vidi oko vijugavog dela.",
+    "<b>Pošteno o jučerašnjem zapisu:</b> njegov trag je snimljen starom verzijom sa 150 tačaka i to ne mogu naknadno da zgusnem - te tačke ne postoje. Zato njegova traka sada pokazuje samo ono što je istinito (redni broj vožnje), a kroz Bosnu nemamo ni ocenjene deonice ni kurirana mesta pa je traka tanja nego u Srbiji. Nove vožnje od ove verzije nose i gust trag i mesta momenata."
+  ] },
   { v: "0.9.72", d: "14.08.2026.", stavke: [
     "<b>Četiri tvoja nalaza sa Jadrije, sva četiri u korenu:</b>",
     "<b>Pumpe su sada prave pumpice</b>, ne plavi krugovi - ista pilula kao sva ostala mesta, samo u plavozelenoj boji da se razlikuje od hrane.",
@@ -10903,6 +10916,10 @@ function best3km(pts) {   // najvijugavija ~3 km deonica traga (gustina skretanj
     turn.push(turn[i - 1] + dv);
   }
   if (cum[cum.length - 1] < 4) return null;
+  /* Redak trag ne sme da tvrdi vijugavost (14.8., Boskov nalaz: stari zapis 373 km sa 150
+     tacaka = korak 2,5 km, pa je "najvijugavija" pokazivala PRAVOLINIJSKU vezu dve tacke).
+     Preko ~250 m po tacki uglovi mere sum a ne krivine - bolje bez trenutka nego lazan. */
+  if (cum[cum.length - 1] / (pts.length - 1) > 0.25) return null;
   let best = null, j = 1;
   for (let i = 0; i < pts.length - 1; i++) {
     while (j < pts.length - 1 && cum[j] - cum[i] < 3) j++;
@@ -10943,7 +10960,7 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
     if (b3) {
       map.addSource("sumtrag-best", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: pts.slice(b3.a, b3.b + 1) } } });
       map.addLayer({ id: "sumtrag-bestln", type: "line", source: "sumtrag-best", layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": "#38bdf8", "line-width": 13, "line-opacity": .45, "line-blur": 1.5 } });
+        paint: { "line-color": "#38bdf8", "line-width": 16, "line-opacity": .62, "line-blur": 1.2 } });   // 14.8.: bio prebled ("nema ga, ne vidi se")
     }
     // 9.8. (Boskov zahtev "gde je tacka obaranja i koji ugao"): trag obojen PO NAGIBU, deonicu po deonicu
     const imaNagib = pts.some((p) => p.length > 2 && p[2] != null);
