@@ -5042,7 +5042,9 @@ function mestaPopHtml(e) {
     (srcOk ? `<br><a href="${esc(e.source)}" target="_blank" rel="noopener">izvor ↗</a>` : "");
 }
 function mestaAktivneKat() {   // koje kategorije tepiha su upaljene (13.8.: podrazumevano NIJEDNA)
-  if (document.body.classList.contains("zajmap")) return [];   // Zajednica crta svoje markere - bez dupliranja
+  // Zajednica mapa = PUN prikaz mesta: njeni sopstveni markeri (ZAJ.markers) su samo prijave,
+  // kurirana mesta je oduvek nosio ovaj sloj - gasenje ovde bi ispraznilo ceo rezim
+  if (document.body.classList.contains("zajmap")) return Object.keys(MESTA_BOJA);
   return (state.mapPoi && state.mapPoi.food) ? ["food"] : [];
 }
 function mestaSlojCrtaj() {
@@ -7021,6 +7023,7 @@ async function zajModeOn() {
   document.body.classList.add("zajmap");
   const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
   try { state.layerVis.hazard = true; applyLayerVis(); } catch (e) {}
+  try { mestaSlojCrtaj(); } catch (e) {}   // izvor mora da dobije SVE kategorije (van rezima nosi podskup po cipovima)
   const sh = document.getElementById("zajSheet"); if (sh) sh.classList.remove("peek");
   try {
     ZAJ.rows = await zajSveAktivne(true);       // vraca redove, ne crta (rezim crta svoje)
@@ -7036,6 +7039,7 @@ function zajModeOff(kuda) {
   document.querySelectorAll(".zajpop, .zajpop-back").forEach((x) => x.remove());
   if (ZAJ.prevHazard !== null) { state.layerVis.hazard = ZAJ.prevHazard; try { applyLayerVis(); } catch (e) {} }
   ZAJ.prevHazard = null;
+  try { mestaSlojCrtaj(); } catch (e) {}   // nazad na podskup po cipovima (van Zajednice tepih je podrazumevano ugasen)
   if (kuda === "zajednica") {
     const za = document.querySelector('#bottomnav a[data-tab="zajednica"]'); if (za) za.click();
     const sc = document.getElementById("screen-zajednica");
