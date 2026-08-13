@@ -1311,6 +1311,30 @@
   #rideSum .rspark svg { display: block; width: 100%; height: auto; }
   #rideSum .rspark .gl { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin-top: 4px; text-align: center; }
   /* .rsrek uklonjen 13.8. - licni rekord je trenutak u traci trenutaka */
+  /* List prognoze za tacku (14.8.) */
+  #wxSheet { position: fixed; inset: 0; z-index: 340; }
+  #wxSheet .wxback { position: absolute; inset: 0; background: rgba(4,8,18,.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  #wxSheet .wxbody { position: absolute; left: 0; right: 0; bottom: 0; background: #101a30; border-top: 1px solid rgba(148,163,184,.22);
+    border-radius: 20px 20px 0 0; padding: 4px 18px calc(18px + env(safe-area-inset-bottom)); }
+  #wxSheet .grab { width: 44px; height: 4px; border-radius: 3px; background: rgba(148,163,184,.4); margin: 10px auto 12px; }
+  #wxSheet .wxt { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 800; color: #f8fafc; }
+  #wxSheet .wxt svg { width: 20px; height: 20px; stroke: #f97316; fill: none; }
+  #wxSheet .wxs { font-size: 14px; line-height: 1.5; color: #cbd5e1; margin-top: 7px; }
+  #wxSheet .wxs b { color: #fff; }
+  #wxSheet .wxrow { display: flex; gap: 8px; overflow-x: auto; margin: 13px -18px 0; padding: 0 18px 6px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  #wxSheet .wxrow::-webkit-scrollbar { display: none; }
+  #wxSheet .wh { flex: none; min-width: 52px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background: rgba(15,23,42,.6); border: 1px solid rgba(148,163,184,.14); border-radius: 12px; padding: 8px 6px; }
+  #wxSheet .wh.rain { border-color: rgba(56,189,248,.45); background: rgba(12,36,60,.55); }
+  #wxSheet .wh .wt { font-size: 11px; font-weight: 800; color: #94a3b8; }
+  #wxSheet .wh .wi svg { width: 17px; height: 17px; stroke: #fbbf24; fill: none; }
+  #wxSheet .wh.rain .wi svg { stroke: #38bdf8; }
+  #wxSheet .wh .wc { font-size: 14px; font-weight: 800; color: #f8fafc; font-variant-numeric: tabular-nums; }
+  #wxSheet .wh .wm, #wxSheet .wh .wv { font-size: 9.5px; font-weight: 700; color: #7dd3fc; white-space: nowrap; }
+  #wxSheet .wh .wv { color: #fbbf24; }
+  #wxSheet .wxn { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #64748b; margin-top: 10px; }
+  #wxSheet .wxcta { width: 100%; height: 46px; margin-top: 12px; border-radius: 13px; border: 0; cursor: pointer;
+    background: linear-gradient(135deg,#f97316,#ea580c); color: #fff; font: 800 14.5px Archivo,system-ui,sans-serif; }
   #rideSum .rskol { margin: 12px 20px 0; background: rgba(15,23,42,.55); border: 1px solid rgba(148,163,184,.14);
     border-radius: 14px; padding: 10px 14px; font-size: 13px; color: #cbd5e1; font-weight: 600; line-height: 1.5; }
   #rideSum .rskol b { color: #f8fafc; }
@@ -2244,6 +2268,7 @@ function applyLayerVis() {
     m.getElement().style.display = state.layerVis.hazard ? "" : "none";
     try { mestaSlojFilter(); } catch (e) {}   // 13.8.: tepihe vode cipovi na mapi; ovde samo osvezimo vidljivost
     try { pumpeSlojFilter(); } catch (e) {}
+    try { restoraniSlojFilter(); } catch (e) {}
   localStorage.setItem("mr_layers", JSON.stringify(state.layerVis));
 }
 function isRoundTrip() { return !!($("roundTrip") && $("roundTrip").checked); }
@@ -5047,12 +5072,11 @@ function mestaPopHtml(e) {
    kategoriji i registruje kao slika sloja - simboli ostaju GL sloj, fluidnost kao krugovi,
    a jezik ikonica je svuda isti. hasImage se proverava svaki put jer reload stila brise slike. */
 const MESTA_IKONA = { food: "tavern", pause: "viewpoint", meet: "meetup", hazard: "warning", mesto: "curves" };
-function mestaIkoneUcitaj() {
-  return Promise.all(Object.keys(MESTA_IKONA).map((cat) => new Promise((res) => {
+function slojnaIkona(imeSlike, kljucIkone, boja) {   // jedna pilula -> slika sloja (koristi i tepih mesta i tepih pumpi)
+  return new Promise((res) => {
     try {
-      if (map.hasImage && map.hasImage("mesta-" + cat)) { res(); return; }
-      const boja = MESTA_BOJA[cat] || "#f97316";
-      const ik = (RMR_ICONS[MESTA_IKONA[cat]] || RMR_ICONS.route)
+      if (map.hasImage && map.hasImage(imeSlike)) { res(); return; }
+      const ik = (RMR_ICONS[kljucIkone] || RMR_ICONS.route)
         .replace(/currentColor/g, boja)
         .replace("<svg ", '<svg x="14" y="14" width="32" height="32" ');
       const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">' +
@@ -5061,12 +5085,15 @@ function mestaIkoneUcitaj() {
       img.onload = () => { try {
         const c = document.createElement("canvas"); c.width = 60; c.height = 60;
         const cx = c.getContext("2d"); cx.drawImage(img, 0, 0);
-        if (!map.hasImage("mesta-" + cat)) map.addImage("mesta-" + cat, cx.getImageData(0, 0, 60, 60), { pixelRatio: 2 });
+        if (!map.hasImage(imeSlike)) map.addImage(imeSlike, cx.getImageData(0, 0, 60, 60), { pixelRatio: 2 });
       } catch (e) {} res(); };
       img.onerror = () => res();
       img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
     } catch (e) { res(); }
-  })));
+  });
+}
+function mestaIkoneUcitaj() {
+  return Promise.all(Object.keys(MESTA_IKONA).map((cat) => slojnaIkona("mesta-" + cat, MESTA_IKONA[cat], MESTA_BOJA[cat] || "#f97316")));
 }
 function mestaAktivneKat() {   // koje kategorije tepiha su upaljene (13.8.: podrazumevano NIJEDNA)
   // Zajednica mapa = PUN prikaz mesta: njeni sopstveni markeri (ZAJ.markers) su samo prijave,
@@ -5164,10 +5191,13 @@ async function pumpeSlojCrtaj() {
     type: "Feature", geometry: { type: "Point", coordinates: [z[1], z[0]] },
     properties: { i, b: z[2] >= 0 ? (d.brendovi[z[2]] || "") : "", h24: z[3], z: z[4] || "" } })) };
   map.addSource("pumpeSrc", { type: "geojson", data: fc });
-  map.addLayer({ id: "pumpeTacka", type: "circle", source: "pumpeSrc", minzoom: 9,
-    paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 9, 3.5, 13, 6.5, 16, 9],
-      "circle-color": "#22d3ee", "circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 9, 0.8, 14, 2],
-      "circle-stroke-color": "#0b1120", "circle-opacity": 0.95 } });
+  // pumpa nosi NASU ikonicu (14.8., Boskov nalaz sa Jadrije: "zasto su pumpe plavi krugovi
+  // a ne ikonice pumpe koje smo uradili") - ista pilula kao mesta, cyan okvir da se razlikuje od kafana
+  await slojnaIkona("pumpa-pin", "fuel", "#22d3ee");
+  map.addLayer({ id: "pumpeTacka", type: "symbol", source: "pumpeSrc", minzoom: 9,
+    layout: { "icon-image": "pumpa-pin",
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 9, 0.5, 12, 0.72, 16, 1],
+      "icon-allow-overlap": true } });
   map.on("click", "pumpeTacka", (ev) => {
     const f = ev.features && ev.features[0]; if (!f) return;
     const b = f.properties.b, h24 = +f.properties.h24;
@@ -5195,6 +5225,7 @@ function applyMapPoi() {
   });
   try { if (state.mapPoi.fuel) pumpeSlojCrtaj(); else pumpeSlojFilter(); } catch (e) {}
   try { mestaSlojCrtaj(); } catch (e) {}
+  try { if (state.mapPoi.food) restoraniSlojCrtaj(); else restoraniSlojFilter(); } catch (e) {}   // 14.8.: cip Hrana = i OSM restorani, svuda
   try { savedSlojCrtaj(); } catch (e) {}
   /* Reload stila (izgubljen WebGL kontekst) brise nase izvore, slojeve I slike - cip bi ostao
      upaljen a mapa prazna. Isti stit kao za nav slojeve: cim se primeti da fale, vrate se.
@@ -5203,6 +5234,7 @@ function applyMapPoi() {
     applyMapPoi._sd = true;
     try { map.on("styledata", () => { try {
       if ((state.mapPoi.fuel && !map.getLayer("pumpeTacka")) ||
+          (state.mapPoi.food && !map.getLayer("restTacka")) ||
           (mestaAktivneKat().length && !map.getLayer("mestaTacka"))) applyMapPoi();
     } catch (e) {} }); } catch (e) {}
   }
@@ -5273,6 +5305,50 @@ function nearPinsTick(lo, la) {
 function nearPinsSkini() {
   for (const m of state.nearMarkers || []) { try { m.remove(); } catch (e) {} }
   state.nearMarkers = []; RIDE._near = null;
+}
+/* ---------------- RESTORANI: lokalni fajl, cip "Hrana" radi SVUDA (14.8.) ----------------
+   Boskov nalaz sa Jadrije: cip Hrana je palio samo nasa kurirana mesta (skoro sva u Srbiji),
+   pa je na moru bio prazan - prekidac koji laze. Isti model kao pumpe: jednokratni OSM izvod
+   (samo objekti SA imenom) u data/restorani.json, ucitava se LENJO tek na prvi klik cipa.
+   Bez klasterisanja: symbol sloj sa iskljucenim preklapanjem sam proredjuje guzvu po zumu. */
+let RESTORANI = null;
+const REST_TIP = ["restoran", "kafić", "brza hrana"];
+async function restoraniUcitaj() {
+  if (RESTORANI) return RESTORANI;
+  try {
+    const d = await fetchData("data/restorani.json?v=" + APP_VERSION, { timeoutMs: 12000 });
+    RESTORANI = d; return d;
+  } catch (e) { return null; }
+}
+async function restoraniSlojCrtaj() {
+  if (!map) return;
+  if (!map.isStyleLoaded()) { map.once("idle", () => { try { restoraniSlojCrtaj(); } catch (e) {} }); return; }
+  if (!(state.mapPoi && state.mapPoi.food)) { restoraniSlojFilter(); return; }   // ne vuci 35k tacaka dok cip ne zatrazi
+  const d = await restoraniUcitaj();
+  if (!d || !d.restorani || !d.restorani.length) return;
+  await slojnaIkona("hrana-pin", "tavern", "#fbbf24");   // OSM hrana zuta; kurirane kafane ostaju narandzaste
+  if (map.getSource("restSrc")) { restoraniSlojFilter(); return; }
+  const fc = { type: "FeatureCollection", features: d.restorani.map((z, i) => ({
+    type: "Feature", geometry: { type: "Point", coordinates: [z[1], z[0]] },
+    properties: { i, n: z[2], t: z[3] } })) };
+  map.addSource("restSrc", { type: "geojson", data: fc });
+  map.addLayer({ id: "restTacka", type: "symbol", source: "restSrc", minzoom: 10,
+    layout: { "icon-image": "hrana-pin",
+      "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 13, 0.8, 16, 1],
+      "icon-allow-overlap": false, "icon-padding": 1 } });
+  map.on("click", "restTacka", (ev) => {
+    const f = ev.features && ev.features[0]; if (!f) return;
+    markerPopup(`<b>${esc(f.properties.n)}</b><br><span class="poi-dist">${REST_TIP[f.properties.t] || "restoran"} · OpenStreetMap</span>`)
+      .setLngLat(f.geometry.coordinates).addTo(map);
+  });
+  map.on("mouseenter", "restTacka", () => { map.getCanvas().style.cursor = "pointer"; });
+  map.on("mouseleave", "restTacka", () => { map.getCanvas().style.cursor = ""; });
+  restoraniSlojFilter();
+}
+function restoraniSlojFilter() {
+  if (!map || !map.getLayer("restTacka")) return;
+  const vidljiv = (state.mapPoi && state.mapPoi.food) && !document.body.classList.contains("zajmap");
+  map.setLayoutProperty("restTacka", "visibility", vidljiv ? "visible" : "none");
 }
 function pumpeSlojFilter() {
   if (!map || !map.getLayer("pumpeTacka")) return;
@@ -5875,10 +5951,18 @@ async function renderFood(route, assess, departure) {
       targets.push({ km: route.cumDist[i] / 1000, lat: route.coords[i][1], lon: route.coords[i][0],
         eta: new Date(departure.getTime() + t * 1000) });
     }
-    let pois = await poisNear(targets, `[amenity~"restaurant|cafe|fast_food"]`, 8000, 80);
+    /* Lokali uz pauzu iz NASEG fajla (14.8.) - isti model kao pumpe: radi svuda i bez signala.
+       Overpass ostaje samo rezerva ako fajl ikad ne stigne. */
+    let pois = null;
+    const _rd = await restoraniUcitaj();
+    if (_rd && _rd.restorani && _rd.restorani.length) {
+      pois = _rd.restorani.map((z) => ({ lat: z[0], lon: z[1], name: z[2], tags: {} }));
+    } else {
+      pois = await poisNear(targets, `[amenity~"restaurant|cafe|fast_food"]`, 8000, 80);
+    }
     if (_seqGuard(_mySeq, route)) return;
-    /* Kad je Overpass pao, pauze se NE gube (13.8., Boskov nalaz sa vožnje: kartica je pokazala samo
-       žuto upozorenje). Mesta i vremena pauza računamo sami, bez ikakvog servisa - spisak lokala je
+    /* Kad ni fajla ni Overpass-a nema, pauze se NE gube (13.8., Boskov nalaz sa vožnje: kartica je
+       pokazala samo žuto upozorenje). Mesta i vremena pauza računamo sami - spisak lokala je
        dodatak, pa njegov pad sme da odnese samo taj dodatak. */
     if (pois === null) {
       pois = [];
@@ -7532,7 +7616,8 @@ async function selectRoute(departure) {
     if (_tn.length >= 3 && !/^[\d\s.,-]+$/.test(_tn))   // "10" i slicni geocode-ostaci ne idu u istoriju
       rec.unshift({ from: state.geocode.from.name, to: _tn, ts: Date.now(),
         fp: [state.geocode.from.lat, state.geocode.from.lon], tp: [state.geocode.to.lat, state.geocode.to.lon] });   // koordinate: replay ne zavisi od geokodera ni od imena
-    localStorage.setItem("rmr2_recent", JSON.stringify(rec.filter((x, i, a) => a.findIndex((y) => y.from === x.from && y.to === x.to) === i).slice(0, 10)));
+    // dedupe po DESTINACIJI (14.8.): "Jadrija iz Beograda" i "Jadrija iz Zvornika" su ista stavka - Jadrija
+    localStorage.setItem("rmr2_recent", JSON.stringify(rec.filter((x, i, a) => a.findIndex((y) => y.to === x.to) === i).slice(0, 10)));
     if (typeof updateQuickLabels === "function") updateQuickLabels();
   } catch (e) {}
   logState({ phase: "done", route: state.selected, worst, warnings: zones.length,
@@ -7909,8 +7994,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.71";
+const APP_VERSION = "0.9.72";
 const CHANGELOG = [
+  { v: "0.9.72", d: "14.08.2026.", stavke: [
+    "<b>Četiri tvoja nalaza sa Jadrije, sva četiri u korenu:</b>",
+    "<b>Pumpe su sada prave pumpice</b>, ne plavi krugovi - ista pilula kao sva ostala mesta, samo u plavozelenoj boji da se razlikuje od hrane.",
+    "<b>Čip Hrana sada radi svuda, ne samo u Srbiji.</b> Palio je samo naša kurirana mesta, pa je na moru bio prazan. Sada uz njih pali i 31.242 restorana, kafića i pekara iz OpenStreetMap-a za ceo region (Srbija, Hrvatska, BiH, Crna Gora, Makedonija, Slovenija, Kosovo) - iz našeg fajla, bez ijednog spoljnog servisa, radi i bez signala. Učitava se tek kad prvi put tapneš čip. Iz istog fajla sada dolaze i predlozi lokala uz pauze na ruti.",
+    "<b>Tap na čip vremena otvara pravu prognozu</b>, ne pretragu: naredna 24 sata po satima za mesto gde si sad - sat, sunce ili kiša, temperatura, milimetri kiše i jaki udari vetra kad ih ima. Dole je dugme koje te vodi u planiranje - tamo je prognoza za svaki sat cele trase.",
+    "<b>Nedavno pamti DESTINACIJU, ne staru relaciju.</b> Sve stavke su ti bile \"iz: Beograd\", pa je plan sa Jadrije kretao od Beograda - zato ti je 12.8. i pisalo \"Beograd → Jadrija\". Sada tap na nedavnu stavku uvek kreće od tvoje trenutne lokacije; za polazak od kuće postoji red Kuća."
+  ] },
   { v: "0.9.71", d: "13.08.2026.", stavke: [
     "<b>Mesta na mapi sada svuda nose naše ikonice.</b> Tvoje pitanje \"da li mesta imaju naše ikonice\" - nisu imala svuda: sloj koji pali čip Hrana crtao je gole krugove u boji, dok pinovi uz rutu i \"blizu tebe\" nose značke. Sada i taj sloj crta iste pilule (kafana sa kriglom, upozorenje crveni trougao, okupljalište, vidikovac) - jedan jezik ikonica na celoj mapi, uključujući i Zajednicu.",
     "<b>Pritisni test cele 0.9.70 (tvoj nalog), sa dva stvarna nalaza uz ikonice:</b> (1) ako mapa usred rada ponovo učita stil, čipovi bi ostali upaljeni a slojevi prazni - sada se pumpe, mesta i njihove slike same vrate (isto već važi za liniju rute u vožnji); (2) kad je čip Hrana upaljen a kreneš u vožnju, kafane bi se crtale duplo (sloj + pin blizu tebe) - pin sada preskače ono što sloj već crta.",
@@ -8654,19 +8746,21 @@ async function homeWxPeek() {
     chip.innerHTML = (d.kisa ? WX_RAIN : WX_SUN) + "<b>" + esc(d.kratko) + "</b>";
     chip.hidden = false;
     chip.title = d.puno.replace(/<[^>]+>/g, "");   // pun tekst ostaje kao objasnjenje na dugi pritisak
-    chip.onclick = () => { try { document.getElementById("homeSearch").click(); } catch (e) {} };
+    /* Tap otvara PRAVU prognozu po satima (14.8., Boskov nalaz sa Jadrije: "klikneš to suvo i
+       šta? Vodi te opet na search" - vodio je u pretragu, sto ne znaci nista). */
+    chip.onclick = () => { try { wxSheetOtvori(d); } catch (e) {} };
     wxChipStane();
   };
   const run = async (lat, lon) => {
     try {   // kes 45 min: list/cip se crtaju na svako pokretanje, bez ovoga bi svako bilo naplativ poziv
       const c = JSON.parse(localStorage.getItem(kljuc(lat, lon)) || "null");
-      if (c && Date.now() - c.t < 45 * 60e3 && c.puno) { crtaj(c); return; }
+      if (c && Date.now() - c.t < 45 * 60e3 && c.puno && c.h) { crtaj(c); return; }
     } catch (e) {}
     try {
-      const j = await fetchJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&hourly=precipitation,precipitation_probability&forecast_hours=12&timezone=auto`, { timeoutMs: 8000, retries: 0 });
+      const j = await fetchJSON(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&hourly=temperature_2m,precipitation,precipitation_probability,wind_gusts_10m&forecast_hours=24&timezone=auto`, { timeoutMs: 8000, retries: 0 });
       const h = j.hourly;
       let rainAt = -1;
-      for (let i = 0; i < h.precipitation.length; i++)
+      for (let i = 0; i < Math.min(12, h.precipitation.length); i++)
         if (h.precipitation[i] >= 0.2 || (h.precipitation_probability && h.precipitation_probability[i] >= 60)) { rainAt = i; break; }
       let d;
       if (rainAt < 0) d = { kratko: "Suvo narednih 12h", kisa: false,
@@ -8677,6 +8771,8 @@ async function homeWxPeek() {
           ? { kratko: `Suvo do ~${hh}h`, kisa: false, puno: `<b>Suvo do ~${hh}h</b> - dobar prozor za vožnju, kiša stiže kasnije.` }
           : { kratko: `Kiša oko ${hh}h`, kisa: true, puno: `<b>Kiša oko ${hh}h</b> kod tebe - proveri radar i isplaniraj pametno.` };
       }
+      // satni niz ide uz kes - list prognoze se otvara i bez novog poziva
+      d.h = { time: h.time, t: h.temperature_2m, p: h.precipitation, pp: h.precipitation_probability, g: h.wind_gusts_10m };
       crtaj(d);
       try { localStorage.setItem(kljuc(lat, lon), JSON.stringify({ t: Date.now(), ...d })); } catch (e2) {}
     } catch (e) { /* zadrzi postojece */ }
@@ -8686,6 +8782,39 @@ async function homeWxPeek() {
     () => { try { const c = map.getCenter(); run(c.lat, c.lng); } catch (e) {} },
     { maximumAge: 600000, timeout: 8000 });
   else { try { const c = map.getCenter(); run(c.lat, c.lng); } catch (e) {} }
+}
+/* List prognoze za TVOJU tacku (14.8.): naredna 24 sata po satima - sat, ikonica, temperatura,
+   kisa u mm kad je ima. Odgovor na "sta nam znaci ono suvo narednih 12 sati": sada znaci ovo. */
+function wxSheetOtvori(d) {
+  const staro = document.getElementById("wxSheet"); if (staro) { staro.remove(); return; }
+  const sh = document.createElement("div");
+  sh.id = "wxSheet";
+  const sada = Date.now();
+  let redovi = "";
+  if (d.h && d.h.time) {
+    for (let i = 0; i < d.h.time.length; i++) {
+      const ts = new Date(d.h.time[i]);
+      if (ts.getTime() < sada - 3600e3) continue;   // prosli sati ne trebaju
+      const kisa = (d.h.p[i] || 0) >= 0.2 || ((d.h.pp && d.h.pp[i]) || 0) >= 60;
+      const mm = (d.h.p[i] || 0) >= 0.1 ? (Math.round(d.h.p[i] * 10) / 10 + "").replace(".", ",") + " mm" : "";
+      const vetar = (d.h.g && d.h.g[i] >= 45) ? `<span class="wv">${Math.round(d.h.g[i])} km/h</span>` : "";
+      redovi += `<div class="wh${kisa ? " rain" : ""}"><span class="wt">${String(ts.getHours()).padStart(2, "0")}h</span>` +
+        `<span class="wi">${kisa ? WX_RAIN : WX_SUN}</span>` +
+        `<span class="wc">${d.h.t ? Math.round(d.h.t[i]) + "°" : ""}</span>` +
+        (mm ? `<span class="wm">${mm}</span>` : "") + vetar + `</div>`;
+    }
+  }
+  sh.innerHTML = `<div class="wxback"></div><div class="wxbody"><div class="grab"></div>` +
+    `<div class="wxt">${d.kisa ? WX_RAIN : WX_SUN} Vreme za tvoju tačku</div>` +
+    `<div class="wxs">${d.puno}</div>` +
+    (redovi ? `<div class="wxrow">${redovi}</div>` : `<div class="wxs">Osvežavam prognozu…</div>`) +
+    `<div class="wxn">prognoza po satima za mesto gde si sad · Open-Meteo</div>` +
+    `<button class="wxcta" type="button">Isplaniraj rutu - prognoza za svaki sat trase</button></div>`;
+  document.body.appendChild(sh);
+  sh.querySelector(".wxback").addEventListener("click", () => sh.remove());
+  sh.querySelector(".wxcta").addEventListener("click", () => { sh.remove(); try { document.getElementById("homeSearch").click(); } catch (e) {} });
+  // star kes bez satnog niza (pre 14.8.): svez fetch ce ga doneti, list ostaje sa porukom - bez auto-petlje
+  if (!redovi) try { Object.keys(localStorage).filter((k) => k.startsWith("rmr2_wxpeek_")).forEach((k) => localStorage.removeItem(k)); homeWxPeek(); } catch (e) {}
 }
 (function(){
   // motor sekcija -> sklopljena kartica (fabricki podaci rade i sklopljeni)
@@ -8742,7 +8871,7 @@ function updateSearchStatic() {
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
     document.getElementById("sRecentT").style.display = rec.length ? "" : "none";
     document.getElementById("sRecent").innerHTML = rec.slice(0, 6).map((r, i) =>
-      `<div class="srow" data-recent="${i}"><span class="sic">${rIco("saved", 18)}</span><div class="st"><b>${esc(r.to)}</b><span>iz: ${esc(r.from)}</span></div></div>`).join("");
+      `<div class="srow" data-recent="${i}"><span class="sic">${rIco("saved", 18)}</span><div class="st"><b>${esc(r.to)}</b><span>nedavno</span></div></div>`).join("");
   } catch (e) {}
 }
 function searchIndex() {   // nasa baza: mesta zajednice + poznate rute + gradovi
@@ -8827,7 +8956,7 @@ function renderSugg(q) {
   try {   // Faza 1: Nedavno se MESA u rezultate dok kucas (Google princip - istorija je najjaci signal)
     const rec = (JSON.parse(localStorage.getItem("rmr2_recent") || "[]"))
       .filter((r) => r.to && SFOLD(r.to).includes(fq)).slice(0, 2)
-      .map((r) => ({ n: r.to, lat: r.tp ? r.tp[0] : null, lon: r.tp ? r.tp[1] : null, sub: "nedavno · iz: " + (r.from || ""), t: "recent" }));
+      .map((r) => ({ n: r.to, lat: r.tp ? r.tp[0] : null, lon: r.tp ? r.tp[1] : null, sub: "nedavno", t: "recent" }));
     const seenR = new Set(rec.map((r) => SFOLD(r.n)));
     recN = rec.length;
     hits = rec.concat(hits.filter((h) => !seenR.has(SFOLD(h.n)))).slice(0, 8);
@@ -8926,9 +9055,14 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
       const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
       const r = rec[+row.dataset.recent]; if (!r) return;
       closeSearch(); document.body.classList.add("planning");
-      document.getElementById("from").value = r.from; document.getElementById("to").value = r.to;
-      // koordinate iz istorije: plan ne zavisi od geokodera; "Moja lokacija" se NE pinuje (korisnik je sad negde drugde)
-      if (r.fp && r.fp[0] != null && !/^moja lokacija$/i.test(r.from || "")) state.fromOverride = { name: r.from, lat: r.fp[0], lon: r.fp[1] };
+      /* Nedavno pamti DESTINACIJU, ne relaciju (14.8., Boskov nalaz sa Jadrije: sve je bilo
+         "iz: Beograd", pa je plan sa mora krenuo od Beograda - otud i "Beograd → Jadrija
+         (prekinuto)" od 12.8). Polazak je UVEK tvoja trenutna lokacija; za polazak od kuce
+         postoji red Kuca. "Moja lokacija" je kljucna rec - plan saceka GPS fix. */
+      state.fromOverride = null;
+      document.getElementById("from").value = "Moja lokacija";
+      gpsPrefill(true);
+      document.getElementById("to").value = r.to;
       if (r.tp && r.tp[0] != null) state.searchTo = { name: r.to, lat: r.tp[0], lon: r.tp[1] };
       document.getElementById("planBtn").click();
       return;
@@ -8955,7 +9089,7 @@ function updateQuickLabels() {
     const h = JSON.parse(localStorage.getItem("rmr2_home") || "null");
     const hb = document.querySelector('[data-quick="home"] span'); if (hb) hb.textContent = h ? h.name : "postavi";
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
-    const rb = document.querySelector('[data-quick="recent"] span'); if (rb) rb.textContent = rec.length ? rec[0].from + " → " + rec[0].to : "—";
+    const rb = document.querySelector('[data-quick="recent"] span'); if (rb) rb.textContent = rec.length ? rec[0].to : "—";   // destinacija, ne relacija (14.8.)
     const sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
     const sb = document.querySelector('[data-quick="saved"] span'); if (sb) sb.textContent = sv.length ? sv.length + " ruta" : "—";
     // pravi broj = paketi sa celom rutom (rade bez signala); IndexedDB je asinhron pa stize malo kasnije
@@ -11824,8 +11958,11 @@ async function stplPodeli(kind) {
       if (q === "recent") {
         const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
         if (!rec.length) { openPlanning(); return; }
-        document.getElementById("from").value = rec[0].from; document.getElementById("to").value = rec[0].to;
-        if (rec[0].fp && rec[0].fp[0] != null && !/^moja lokacija$/i.test(rec[0].from || "")) state.fromOverride = { name: rec[0].from, lat: rec[0].fp[0], lon: rec[0].fp[1] };
+        // destinacija iz istorije, polazak = moja lokacija (14.8., isto pravilo kao u pretrazi)
+        state.fromOverride = null;
+        document.getElementById("from").value = "Moja lokacija";
+        gpsPrefill(true);
+        document.getElementById("to").value = rec[0].to;
         if (rec[0].tp && rec[0].tp[0] != null) state.searchTo = { name: rec[0].to, lat: rec[0].tp[0], lon: rec[0].tp[1] };
         openPlanning();
       }
