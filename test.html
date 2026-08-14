@@ -5239,7 +5239,11 @@ async function pumpeSlojCrtaj() {
   map.addLayer({ id: "pumpeTacka", type: "symbol", source: "pumpeSrc", minzoom: 9,
     layout: { "icon-image": "pumpa-pin",
       "icon-size": ["interpolate", ["linear"], ["zoom"], 9, 0.5, 12, 0.72, 16, 1],
-      "icon-allow-overlap": true } });
+      /* do z12: collision proredjuje medjugradske gomile (Lajkovac na z9,6 je bio hrpa piluli);
+         od z12: pumpe se prikazuju UVEK - vaznije su motoristi od kafica, a gradski collision
+         restorana ih je inace gutao (QA: 29 -> 1 na ekranu) */
+      "icon-allow-overlap": ["step", ["zoom"], false, 12, true],
+      "icon-padding": ["interpolate", ["linear"], ["zoom"], 9, 20, 11.9, 8] } });
   map.on("click", "pumpeTacka", (ev) => {
     const f = ev.features && ev.features[0]; if (!f) return;
     const b = f.properties.b, h24 = +f.properties.h24;
@@ -5344,7 +5348,10 @@ async function restoraniSlojCrtaj() {
   map.addLayer({ id: "restTacka", type: "symbol", source: "restSrc", minzoom: 10,
     layout: { "icon-image": "hrana-pin",
       "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 13, 0.8, 16, 1],
-      "icon-allow-overlap": false, "icon-padding": 1 } });
+      /* "uvek vidljivo" NE znaci zid: na gradskom zumu grad ima stotine lokala, pa velik
+         collision-razmak pusta samo prirodnu gustinu (kao Google); zumiranjem se progusti (13.8.) */
+      "icon-allow-overlap": false,
+      "icon-padding": ["interpolate", ["linear"], ["zoom"], 10, 34, 13, 22, 15, 8, 16.5, 2] } });
   map.on("click", "restTacka", (ev) => {
     const f = ev.features && ev.features[0]; if (!f) return;
     markerPopup(`<b>${esc(f.properties.n)}</b><br><span class="poi-dist">${REST_TIP[f.properties.t] || "restoran"} · OpenStreetMap</span>`)
@@ -8099,8 +8106,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.75";
+const APP_VERSION = "0.9.76";
 const CHANGELOG = [
+  { v: "0.9.76", d: "14.08.2026.", stavke: [
+    "<b>Gustina ikonica na mapi je sada prirodna, kao kod Google-a.</b> \"Uvek vidljivo\" je na gradskom zumu značilo zid od 300 lokala preko celog Beograda - sada razmak zavisi od zuma (izbliza gušće, izdaleka ređe), pa grad pokazuje pedesetak najprirodnije raspoređenih. Pumpe imaju prednost nad kafićima i od gradskog zuma se prikazuju sve; međugradske gomile preklopljenih pumpi (Lajkovac) su raščešljane."
+  ] },
   { v: "0.9.75", d: "13.08.2026.", stavke: [
     "<b>Replay vožnje u sažetku - ono što si tražio, kao u demou.</b> Dugme ▶ i slajder preko cele širine: strelica putuje tvojim tragom po STVARNOM vremenu vožnje, uz žive brojeve - vreme, kilometar, brzina u tom trenutku, i nagib kad ga ima. Cela vožnja prođe za ~40 sekundi, slajderom skačeš na bilo koji trenutak, pauze su prirodno preskočene.",
     "Radi i za vožnje koje su već u dnevniku - i one nose trag i uzorke brzine. Za jučerašnju turu do Jadrije radi takođe (uz njen ređi trag).",
