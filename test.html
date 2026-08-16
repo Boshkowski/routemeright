@@ -8196,8 +8196,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.77";
+const APP_VERSION = "0.9.78";
 const CHANGELOG = [
+  { v: "0.9.78", d: "16.08.2026.", stavke: [
+    "Ručni izbor \"Druge rute\" sada isto uredno raskine kombinovanu turu - ista popravka koja je u 0.9.77 stigla za automatski preračun (stari sastav rute je umeo da preživi i ispisuje pogrešna imena deonica)."
+  ] },
   { v: "0.9.77", d: "16.08.2026.", stavke: [
     "<b>Pauza sada čuva i bateriju i tebe od kiše.</b> U pauzi se radar osvežava štedljivo (na ~10 min), a ako se front približava stiže tiha poruka \"Kiša stiže za ~X min\" - da znaš da li da produžiš kafu ili da kreneš. Kad nastaviš vožnju, radar i prognoza za ostatak puta se odmah preračunaju sa novim satima prolaska - sat pauze više ne znači bajatu prognozu.",
     "<b>Dugme \"Druga ruta\" konačno radi.</b> Kad stojiš ili si na pauzi, nudi alternativu do cilja; u pokretu je zatamnjeno i ne reaguje - odluke se ne donose u gasu.",
@@ -10089,7 +10092,14 @@ function altApply(nr) {
       }
     }
   } catch (e) {}
+  const beseHibrid = !!(route.hibrid && route.hibrid.length >= 2);   // isti prag kao u rideReroute
   Object.assign(route, nr);                       // isti objekat - ostatak app-a drzi referencu
+  if (beseHibrid) {
+    /* alternativa je jedna ruta jednog stila do cilja - sastav sasivene ture prestaje da vazi,
+       a `route.hibrid` bi prezivelo Object.assign (nr taj kljuc nema); isti razlog kao u rideReroute */
+    delete route.hibrid; delete route._hibNaz;
+    tihoObavestenje("Ruta do cilja više nije kombinovana");
+  }
 
   RIDE.baseD = (RIDE.baseD || 0) + (RIDE.maxD || 0); RIDE.maxD = 0;   // nova ruta = nova cumDist skala (dnevnik sabira etape)
   try { route._curves = analyzeCurves(route); } catch (e) { delete route._curves; }   // serpentine sa SVEZE geometrije
