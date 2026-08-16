@@ -916,6 +916,10 @@
       background: rgba(15,23,42,.94); border: 1px solid rgba(148,163,184,.18); cursor: pointer;
       display: flex; align-items: center; justify-content: center; }
     #rideBarBottom .alt svg { width: 22px; height: 22px; stroke: #e2e8f0; fill: none; }
+    /* "Druga ruta" je aktivna SAMO dok vozac stoji ili je u pauzi (DESIGN token `alt-route-button`).
+       U pokretu ostaje VIDLJIVA a neaktivna, jer vozac mora da zna da mogucnost postoji kad stane.
+       Ne skriva se i ne dobija `disabled` - tap prosto ne radi nista (guard je u rideAltStanje/onclick). */
+    #rideBarBottom .alt.off { opacity: .35; box-shadow: none; }
     /* Etiketa puta na kome si (kao "Route 26" kod Google-a). Zakacena na body, ne u mapu -
        #map je position:fixed pa pravi svoj stacking context i z-index unutra ne vazi. */
     #rideRoad { display: none; position: fixed; z-index: 39; transform: translate(-50%, 0);
@@ -1616,6 +1620,33 @@
 .lp-ring{position:absolute;left:50%;top:2px;width:30px;height:30px;margin-left:-15px;border-radius:999px;border:2px solid rgba(249,115,22,.45);animation:lpring 2.4s ease-out infinite;pointer-events:none}
 @keyframes lpring{0%{transform:scale(.45);opacity:1}70%{transform:scale(1.4);opacity:0}100%{transform:scale(1.4);opacity:0}}
 @media (prefers-reduced-motion: reduce){#lpSheet .lp-name.pending{animation:none;opacity:.7}.lp-ring{animation:none;opacity:.4}}
+/* ---- tiho obavestenje (DESIGN.md komponenta `quiet-toast`) ----
+   Jedan red teksta koji se SAM povlaci: nema dugme za zatvaranje, ne trazi tap i nikad ne pokriva
+   karticu manevra ni pilule brojeva. Zato sedi dole, a u voznji tacno iznad donje vozacke trake.
+   Jedna komponenta za sva tri mesta koja je koriste: dodata stanica, kisa u pauzi, ruta koja vise
+   nije kombinovana. `pointer-events:none` - poruka nikad ne otima tap kontroli ispod sebe. */
+#quietToast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));z-index:300;
+  max-width:min(86%,420px);background:var(--c-card);border:1px solid var(--c-border-strong);border-radius:13px;padding:11px 15px;
+  font-family:inherit;font-size:14px;line-height:1.45;font-weight:600;color:var(--c-fg);
+  box-shadow:0 8px 30px rgba(0,0,0,.5);text-align:center;pointer-events:none;opacity:0;transition:opacity 260ms var(--ease)}
+#quietToast.on{opacity:1}
+/* Voznja: donja traka je usidrena 14px odozdo, a visinu joj daje najvisi element u njoj (mereno
+   64px: pilula brzine je visa od kruga "Prijavi"). 92px ostavlja ~14px vazduha iznad nje, da traka
+   sme malo da poraste - duzi broj u piluli - a da poruka i dalje NE pokrije brojke. */
+body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
+@media (orientation: landscape) and (max-height: 520px){
+  /* polozeno: levi stub nosi i karticu manevra i brojke - toast ide desno od njega, nad mapu */
+  body.riding #quietToast{left:auto;right:12px;transform:none;bottom:calc(12px + env(safe-area-inset-bottom));max-width:min(52vw,380px)}
+}
+@media (prefers-reduced-motion: reduce){#quietToast{transition-duration:.01ms}}
+/* ---- prazno stanje (DESIGN.md komponenta `empty-state`) ----
+   Cinjenica u jednoj recenici pa izlaz. Bez ilustracije, bez praznog okvira, bez obecanja. */
+.emptyst{padding:18px 4px 8px;text-align:center}
+.emptyst .est{font-size:14px;line-height:1.45;font-weight:600;color:var(--c-muted-fg);margin:0 0 14px}
+.emptyst button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;
+  background:linear-gradient(180deg,var(--c-primary),var(--c-primary-strong));color:var(--on-primary);border:0;border-radius:13px;
+  font:inherit;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.emptyst button:active{transform:scale(.97)}
 </style>
 </head>
 <body>
@@ -2191,7 +2222,7 @@
       <div class="jset">
         <a class="jlink" href="privatnost.html" target="_blank" rel="noopener" style="display:block;text-align:left">Politika privatnosti - šta ostaje na telefonu, a šta ne</a>
         <a class="jlink" href="privatnost.html#odricanje" target="_blank" rel="noopener" style="display:block;text-align:left">Odricanje odgovornosti - ti voziš, ne aplikacija</a>
-        <div class="jnote">GPS trag vožnje i dnevnik ostaju na ovom telefonu i ne šalju se nikome. Bez naloga, bez reklama, bez alata za praćenje.</div>
+        <div class="jnote">GPS trag vožnje i dnevnik ostaju na ovom telefonu i ne čuvaju se ni na jednom serveru. Javnim servisima se u prolazu šalje samo par tačaka trenutnog traga - za ograničenje brzine dok voziš i za ime mesta u dnevniku posle vožnje. Bez naloga, bez reklama, bez alata za praćenje.</div>
       </div>
     </div>
     <div class="stub"><b>Izvori podataka</b>
@@ -3006,6 +3037,40 @@ function parseKoord(t) {
   return null;
 }
 function koordIme(k) { return "Tačka " + k.lat.toFixed(4) + ", " + k.lon.toFixed(4); }
+/* Podeljena lokacija na JEDNOM mestu: koriste je i obican link (?ll= u init) i routemeright:// scheme.
+   "rezervniUpit" je ceo upit ("ll=44.8,20.5"): gola vrednost "44.8,20.5" ne prodje kroz parseKoord jer
+   pravilo za gole koordinate traži bar tri decimale, ali "?ll=44.8,20.5" prodje prvim pravilom.
+   Vraća true ako je lokacija prepoznata i odredište postavljeno. */
+function primiDeljenuLokaciju(sirovo, ime, rezervniUpit) {
+  let kk = null;
+  if (sirovo) { try { kk = parseKoord(decodeURIComponent(sirovo)); } catch (e) { kk = parseKoord(sirovo); } }   // pokvaren % ne sme da sruši init
+  if (!kk && rezervniUpit) kk = parseKoord("?" + String(rezervniUpit).replace(/^\?/, ""));
+  if (!kk) return false;
+  setTimeout(() => { try { SEARCH_MODE = "to"; pickDestination({ n: ime || koordIme(kk), lat: kk.lat, lon: kk.lon }); } catch (e) {} }, 400);
+  return true;
+}
+/* routemeright:// (custom URL scheme, prijavljen u Info.plist; radi i sa besplatnim potpisom).
+   Nativni omotač (AppDelegate.swift) pozove window.rmrOtvoriURL sa punim URL-om i ponavlja dok ne dobije "ok",
+   jer pri hladnom startu web sloj još ne postoji. Tolerantno na oblik:
+     routemeright://?ll=44.8,20.5 | routemeright://ll=44.8,20.5 | routemeright://open?ll=44.8,20.5
+   Sve završava u istoj primiDeljenuLokaciju koju koristi i obican ?ll= link - bez druge kopije logike. */
+function rmrUpitIzSheme(sirovURL) {
+  const s = String(sirovURL || "");
+  const q = s.indexOf("?");
+  if (q >= 0) return s.slice(q + 1);
+  const m = s.match(/^[a-z][a-z0-9+.-]*:\/\/(.*)$/i);        // routemeright://ll=... (bez upitnika)
+  const rep = m ? m[1] : "";
+  return rep.indexOf("=") >= 0 ? rep : "";                   // "routemeright://open" ne nosi podatak
+}
+window.rmrOtvoriURL = function (sirovURL) {
+  const upit = rmrUpitIzSheme(sirovURL);
+  if (!upit) return false;
+  let p; try { p = new URLSearchParams(upit); } catch (e) { return false; }
+  const sirovo = p.get("ll") || p.get("q") || p.get("geo");
+  const ime = p.get("naziv") || p.get("name") || "";
+  return primiDeljenuLokaciju(sirovo, ime, upit);
+};
+window.handleOpenURL = function (u) { try { window.rmrOtvoriURL(u); } catch (e) {} };   // Cordova oblik, za svaki slučaj
 async function geocode(q) {
   const qq = (q || "").trim();
   const kk = parseKoord(qq);   // koordinate/deljeni link idu pravo na mapu - bez ijednog geokodera
@@ -5544,11 +5609,39 @@ function drawRoute(route, assess) {
 }
 
 /* ---------------- kišni radar (RainViewer) ---------------- */
-const radar = { on: false, frames: [], i: 0, timer: null, host: "" };
+const radar = { on: false, frames: [], i: 0, timer: null, host: "", btn: null };
+/* Ritam osvežavanja radarskog sloja. Zatečena vrednost (10 min) se NE menja: RainViewer objavljuje
+   nov snimak na ~10 min, pa češće pitanje vraća isti PNG i troši bateriju i tuđi servis. Isti broj
+   nosi i štedljivi otkucaj u pauzi (PAUZA_WX_MS) - tamo je on jedini koji radi. */
+const RADAR_OSVEZI_MS = 10 * 60000;
 function radarTiles(f) { return [`${radar.host}${f.path}/512/{z}/{x}/{y}/2/1_1.png`]; }   // 512px + maxzoom 7 = nema "Zoom Not Supported" plocica
 function radarRemove() {
   if (map.getLayer("radar")) map.removeLayer("radar");
   if (map.getSource("radar")) map.removeSource("radar");
+}
+function radarAddFrame(f) {
+  radarRemove();
+  // maxzoom 12: RainViewer nema tajlove za veći zum - MapLibre preko toga uvećava z12 (bez "not supported" pločica)
+  map.addSource("radar", { type: "raster", tiles: radarTiles(f), tileSize: 512, maxzoom: 7 });
+  map.addLayer({ id: "radar", type: "raster", source: "radar", paint: { "raster-opacity": 0.62 } },
+    map.getLayer("seg-casing") ? "seg-casing" : undefined);
+}
+/* Jedan svež snimak radara. Deljeno između redovne petlje sloja i štedljivog otkucaja u pauzi:
+   pauza ne sme da vuče po svojoj kopiji istog koda. Vraća true kad je snimak stvarno zamenjen. */
+async function radarNoviFrame() {
+  if (!radar.on || !map) return false;
+  const d2 = await fetchJSON("https://api.rainviewer.com/public/weather-maps.json", { timeoutMs: 7000, retries: 0 });
+  radar.host = d2.host; radar.frames = [...(d2.radar.past || [])];
+  radar.i = Math.max(0, radar.frames.length - 1);
+  const f = radar.frames[radar.i];
+  if (!f) return false;
+  const src = map.getSource("radar");
+  if (src && src.setTiles) src.setTiles(radarTiles(f)); else radarAddFrame(f);
+  try {   // natpis na dugmetu je SAT snimka - posle osvežavanja bi inače tvrdio staro vreme
+    const l = radar.btn && radar.btn.querySelector(".lbl");
+    if (l) l.textContent = fmtTime(new Date(f.time * 1000));
+  } catch (e) {}
+  return true;
 }
 async function toggleRadar(btn) {
   if (!map) return;
@@ -5563,28 +5656,17 @@ async function toggleRadar(btn) {
     radar.host = d.host;
     radar.frames = [...(d.radar.past || []), ...(d.radar.nowcast || [])];
     if (!radar.frames.length) return;
-    radar.on = true; btn.classList.add("on");
+    radar.on = true; btn.classList.add("on"); radar.btn = btn;
     radar.i = Math.max(0, (d.radar.past || []).length - 1);
-    const addFrame = (f) => {
-      radarRemove();
-      // maxzoom 12: RainViewer nema tajlove za veći zum - MapLibre preko toga uvećava z12 (bez "not supported" pločica)
-      map.addSource("radar", { type: "raster", tiles: radarTiles(f), tileSize: 512, maxzoom: 7 });
-      map.addLayer({ id: "radar", type: "raster", source: "radar", paint: { "raster-opacity": 0.62 } },
-        map.getLayer("seg-casing") ? "seg-casing" : undefined);
-    };
-    addFrame(radar.frames[radar.i]);   // STATICAN najnoviji snimak - bez animacije (Boskov fidbek: "krece se dok stojim")
+    radarAddFrame(radar.frames[radar.i]);   // STATICAN najnoviji snimak - bez animacije (Boskov fidbek: "krece se dok stojim")
     lbl(fmtTime(new Date(radar.frames[radar.i].time * 1000)));
-    radar.timer = setInterval(async () => {   // na 10 min povuci NOVI najnoviji snimak (radar ostaje svez, ne "igra")
-      if (!radar.on) return;
-      try {
-        const d2 = await fetchJSON("https://api.rainviewer.com/public/weather-maps.json", { timeoutMs: 7000, retries: 0 });
-        radar.host = d2.host; radar.frames = [...(d2.radar.past || [])];
-        radar.i = Math.max(0, radar.frames.length - 1);
-        const f = radar.frames[radar.i];
-        const src = map.getSource("radar");
-        if (src && src.setTiles) src.setTiles(radarTiles(f)); else addFrame(f);
-      } catch (e) {}
-    }, 600000);
+    radar.timer = setInterval(() => {   // na 10 min povuci NOVI najnoviji snimak (radar ostaje svez, ne "igra")
+      /* U PAUZI redovna petlja ćuti: tada radar osvežava štedljivi otkucaj pauze (pauzaWxTik, isti
+         ~10 min ritam). Bez ovog garda bi oba udarala na isti servis - a ugovor kaže "umesto
+         punog", ne "uz puni". */
+      if (!radar.on || RIDE.paused) return;
+      radarNoviFrame().catch(() => {});
+    }, RADAR_OSVEZI_MS);
   } catch { /* radar nedostupan - dugme ostaje neaktivno */ }
 }
 
@@ -6687,8 +6769,16 @@ async function renderFeed() {
                 : `mirno je trenutno · ${rows.length} u poslednjih 7 dana`)   // nula se ne istice (ghost-town lekcija)
     : "još nema prijava u poslednjih 7 dana";
   if (!rows.length) {
-    box.innerHTML = '<div class="stub"><b>Budi prvi.</b> Kad prijaviš policiju, udes ili rupu, ' +
-      'vozači iza tebe to čuju u kacigi. Prijava se pravi dugmetom na mapi ili u vožnji.</div>';
+    /* Prazna Zajednica (EXPERIENCE.md, State Patterns): tab OSTAJE u aplikaciji i piše istinu o
+       trenutku, u tonu "Mirno je oko tebe" - jedna činjenica pa izlaz. Raniji tekst ("Budi prvi...")
+       je objašnjavao funkciju umesto da kaže stanje, i nije nudio nikakav izlaz. */
+    box.innerHTML = '<div class="emptyst"><div class="est">Još nema prijava sa puta. ' +
+      'Prva vožnja koja nešto prijavi ući će ovde.</div>' +
+      '<button type="button" id="zPraznoMapa">Otvori mapu</button></div>';
+    const bm = document.getElementById("zPraznoMapa");
+    if (bm) bm.onclick = () => {   // izlaz je mapa - isto odredište kao dugme "Na mapi" u redovima feeda
+      const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
+    };
     return;
   }
   const glasovi = mojiGlasovi();
@@ -8106,8 +8196,16 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.76";
+const APP_VERSION = "0.9.77";
 const CHANGELOG = [
+  { v: "0.9.77", d: "16.08.2026.", stavke: [
+    "<b>Pauza sada čuva i bateriju i tebe od kiše.</b> U pauzi se radar osvežava štedljivo (na ~10 min), a ako se front približava stiže tiha poruka \"Kiša stiže za ~X min\" - da znaš da li da produžiš kafu ili da kreneš. Kad nastaviš vožnju, radar i prognoza za ostatak puta se odmah preračunaju sa novim satima prolaska - sat pauze više ne znači bajatu prognozu.",
+    "<b>Dugme \"Druga ruta\" konačno radi.</b> Kad stojiš ili si na pauzi, nudi alternativu do cilja; u pokretu je zatamnjeno i ne reaguje - odluke se ne donose u gasu.",
+    "Kad se ruta u vožnji preračuna pa više nije kombinovana (autoput + krivine), stigne jedna tiha poruka. Bez zvuka, bez prekidanja.",
+    "Stanica dodata sa mape (dugi pritisak) odmah potvrdi: \"Dodato: ime\" - i istog trena je u listi stanica.",
+    "Zajednica bez prijava više nije nemi ekran - kaže šta je i vodi te na mapu.",
+    "Iskrenija beleška o privatnosti GPS traga (kartica Ja). Spremna je i routemeright:// veza za otvaranje aplikacije iz poruka - proradiće uz sledeći Xcode build. Na sajtu: novi Uslovi korišćenja i Impresum."
+  ] },
   { v: "0.9.76", d: "14.08.2026.", stavke: [
     "<b>Gustina ikonica na mapi je sada prirodna, kao kod Google-a.</b> \"Uvek vidljivo\" je na gradskom zumu značilo zid od 300 lokala preko celog Beograda - sada razmak zavisi od zuma (izbliza gušće, izdaleka ređe), pa grad pokazuje pedesetak najprirodnije raspoređenih. Pumpe imaju prednost nad kafićima i od gradskog zuma se prikazuju sve; međugradske gomile preklopljenih pumpi (Lajkovac) su raščešljane."
   ] },
@@ -8773,12 +8871,9 @@ function init() {
   // ili bilo kog linka sa koordinatama. Ista logika koju koristi i pretraga (parseKoord).
   {
     const sirovo = params.get("ll") || params.get("q") || params.get("geo");
-    const kk = sirovo ? parseKoord(decodeURIComponent(sirovo)) : null;
-    if (kk) {
-      const ime = params.get("naziv") || params.get("name") || "";
-      setTimeout(() => { try { SEARCH_MODE = "to"; pickDestination({ n: ime || koordIme(kk), lat: kk.lat, lon: kk.lon }); } catch (e) {} }, 400);
-      return;
-    }
+    const ime = params.get("naziv") || params.get("name") || "";
+    // rezerva se daje SAMO kad je koordinatni parametar zaista tu, da ?demo= link ne padne ovde
+    if (primiDeljenuLokaciju(sirovo, ime, sirovo ? location.search : null)) return;
   }
   if (params.has("demo")) {
     $("from").value = params.get("from") || "Beograd";
@@ -9919,6 +10014,32 @@ function buildAhead(route) {   // najave ispred: kamere sa rute + lokalne prijav
 /* ---------- druga ruta usred voznje ----------
    Google ima dugme sa viljuskom u traci; isto radimo: racunamo preostale stilove OD TRENUTNE
    pozicije do cilja i nudimo ih. Tap van lista i dugme Otkazi oba zatvaraju (nikad zarobljen sheet). */
+/* Dugme "Druga ruta" je AKTIVNO samo dok vozac stoji ili je u pauzi (EXPERIENCE.md, DESIGN token
+   `alt-route-button`). Razlog nije stil nego bezbednost: sheet sa varijantama trazi citanje i
+   izbor, a to se ne radi u pokretu. U pokretu dugme ostaje VIDLJIVO i neaktivno (providnost .35,
+   bez senke), da bi vozac znao da mogucnost postoji kad stane - ne skriva se.
+   "Stoji" = brzina ispod 3 km/h duze od 3 sekunde. Prag na vremenu, ne samo na brzini: GPS ume da
+   na tren prijavi nulu u voznji, a semafor i stvarno zaustavljanje se ovako razlikuju od suma. */
+const ALT_STOJI_KMH = 3, ALT_STOJI_MS = 3000;
+function rideAltStoji() {
+  if (RIDE.paused) return true;                       // pauza je stajanje po definiciji, bez cekanja
+  if ((RIDE.spdKmh || 0) >= ALT_STOJI_KMH) return false;
+  return !!RIDE._stajeOd && Date.now() - RIDE._stajeOd >= ALT_STOJI_MS;
+}
+function rideAltStanje() {
+  try {
+    const ab = document.getElementById("rideAlt");
+    if (!ab) return;
+    const mogu = !!RIDE.route && rideAltStoji();   // bez rute nema "druge rute" (slobodna voznja)
+    ab.classList.toggle("off", !mogu);
+    ab.setAttribute("aria-disabled", mogu ? "false" : "true");
+  } catch (e) {}
+}
+function rideAltBrzina(kmh) {   // vodi racun OTKAD vozac stoji; zove se sa svakog fiksa
+  if ((kmh || 0) >= ALT_STOJI_KMH) RIDE._stajeOd = null;
+  else if (!RIDE._stajeOd) RIDE._stajeOd = Date.now();
+  rideAltStanje();
+}
 function altClose() { const s = document.getElementById("altSheet"); if (s) s.hidden = true; }
 async function altOpen() {
   const s = document.getElementById("altSheet"), lst = document.getElementById("altList");
@@ -10142,8 +10263,11 @@ async function lpShow(ll) {
     closeAll();
     try {   // isto sto i lokalni replan() u renderViaChips (nije globalan): reset famous + chips + plan
       state.vias.push({ t: "stop", v: [ll.lng, ll.lat], name });
+      /* Potvrda ide ODMAH posle upisa, pre preracunavanja: EXPERIENCE.md trazi da se stanica
+         "istog trena vidi", pa potvrda ne sme da zavisi od toga da li replan uspe ili padne. */
+      tihoObavestenje("Dodato: " + name);
       state.famousApplied = null;
-      renderViaChips();
+      renderViaChips();   // stanica je od ovog trenutka u listi stanica planera i moze da se skloni
       if (state.routes.length) plan();
     } catch (e) {}
   };
@@ -10268,7 +10392,18 @@ async function rideReroute(route, lo, la, dNow, force) {
     const tok = RIDE.t0;   // stopRide u toku cekanja ne sme da dobije zombi-rutu (review nalaz 6.8.)
     const nr = await valhallaRoute({ lat: la, lon: lo }, dest, style, netOpts);
     if (!document.body.classList.contains("riding") || RIDE.t0 !== tok) return;
+    // sastav vazi samo dok je tura sasivena od bar dva komada - isti prag koji koristi hibridSastav()
+    const beseHibrid = !!(route.hibrid && route.hibrid.length >= 2);
     Object.assign(route, nr);   // mutiraj isti objekat (ostatak app-a drzi referencu)
+    /* Kombinovana (sasivena) tura posle preracunavanja PRESTAJE da vazi: valhallaRoute vraca jednu
+       rutu jednog stila do cilja, a `route.hibrid` bi prezivelo Object.assign (nr taj kljuc nema)
+       i nastavilo da ispisuje sastav po komadima STARE geometrije. Zato se sastav brise, a vozac
+       dobija tiho obavestenje: bez zvuka, bez pitanja i bez prekidanja voznje (EXPERIENCE.md,
+       red "Preracunavanje rute u voznji"). */
+    if (beseHibrid) {
+      delete route.hibrid; delete route._hibNaz;
+      tihoObavestenje("Ruta do cilja više nije kombinovana");
+    }
 
     RIDE.baseD = (RIDE.baseD || 0) + (RIDE.maxD || 0); RIDE.maxD = 0;   // nova ruta = nova cumDist skala (dnevnik sabira etape)
     try { route._curves = analyzeCurves(route); } catch (e) { delete route._curves; }   // serpentine sa SVEZE geometrije
@@ -10375,6 +10510,81 @@ function ridePauseReg() {
   const pb = document.getElementById("ridePause");
   if (pb) { pb.innerHTML = RIDE_PAUSE_SVG; pb.onclick = ridePauseToggle; }
 }
+/* ---------- PAUZA: radar i kiša dok vozač sedi (EXPERIENCE.md, red "PAUZA i vreme") ----------
+   U pauzi MIRUJE sve što meri vožnju: kilometraža, vreme, nagib i preračunavanje rute. Ova dva
+   posla su jedina dva izuzetka, i oba postoje zato što se svet napolju menja dok čovek sedi:
+     1) radar se osvežava ŠTEDLJIVO, na ~10 minuta - a redovna petlja sloja je u pauzi utišana,
+        pa je ovo osvežavanje umesto punog, ne uz njega (vidi gard u toggleRadar);
+     2) ako front nadolazi, stiže TIHO obaveštenje "Kiša stiže za ~X min" - bez zvuka uzbune, bez
+        trake nevremena i bez traženja ikakve radnje. Vozač sedi i gleda telefon; vikanje nema kome.
+   Prvi otkucaj ide posle 30 s, ne posle punih 10 minuta: čovek koji stane baš pred front mora to
+   da sazna dok još bira da li da čeka ili da beži. Prozor gledanja je sat vremena unapred, jer se
+   u pauzi i planira sat unapred (u vožnji je isti posao kraćeg dometa - vidi freeWxTick). */
+const PAUZA_WX_MS = 10 * 60000, PAUZA_WX_PRVI_MS = 30000, PAUZA_WX_PROZOR_MIN = 60;
+function pauzaWxStop() {
+  try { clearTimeout(RIDE._pauzaWxT0); } catch (e) {}
+  try { clearInterval(RIDE._pauzaWxInt); } catch (e) {}
+  RIDE._pauzaWxT0 = null; RIDE._pauzaWxInt = null;
+}
+function pauzaWxStart() {
+  pauzaWxStop();
+  RIDE._pauzaWxRek = new Set();   // ista kiša se ne javlja dvaput u istoj pauzi
+  RIDE._pauzaWxT0 = setTimeout(() => {
+    pauzaWxTik();
+    RIDE._pauzaWxInt = setInterval(pauzaWxTik, PAUZA_WX_MS);
+  }, PAUZA_WX_PRVI_MS);
+}
+async function pauzaWxTik() {
+  if (!RIDE.paused || !document.body.classList.contains("riding")) { pauzaWxStop(); return; }
+  try { await radarNoviFrame(); } catch (e) {}   // sloj radara, ako je upaljen, dobija svež snimak
+  try {
+    const pos = RIDE.pos;
+    if (!pos || pos.la == null) return;
+    const ms = await min15Points([{ lat: pos.la, lon: pos.lo }], 1);   // jedan poziv na 10 min, za JEDNU tačku
+    const m = ms && ms[0];
+    if (!m || !m.time || !m.precipitation || !RIDE.paused) return;   // pauza se u međuvremenu mogla završiti
+    const now = Date.now(), t0 = new Date(m.time[0]).getTime();
+    for (let k = 0; k < m.precipitation.length; k++) {
+      const ts = t0 + k * M15_MS;
+      if (ts < now - M15_MS) continue;
+      if (ts > now + PAUZA_WX_PROZOR_MIN * 60000) break;
+      const v = m.precipitation[k];
+      if (v != null && v >= 0.1) {
+        const kljuc = "pw" + Math.round(ts / M15_MS);
+        if (RIDE._pauzaWxRek && RIDE._pauzaWxRek.has(kljuc)) return;
+        if (RIDE._pauzaWxRek) RIDE._pauzaWxRek.add(kljuc);
+        tihoObavestenje("Kiša stiže za ~" + Math.max(1, Math.round((ts - now) / 60000)) + " min");
+        return;
+      }
+    }
+  } catch (e) { /* bez prognoze pauza radi isto - ovo je dodatak, ne uslov */ }
+}
+/* Nastavak posle pauze: OBAVEZNO oboje - svež radar i preračun prognoze za OSTATAK rute sa novim
+   satima prolaska. Za sat pauze pomerila se i kiša i vozač, pa bi stare procene prolaska lagale
+   ceo ostatak ture. Sam preračun ne košta poziv (wxLiveCalc računa iz "efektivnog polaska"), a
+   wxLiveRefetch dovuče sveže brojke samo za deo ispred vozača. */
+function pauzaWxNastavak(trajalaMs) {
+  pauzaWxStop(); RIDE._pauzaWxRek = null;
+  try { radarNoviFrame().catch(() => {}); } catch (e) {}
+  if (RIDE.freeRide) {
+    try { if (RIDE._fwx) { RIDE._fwx.t = 0; RIDE._fwx.calc = 0; } } catch (e) {}   // slobodna vožnja: sledeći otkucaj vuče sveže
+    return;
+  }
+  const route = RIDE.route;
+  if (!route) return;
+  try {
+    let kmSad = 0;
+    try { if (RIDE.pos) kmSad = navProject(route, RIDE.pos.lo, RIDE.pos.la).d / 1000; } catch (e) {}
+    /* Duga pauza briše spisak izgovorenog: ključ zone je nivo+razlog+km, pa bi posle sata sedenja
+       ista zona ćutala iako je sad na sasvim drugom vremenu prolaska. Kratka pauza (kafa, gorivo)
+       ga čuva, da se ista najava ne ponovi dvaput u razmaku od par minuta. */
+    if (trajalaMs >= 15 * 60000) WXLIVE.said = new Set();
+    WXLIVE.lastCalc = 0;             // prvi sledeći otkucaj računa sate prolaska od SADA
+    WXLIVE.lastFetch = Date.now();   // sveže brojke vučemo odmah ovde - da ih wxLiveTick ne traži još jednom
+    wxLiveRefetch(route, kmSad);
+    navLog("pauza-wx-nastavak", { km: Math.round(kmSad), pauzaMin: Math.round(trajalaMs / 60000) });
+  } catch (e) {}
+}
 function ridePauseToggle() {   // Boskov zahtev 6.8.: "kad stanemo u kafanu - da pauziramo"
   if (!document.body.classList.contains("riding")) return;
   const pb = document.getElementById("ridePause");
@@ -10392,6 +10602,8 @@ function ridePauseToggle() {   // Boskov zahtev 6.8.: "kad stanemo u kafanu - da
     try { navLog("pauza", {}); } catch (e) {}
     try { speakSr("Pauza."); } catch (e) {}
     shareToast("Pauza: kilometraža, vreme u pokretu i nagib su zamrznuti.");
+    pauzaWxStart();     // jedina dva posla koja u pauzi rade: štedljivi radar i tiha najava kiše
+    rideAltStanje();    // pauza JESTE stajanje - "Druga ruta" se pali odmah, bez čekanja praga
   } else {
     RIDE.paused = false;
     const _ovaPauza = Math.max(0, Date.now() - (RIDE.pauseT0 || Date.now()));
@@ -10408,6 +10620,11 @@ function ridePauseToggle() {   // Boskov zahtev 6.8.: "kad stanemo u kafanu - da
     try { document.getElementById("rideInstr").textContent = RIDE.freeRide ? "Snimam vožnju" : "…"; } catch (e) {}
     try { navLog("nastavak", { pauzaMs: Math.round(RIDE.pauseMs) }); } catch (e) {}
     try { speakSr("Nastavljamo."); } catch (e) {}
+    pauzaWxNastavak(_ovaPauza);   // svež radar + prognoza ostatka rute po NOVIM satima prolaska
+    /* Vozač stoji i u trenutku kad tapne Nastavi, pa "Druga ruta" ostaje aktivna dok stvarno ne
+       krene; prag stajanja se meri od sada, ne od trenutka ulaska u pauzu. */
+    RIDE._stajeOd = Date.now() - ALT_STOJI_MS;
+    rideAltStanje();
   }
 }
 function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ rute - trag/km/brzina/nagib/kolekcije, bez instrukcija
@@ -10428,6 +10645,8 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   RIDE.offCount = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false;
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;
+  RIDE._stajeOd = null;   // ostaci prethodne voznje: stari trenutak stajanja ne sme da predje u novu
+  try { pauzaWxStop(); RIDE._pauzaWxRek = null; } catch (e) {}   // i nijedan tajmer pauze ne prelazi u novu vožnju
   RIDE.paused = false; RIDE.pauseMs = 0; RIDE.pauseT0 = null; RIDE.pauzeNa = null;
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;
   RIDE.samples = []; RIDE._smpT = 0; RIDE._maxLnSeen = 0; RIDE.momBrz = null; RIDE.momNagib = null; RIDE.momLnL = null; RIDE.momLnR = null; RIDE._mxL = 0; RIDE._mxR = 0;
@@ -10606,6 +10825,8 @@ function startRide() {
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false;   // dnevnik voznje + kolekcije
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
+  RIDE._stajeOd = null;   // ostaci prethodne voznje: stari trenutak stajanja bi "Drugu rutu" upalio na startu
+  try { pauzaWxStop(); RIDE._pauzaWxRek = null; } catch (e) {}   // i nijedan tajmer pauze ne prelazi u novu vožnju
   RIDE.lastRouteI = null; RIDE.offSt = { offMs: 0 };   // hint prozor projekcije + off-route masina stanja
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE._gpxOffAt = 0; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;   // odometar/trag iz GPS-a + delta-brzina + fizicka provera nagiba
   RIDE.samples = []; RIDE._smpT = 0; RIDE._maxLnSeen = 0; RIDE.momBrz = null; RIDE.momNagib = null; RIDE.momLnL = null; RIDE.momLnR = null; RIDE._mxL = 0; RIDE._mxR = 0;   // uzorci + momenti za sazetak v3
@@ -10692,10 +10913,13 @@ function startRide() {
     RIDE._altReg = 1;
     const ab = document.getElementById("rideAlt"), bk = document.getElementById("altBack"),
       cx = document.getElementById("altCancel");
-    if (ab) ab.onclick = () => altOpen();
+    // tap u pokretu NE radi nista (dugme je vidljivo ali neaktivno) - bez poruke i bez zvuka
+    if (ab) ab.onclick = () => { if (rideAltStoji()) altOpen(); };
     if (bk) bk.onclick = () => altClose();
     if (cx) cx.onclick = () => altClose();
   }
+  // pocetno stanje mora VAN registracije (ona se radi jednom): svaka nova voznja pocinje iz mirovanja
+  rideAltStanje();
   RIDE._onFix = (p) => {
     const total = RIDE.total;
     const la = p.coords.latitude, lo = p.coords.longitude;
@@ -10727,6 +10951,7 @@ function startRide() {
     if (spdK == null) spdK = (nowFix - (RIDE.spdTs || 0) < 3000) ? RIDE.spdKmh : 0;   // kratak ispad: drzi staru do 3 s
     else RIDE.spdTs = nowFix;
     RIDE.spdKmh = spdK;
+    rideAltBrzina(spdK);   // "Druga ruta" se pali kad vozac stane, gasi cim krene
     if (accFix < 80) {   // odometar iz TRAGA - odometar duz rute je 5.8. STAO cim te (lazno) proglasi van rute
       if (RIDE.lastTrk && spdK > 2) {
         const stepM = haversine(RIDE.lastTrk.la, RIDE.lastTrk.lo, la, lo) * 1000;
@@ -10898,6 +11123,9 @@ function startRide() {
   RIDE.watch = navigator.geolocation.watchPosition(RIDE._onFix, RIDE._onFixErr, NAV_GPS_OPTS);
   clearInterval(RIDE.wdInt);   // GPS watchdog - 5.8. je banner samouvereno cutao dok fiksevi ne stizu
   RIDE.wdInt = setInterval(() => { try {
+    /* "Druga ruta" se osvezava PRE garda ispod: prag stajanja je vremenski, pa dugme mora da se
+       upali i kad vozac stoji toliko dugo da fiksevi prestanu da se menjaju (i u pauzi). */
+    rideAltStanje();
     /* U pauzi watchdog cuti (11.8.). Bez ovog garda: telefon ode u dzep, fiksevi stanu, watchdog
        prepise "Pauza" tekstom "Slab GPS signal..." - i nista ga nikad ne vrati. Covek se vrati iz
        kafane, procita da se aplikacija muci, sedne i vozi DALJE U PAUZI, pa se gubi ostatak ture:
@@ -10931,6 +11159,7 @@ function stopRide() {
     localStorage.setItem("mr_navlog", JSON.stringify({ app: APP_VERSION, t0: RIDE.t0 || 0, log: RIDE.log || [] }));
   } catch (e) {}
   try { clearInterval(RIDE.wdInt); RIDE.wdInt = null; } catch (e) {}
+  try { pauzaWxStop(); RIDE._pauzaWxRek = null; } catch (e) {}   // kraj vožnje u pauzi ne sme da ostavi živ tajmer
   try { cancelAnimationFrame(RIDE.camRAF); RIDE.camRAF = null; } catch (e) {}
   try { navRideLayersOff(); } catch (e) {}   // vrati planersku (weather) liniju rute
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
@@ -12486,6 +12715,26 @@ function buildShareCanvas(route) {
   const site = "routemeright.app";
   x.fillText(site, W - P - x.measureText(site).width, H - 66);
   return cv;
+}
+/* Tiho obavestenje (DESIGN.md `quiet-toast`, EXPERIENCE.md red "Tiho obavestenje").
+   Nosi sve sto vozac treba da ZNA a ne mora nista da URADI. Bez zvuka, bez dugmeta, bez prekida
+   voznje. Razlika prema shareToast-u nije kozmeticka: shareToast je potvrda radnje koju je covek
+   upravo uradio (sacuvano, poslato, kopirano), a ovo je vest koja stize sama od sebe dok se vozi,
+   pa mora da bude tisa, duze citljiva i da ne otima tap (`pointer-events:none`). */
+function tihoObavestenje(msg) {
+  try {
+    let t = document.getElementById("quietToast");
+    if (!t) {
+      t = document.createElement("div"); t.id = "quietToast";
+      t.setAttribute("role", "status"); t.setAttribute("aria-live", "polite");
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add("on");
+    clearTimeout(t._h);
+    // 4,2 s: kratka recenica u rukavicama i u pokretu; kraci prikaz se ne stigne procitati
+    t._h = setTimeout(() => { try { t.classList.remove("on"); } catch (e) {} }, 4200);
+  } catch (e) {}
 }
 function shareToast(msg) {
   let t = document.getElementById("shareToast");

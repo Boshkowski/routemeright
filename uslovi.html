@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Uslovi korišćenja - RouteMeRight</title>
+<meta name="description" content="Pravila korišćenja aplikacije RouteMeRight. Aplikacija pomaže u planiranju i vožnji, ali vozač je jedini odgovoran za vožnju.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --txt:#e2e8f0; --mut:#94a3b8; --acc:#f97316; --ok:#22c55e; --dan:#ef4444; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--txt); font:16px/1.65 Archivo, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding: calc(28px + env(safe-area-inset-top)) 20px calc(56px + env(safe-area-inset-bottom)); }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header { display:flex; align-items:center; gap:12px; margin-bottom: 6px; }
+  header svg { width: 40px; height: 40px; flex: none; }
+  h1 { font-size: clamp(24px, 5vw, 32px); font-weight: 900; letter-spacing: -.01em; margin: 18px 0 6px; }
+  .dt { color: var(--mut); font-size: 14px; margin-bottom: 26px; }
+  h2 { font-size: clamp(18px, 3.6vw, 21px); font-weight: 900; margin: 34px 0 10px; }
+  h3 { font-size: 16px; font-weight: 800; margin: 20px 0 6px; color: #f1f5f9; }
+  p, li { color: #cbd5e1; }
+  li { margin-bottom: 7px; }
+  ul { padding-left: 20px; }
+  a { color: #fdba74; }
+  b { color: #f8fafc; }
+  .box { background: var(--card); border: 1px solid rgba(148,163,184,.16); border-radius: 16px; padding: 16px 18px; margin: 18px 0; }
+  .box.vazno { border-color: rgba(239,68,68,.5); background: rgba(69,10,10,.5); }
+  .box.dobro { border-color: rgba(34,197,94,.35); background: rgba(5,46,22,.4); }
+  .kick { font-size: 12.5px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; color: var(--acc); margin-bottom: 8px; }
+  .box.vazno .kick { color: #fca5a5; }
+  .box.dobro .kick { color: #86efac; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid rgba(148,163,184,.14); vertical-align: top; }
+  th { color: #f1f5f9; font-weight: 800; }
+  td { color: #cbd5e1; }
+  .wrap > footer { margin-top: 44px; padding-top: 20px; border-top: 1px solid rgba(148,163,184,.14); color: var(--mut); font-size: 14px; }
+  .nazad { display:inline-block; margin-top: 14px; background: var(--card); border:1px solid rgba(148,163,184,.2);
+    color: var(--txt); text-decoration: none; padding: 10px 16px; border-radius: 12px; font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <svg viewBox="0 0 512 512" fill="none" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#0b1120"/><g stroke-linecap="butt" stroke-linejoin="round"><path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#c2570a" stroke-width="80"/><path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#f97316" stroke-width="66"/><path d="M170 407 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L333 421" stroke="#fff" stroke-width="7" stroke-dasharray="17 24"/></g><circle cx="170" cy="414" r="12" fill="#22c55e"/><circle cx="340" cy="430" r="13" fill="#fff"/></svg>
+  <div style="font-weight:900;font-size:19px">RouteMeRight</div>
+</header>
+
+<h1>Uslovi korišćenja</h1>
+<div class="dt">Poslednja izmena: 16. avgust 2026.</div>
+
+<div class="box vazno">
+  <div class="kick">Pročitaj bar ovo</div>
+  <p style="margin:0 0 8px"><b>Ti voziš, ne aplikacija.</b> RouteMeRight ti pokazuje rutu i vodi te kroz nju, ali odluku
+  na putu donosiš ti. Saobraćajni znak, policajac i stanje puta su uvek jači od linije na ekranu.</p>
+  <p style="margin:0"><b>Ne rukuj telefonom dok voziš.</b> Namesti sve dok stojiš, stavi telefon u držač i slušaj uputstva.</p>
+</div>
+
+<p>Ovo su pravila korišćenja aplikacije i sajta RouteMeRight. Korišćenjem aplikacije prihvataš ova pravila.
+Ako se sa nečim ne slažeš, nemoj koristiti aplikaciju. Trudili smo se da ovo bude napisano ljudski,
+tako da može da se pročita bez advokata.</p>
+
+<h2>1. Šta je RouteMeRight</h2>
+<p>RouteMeRight je aplikacija za motocikliste koja pomaže da <b>isplaniraš vožnju</b> i da je <b>ispratiš dok traje</b>.
+Konkretno, ume ovo:</p>
+<ul>
+  <li>računa rutu za motor, uključujući vijugave i kombinovane varijante, i vodi te skretanje po skretanje</li>
+  <li>pokazuje kakvo se vreme očekuje u satu kada kroz neko mesto prolaziš, po planu</li>
+  <li>procenjuje trošak goriva i putarine za motor koji si izabrao</li>
+  <li>prikazuje mesta uz rutu: pumpe, hranu, vidikovce i slično</li>
+  <li>snima vožnju i pravi sažetak posle nje: kilometri, vreme, brzine, ugao nagiba</li>
+  <li>prikazuje prijave opasnosti koje unose drugi vozači</li>
+</ul>
+<p>Aplikacija je u razvoju. Funkcije se dodaju, menjaju i povlače, a nešto ume i da ne radi.</p>
+
+<h2>2. Navigacija i odgovornost vozača</h2>
+<p>Ovo je najvažniji deo celog dokumenta, zato je i na vrhu strane.</p>
+<p>RouteMeRight <b>daje navigaciju</b>: računa rutu, vodi te skretanje po skretanje i preračunava put kada skreneš sa njega.
+Zato ovo mora da bude potpuno jasno: <b>navigacija je predlog, a ne naredba i ne dozvola</b>.</p>
+<ul>
+  <li>Za vožnju, izbor brzine, preticanje i svaku drugu odluku na putu <b>odgovoran si jedino ti</b>.</li>
+  <li>Saobraćajne propise poštuješ ti, bez obzira na to šta aplikacija pokazuje ili izgovori.</li>
+  <li>Stvarne uslove na putu procenjuješ ti: vreme, vidljivost, stanje kolovoza, gužvu, svoje stanje i stanje motocikla.</li>
+  <li>Ako se uputstvo aplikacije razlikuje od saobraćajne signalizacije ili od onoga što vidiš pred sobom,
+  <b>uvek važi ono što je na putu</b>.</li>
+  <li>Aplikacija ne zna sve. Ne zna da li je put te večeri zatvoren, da li je most u radovima,
+  da li je makadam prohodan za tvoj motor i da li ti smeš tuda da prođeš.</li>
+</ul>
+<p>Aplikacija nije zamena za pažnju, za iskustvo i za zdrav razum. Nije ni sistem za pomoć u nuždi:
+u hitnom slučaju zovi hitne službe (u Srbiji 194, 192 ili 112; u inostranstvu 112 važi u celoj Evropskoj uniji),
+a ne aplikaciju.</p>
+
+<h2>3. Podaci u aplikaciji su informativni</h2>
+<p>Skoro sve što aplikacija prikazuje dolazi iz javnih baza i javnih servisa, ili se računa iz njih.
+Ti podaci umeju da budu <b>netačni, nepotpuni ili zastareli</b>, i mi na njihov kvalitet ne utičemo.
+Uzmi ih kao pomoć pri planiranju, nikako kao dokaz.</p>
+<table>
+  <tr><th>Podatak</th><th>Šta treba da znaš</th></tr>
+  <tr><td>Vremenska prognoza</td><td>Procena iz meteoroloških modela, ne obećanje. Stvarno vreme ume da bude drugačije, posebno u planini i pri lokalnim pljuskovima. Nikada ne kreći na put samo zato što aplikacija kaže da je suvo.</td></tr>
+  <tr><td>Ruta i vreme puta</td><td>Računa se iz podataka o putevima koji mogu biti zastareli. Put ume da bude zatvoren, u radovima, neasfaltiran ili neprohodan za tvoj motor iako je na mapi.</td></tr>
+  <tr><td>Ograničenje brzine</td><td>Informativno i nije dokaz o dozvoljenoj brzini. Važi znak na putu, ne broj na ekranu.</td></tr>
+  <tr><td>Trošak goriva i putarine</td><td>Procena na osnovu fabričkih specifikacija motora i cena sa javnih izvora. Stvarna potrošnja zavisi od stila vožnje, tereta i puta. Cene putarina i goriva se menjaju. Planiraj gorivo sa rezervom.</td></tr>
+  <tr><td>Pumpe, hrana i ostala mesta</td><td>Dolaze iz javnih baza. Mogu biti zatvorena, premeštena ili ugašena.</td></tr>
+  <tr><td>Nagib, brzine i statistika vožnje</td><td>Merenje je približno i zavisi od senzora telefona i od toga kako je postavljen. Služi za tvoju analizu posle vožnje. Nije takmičenje i nije poziv da voziš brže ili da se naginješ više.</td></tr>
+</table>
+
+<h2>4. Bezbednost</h2>
+<div class="box vazno">
+  <div class="kick">Bez telefona u ruci</div>
+  <p style="margin:0">Ne kucaj, ne pretražuj i ne podešavaj ništa dok se motocikl kreće. Rutu isplaniraj pre polaska,
+  telefon drži u držaču, a uputstva slušaj. Ako nešto moraš da promeniš, prvo se bezbedno zaustavi.</p>
+</div>
+<p>Držanje telefona u ruci u vožnji je i prekršaj i najbrži način da se povrediš. Ako voziš sa slušalicama ili
+interfonom, podesi zvuk tako da i dalje čuješ saobraćaj oko sebe. Aplikaciju koristi samo ako si sposoban za vožnju
+i ako je motocikl ispravan.</p>
+
+<h2>5. Ko sme da koristi aplikaciju</h2>
+<p>Aplikacija je namenjena <b>punoletnim vozačima motocikla</b> i nije namenjena deci.
+Koristi je samo ako imaš važeću vozačku dozvolu odgovarajuće kategorije i motocikl koji je registrovan i ispravan
+u skladu sa propisima zemlje u kojoj voziš.</p>
+
+<h2>6. Zajednica i prijave opasnosti</h2>
+<p>U aplikaciji možeš da prijaviš opasnost na putu (šljunak, divljač, radovi, kamera) i da vidiš tuđe prijave.
+To je razmena informacija među vozačima, ne zvanična informacija o stanju puta.</p>
+<ul>
+  <li><b>Sadržaj unose korisnici.</b> Prijave dolaze od drugih vozača, niko ih ne proverava i mogu biti pogrešne,
+  zlonamerne ili zastarele. Ne oslanjaj se na njih kao na jedini izvor.</li>
+  <li><b>Prijavljuj tek kada staneš.</b> Nikada ne unosi prijavu dok se motocikl kreće.</li>
+  <li><b>Prijavljuj mesto, ne osobu.</b> Radare i kontrole prijavljuj kao lokaciju. Zabranjeno je unositi lične podatke
+  drugih ljudi, registarske tablice, fotografije osoba, uvrede, govor mržnje i reklame.</li>
+  <li><b>Prijave imaju rok.</b> Same se brišu po isteku roka koji zavisi od tipa prijave.</li>
+  <li><b>Zadržavamo pravo da uklonimo</b> bilo koju prijavu ili sadržaj, bez prethodne najave i bez obrazloženja,
+  ako procenimo da je netačan, zloupotrebljen ili suprotan ovim pravilima. Ne obećavamo da sadržaj pregledamo
+  ni da to radimo u nekom roku, i ne postoji nikakva provera pre objavljivanja.</li>
+</ul>
+<p>Za ono što sam uneseš odgovaraš ti. Unosom prijave daješ nam pravo da je prikažemo drugim korisnicima aplikacije.</p>
+
+<h2>7. Nalozi</h2>
+<p>Trenutno <b>nema naloga i nema registracije</b>. Ne tražimo ime, mejl ni lozinku, pa nema ni prijave ni odjave.
+Sve što napraviš čuva se na tvom telefonu. Ako obrišeš aplikaciju ili podatke sajta u pregledaču,
+to nestaje i mi to ne možemo da vratimo. <b>Vodi računa o svojim podacima sam.</b></p>
+<p>Ako naloge nekada uvedemo, ovaj tekst će se izmeniti pre toga.</p>
+
+<h2>8. Kako smeš da koristiš aplikaciju</h2>
+<p>Aplikaciju koristi normalno i za ono za šta je napravljena. Nije dozvoljeno da:</p>
+<ul>
+  <li>je koristiš protivno zakonu ili za nešto što ugrožava druge učesnike u saobraćaju</li>
+  <li>automatizovano povlačiš podatke, opterećuješ servise ili zaobilaziš ograničenja</li>
+  <li>zatrpavaš mapu lažnim prijavama ili ometaš rad aplikacije drugim vozačima</li>
+  <li>preprodaješ ili predstavljaš kao svoje podatke i sadržaj aplikacije</li>
+</ul>
+<p>Sadržaj aplikacije, njeno ime i izgled pripadaju autoru. Mape i podaci o putevima dolaze od
+<a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> saradnika i drugih izvora navedenih u
+<a href="privatnost.html">politici privatnosti</a>, pod njihovim licencama.</p>
+
+<h2>9. Privatnost</h2>
+<p>Šta ostaje na tvom telefonu, šta se šalje kom servisu i zašto, detaljno je opisano u posebnom dokumentu:
+<a href="privatnost.html">Politika privatnosti</a>. Ukratko: nema naloga, nema reklama, nema alata za praćenje,
+a GPS trag vožnje se čuva samo na tvom telefonu.</p>
+
+<h2>10. Dostupnost i izmene aplikacije</h2>
+<p>Aplikacija se oslanja na spoljne servise (rutiranje, prognoza, mape) koji su van naše kontrole i umeju da budu
+nedostupni ili spori. Aplikacija je u razvoju, pa funkcije mogu da se menjaju ili nestanu,
+a rad može da prestane bez najave. Ne obećavamo da će aplikacija raditi neprekidno, bez grešaka ni u svakom trenutku.</p>
+
+<h2>11. Ograničenje odgovornosti</h2>
+<p>Aplikacija se koristi <b>na sopstvenu odgovornost</b> i isporučuje se takva kakva jeste, bez garancija.
+U meri u kojoj to zakon dozvoljava, autor ne odgovara za štetu, povredu, kaznu ili trošak nastao korišćenjem
+aplikacije, uključujući netačnu rutu, netačnu prognozu, netačan podatak o gorivu, netačnu ili zastarelu prijavu
+drugog korisnika, kao ni za nedostupnost servisa ili gubitak podataka sa telefona.</p>
+<p>Ovo ograničenje ne isključuje odgovornost koja se po zakonu ne može isključiti,
+niti tvoja prava koja imaš kao potrošač.</p>
+
+<h2>12. Izmene ovih uslova</h2>
+<p>Ovaj tekst se menja kako se aplikacija menja. Datum poslednje izmene stoji na vrhu strane.
+Ako nastaviš da koristiš aplikaciju posle izmene, znači da prihvataš novu verziju.
+Značajnije izmene ćemo pokušati da istaknemo i u samoj aplikaciji.</p>
+
+<h2>13. Merodavno pravo</h2>
+<p>Na ove uslove i na korišćenje aplikacije primenjuje se pravo <b>Republike Srbije</b>.
+Za sporove koji se ne reše dogovorom nadležan je stvarno nadležan sud u Republici Srbiji.
+Ovo ne dira u prava koja ti kao potrošač imaš po propisima zemlje u kojoj živiš.</p>
+
+<h2>14. Kontakt</h2>
+<p>Za sva pitanja, primedbe i prijave spornog sadržaja piši na
+<a href="mailto:info@routemeright.app">info@routemeright.app</a>.
+Podaci o izdavaču su na strani <a href="impresum.html">Impresum</a>.</p>
+
+<div class="box">
+  <div class="kick">Napomena pre javnog lansiranja</div>
+  <p style="margin:0">Ovaj dokument je napisan da bude razumljiv vozaču i da pošteno opiše šta aplikacija radi,
+  ali <b>nije ga pisao advokat</b>. Pre javnog lansiranja, pre objave na Apple App Store i Google Play i pre bilo kakve
+  naplate, treba da ga pregleda advokat, posebno delove o ograničenju odgovornosti, o sadržaju koji unose korisnici
+  i o pravima potrošača. Podaci o izdavaču u impresumu takođe moraju biti popunjeni pre objave.</p>
+</div>
+
+<footer>
+  <p>RouteMeRight - vremenska prognoza za sat kad tuda prolaziš, i koliko će te tura koštati za tvoj motor.</p>
+  <p><a href="privatnost.html">Privatnost</a> &middot; <a href="impresum.html">Impresum</a></p>
+  <a class="nazad" href="/">Nazad na RouteMeRight</a>
+</footer>
+
+</div>
+</body>
+</html>
