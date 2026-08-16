@@ -9,7 +9,13 @@
      dolazi PMTiles paket.
    - SERVISI (prognoza, rutiranje, POI) = nikad iz kesa. Bajata prognoza je gora od nikakve;
      kad nema mreze, aplikacija koristi ono sto je snimljeno uz sacuvanu rutu. */
-const V = "rmr-v12";   /* v12: 0.9.78 altApply hibrid fix (16.8.). v11: 0.9.77 - pauza radar/prognoza, Druga ruta, tihe potvrde, pravne stranice (16.8.). v10: mesta_zajednice.json promenjeno (10 koordinata vraceno na prava mesta, 13.8.). v9: izbacen unos-pretpostavka. v7: preimenovani data fajlovi - stari kes mora da padne */
+const V = "rmr-v14";   /* v14: HUD identitet 0.9.79 - novo pismo (Saira Semi Condensed + JetBrains Mono) menja PRECACHE URL, pa stari kes koji jos drzi Archivo MORA da padne (16.8.). v13: test.html -> app.html; stari kes drzi staru ljusku pod starim imenom, MORA da padne (16.8.). v12: 0.9.78 altApply hibrid fix (16.8.). v11: 0.9.77 - pauza radar/prognoza, Druga ruta, tihe potvrde, pravne stranice (16.8.). v10: mesta_zajednice.json promenjeno (10 koordinata vraceno na prava mesta, 13.8.). v9: izbacen unos-pretpostavka. v7: preimenovani data fajlovi - stari kes mora da padne */
+/* PAZNJA: v11 i v12 su nastali IZMENOM DIREKTNO U JAVNOM REPOU, ne ovde - zato je
+   dev bio na v10 dok je produkcija bila na v12. tools/deploy.sh sada odbija deploy
+   ako je javna verzija >= ove, da se kes nikad ne vrati unazad.
+   NOTE: v11 and v12 were edited straight in the public repo, which is why dev sat on
+   v10 while production ran v12. tools/deploy.sh now refuses to deploy if the public
+   version is >= this one, so the cache can never move backwards. */
 const LJUSKA = V + "-ljuska";
 const PLOCICE = V + "-plocice";
 const PLOCICA_MAX = 2500;
@@ -18,7 +24,7 @@ const PLOCICA_MAX = 2500;
    service worker uopste postane aktivan, pa ih inace ne bi uhvatio ni na jednom otvaranju. */
 const PRECACHE = [
   "./",
-  "./test.html",
+  "./app.html",
   "./data/bikes.json",
   "./data/prices.json",
   "./data/mesta_zajednice.json",
@@ -27,7 +33,7 @@ const PRECACHE = [
   "./data/manifest.webmanifest",
   "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js",
   "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css",
-  "https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap",
+  "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Saira+Semi+Condensed:wght@400;600;700;800;900&display=swap",
   // Definicija stila i sprajtovi: i oni se traze pri pravljenju mape, dakle pre nego sto
   // service worker ozivi. Bez njih MapLibre bez signala ostaje zauvek na "Style is not done loading".
   "https://tiles.openfreemap.org/styles/positron",
@@ -106,7 +112,7 @@ self.addEventListener("fetch", (e) => {
         return r;
       } catch (err) {
         return (await c.match(req, { ignoreSearch: true })) ||
-               (await c.match("./test.html", { ignoreSearch: true })) || Response.error();
+               (await c.match("./app.html", { ignoreSearch: true })) || Response.error();
       }
     })());
     return;
