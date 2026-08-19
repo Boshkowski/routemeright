@@ -2505,6 +2505,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <h3 id="rsKick">Vožnja završena</h3>
     <div class="rshead">
       <div class="rel" id="rsRel">Vožnja</div>
+      <div class="dt" id="rsPoi" hidden></div>
       <div class="dt" id="rsDt"></div>
     </div>
     <!-- Maketa B (docs/sazetak-B.html, 13.8.): rečenica vožnje + traka trenutaka iz naših podataka -->
@@ -3396,10 +3397,19 @@ async function geoOverpass(q) {   // POI po imenu u krugu 30 km (OSM objekti koj
     return lat == null ? null : { lat, lon, name: (el.tags && el.tags.name) || q };
   } catch (e) { return null; }
 }
-function _phBod(p, q, d) {   // 10.8.: znacaj mesta i tacno ime, pa tek onda daljina
+/* 19.8. (Boskov nalaz sa Murtera): kod ADRESE blizina odlucuje. U njegovoj listi je "Ulica
+   Svetog Kriza 3" u Rovinju (209 km) stajala uz crkve na 6-31 km - a kucni broj je mesna stvar,
+   niko ne trazi broj 3 dve zupanije dalje. Za upite sa brojem zato ide strmija skala po daljini,
+   a klasa mesta (koja adresu ionako ne opisuje) se ne racuna. */
+function _phBod(p, q, d, adr) {   // 10.8.: znacaj mesta i tacno ime, pa tek onda daljina
   const nm = _geoFold(p.name || ""), qq = _geoFold(q || "");
   const key = (p.osm_key || "").toLowerCase(), val = (p.osm_value || "").toLowerCase();
   let s = 0;
+  if (adr) {
+    if (nm && qq && nm === qq) s += 1;
+    if (d != null) s += d < 15 ? 4 : d < 40 ? 3 : d < 100 ? 1.5 : d < 200 ? -1 : -4;
+    return s;
+  }
   if (key === "place") {
     if (val === "city") s += 4;
     else if (val === "town") s += 2.5;
@@ -3431,6 +3441,7 @@ async function geoPhotonRaw(q, n) {   // Photon (komoot): fuzzy POI pretraga - n
 }
 async function geoPhoton(q) { const r = await geoPhotonRaw(q, 1); return r.length ? { lat: r[0].lat, lon: r[0].lon, name: r[0].name } : null; }
 async function geoPhotonSugg(q, n) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SIRE klase - mesta, ulice, adrese, POI.
+  const adr = !!_geoAdresa(q);   // upit sa kucnim brojem se rangira po blizini, ne po znacaju mesta
   const ref = geoRef();                //  Ovde covek BIRA OCIMA iz liste (sub red nosi grad+daljinu), pa fuzzy promasaj ne odvede nikud;
   const bias = ref && ref.lat != null ? `&lat=${ref.lat.toFixed(4)}&lon=${ref.lon.toFixed(4)}` : "";   //  auto-izbor i dalje ide SAMO kroz Enter kaskadu sa svojim cuvarima.
   try {
@@ -3445,10 +3456,17 @@ async function geoPhotonSugg(q, n) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SI
       const d = ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null;
       return { name: nm, lat: x.c[1], lon: x.c[0],
         sub: [lat0(x.p.city || x.p.county), lat0(x.p.country)].filter(Boolean).join(", "),
-        d, bod: _phBod(x.p, q, d) };
-    }).filter((x) => x.name && (x.d == null || x.d < 900));   // 900 km: Alpi i Grcka ostaju u predlozima, drugi kraj sveta ne (review 9.8.)
+        d, bod: _phBod(x.p, q, d, adr) };
+    /* 900 km: Alpi i Grcka ostaju u predlozima, drugi kraj sveta ne (review 9.8.). Ali ADRESA
+       (upit sa kucnim brojem) je mesna stvar - tu je granica 300 km, inace se u listu popne
+       "broj 3" iz druge zupanije (Boskov nalaz 19.8.). */
+    }).filter((x) => x.name && (x.d == null || x.d < (adr ? 300 : 900)));
     scored.sort((a, b) => b.bod - a.bod || (a.d == null ? 9e9 : a.d) - (b.d == null ? 9e9 : b.d));
-    return scored.slice(0, n || 6);
+    /* Kod adrese: kad IMA pogodaka u blizini, daleki se ne nude uopste (Boskovih "209 km!").
+       Uslovno, ne fiksno - ako blizu nema niceg, lista ostaje kakva jeste umesto da bude prazna. */
+    const blizu = adr && scored.some((x) => x.d != null && x.d < 100)
+      ? scored.filter((x) => x.d == null || x.d < 150) : scored;
+    return blizu.slice(0, n || 6);
   } catch (e) { return []; }
 }
 const TT_KEY = "VfscYxmsXo35nz1UOf200QmtgzkWsZ6E";   // TomTom Fuzzy Search - Boskov kljuc (poslat 18.7., identifikovan i verifikovan 7.8.); free ~2.5k/mes pa se zove SAMO u Enter-kaskadi, nikad iz sugestija
@@ -3546,6 +3564,111 @@ window.rmrOtvoriURL = function (sirovURL) {
   return primiDeljenuLokaciju(sirovo, ime, upit);
 };
 window.handleOpenURL = function (u) { try { window.rmrOtvoriURL(u); } catch (e) {} };   // Cordova oblik, za svaki slučaj
+/* ---- ADRESA SA KUCNIM BROJEM (19.8., Boskov nalaz sa Murtera) ------------------------------
+   Kucao je "Svetog kriza 3 Sibenik" i dobio crkve i ulicu u Rovinju (209 km), a ulica postoji u
+   Sibeniku. Izmereno na zivom Nominatimu, pre bilo kakve izmene koda:
+     q="Svetog kriza 3 Sibenik"                 -> 0 rezultata
+     street="Svetog kriza 3"&city="Sibenik"     -> 0 rezultata  (dakle strukturirani upit NIJE lek)
+     q=... &viewbox=...&bounded=1               -> 0 rezultata  (ni ograda nije lek)
+     street="Sv Kriza"&city="Sibenik"           -> 3 rezultata, 43.7387,15.8883
+     street="Sv Kriza"&city="Sibenik" BEZ kvaka -> 3 rezultata
+   Dakle: Nominatim VEC presavija dijakritiku, a jedina prepreka je SKRACENICA - OSM tu ulicu vodi
+   kao "Sv.Kriza" (skraceno). Zato lanac: strukturirano kako je covek kucao -> strukturirano sa
+   razvijenim i sazetim oblicima svetaca i generika -> Overpass po imenu u okviru grada (opsta mreza za sve
+   ostale nacine pisanja) -> pa tek onda postojeci slobodni tekst, netaknut. */
+const _geoUlNorm = (t) => _geoFold(t).replace(/\./g, " ").replace(/\s+/g, " ").trim();
+function _geoAdresa(q) {   // "ulica broj [grad]" -> {ul, br, grad}; null kad nije adresa
+  const t = (q || "").trim();
+  if (!/\d/.test(t)) return null;
+  const zar = t.indexOf(",");
+  const levo = zar > 0 ? t.slice(0, zar).trim() : t;
+  let grad = zar > 0 ? t.slice(zar + 1).trim() : "";
+  // kucni broj: 1-4 cifre uz opciono slovo, ali NE oznaka puta (E75, A1, D8) i ne godina
+  const m = levo.match(/(^|\s)(\d{1,4}[a-zA-Z]?)(\s|$)/);
+  if (!m) return null;
+  const pre = levo.slice(0, m.index).trim();
+  const posle = levo.slice(m.index + m[0].length).trim();
+  if (pre.length < 3) return null;              // "3 Sibenik" nije adresa
+  if (/^[A-ZŠĐČĆŽ]{1,2}$/i.test(pre)) return null;   // "E 75"
+  if (!grad) grad = posle;                      // bez zareza: sve posle broja je grad
+  return { ul: pre, br: m[2], grad: grad.trim() };
+}
+function _geoVarijante(ul) {   // razvijeni i sazeti oblici - "Svetog" <-> "Sv."
+  const out = new Set([ul]);
+  const sazmi = /\b(svetog|svetoga|sveti|sveta|svete|svetih)\b/gi;
+  if (sazmi.test(ul)) { out.add(ul.replace(sazmi, "Sv.")); out.add(ul.replace(sazmi, "Sv")); }
+  if (/\bsv\.?(\s|$)/i.test(ul)) { out.add(ul.replace(/\bsv\.?\s*/gi, "Svetog ")); out.add(ul.replace(/\bsv\.?\s*/gi, "Sveti ")); }
+  if (/\bulica\b/i.test(ul)) out.add(ul.replace(/\bulica\b/gi, "Ul."));
+  if (/\bul\.?(\s|$)/i.test(ul)) out.add(ul.replace(/\bul\.?\s*/gi, "Ulica "));
+  if (/\bbulevar\b/i.test(ul)) out.add(ul.replace(/\bbulevar\b/gi, "Bul."));
+  out.add(ul.replace(/^(ulica|ul\.?|bulevar|bul\.?)\s+/i, ""));   // golo ime bez generike
+  const vid = new Set(), red = [];
+  for (const v of out) { const k = _geoUlNorm(v); if (v && v.length >= 3 && !vid.has(k)) { vid.add(k); red.push(v); } }
+  return red;
+}
+async function geoStruct(ul, grad) {   // strukturirani Nominatim: street= + city=
+  const d = [`street=${encodeURIComponent(ul)}`];
+  if (grad) d.push(`city=${encodeURIComponent(grad)}`);
+  const bias = grad ? "" : geoViewbox();   // bez grada se oslanjamo na blizinu korisniku
+  return geoFetch(`https://nominatim.openstreetmap.org/search?${d.join("&")}&format=jsonv2&limit=6&addressdetails=1&namedetails=1&accept-language=hr,sr-Latn,en${bias}`, 8000);
+}
+const _GEO_KVAKE = { c: "cCčČćĆ", s: "sSšŠ", z: "zZžŽ", d: "dDđĐ" };
+function _geoRx(t) {   // "kriza" -> "kri[zZžŽ]a": Overpass "i" NE presavija dijakritiku, mi moramo
+  return t.split("").map((ch) => _GEO_KVAKE[ch] ? `[${_GEO_KVAKE[ch]}]` : ch.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&")).join("");
+}
+async function geoUlicaOverpass(ul, grad) {
+  // opsta mreza: uzmi okvir grada pa u njemu trazi ulicu po NAJDUZEM tokenu imena, a poredi lokalno
+  let bb = null;
+  try {
+    if (grad) {
+      const g = await geoFetch(`https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(grad)}&format=jsonv2&limit=1&accept-language=hr,sr-Latn,en`, 8000);
+      const b = g && g[0] && g[0].boundingbox;
+      if (b) bb = [+b[0], +b[2], +b[1], +b[3]];   // S,W,N,E
+    }
+  } catch (e) {}
+  if (!bb) {
+    const r = geoRef();
+    if (!r || r.lat == null) return null;
+    bb = [r.lat - 0.35, r.lon - 0.45, r.lat + 0.35, r.lon + 0.45];
+  }
+  const tok = _geoUlNorm(ul).split(" ").filter((x) => x.length >= 4).sort((a, b) => b.length - a.length)[0];
+  if (!tok) return null;
+  try {
+    const body = `[out:json][timeout:20];way["highway"]["name"~"${_geoRx(tok)}",i](${bb.map((x) => x.toFixed(4)).join(",")});out tags center 40;`;
+    const j = await fetchJSON("https://overpass-api.de/api/interpreter", { method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: "data=" + encodeURIComponent(body),
+      timeoutMs: 12000, retries: 0 });
+    const cilj = _geoVarijante(ul).map(_geoUlNorm);
+    const ref = geoRef();
+    let naj = null;
+    for (const e of ((j && j.elements) || [])) {
+      const nm = (e.tags || {}).name; if (!nm) continue;
+      const c = e.center || e;
+      if (c.lat == null || c.lon == null) continue;
+      const f = _geoUlNorm(nm);
+      let b = cilj.includes(f) ? 3 : cilj.some((x) => f.startsWith(x) || x.startsWith(f)) ? 2 : cilj.some((x) => f.includes(x) || x.includes(f)) ? 1 : 0;
+      if (!b) continue;
+      const d = ref && ref.lat != null ? haversine(ref.lat, ref.lon, c.lat, c.lon) : 0;
+      if (!naj || b > naj.b || (b === naj.b && d < naj.d)) naj = { b, d, lat: c.lat, lon: c.lon, name: nm };
+    }
+    return naj ? { lat: naj.lat, lon: naj.lon, name: naj.name } : null;
+  } catch (e) { return null; }
+}
+async function geoAdresaNadji(q) {   // ceo lanac; null = nista, pa pozivalac ide na stari put
+  const a = _geoAdresa(q);
+  if (!a) return null;
+  const vars = _geoVarijante(a.ul);
+  for (const v of vars.slice(0, 4)) {
+    let j = null;
+    try { j = await geoStruct(a.br ? v + " " + a.br : v, a.grad); } catch (e) {}
+    if (!j || !j.length) { try { j = await geoStruct(v, a.grad); } catch (e) {} }
+    if (j && j.length) {
+      const best = geoPick(j, q);
+      if (best) return { lat: +best.lat, lon: +best.lon, name: geoName(best, q) };
+    }
+  }
+  return await geoUlicaOverpass(a.ul, a.grad);
+}
 async function geocode(q) {
   const qq = (q || "").trim();
   const kk = parseKoord(qq);   // koordinate/deljeni link idu pravo na mapu - bez ijednog geokodera
@@ -3561,6 +3684,9 @@ async function geocode(q) {
   }
   const edHit = geoEditorial(qq);
   if (edHit) return edHit;
+  /* Adresa sa kucnim brojem ide svojim lancem PRE slobodnog teksta; kad ne uspe, sve ispod
+     ostaje netaknuto (fallback iz naloga). */
+  try { const ad = await geoAdresaNadji(qq); if (ad) return ad; } catch (e) {}
   let j = null, netErr = null;
   try { j = await geoQuery(qq); } catch (e) { netErr = e; }
   if (!j || !j.length) {   // retry 1: + kraj korisnika ("Stivale Beograd" - dokazano radi tamo gde golo ime ne radi)
@@ -3632,13 +3758,20 @@ async function geocode(q) {
   }
   return { lat: +best.lat, lon: +best.lon, name: geoName(best, qq) };
 }
-async function reverseName(lat, lon, zoom = 10) {
-  const key = lat.toFixed(2) + "," + lon.toFixed(2) + "z" + zoom;
+/* `mesto` (19.8., Boskov nalaz sa Murtera): NASELJE za naslov voznje. Podrazumevani redosled
+   vodi kvartom (suburb/quarter), pa se Sibenik predstavljao kao "Stari grad" - a naslov relacije
+   mora da nosi ime grada. Zato POSEBNA kapija, a ne izmena podrazumevanog redosleda: reverseName
+   ima petnaestak pozivalaca sa namerno razlicitim zumovima. Kljuc kesa nosi "m" da se dva reda
+   ne mesaju. Bez `j.name` na kraju - to ume da bude ime kafica. */
+async function reverseName(lat, lon, zoom = 10, mesto = false) {
+  const key = lat.toFixed(2) + "," + lon.toFixed(2) + "z" + zoom + (mesto ? "m" : "");
   if (state.revCache[key]) return state.revCache[key];
   try {
     const j = await geoFetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&zoom=${zoom}&format=json&accept-language=hr,sr-Latn,en`, 7000);
     const a = j.address || {};
-    let name = a.suburb || a.neighbourhood || a.quarter || a.city_district || a.borough || a.village || a.hamlet || a.town || a.city || a.municipality || a.county || j.name || "";
+    let name = mesto
+      ? (a.village || a.town || a.city || a.hamlet || a.municipality || a.county || "")
+      : (a.suburb || a.neighbourhood || a.quarter || a.city_district || a.borough || a.village || a.hamlet || a.town || a.city || a.municipality || a.county || j.name || "");
     name = name.replace(/^(Gradska četvrt|Gradska opština|Gradska općina|Mjesna zajednica|Mesna zajednica|Grad|Općina|Opština|Municipality of)\s+/i, "");
     name = name.replace(/\s*\(.+\)\s*$/, "");   // "Beograd (Rakovica)" iz OSM-a -> "Beograd" (sazetak 5.8.)
     state.revCache[key] = name;
@@ -5366,9 +5499,12 @@ function _refoviRute(route) {   // skup oznaka puteva kroz koje ruta prolazi (iz
   for (const m of (route.maneuvers || [])) {
     dodaj(m.street_names && m.street_names.join(" "));
     dodaj(m.instruction);
+    /* 19.8.: exit_branch/exit_toward su table ZA SKRETANJA KOJA NE UZIMAS ("D8 ->" na
+       nadvoznjaku) - one su u skup oznaka ubacivale puteve kojima ruta nikad ne prodje, pa je
+       posle svaki rad na tom putu izgledao kao "na tvojoj ruti". Ostaje exit_name_elements:
+       to je ime izlaza kojim STVARNO izlazis. */
     const sg = m.sign || {};
-    for (const k of ["exit_branch_elements", "exit_toward_elements", "exit_name_elements"])
-      for (const e of (sg[k] || [])) dodaj(e.text);
+    for (const e of (sg.exit_name_elements || [])) dodaj(e.text);
   }
   return out;
 }
@@ -5379,6 +5515,34 @@ function _tekstNosiRef(t, refovi) {
     if (re.test(T)) return r;
   }
   return null;
+}
+/* Odstojanje jednog zapisa o radovima do trase, u km. Vraca null kad zapis NEMA koordinatu -
+   pozivalac to mora da razlikuje od nule ("nije provereno" nije isto sto i "na ruti").
+   Izvor (HAK) salje koordinatu za svaki dogadjaj, a deonicu za deo njih; robot ih od 19.8.
+   propusta u data/road_status.json. Ostale zemlje jos nemaju geometriju - njihovi redovi zato
+   idu kroz postenu etiketu, ne kroz tvrdnju. */
+const RAD_BLIZU_KM = 30;
+function _radKmOdRute(it, route) {
+  const R = (route && route.coords) || [];   // [lon, lat]
+  if (!R.length) return null;
+  const tacke = [];
+  if (Array.isArray(it.coords) && it.coords.length >= 2) {
+    const kor = Math.max(1, Math.floor(it.coords.length / 12));   // deonica: dovoljno 12 uzoraka
+    for (let i = 0; i < it.coords.length; i += kor) tacke.push(it.coords[i]);
+  } else if (it.lat != null && it.lon != null) tacke.push([it.lon, it.lat]);
+  if (!tacke.length) return null;
+  const kor = Math.max(1, Math.floor(R.length / 900));   // ista mera kao bjpNaRuti
+  let naj = Infinity;
+  for (const t of tacke) {
+    const la = +t[1], lo = +t[0];
+    if (!isFinite(la) || !isFinite(lo)) continue;
+    for (let i = 0; i < R.length; i += kor) {
+      if (Math.abs(R[i][1] - la) > 0.5 || Math.abs(R[i][0] - lo) > 0.7) continue;   // jeftino sito
+      const d = haversine(la, lo, R[i][1], R[i][0]);
+      if (d < naj) naj = d;
+    }
+  }
+  return isFinite(naj) ? naj : RAD_BLIZU_KM + 1;   // ima koordinatu a nije blizu = dokazano daleko
 }
 async function graniceNaRuti(route, borders) {
   // Prelaz se NE trazi iz spiska cekanja (izvor pokriva samo 10 hrvatskih prelaza) nego iz SAME RUTE:
@@ -5442,7 +5606,12 @@ async function renderRoadStatus(route) {
       (cek.length ? ` · <b class="warn-inline">čekanje ${esc(cek.join(" / "))}</b>` : " · nema prijavljenog čekanja") +
       (g.izvor ? `<span class="poi-dist"> ${esc(g.izvor)}${g.ocitano ? ", očitano " + esc(g.ocitano) : ""}</span>` : "") + `</li>`);
   }
-  // 2) RADOVI I ZATVARANJA NA PUTEVIMA KOJE RUTA STVARNO KORISTI
+  /* 2) RADOVI I ZATVARANJA - POKLAPANJE PO GEOGRAFIJI, NE SAMO PO OZNACI (19.8., Boskov nalaz
+     sa Murtera: na ruti Murter-Sibenik je pisalo "Na tvojoj ruti (D8)" za radove kod Matulja i
+     Opatije, ~200 km severno). D8 je CELA jadranska magistrala, pa oznaka ne znaci blizinu.
+     Sada: kad zapis ima koordinatu, meri se odstojanje do trase i daleki radovi ISPADAJU. Kad je
+     nema, red se i dalje prikazuje ali POSTENO - "Na cesti X" uz napomenu da mozda nije tvoja
+     deonica. Nikad se ne tvrdi "na tvojoj ruti" bez provere. */
   const refovi = _refoviRute(route);
   const naRuti = [];
   for (const cc of ccs) {
@@ -5450,12 +5619,19 @@ async function renderRoadStatus(route) {
     if (!c || !c.ok || !c.items) continue;
     for (const it of c.items) {
       const ref = _tekstNosiRef(it.title + " " + (it.detail || ""), refovi);
-      if (ref) naRuti.push({ ...it, cc, ime: c.name, ref });
+      if (!ref) continue;
+      const dKm = _radKmOdRute(it, route);
+      if (dKm != null && dKm > RAD_BLIZU_KM) continue;   // dokazano daleko - ne prikazuj
+      naRuti.push({ ...it, cc, ime: c.name, ref, dKm });
     }
   }
-  naRuti.sort((a, b) => (ROAD_PRIO[a.type] ?? 9) - (ROAD_PRIO[b.type] ?? 9));
+  // izmereno blizu ide pre neprovernog, pa tek onda po tezini dogadjaja
+  naRuti.sort((a, b) => (a.dKm == null) - (b.dKm == null) || (ROAD_PRIO[a.type] ?? 9) - (ROAD_PRIO[b.type] ?? 9));
   for (const it of naRuti.slice(0, 6))
-    rows.push(`<li>${rIco("roadworks", 14)} <b class="warn-inline">Na tvojoj ruti (${esc(it.ref)})</b> · ${esc(it.title)}` +
+    rows.push(`<li>${rIco("roadworks", 14)} <b class="warn-inline">` +
+      (it.dKm != null ? `Na tvojoj ruti (${esc(it.ref)})` : `Na cesti ${esc(it.ref)}`) + `</b>` +
+      (it.dKm == null ? ` <span class="poi-dist">(možda daleko od tvoje deonice)</span>` : "") +
+      ` · ${esc(it.title)}` +
       (it.detail && it.detail !== it.title ? ` <span class="poi-dist">${esc(it.detail.slice(0, 140))}</span>` : "") + `</li>`);
   /* Samo ono sto te DODIRUJE (11.8.). Ovde je do danas isla i druga petlja koja je dodavala do pet
      radova PO ZEMLJI bez obzira na rutu - zatvoren put kod Vranja dok vozis na Zlatibor. Ta petlja
@@ -5467,7 +5643,7 @@ async function renderRoadStatus(route) {
   if (!rows.length) { card.style.display = "none"; return; }
   list.innerHTML = rows.slice(0, 8).join("");
   const upd = rs.updated ? new Date(rs.updated) : null;
-  $("roadsNote").textContent = "Radovi i zatvaranja na putevima kojima stvarno prolaziš, plus meteo-upozorenja za te krajeve." + (upd ? ` Ažurirano: ${upd.toLocaleString("sr-RS", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric" })}.` : "");
+  $("roadsNote").textContent = "Radovi i zatvaranja na tvojoj ruti, plus ono što stoji na istoj cesti a ne znamo tačno gde, i meteo-upozorenja za te krajeve." + (upd ? ` Ažurirano: ${upd.toLocaleString("sr-RS", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric" })}.` : "");
   card.style.display = "";
 }
 async function loadEditorial() {
@@ -7443,6 +7619,9 @@ function zabeleziVoznju() {
     const naz = RIDE.freeRide ? (RIDE.freeNaz || "Slobodna vožnja")
       : (g.from && g.from.name && g.to && g.to.name)
       ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` + (stigao ? "" : ` (prekinuto na ${Math.round(km)} km)`) : "Vožnja";
+    /* Ime ODREDISTA se cuva posebno (19.8.): naslov relacije mora da bude MESTO
+       ("Murter -> Sibenik"), a ime kafica ("Azimut") ide u podnaslov. */
+    const nazPoi = (!RIDE.freeRide && g.to && g.to.name) ? g.to.name.split(",")[0] : null;
     const poeni = Math.round(km + serp * 4);
     const maxK = Math.round(RIDE.maxKmh || 0);
     const avgK = RIDE.movMs > 30000 ? Math.round(km / (RIDE.movMs / 3600000)) : 0;   // prosek U POKRETU, tek kad ima bar pola minuta
@@ -7477,7 +7656,7 @@ function zabeleziVoznju() {
     const smp = (RIDE.samples && RIDE.samples.length > 5)   // kriva nagiba: proredi na ~240 tacaka za sparkline
       ? RIDE.samples.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 240)) === 0 || i === a.length - 1) : null;
     // summary ekran: i za kratku probnu voznju (>300 m); dnevnik/poeni ostaju samo za prave (>2 km)
-    if (ukupnoD > 300) RIDE.lastSummary = { naz, tip, km: Math.round(km * 10) / 10, min, serp, kriv, poeni: ukupnoD > 2000 ? poeni : 0,
+    if (ukupnoD > 300) RIDE.lastSummary = { naz, nazPoi, tip, km: Math.round(km * 10) / 10, min, serp, kriv, poeni: ukupnoD > 2000 ? poeni : 0,
       maxK, avgK, lnL, lnR, lnChk, trag, smp, pauz, momNagib: RIDE.momNagib || null, momBrz: RIDE.momBrz || null,
       // vreme U POKRETU (min). Bez njega je "prosek u pokretu" broj koji vozac ne moze da proveri:
       // `min` nosi pauze, pa km/min NIKAD ne daje avgK. Sa `mov` racun se zatvara: km / (mov/60) = avgK.
@@ -7489,7 +7668,7 @@ function zabeleziVoznju() {
     if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; return; }
     const v0 = _zajCitaj("mr_voznje", []);
     const v = Array.isArray(v0) ? v0 : [];
-    v.unshift({ ts: Date.now(), naz, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
+    v.unshift({ ts: Date.now(), naz, nazPoi, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
       kriv, maxK, avgK, lnL, lnR, lnChk, pauz,
       /* Trag i u dnevnik - gustina skalira sa duzinom (13.8.): 150 tacaka je za 373 km davalo
          korak od 2,5 km i pravolinijski crtez. Cilj ~455 m po tacki, plafon 800 (~17 KB po
@@ -7516,13 +7695,19 @@ function zabeleziVoznju() {
       const a = trag[0], b = trag[trag.length - 1];
       (async () => {
         try {
-          const imeA = await reverseName(a[1], a[0], 12);
-          const imeB = await reverseName(b[1], b[0], 12);
+          const imeA = await reverseName(a[1], a[0], 12, true);   // true = naselje, ne kvart
+          const imeB = await reverseName(b[1], b[0], 12, true);
           if (!imeA || !imeB) return;
           const novi = imeA === imeB ? `${imeA} (kružno)` : `${imeA} → ${imeB}`;
           if (RIDE.lastSummary && RIDE.lastSummary.ts === tsMoje) RIDE.lastSummary.naz = novi;
           const rel = document.getElementById("rsRel");   // sazetak je verovatno vec na ekranu
-          if (rel && rel.dataset.ts === String(tsMoje)) rel.textContent = novi;
+          if (rel && rel.dataset.ts === String(tsMoje)) {
+            rel.textContent = novi;
+            /* I PODNASLOV (19.8.): dok je naslov glasio "Murter -> Azimut", ime odredista je bilo
+               u naslovu pa je red bio sakriven. Kad naslov postane "Murter -> Sibenik", Azimut bi
+               bez ovoga nestao sa ekrana - a cela poenta je da ostane, samo nize. */
+            rsPoiSet(novi, nazPoi);
+          }
           const v2 = _zajCitaj("mr_voznje", []);
           const moj = Array.isArray(v2) ? v2.find((x) => x.ts === tsMoje || x.naz === naz) : null;
           if (moj) { moj.naz = novi; _zajPisi("mr_voznje", v2.slice(0, 20)); }
@@ -8687,8 +8872,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.79";
+const APP_VERSION = "0.9.80";
 const CHANGELOG = [
+  { v: "0.9.80", d: "19.08.2026.", stavke: [
+    "<b>Pretraga nalazi adresu sa kućnim brojem.</b> \"Svetog križa 3 Šibenik\" je vraćalo crkve i ulicu u Rovinju 209 km daleko, a ulica postoji u Šibeniku - OSM je vodi skraćeno kao \"Sv.Križa\", pa je upit padao na skraćenici. Sada se ulica i broj traže odvojeno, u gradu koji si naveo, uz razvijene i sažete oblike (Svetog / Sv.). Kod adresa blizina odlučuje: predlog dve županije daleko se više ne nudi kad ima bliskih.",
+    "<b>Radovi na putu samo ako su stvarno blizu tvoje rute.</b> Na Murter - Šibenik je pisalo \"Na tvojoj ruti (D8)\" za radove kod Matulja i Opatije, oko 200 km severno - D8 je cela jadranska magistrala, pa se poklapalo ime ceste, ne mesto. Sada se meri odstojanje do trase i daleki radovi ispadaju. Gde izvor ne daje koordinatu, piše pošteno \"Na cesti D8\" uz napomenu da možda nije tvoja deonica.",
+    "<b>Oznaka puta više ne pada preko strelice.</b> Žuta tablica sa brojem ceste se sklanja iznad strelice kad ispod nje nema mesta.",
+    "<b>Prosečna brzina u sažetku i na kartici za deljenje.</b> Prosek u pokretu (bez pauza) sada stoji i na slici koju šalješ, ne samo u aplikaciji.",
+    "<b>Naslov vožnje je mesto, ne kafić.</b> Pisalo je \"Murter → Azimut\"; sada piše \"Murter → Šibenik\", a ime odredišta stoji kao podnaslov."
+  ] },
   { v: "0.9.79", d: "16.08.2026.", stavke: [
     "<b>Nova tema: instrument tabla.</b> Ovo je tvoj izbor iz Skin Lab-a, sada u celoj aplikaciji. Podloga je skoro crna umesto plave, linije su tanke i sajan tonirane, uglovi su oštri (4 px umesto 16), a narandžasta je jača i čistija (#FF6A00).",
     "<b>Brojevi su dobili svoje pismo.</b> Brzina, kilometri, sati i cene idu u mono ciframa (JetBrains Mono) - svaka cifra ima istu širinu, pa broj koji se menja u mestu više ne pomera ništa oko sebe. Tekst nosi Saira Semi Condensed: uža je, pa ime ulice staje u jedan red bez smanjivanja.",
@@ -9756,8 +9948,18 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?}
     const hits = sg._hits || [];
     /* Enter uzima PRVI red onako kako ga korisnik vidi (11.8.). Dok je lista bila rangirana po
        adresi, Enter na "Beograd" je vodio u kafanu kod Paracina jer je ona bila hits[0]. */
-    if (!sg._jak && (sg._net || []).length) { pickDestination(sg._net[0]); return; }
-    if (hits.length) { pickDestination(hits[0]); return; }
+    /* ADRESA ide kroz pun geokoder, ne kroz prvi Photon red (19.8., Boskov nalaz sa Murtera):
+       na "Svetog kriza 3 Sibenik" je prvi predlog bila CRKVA, pa bi Enter odveo u crkvu i kad
+       adresni lanac zna pravu ulicu. Sve ostalo i dalje uzima prvi red onako kako ga oko vidi. */
+    const adr = !!_geoAdresa(si.value.trim());
+    if (!adr) {
+      if (!sg._jak && (sg._net || []).length) { pickDestination(sg._net[0]); return; }
+      if (hits.length) { pickDestination(hits[0]); return; }
+    }
+    /* Adresni lanac ume da traje par sekundi (strukturirani upiti idu kroz red od 1,1 s, pa
+       Overpass). Bez ovoga Enter izgleda kao da je aplikacija stala - isti natpis koji vec nosi
+       red "Trazi ..." kad se na njega klikne. */
+    try { const gr = sg.querySelector("[data-geo] b"); if (gr) gr.textContent = "Tražim…"; } catch (e2) {}
     try { const g = await geocode(si.value.trim()); pickDestination({ n: g.name, lat: g.lat, lon: g.lon }); }
     catch (er) { alert(er && er.geo ? er.message : "Ne mogu da nađem to mesto - probaj drugačiji naziv."); renderSugg(si.value); }   // posle greske: Trazi ponovo + Izaberi na mapi ostaju na ekranu
   });
@@ -10141,7 +10343,27 @@ function drawRoadLabel(route, dMeters, lo, la) {
         if (rr.height > 0) dno = Math.min(dno, rr.top - el.offsetHeight - 8);
       }
     } catch (e2) {}
-    el.style.top = Math.round(Math.min(p.y + 40, dno)) + "px";   // nikad ispod (ni preko) donjih traka
+    /* Strelica vozaca (19.8., Boskov nalaz sa Murtera: zupanijska oznaka 6250 preko strelice).
+       Strelica je DOM marker u canvas kontejneru, halo 64 px (poluprecnik 32) - nijedan lejer mape
+       je ne moze prekriti, ali NASA zuta tablica moze: #rideRoad visi o <body> sa z-index 39, iznad
+       #map. Kad donja traka podigne nalepnicu (`dno`), ona upadne u halo i legne preko strelice.
+       Zato: kad ispod nema mesta, nalepnica ide IZNAD strelice, nikad preko nje. */
+    const hMe = el.offsetHeight || 24;
+    const halo = 36;   // 32 px halo + 4 px vazduha
+    /* Gornja granica se racuna od STVARNE gornje trake, iz istog razloga kao `dno` od donje:
+       bezanje iznad strelice ne sme da zavuce tablicu pod karticu manevra. */
+    let vrh = 8;
+    try {
+      const gb = document.getElementById("rideBar");
+      if (gb) { const gr = gb.getBoundingClientRect(); if (gr.height > 0) vrh = Math.max(vrh, gr.bottom + 8); }
+    } catch (e3) {}
+    // nikad ispod (ni preko) donjih traka, i nikad pod gornjom
+    let top = Math.max(vrh, Math.min(p.y + halo + 4, dno));
+    if (top < p.y + halo) {   // ispod strelice nema mesta - bezi iznad nje
+      const gore = p.y - halo - hMe;
+      if (gore >= vrh) top = gore;   // ni gore nema mesta? ostaje gde je bila - bar je citljiva
+    }
+    el.style.top = Math.round(top) + "px";
   } catch (e) { el.classList.remove("on"); }
 }
 function limitAt(route, dMeters) {
@@ -12207,6 +12429,16 @@ function sumReplayInit(s, pts) {
   sumReplayCrtaj(0);   // marker odmah na start (i pre play-a se vidi odakle krece)
   document.getElementById("rrSlider").value = 0;
 }
+/* Ime odredista kao PODNASLOV (19.8.): naslov nosi mesto, kafic ostaje vidljiv ispod. Krije se
+   samo kad ga nema ili kad je VEC u naslovu (pa bi se ponavljao). Stari zapisi nemaju nazPoi -
+   njima red ostaje prazan. Zove se dvaput: na prikazu sazetka i posle asinhrone preimene naslova. */
+function rsPoiSet(naz, nazPoi) {
+  const el = document.getElementById("rsPoi");
+  if (!el) return;
+  const im = nazPoi && !String(naz || "").includes(nazPoi) ? nazPoi : "";
+  el.textContent = im ? "cilj: " + im : "";
+  el.hidden = !im;
+}
 function rideSumShow(sIn) {
   // bez argumenta: svez sazetak posle voznje; sa argumentom: zapis iz dnevnika (tap na vrow - Boskov nalaz 6.8.)
   const s = sIn || RIDE.lastSummary;
@@ -12232,6 +12464,7 @@ function rideSumShow(sIn) {
   const _rel = document.getElementById("rsRel");
   _rel.textContent = s.naz;
   _rel.dataset.ts = String(s.ts || "");   // da asinhrono ime iz stvarnog traga zna da je ovo i dalje ta vožnja
+  rsPoiSet(s.naz, s.nazPoi);
   const d = new Date(s.ts);
   document.getElementById("rsDt").textContent = (s.tip ? s.tip + " · " : "") + d.toLocaleDateString("sr-RS") + " · " + d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" })
     + (s.km >= 2 ? " · upisano u dnevnik" : "");   // maketa B meta red; kratke probe se ne upisuju pa ni ne tvrde
@@ -12498,23 +12731,33 @@ function stplKupola(x, cx, baseY, f, s) {   // polukrug-pecat u "mockup" koordin
   }
   x.strokeStyle = "rgba(248,250,252,.16)"; x.lineWidth = 1.5 * f;
   x.beginPath(); x.moveTo(cx - 118 * f, cy - 46 * f); x.lineTo(cx + 118 * f, cy - 46 * f); x.stroke();
-  const seg = (sx, val, unit, lbl) => {
-    x.font = STPL_F(900, 25 * f); const vw = x.measureText(val).width;
+  const seg = (sx, val, unit, lbl, vs) => {
+    x.font = STPL_F(900, vs * f); const vw = x.measureText(val).width;
     x.font = STPL_F(700, 12 * f); const uw = x.measureText(" " + unit).width;
     const px = sx - (vw + uw) / 2;
     x.textAlign = "left";
-    x.font = STPL_F(900, 25 * f); x.fillStyle = "#f8fafc"; x.fillText(val, px, cy - 20 * f);
+    x.font = STPL_F(900, vs * f); x.fillStyle = "#f8fafc"; x.fillText(val, px, cy - 20 * f);
     x.font = STPL_F(700, 12 * f); x.fillStyle = "#94a3b8"; x.fillText(" " + unit, px + vw, cy - 20 * f);
     x.textAlign = "center"; x.font = STPL_F(800, 8.5 * f);
     try { x.letterSpacing = (1.6 * f).toFixed(1) + "px"; } catch (e) {}
     x.fillText(lbl, sx, cy - 6 * f);
     try { x.letterSpacing = "0px"; } catch (e) {}
   };
-  seg(cx - 88 * f, stplKm(s.km), "km", "PREĐENO");
-  seg(cx, String(s.min), "min", "VREME");
-  seg(cx + 88 * f, String(s.maxK || 0), "km/h", "MAX");
+  /* PROSEK U POKRETU (19.8., Boskov nalaz sa Murtera) ulazi kao cetvrta kolona SAMO kad je
+     izmeren. Raspored se racuna, ne kuca: sa tri kolone korak ostaje 88 a crte na +-44 (kadar
+     identican starom), sa cetiri se korak skuplja na 70 i broj sa 25 na 21 da sve ostane unutar
+     crte kupole (+-118). */
+  const kol = [[stplKm(s.km), "km", "PREĐENO"], [String(s.min), "min", "VREME"]];
+  if (s.avgK) kol.push([String(s.avgK), "km/h", "PROSEK"]);
+  kol.push([String(s.maxK || 0), "km/h", "MAX"]);
+  const kor = kol.length > 3 ? 70 : 88, vsz = kol.length > 3 ? 21 : 25;
+  const x0 = cx - (kor * f * (kol.length - 1)) / 2;
+  kol.forEach((k, i) => seg(x0 + i * kor * f, k[0], k[1], k[2], vsz));
   x.strokeStyle = "rgba(148,163,184,.25)"; x.lineWidth = 1.2 * f;
-  for (const lx of [cx - 44 * f, cx + 44 * f]) { x.beginPath(); x.moveTo(lx, cy - 36 * f); x.lineTo(lx, cy - 8 * f); x.stroke(); }
+  for (let i = 1; i < kol.length; i++) {
+    const lx = x0 + (i - 0.5) * kor * f;
+    x.beginPath(); x.moveTo(lx, cy - 36 * f); x.lineTo(lx, cy - 8 * f); x.stroke();
+  }
   x.restore();
 }
 function stplPecatCanvas(s) {   // story 1080x1920: fotka + kupola + logo
@@ -12579,23 +12822,31 @@ function stplLepezaCanvas(s) {   // story 1080x1920: krupni uglovi + mala lepeza
     if (s.lnL) sektor(s.lnL, -1, "#38bdf8", "rgba(56,189,248,.2)");
     if (s.lnR) sektor(s.lnR, 1, "#FF6A00", "rgba(255,106,0,.2)");
   }
-  const seg = (sx, val, unit, lbl) => {
-    x.font = STPL_F(900, 56); const vw = x.measureText(val).width;
+  const seg = (sx, val, unit, lbl, vs) => {
+    x.font = STPL_F(900, vs); const vw = x.measureText(val).width;
     x.font = STPL_F(700, 27); const uw = x.measureText(" " + unit).width;
     const px = sx - (vw + uw) / 2;
     x.textAlign = "left";
-    x.font = STPL_F(900, 56); x.fillStyle = "#fff"; x.fillText(val, px, 1596);
+    x.font = STPL_F(900, vs); x.fillStyle = "#fff"; x.fillText(val, px, 1596);
     x.font = STPL_F(700, 27); x.fillStyle = "rgba(248,250,252,.75)"; x.fillText(" " + unit, px + vw, 1596);
     x.textAlign = "center"; x.font = STPL_F(800, 19); x.fillStyle = "#94a3b8";
     try { x.letterSpacing = "3px"; } catch (e) {}
     x.fillText(lbl, sx, 1630);
     try { x.letterSpacing = "0px"; } catch (e) {}
   };
-  seg(300, stplKm(s.km), "km", "PREĐENO");
-  seg(540, String(s.min), "min", "VREME");
-  seg(780, String(s.maxK || 0), "km/h", "MAX");
+  /* PROSEK U POKRETU (19.8.) kao cetvrta kolona samo kad je izmeren; sa tri kolone raspored
+     ostaje 300/540/780 sa crtama na 420/660, dakle stari kadar bajt u bajt. */
+  const kol = [[stplKm(s.km), "km", "PREĐENO"], [String(s.min), "min", "VREME"]];
+  if (s.avgK) kol.push([String(s.avgK), "km/h", "PROSEK"]);
+  kol.push([String(s.maxK || 0), "km/h", "MAX"]);
+  const kor = kol.length > 3 ? 190 : 240, vsz = kol.length > 3 ? 46 : 56;
+  const x0 = 540 - (kor * (kol.length - 1)) / 2;
+  kol.forEach((k, i) => seg(x0 + i * kor, k[0], k[1], k[2], vsz));
   x.strokeStyle = "rgba(148,163,184,.3)"; x.lineWidth = 2;
-  for (const lx of [420, 660]) { x.beginPath(); x.moveTo(lx, 1552); x.lineTo(lx, 1622); x.stroke(); }
+  for (let i = 1; i < kol.length; i++) {
+    const lx = x0 + (i - 0.5) * kor;
+    x.beginPath(); x.moveTo(lx, 1552); x.lineTo(lx, 1622); x.stroke();
+  }
   stplLogo(x, 540, 1676, 30);
   return cv;
 }
@@ -12678,6 +12929,14 @@ async function stplMapaCanvas(s) {   // feed 1080x1350: offscreen mapa snapshot 
       x.fillStyle = "#f8fafc"; fitText(naz[1], 300, 52); x.fillText(naz[1], 56, ny + 118);
       ny += 118;
     }
+    /* Ime odredista kao PODNASLOV (19.8.): naslov nosi mesto ("Murter -> Sibenik"), kafic
+       ("Azimut") stoji ispod. Red se ubacuje samo kad ima sta da stoji, pa se datum i tip pomeraju
+       zajedno sa njim - stat kolona je usidrena o dno i ne pomera se. */
+    const poi = s.nazPoi && !String(s.naz || "").includes(s.nazPoi) ? String(s.nazPoi) : "";
+    if (poi) {
+      x.fillStyle = "#FF6A00"; fitText(poi, 300, 30); x.fillText(poi, 56, ny + 44);
+      ny += 44;
+    }
     const d = new Date(s.ts || Date.now());
     x.font = STPL_F(700, 24); x.fillStyle = "#94a3b8";
     x.fillText(d.toLocaleDateString("sr-RS"), 56, ny + 52);
@@ -12687,6 +12946,11 @@ async function stplMapaCanvas(s) {   // feed 1080x1350: offscreen mapa snapshot 
     try { x.letterSpacing = "0px"; } catch (e) {}
     // stat kolona usidrena o dno
     const grupe = [["PREĐENO", stplKm(s.km), "km"], ["TRAJANJE", String(s.min), "min"]];
+    /* PROSEK U POKRETU (19.8., Boskov nalaz sa Murtera). Racun vec postoji (avgK = km / vreme u
+       pokretu), samo ga kartica nije pokazivala. Kolona je usidrena o dno (y=1196) i raste NAVISE
+       korakom 112, pa peti red pocinje na 748 - iznad njega je slobodno do 378. Uslov na avgK je
+       pravilo fajla: samo IZMERENE vrednosti, bez crtica za prazno. */
+    if (s.avgK) grupe.push(["PROSEK", String(s.avgK), "km/h"]);
     if (s.lnL != null) grupe.push(["NAGIB L/D", null, null]);
     grupe.push(["MAX", String(s.maxK || 0), "km/h"]);
     let gy = 1196 - (grupe.length - 1) * 112;
