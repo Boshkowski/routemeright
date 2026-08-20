@@ -8872,8 +8872,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.80";
+const APP_VERSION = "0.9.81";
 const CHANGELOG = [
+  { v: "0.9.81", d: "20.08.2026.", stavke: [
+    "Nagib: start na bočnoj nogari (\"ćopavoj\") više ne kvari nulu - motor na osloncu stoji nagnut oko 15 stepeni, a doterivanje nule na dokazanom pravcu smelo je da povuče samo 12. Sada na dokazanom pravcu sme do 18 stepeni. Tvoj terenski nalaz sa mora."
+  ] },
   { v: "0.9.80", d: "19.08.2026.", stavke: [
     "<b>Pretraga nalazi adresu sa kućnim brojem.</b> \"Svetog križa 3 Šibenik\" je vraćalo crkve i ulicu u Rovinju 209 km daleko, a ulica postoji u Šibeniku - OSM je vodi skraćeno kao \"Sv.Križa\", pa je upit padao na skraćenici. Sada se ulica i broj traže odvojeno, u gradu koji si naveo, uz razvijene i sažete oblike (Svetog / Sv.). Kod adresa blizina odlučuje: predlog dve županije daleko se više ne nudi kad ima bliskih.",
     "<b>Radovi na putu samo ako su stvarno blizu tvoje rute.</b> Na Murter - Šibenik je pisalo \"Na tvojoj ruti (D8)\" za radove kod Matulja i Opatije, oko 200 km severno - D8 je cela jadranska magistrala, pa se poklapalo ime ceste, ne mesto. Sada se meri odstojanje do trase i daleki radovi ispadaju. Gde izvor ne daje koordinatu, piše pošteno \"Na cesti D8\" uz napomenu da možda nije tvoja deonica.",
@@ -10149,9 +10152,11 @@ function leanMotion(e) {
   if ((RIDE.spdKmh || 0) > 25 && Math.abs(yawB) < 0.01) { if (!LEAN.strT) LEAN.strT = now; } else LEAN.strT = 0;
   const strOk = LEAN.strT && now - LEAN.strT > 3000;
   // tiho doterivanje nule: na DOKAZANOM pravcu sme i veci offset (bocni oslonac na Kreni!),
-  // inace samo sitno klizanje; ukupni cap ~12 stepeni od pocetne kalibracije
+  // inace samo sitno klizanje; cap od pocetne kalibracije: na DOKAZANOM pravcu ~18 stepeni
+  // (bocni oslonac "copava" naginje motor ~15 - Boskov terenski nalaz 20.8, stari cap 12 nije
+  // pokrivao start na nogari), van dokazanog pravca ostaje ~12
   if ((RIDE.spdKmh || 0) > 25 && Math.abs(yawB) < 0.02 && (Math.abs(LEAN.cur) < 2 || strOk) && LEAN.uB0
-      && _ld(LEAN.uB, LEAN.uB0) > 0.978) {
+      && _ld(LEAN.uB, LEAN.uB0) > (strOk ? 0.951 : 0.978)) {
     const k = strOk ? 0.006 : 0.002;
     LEAN.uB = _ln([0, 1, 2].map((i) => LEAN.uB[i] + k * (LEAN.u[i] - LEAN.uB[i])));
     const fr = _lFrame(LEAN.uB); LEAN.fB = fr.fB; LEAN.rB = fr.rB;
