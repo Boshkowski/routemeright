@@ -3867,24 +3867,110 @@ function _seciNaStanicama(kom, stanice, N) {
     const i = out.findIndex((k) => km > k.od + 1 && km < k.do - 1);
     if (i < 0) continue;                                            // vec pada na sav - nema sta da se seca
     const k = out[i];
-    out.splice(i, 1, { od: k.od, do: km, dobar: k.dobar }, { od: km, do: k.do, dobar: k.dobar, stanica: st.v, ime: st.ime });
+    // prva polovina NASLEDJUJE sav sa svog pocetka (k.stanica/k.ime/k.kuriran): dva sava u istom
+    // komadu (tvoje dve stanice, ili ulaz+izlaz kurirane deonice) su gubila tacku prvog sava (24.8.)
+    out.splice(i, 1, { od: k.od, do: km, dobar: k.dobar, stanica: k.stanica, ime: k.ime, kuriran: k.kuriran },
+      { od: km, do: k.do, dobar: k.dobar, stanica: st.v, ime: st.ime, kuriran: st.kuriran });
   }
   return out.length > 8 ? null : out;
+}
+/* ---- KURIRANO SIVENJE (Boskova vizija 23.8.: "autoput + deo puta za koji se ZNA da je dobar
+   za voznju + autoput + deo + cilj") ----
+   Sivenje iznad deli rutu samo po geometriji ("sredina izgleda vijugavo") i nikad ne pita
+   bazu zajednice, a ona vec postoji: data/stanje_puta.json, 230 ocenjenih deonica sa punim
+   trasama. Ovde se iz te baze biraju kandidati uz koridor vijugave rute: deonica mora imati
+   odlicne krivine, ocenu 4+, dobar asfalt i bar 10 km - i NE sme vec lezati na najbrzoj ruti,
+   jer sivenje preko deonice koju autoput ionako pokriva ne donosi nista. Krajevi deonice
+   postaju savovi ISTOG oblika kao tvoje stanice, pa _seciNaStanicama radi sav posao. */
+function kuriraniKandidati(vij, brza, bjp, radovi) {
+  if (!vij || !vij.coords || !vij.coords.length || !Array.isArray(vij.cumDist) || !vij.cumDist.length
+    || !bjp || !Array.isArray(bjp.deonice)) return [];
+  const N = Math.max(1, Math.floor((vij.cumDist[vij.cumDist.length - 1] || 0) / 1000) + 1);
+  const nfc = (s) => String(s == null ? "" : s).normalize("NFC");   // NFD zapis ne sme tiho da diskvalifikuje
+  // "jake krivine" na skali baze = polje krivine "Odlične" (skala: Odlične / Dobre / Slabe / Loše)
+  const jake = (d) => nfc(d.krivine).indexOf("Odlične") >= 0;
+  // bbox predfilter: deonica ciji ni pocetak, ni sredina, ni kraj ne padaju u okvir rute ne meri se dalje
+  let loMin = 1e9, loMax = -1e9, laMin = 1e9, laMax = -1e9;
+  for (const p of vij.coords) {
+    if (p[0] < loMin) loMin = p[0]; if (p[0] > loMax) loMax = p[0];
+    if (p[1] < laMin) laMin = p[1]; if (p[1] > laMax) laMax = p[1];
+  }
+  const uOkviru = (p) => p[0] > loMin - 0.02 && p[0] < loMax + 0.02 && p[1] > laMin - 0.02 && p[1] < laMax + 0.02;
+  // radovi/zatvaranja sa koordinatom, po istom pravilu koje ih vezuje za rutu (_radKmOdRute + RAD_BLIZU_KM):
+  // deonica sa aktivnim zatvaranjem/radovima se OVAJ plan ne forsira. Zapis bez koordinate ne moze
+  // da se veze za 15 km deonice, pa ne iskljucuje (isti princip kao kartica: bez provere nema tvrdnje).
+  const jeRad = (t) => { const s = nfc(t).toLowerCase();
+    return s.indexOf("radov") >= 0 || s.indexOf("roadwork") >= 0 || s === "delo" || s.indexOf("zatvaranje") >= 0 || s.indexOf("closure") >= 0; };
+  const radoviGeo = (Array.isArray(radovi) ? radovi : []).filter((it) => it && jeRad(it.type)
+    && ((it.lat != null && it.lon != null) || (Array.isArray(it.coords) && it.coords.length >= 2)));
+  const out = [];
+  for (const d of bjp.deonice) {
+    if (!d || !Array.isArray(d.coords) || d.coords.length < 2) continue;
+    if (!(d.ocena >= 4) || !jake(d) || (nfc(d.asfalt) !== "Nov" && nfc(d.asfalt) !== "Dobar") || !(d.km >= 10)) continue;
+    if (nfc(d.saobracaj).indexOf("Jak") === 0) continue;   // gust saobracaj pojede bas ono zbog cega se deonica bira
+    if (bjpStarost(d.mg)) continue;                        // ocena od pre zime: "Dobar od proslog leta je u aprilu laz"
+    const c = d.coords;
+    if (!uOkviru(c[0]) && !uOkviru(c[c.length - 1]) && !uOkviru(c[Math.floor(c.length / 2)])) continue;
+    const pok = bjpPokrivenost(vij, c);
+    if (pok < 0.6) continue;                                              // nije uz koridor vijugave
+    if (brza && brza.coords && bjpPokrivenost(brza, c) >= 0.6) continue;  // najbrza vec ide preko nje: sivenje tu nista ne dobija
+    if (radoviGeo.some((it) => { const dKm = _radKmOdRute(it, { coords: c }); return dKm != null && dKm <= RAD_BLIZU_KM; })) continue;
+    let pa, pb;
+    try { pa = navProject(vij, c[0][0], c[0][1]); pb = navProject(vij, c[c.length - 1][0], c[c.length - 1][1]); }
+    catch (e) { continue; }
+    let ulaz = { km: pa.d / 1000, off: pa.offM, v: [c[0][0], c[0][1]], ime: d.naziv, kuriran: true };
+    let izlaz = { km: pb.d / 1000, off: pb.offM, v: [c[c.length - 1][0], c[c.length - 1][1]], ime: d.naziv, kuriran: true };
+    if (izlaz.km < ulaz.km) { const t = ulaz; ulaz = izlaz; izlaz = t; }   // deonica crtana suprotno od smera rute
+    // ista pravila kao filter u _seciNaStanicama, za OBA sava; par ciji se savovi skoro dodiruju ne sije nista
+    if (ulaz.off >= 3000 || izlaz.off >= 3000) continue;
+    if (!(ulaz.km > 3 && ulaz.km < N - 3 && izlaz.km > 3 && izlaz.km < N - 3)) continue;
+    if (!(izlaz.km - ulaz.km > 3)) continue;
+    // ruta koja isti put prolazi DVAPUT (petlja, povratak istom dolinom) projektuje krajeve na dva
+    // razlicita prolaza - raspon mnogo duzi od same deonice ne sme da forsira ceo taj luk kao "dobar"
+    if (izlaz.km - ulaz.km > d.km * 1.5 + 5) continue;
+    // score: koliko lezi na koridoru x koliko je dobra x koliko je duga (plafon 40 km da dzin ne pojede sve)
+    out.push({ ime: d.naziv, score: pok * d.ocena * Math.min(d.km, 40), ulaz, izlaz, koord: c });
+  }
+  out.sort((a, b) => b.score - a.score);
+  const top = out.slice(0, 2);
+  // dva kandidata ne smeju da se preklapaju po kilometrazi (ni ugnjezdeno): preklop bi isti komad
+  // forsirao dvaput i dvostruko trosio budzet savova - slabiji ispada, u OBA smera rute
+  if (top.length === 2 && !(top[1].izlaz.km + 2 <= top[0].ulaz.km || top[1].ulaz.km >= top[0].izlaz.km + 2)) top.pop();
+  return top;   // najvise dva kandidata = najvise cetiri sava
 }
 async function hibridnaRuta(from, to, vij, brza) {
   // kapija PRE trosenja poziva: kratka relacija ili mala razlika ne zasluzuje jos 5 poziva ruteru
   if (!vij || !brza || !vij.coords || vij.coords.length < 50) return null;
-  if (vij.totalDist < 150000) return null;                       // ispod 150 km nema sta da se kombinuje
-  /* Kapija na 1,25 (12.8.). Bila je 1,40 i tada je Boskov sopstveni primer - Beograd - Jadrija SA
+  if (vij.totalDist < 100000) return null;   // apsolutni pod: ispod 100 km ni kurirana deonica nema sta da sasije
+  /* Kurirani kandidati se traze PRE ostalih kapija (Boskova vizija 23.8.): kad uz koridor postoji
+     deonica za koju zajednica ZNA da je dobra, kombinacija se pokusava i na relaciji 100-150 km
+     i kad su vijugava i najbrza vremenski blizu - bas tada geometrijsko sivenje ne bi ni pokusalo.
+     Bez kandidata SVE kapije vaze tacno kao do sada. Podaci se vuku lenjo i kesiraju u state.bjp
+     (loadPutevi); pad ucitavanja znaci samo "nema kandidata", nikad gresku prema korisniku. */
+  let kur = [];
+  try {
+    const bjp = await loadPutevi();
+    let radovi = [];
+    try {   // aktivna zatvaranja/radovi iskljucuju kandidata za OVAJ plan; pad ucitavanja = bez iskljucenja
+      const rs = await loadRoadStatus();
+      for (const cc in ((rs && rs.countries) || {})) for (const it of ((rs.countries[cc] || {}).items || [])) radovi.push(it);
+    } catch (e) { radovi = []; }
+    if (bjp) kur = kuriraniKandidati(vij, brza, bjp, radovi);
+  } catch (e) { kur = []; }
+  const prof = _kmProfil(vij), kom0 = _komadi(prof);
+  const dosKm = kom0.reduce((a, k) => a + (k.dobar ? 0 : k.do - k.od), 0);
+  const dobKm = kom0.reduce((a, k) => a + (k.dobar ? k.do - k.od : 0), 0);
+  /* Danasnje (geometrijske) kapije - vaze kad god se sije BEZ kuriranih kandidata: i kao ulaz u
+     generic sivenje, i kao uslov povratka na njega kad kurirani pokusaj padne ili ispadne iz budzeta.
+     Kapija na 1,25 (12.8.). Bila je 1,40 i tada je Boskov sopstveni primer - Beograd - Jadrija SA
      stanicom u Sarajevu - ispadao napolje: kad se koridor fiksira stanicom, vijugava i najbrza se
      priblize (13 h 05 prema 10 h 16, odnos 1,27) iako izmedju njih i dalje stoje skoro tri sata.
-     Beograd - Kotor (odnos 1,15) i dalje ostaje napolju, i to s pravom - tamo nema sta da se skrati. */
-  if (!(vij.totalDur > brza.totalDur * 1.25)) return null;
-  const prof = _kmProfil(vij), kom = _komadi(prof);
-  if (kom.length < 3) return null;                                // nema smene brzo/vijugavo - nema kombinacije
-  const dosKm = kom.reduce((a, k) => a + (k.dobar ? 0 : k.do - k.od), 0);
-  const dobKm = kom.reduce((a, k) => a + (k.dobar ? k.do - k.od : 0), 0);
-  if (dosKm < prof.N * 0.2 || dobKm < 40) return null;            // premalo dosadnog da se skrati, ili premalo krivina da se cuva
+     Beograd - Kotor (odnos 1,15) i dalje ostaje napolju, i to s pravom - tamo nema sta da se skrati.
+     SA kandidatima se preskacu i kapije profila (kom>=3, dos/dob): na ravnomernoj relaciji 100-150 km
+     profil nema smenu, ali kurirani savovi sami prave komade - bas to je "autoput + deonica + cilj". */
+  const generickeKapije = () => vij.totalDist >= 150000 && vij.totalDur > brza.totalDur * 1.25
+    && kom0.length >= 3 && dosKm >= prof.N * 0.2 && dobKm >= 40;
+  if (!kur.length && !generickeKapije()) return null;
   const naKm = (k) => {
     const c = k * 1000;
     for (let i = 0; i < vij.cumDist.length; i++) if (vij.cumDist[i] >= c) return { lat: vij.coords[i][1], lon: vij.coords[i][0] };
@@ -3900,40 +3986,113 @@ async function hibridnaRuta(from, to, vij, brza) {
     try { const p = navProject(vij, it.v[0], it.v[1]); return { km: p.d / 1000, off: p.offM, v: it.v, ime: it.name || null }; }
     catch (e) { return null; }
   }).filter(Boolean));
-  const komS = _seciNaStanicama(kom, stanice, prof.N);
-  if (!komS) return null;   // vise od osam komada = vise od osam poziva ruteru za jedno planiranje
-  kom.length = 0; kom.push(...komS);
-  const seg = { noVias: true, noLoop: true, keepTrip: true };
-  /* Tacke savova se racunaju UNAPRED: trebaju i za pozive i kasnije za imena mesta u sastavu rute.
-     Sav koji je nastao od tvoje stanice ide na BAS TU tacku, ne na najblizu tacku rute - inace bi
-     ruter zavrsio "kod" stanice umesto na njoj. Kraj se uzima sa same vijugave rute: kod povratnog
-     kruga cilj nije `to` nego dom, a ruta vec zna gde se zatvara. */
-  const _z = vij.coords[vij.coords.length - 1];
-  const KRAJ = isRoundTrip() ? { lat: _z[1], lon: _z[0] } : to;
-  const tacke = kom.map((k, i) => (i === 0 ? from : k.stanica ? { lat: k.stanica[1], lon: k.stanica[0] } : naKm(k.od))).concat([KRAJ]);
-  const tripovi = await Promise.all(kom.map(async (k, i) => {
-    await new Promise((rs) => setTimeout(rs, i * 250));           // razmak umesto salve: 5 istovremenih poziva ume da udari u limit
-    const A = tacke[i], B = tacke[i + 1];
-    const r = await valhallaRoute(A, B, k.dobar ? ROUTE_STYLES[0] : ROUTE_STYLES[3], seg);
-    // posten test po komadu: brzi prevoz koji odluta sa koridora ili nije brzi od originala rusi celu kombinaciju
-    const planKm = k.do - k.od, planS = prof.t.slice(k.od, k.do).reduce((a, b) => a + b, 0);
-    if (!k.dobar && (r.totalDist > planKm * 1400 || r.totalDur > planS)) throw new Error("komad odlutao sa koridora");
-    const tp = r._trip; delete r._trip; return tp;                // sirov trip ne ostaje na objektu rute (memorija)
-  }));
-  const hyb = tripToRoute(spojiTripove(tripovi), "Kombinovana · autoput i krivine");
-  hyb.styleIdx = 2;
-  let acc = 0;   // granice komada u km NOVE rute: reroute u voznji mora da zna KOJI stil vazi TU (bez ovoga
-  hyb.hibrid = tripovi.map((tp, i) => {   // bi reroute na 400. km celu preostalu turu presao u "ekstra vijugavo" i dodao sate)
-    const od = acc; acc += ((tp.summary && tp.summary.length) || 0);
-    // `tacka` = pocetak komada: sluzi da se sastav rute kasnije ispise imenima mesta, a ne kilometrima
-    // `ime` postoji samo za savove koji su TVOJE stanice - njih ne geokodiramo unazad nego pisemo
-    // ime koje si sam upisao (geokoder je za Sarajevo vratio "Trg oslobodjenja-Centar", 12.8.)
-    return { od, do: acc, styleIdx: kom[i].dobar ? 0 : 3, tacka: tacke[i], kraj: tacke[i + 1], ime: kom[i].ime || null };
-  });
-  // koliko kilometara ove rute se STVARNO vozi krivinama - po tome se sudi da li je kombinacija
-  // zaista kombinacija, a ne po tome koliko je sporija od autoputa (vidi belesku na pozivu)
-  hyb.krivKm = hyb.hibrid.reduce((a, h) => a + (h.styleIdx === 0 ? h.do - h.od : 0), 0);
-  return hyb;
+  /* Kurirani savovi ulaze u ISTI budzet komada kao tvoje stanice, a TVOJE STANICE UVEK dobijaju
+     prednost: svaki sav koji secne dodaje jedan komad, a preko 8 komada _seciNaStanicama odustaje.
+     Budzet se meri PROBNIM secenjem samih stanica (ne brojanjem): stanica koja nista ne secne
+     (van koridora, pada na postojeci sav) ne sme da istisne kandidata koji staje. Kurirani par
+     (ulaz + izlaz = 2 sava) se prima dok staje u ostatak, po score opadajuce - najslabiji
+     kandidat ispada prvi, tvoja stanica nikad. */
+  const probni = _seciNaStanicama(kom0, stanice, prof.N);
+  if (!probni) return null;   // tvoje stanice same probijaju budzet - isto kao do sada
+  let slobodno = 8 - probni.length;
+  const kurUzeti = [];
+  for (const kd of kur) if (slobodno >= 2) { kurUzeti.push(kd); slobodno -= 2; }
+  // kandidati postoje ali nijedan ne staje u budzet: ovo je obicna (geometrijska) kombinacija,
+  // pa za nju vaze i danasnje kapije - relaksacija ide SAMO uz kandidate koji stvarno ulaze
+  if (!kurUzeti.length && !generickeKapije()) return null;
+  let potrosenoKom = 0;   // koliko je poziva ruteru vec otislo na komade (stit od duplog budzeta pri padu)
+  const sasij = async (kandidati) => {
+    const kom = _seciNaStanicama(kom0, stanice.concat(kandidati.flatMap((kd) => [kd.ulaz, kd.izlaz])), prof.N);
+    if (!kom) return null;   // vise od osam komada = vise od osam poziva ruteru za jedno planiranje
+    /* Komadi izmedju ulaza i izlaza kandidata se FORSIRAJU u "dobar" (voze se vijugavim stilom) i
+       nose ime deonice za sastav rute. Sa komada ciji sav je KURIRAN se skida `ime` (naziv deonice
+       nije ime mesta - tacka sava se geokodira kao i svaka), a ime TVOJE stanice ostaje netaknuto.
+       Prozor +-2 km oko sava: sam rez pada na Math.round(km) (do 0,5 km od tacne kilometraze), a
+       sav unutar 1 km od postojece granice komada se u _seciNaStanicama UOPSTE ne sece (granica je
+       vec tu) - pa granica koja pripada savu moze da stoji do ~2 km od njegove tacne kilometraze.
+       Cena prozora: pogresno bi zahvatio samo susedni komadic kraci od 2 km, sto je prihvatljivo. */
+    for (const p of kom) if (p.kuriran) p.ime = null;
+    for (const kd of kandidati) {
+      const a = Math.round(kd.ulaz.km), b = Math.round(kd.izlaz.km);
+      for (const p of kom) if (p.od >= a - 2 && p.do <= b + 2) { p.dobar = true; p.nazivDeonice = kd.ime; }
+    }
+    potrosenoKom += kom.length;
+    const seg = { noVias: true, noLoop: true, keepTrip: true };
+    /* Tacke savova se racunaju UNAPRED: trebaju i za pozive i kasnije za imena mesta u sastavu rute.
+       Sav koji je nastao od tvoje stanice ili kraja kurirane deonice ide na BAS TU tacku, ne na
+       najblizu tacku rute - inace bi ruter zavrsio "kod" stanice umesto na njoj. Kraj se uzima sa
+       same vijugave rute: kod povratnog kruga cilj nije `to` nego dom, a ruta vec zna gde se zatvara. */
+    const _z = vij.coords[vij.coords.length - 1];
+    const KRAJ = isRoundTrip() ? { lat: _z[1], lon: _z[0] } : to;
+    const tacke = kom.map((k, i) => (i === 0 ? from : k.stanica ? { lat: k.stanica[1], lon: k.stanica[0] } : naKm(k.od))).concat([KRAJ]);
+    const tripovi = await Promise.all(kom.map(async (k, i) => {
+      await new Promise((rs) => setTimeout(rs, i * 250));           // razmak umesto salve: 5 istovremenih poziva ume da udari u limit
+      const A = tacke[i], B = tacke[i + 1];
+      const r = await valhallaRoute(A, B, k.dobar ? ROUTE_STYLES[0] : ROUTE_STYLES[3], seg);
+      // posten test po komadu: brzi prevoz koji odluta sa koridora ili nije brzi od originala rusi celu kombinaciju
+      const planKm = k.do - k.od, planS = prof.t.slice(k.od, k.do).reduce((a, b) => a + b, 0);
+      if (!k.dobar && (r.totalDist > planKm * 1400 || r.totalDur > planS)) throw new Error("komad odlutao sa koridora");
+      const tp = r._trip; delete r._trip; return tp;                // sirov trip ne ostaje na objektu rute (memorija)
+    }));
+    const hyb = tripToRoute(spojiTripove(tripovi), "Kombinovana · autoput i krivine");
+    hyb.styleIdx = 2;
+    let acc = 0;   // granice komada u km NOVE rute: reroute u voznji mora da zna KOJI stil vazi TU (bez ovoga
+    hyb.hibrid = tripovi.map((tp, i) => {   // bi reroute na 400. km celu preostalu turu presao u "ekstra vijugavo" i dodao sate)
+      const od = acc; acc += ((tp.summary && tp.summary.length) || 0);
+      // `tacka` = pocetak komada: sluzi da se sastav rute kasnije ispise imenima mesta, a ne kilometrima
+      // `ime` postoji samo za savove koji su TVOJE stanice - njih ne geokodiramo unazad nego pisemo
+      // ime koje si sam upisao (geokoder je za Sarajevo vratio "Trg oslobodjenja-Centar", 12.8.)
+      // `nazivDeonice` nosi ime kurirane deonice - sastav rute je pise umesto para mesta
+      return { od, do: acc, styleIdx: kom[i].dobar ? 0 : 3, tacka: tacke[i], kraj: tacke[i + 1],
+        ime: kom[i].ime || null, nazivDeonice: kom[i].nazivDeonice || null };
+    });
+    // koliko kilometara ove rute se STVARNO vozi krivinama - po tome se sudi da li je kombinacija
+    // zaista kombinacija, a ne po tome koliko je sporija od autoputa (vidi belesku na pozivu)
+    hyb.krivKm = hyb.hibrid.reduce((a, h) => a + (h.styleIdx === 0 ? h.do - h.od : 0), 0);
+    /* Sastav ne sme da IMENUJE deonicu kojom ruta ne ide: ruter je izmedju krajeva deonice mogao
+       da izabere drugi put. Zato se svaka kurirana deonica proveri protiv SASIVENE rute istim
+       merilom kojim je i birana (>=60% na 250 m); pad provere = pad rutiranja (postojeci fallback). */
+    for (const kd of kandidati)
+      if (bjpPokrivenost(hyb, kd.koord) < 0.6) throw new Error(`kurirana deonica nije odvezena: ${kd.ime}`);
+    return hyb;
+  };
+  if (kurUzeti.length) {
+    /* Pad rutiranja kurirane deonice ne sme da odnese kombinaciju koju bi geometrija ionako dala:
+       proba se jos jednom bez kandidata, ali TEK posto relacija polozi danasnje kapije -
+       relaksacija (100 km, preskok 1,25, preskok profila) vazi samo dok kurirani komad stvarno
+       ulazi u rutu. Stit od duplog budzeta: kad je kurirani pokusaj vec potrosio vise od 4 poziva
+       po komadu, druga tura od jos do 8 poziva se NE pali (16 poziva u nizu je previse za jedan
+       plan); mali predah pred ponovni pokusaj da salva ne udari u FOSSGIS limit. */
+    try { const h = await sasij(kurUzeti); if (h) return h; } catch (e) {
+      const poruka = String((e && e.message) || e);   // tihi ostaju SAMO prepoznati padovi rutiranja
+      if (poruka.indexOf("odlutao") < 0 && poruka.indexOf("nije odvezena") < 0)
+        console.warn("kurirano sivenje: pad koji nije rutiranje -", e);
+    }
+    if (!generickeKapije()) return null;
+    if (potrosenoKom > 4) return null;
+    await new Promise((rs) => setTimeout(rs, 1500));
+  }
+  return sasij([]);
+}
+/* Da li sasivena ruta zasluzuje karticu. Posten test REZULTATA, ne namere - sudi se po SASTAVU
+   (koliko se kilometara stvarno vozi krivinama), ne po tome koliko je sporija od autoputa.
+   KURIRANA kombinacija (spec amandman 24.8., review loop): komad iz baze zajednice je SAM PO SEBI
+   razlog da ruta postoji - "autoput + deonica za koju se zna da je dobra" - pa za nju ne vazi
+   "mora biti 10% brza od vijugave" (to ju je matematicki gusilo bas na relacijama gde su vijugava
+   i najbrza blizu, a upravo tamo je kurirano sivenje jedini razlog da kartica nastane). Dovoljno
+   je da NIJE SPORIJA od vijugave, uz plafon zdravog razuma prema najbrzoj (1,5x).
+   Plafon 1,5x NE sme da bude strozi od starog pravila (izmereno 24.8., BG - Pirot: hibrid 5 h 57
+   sa kuriranim komadom, vijugava 7 h 40, najbrza 3 h 07 - stari uslov ga PRIMA (< 6 h 54), goli
+   plafon 1,5x (4 h 41) bi ga izbacio, jer je tu i sama vijugava na 2,46x najbrze; kombinacija ne
+   moze biti "nerazumna" na nivou na kom vijugavu ionako nudimo). Zato kurirana prolazi i kad
+   polozi staro pravilo od 10%. */
+function kombinovanaPrihvatljiva(hyb, vij, brza) {
+  if (!hyb || !vij || !brza || !Array.isArray(hyb.hibrid)) return false;
+  const kuriran = hyb.hibrid.some((h) => h.nazivDeonice);
+  if (!kuriran && !(hyb.krivKm >= 40 && hyb.krivKm >= (hyb.totalDist / 1000) * 0.25)) return false;
+  return kuriran
+    ? hyb.totalDur <= vij.totalDur && (hyb.totalDur <= brza.totalDur * 1.5 || hyb.totalDur < vij.totalDur * 0.9)
+    : hyb.totalDur < vij.totalDur * 0.9;
 }
 /* Stil kojim se preracunava OSTATAK rute od zadatog kilometra. Ime kaze "na km", ali pitanje je
    uvek "cime dalje", jer reroute jednim pozivom pravi celu preostalu rutu do cilja.
@@ -4154,14 +4313,13 @@ async function fetchRoutes(from, to) {
       try {
         const vz = uniq.find((r) => r.styleIdx === 0) || vijugave[0];
         const hyb = vz ? await hibridnaRuta(from, to, vz, brza) : null;
-        /* Posten test REZULTATA, ne namere. Merilo "nije autoput prerusen u kombinaciju" je do 12.8.
-           bilo VREME (moralo je biti bar 8% sporije od najbrze) i to je bilo pogresno: kad je obilazak
-           autoputem dugacak, vijugavi put kosta malo dodatnog vremena. Boskov primer sa stanicom u
-           Sarajevu je tako bio odbacen - hibrid 600 km / 10 h 54 sa 296 km krivina, prema autoputu
-           614 km / 10 h 16 bez ijedne. Odlicna ruta, izbacena zbog 38 minuta.
-           Sada se sudi po SASTAVU: koliko se kilometara stvarno vozi krivinama. */
-        const krivDosta = hyb && hyb.krivKm >= 40 && hyb.krivKm >= (hyb.totalDist / 1000) * 0.25;
-        if (hyb && krivDosta && hyb.totalDur < vz.totalDur * 0.9
+        /* Merilo "nije autoput prerusen u kombinaciju" je do 12.8. bilo VREME (moralo je biti bar
+           8% sporije od najbrze) i to je bilo pogresno: kad je obilazak autoputem dugacak, vijugavi
+           put kosta malo dodatnog vremena. Boskov primer sa stanicom u Sarajevu je tako bio odbacen -
+           hibrid 600 km / 10 h 54 sa 296 km krivina, prema autoputu 614 km / 10 h 16 bez ijedne.
+           Odlicna ruta, izbacena zbog 38 minuta. Cela presuda sada zivi u kombinovanaPrihvatljiva
+           (kurirana i geometrijska grana imaju razlicita vremenska pravila - vidi belesku tamo). */
+        if (kombinovanaPrihvatljiva(hyb, vz, brza)
           && !uniq.some((u) => Math.abs(u.totalDist - hyb.totalDist) < 500 && Math.abs(u.totalDur - hyb.totalDur) < 60))
           uniq.splice(Math.min(1, uniq.length), 0, hyb);   // odmah IZA vijugave: to je sredina, ne dodatak na kraju
       } catch (e) {}   // kombinacija je bonus: njen pad ne sme da odnese vec dobijene rute
@@ -4662,10 +4820,18 @@ function hibridSastav(route) {
   const im = route._hibNaz;
   const deo = (h, i) => {
     const kako = h.styleIdx === 0 ? "krivinama" : "brzo";
+    // kurirana deonica se predstavlja SVOJIM imenom iz baze zajednice, ne parom mesta (24.8.) -
+    // ali kad komad pocinje TVOJOM stanicom (h.ime), tvoje ime pobedjuje i pise se par mesta
+    if (h.nazivDeonice && !h.ime) return `${esc(h.nazivDeonice)} ${kako}`;
     if (im && im[i] && im[i + 1]) return `${esc(im[i])} - ${esc(im[i + 1])} ${kako}`;
     return `km ${Math.round(h.od)}-${Math.round(h.do)} ${kako}`;
   };
-  return `<br>Sastav: ${route.hibrid.map(deo).join(" · ")}`;
+  const delovi = [];
+  route.hibrid.forEach((h, i) => {   // ista kurirana deonica presecena tvojom stanicom = jedan zapis, ne dva
+    const s = deo(h, i);
+    if (delovi[delovi.length - 1] !== s) delovi.push(s);
+  });
+  return `<br>Sastav: ${delovi.join(" · ")}`;
 }
 async function hibridImena(route) {
   if (!route || !route.hibrid || route._hibNaz || route._hibNazRadi) return false;
@@ -5725,25 +5891,42 @@ function mojTipMotora() {
     return null;
   } catch { return null; }
 }
-/* Koje ocenjene deonice leze NA nasoj ruti: uzorak tacaka deonice mora da bude blizu trase.
-   Prag od 250 m hvata isti put i kad su dve linije crtane razlicito, a ne hvata paralelan put. */
+/* JEDNO merilo pokrivenosti za sva tri potrosaca (stanje puta, kurirani kandidati, provera da je
+   kurirana deonica stvarno odvezena) - tri rucne kopije istog obrasca bi se tiho razisle (24.8. review).
+   Udeo od ~12 uzoraka trase deonice koji leze na ruti (<=250 m). Prag od 250 m hvata isti put i kad
+   su dve linije crtane razlicito, a ne hvata paralelan put. Korak uzorka RUTE mora da postuje prag:
+   sa fiksnih ~900 uzoraka bi na dugoj ruti susedni uzorci bili i 700 m daleko, pa bi tacka koja
+   STOJI na ruti pala izmedju dva uzorka i "promasila" 250 m - zato se korak steze i po metrima
+   (susedna dva uzorka <= ~200 m). Granicni rezultat (blizu praga 0,6) se preracuna sa korakom 1. */
+function bjpPokrivenost(route, koord) {
+  if (!route || !route.coords || !route.coords.length || !Array.isArray(koord) || koord.length < 2) return 0;
+  const R = route.coords;
+  const proceni = (korak) => {
+    const blizu = (lon, la) => {
+      for (let i = 0; i < R.length; i += korak)
+        if (Math.abs(R[i][1] - la) < 0.006 && Math.abs(R[i][0] - lon) < 0.008 &&
+            haversine(la, lon, R[i][1], R[i][0]) <= 0.25) return true;
+      return false;
+    };
+    const uz = Math.max(1, Math.floor(koord.length / 12));
+    let pog = 0, uk = 0;
+    for (let i = 0; i < koord.length; i += uz) { uk++; if (blizu(koord[i][0], koord[i][1])) pog++; }
+    return uk ? pog / uk : 0;
+  };
+  const ukM = (route.cumDist && route.cumDist[route.cumDist.length - 1]) || 0;
+  const razmak = ukM > 0 ? ukM / R.length : 0;                       // prosecan razmak tacaka rute u metrima
+  let korak = Math.max(1, Math.floor(R.length / 900));               // duge rute: ne merimo svaku tacku...
+  if (razmak > 0) korak = Math.max(1, Math.min(korak, Math.floor(200 / razmak) || 1));   // ...ali ni redje od ~200 m
+  let p = proceni(korak);
+  if (korak > 1 && Math.abs(p - 0.6) < 0.08) p = proceni(1);         // na pragu odlucuje puna gustina, ne resetka
+  return p;
+}
 function bjpNaRuti(route, baza) {
   if (!route || !route.coords || !baza) return [];
-  const R = route.coords;
-  const korak = Math.max(1, Math.floor(R.length / 900));   // duge rute: ne merimo svaku tacku
-  const blizu = (lon, la) => {
-    for (let i = 0; i < R.length; i += korak)
-      if (Math.abs(R[i][1] - la) < 0.006 && Math.abs(R[i][0] - lon) < 0.008 &&
-          haversine(la, lon, R[i][1], R[i][0]) <= 0.25) return true;
-    return false;
-  };
   const out = [];
   for (const d of baza.deonice) {
-    const c = d.coords;
-    const uz = Math.max(1, Math.floor(c.length / 12));
-    let pog = 0, uk = 0;
-    for (let i = 0; i < c.length; i += uz) { uk++; if (blizu(c[i][0], c[i][1])) pog++; }
-    if (uk && pog / uk >= 0.6) out.push({ ...d, poklapanje: pog / uk });
+    const p = bjpPokrivenost(route, d.coords);
+    if (p >= 0.6) out.push({ ...d, poklapanje: p });
   }
   return out;
 }
@@ -8929,9 +9112,14 @@ async function loadBikes() {
 
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
-   Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.83";
+   Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
+const APP_VERSION = "0.9.84";
 const CHANGELOG = [
+  { v: "0.9.84", d: "24.08.2026.", stavke: [
+    "<b>Kombinovana ruta sada zna za dobre deonice.</b> Tvoja vizija: autoput + deo puta za koji se zna da je dobar za vožnju + autoput + deo + cilj. Do sada je kombinovana ruta sredinu birala samo po geometriji (\"ovde izgleda vijugavo\"); sada gleda i u bazu zajednice (230 ocenjenih deonica sa punim trasama) i deonicu odličnih krivina, ocene 4+ i dobrog asfalta uz koridor ubaci kao obavezan vijugavi komad. U sastavu rute piše ime deonice, npr. \"Golubac - Donji Milanovac (Dunavska magistrala) krivinama\". Biraju se najviše dve, i samo one koje najbrža ruta zaobilazi - deonica preko koje autoput ionako ide ne donosi ništa. Posle sastavljanja se i proveri da ruta STVARNO ide preko deonice - ime u sastavu nikad ne stoji bez pokrića.",
+    "Kombinovana sa takvom deonicom se prikazuje čim nije sporija od vijugave (staro pravilo \"mora biti bar 10% brža\" ju je gušilo baš tamo gde vredi), uz plafon zdravog razuma prema najbržoj koji nikad nije stroži od starog pravila. Pokušava se i kad su vijugava i najbrža vremenski blizu, i već od 100 km relacije (do sada od 150 km). Bez takve deonice se sve ponaša tačno kao do sada.",
+    "Deonica se ne forsira kad podatak ne zaslužuje poverenje: gust (jak) saobraćaj, ocena od pre zime (\"Dobar od prošlog leta je u aprilu laž\") ili aktivni radovi/zatvaranje na njoj - taj plan ide bez nje. Tvoje usputne stanice uvek imaju prednost: kad je budžet komada tesan, ispada najslabija kurirana deonica, nikad tvoja stanica."
+  ] },
   { v: "0.9.83", d: "24.08.2026.", stavke: [
     "<b>Auto-pauza.</b> Staneš li duže od 3 minuta (kafana, pumpa, ćaskanje), vožnja se sama tiho pauzira - bez zvuka i bez pitanja, a računa se od treće minute stajanja. Semafor ne ostavlja nikakav trag: kratka auto-pauza (ispod 3 min) se na nastavku retroaktivno briše, kao da je nije ni bilo. Zaključavanje telefona ili odlazak u drugu aplikaciju dok stojiš pauzira odmah, a i uzimanje telefona sa nosača u mestu (senzori prepoznaju). Kreneš li (dva precizna fiksa preko 15 km/h) - vožnja se sama nastavlja, duža pauza je uredno zabeležena sa mestom i trajanjem.",
     "<b>Nagib posle pauze ne laže.</b> Posle pauze od 3+ minuta - ili bilo koje koju je okinuo senzor (telefon uzet u ruke) - stara nula više ne važi. Umesto rizične kalibracije u pokretu: nagib pošteno ćuti dok se ne dokaže pravac (3 s bez skretanja preko 25 km/h), tamo se nula ponovo uhvati - a maksimumi LEVO/DESNO iz cele vožnje ostaju netaknuti, i upisuju se u dnevnik i ako vožnju završiš usred te tišine.",
