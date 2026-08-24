@@ -1255,20 +1255,22 @@
   body.zajmap #zajList .zbtns { gap: 12px; margin-top: 8px; }
   body.zajmap #zajList .zbtns button { min-height: 44px; padding: 0 14px; font-size: 13px; font-weight: 600; }
   body.zajmap #zajList .zrow { padding: 12px; margin-bottom: 10px; }
-  /* odricanje odgovornosti pre prve voznje */
-  #discSheet { position: fixed; inset: 0; z-index: 340; }
-  #discSheet .back { position: absolute; inset: 0; background: rgba(2,6,16,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-  #discSheet .body { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: min(560px, 100%);
+  /* odricanje odgovornosti pre prve voznje; #turaSheet (0.9.86) deli isti jezik - pitanje pre starta */
+  #discSheet, #turaSheet { position: fixed; inset: 0; z-index: 340; }
+  #discSheet .back, #turaSheet .back { position: absolute; inset: 0; background: rgba(2,6,16,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  #discSheet .body, #turaSheet .body { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: min(560px, 100%);
     background: var(--bg); border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line);
     padding: 8px 18px calc(18px + env(safe-area-inset-bottom)); max-height: 84vh; overflow-y: auto; }
-  #discSheet .grab { width: 38px; height: 4px; border-radius: var(--r-xs); background: var(--fill-muted); margin: 4px auto 12px; }
-  #discSheet .ttl { font-size: 20px; font-weight: 800; color: var(--fg-strong); margin-bottom: 8px; }
-  #discSheet .lst p { font-size: 13px; line-height: 1.6; color: var(--fg-soft); margin: 0 0 11px; }
-  #discSheet .lst p b { color: var(--fg-strong); }
-  #discSheet .lst .sub { font-size: 13px; color: var(--fg-muted); }
+  #discSheet .grab, #turaSheet .grab { width: 38px; height: 4px; border-radius: var(--r-xs); background: var(--fill-muted); margin: 4px auto 12px; }
+  #discSheet .ttl, #turaSheet .ttl { font-size: 20px; font-weight: 800; color: var(--fg-strong); margin-bottom: 8px; }
+  #discSheet .lst p, #turaSheet .lst p { font-size: 13px; line-height: 1.6; color: var(--fg-soft); margin: 0 0 11px; }
+  #discSheet .lst p b, #turaSheet .lst p b { color: var(--fg-strong); }
+  #discSheet .lst .sub, #turaSheet .lst .sub { font-size: 13px; color: var(--fg-muted); }
   #discSheet .lst a { color: var(--accent-label); }
-  #discSheet .ok { width: 100%; margin-top: 6px; background: linear-gradient(135deg, var(--accent), var(--orange-600)); border: 0;
+  #discSheet .ok, #turaSheet .ok { width: 100%; margin-top: 6px; background: linear-gradient(135deg, var(--accent), var(--orange-600)); border: 0;
     color: var(--on-accent); border-radius: var(--r-lg); padding: 14px; font: 800 16px var(--font-ui); cursor: pointer; }
+  #turaSheet .sec { width: 100%; margin-top: 8px; background: transparent; border: 1px solid var(--line-strong);
+    color: var(--fg); border-radius: var(--r-lg); padding: 13px; font: 700 15px var(--font-ui); cursor: pointer; }
   /* sacuvane rute za offline - deli izgled sa #newsSheet */
   #offSheet { position: fixed; inset: 0; z-index: 65; }
   #offSheet .back { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
@@ -1822,9 +1824,17 @@
   #rideSum .card { transition: transform 300ms var(--ease); }
   #rideSum .card.dragging { transition: none; }
   #rideSum .grab, #rideSum #rsKick { touch-action: none; cursor: grab; }
-  #rideSum .rsxtra { display: flex; gap: 12px; margin-top: 10px; padding: 0 20px; }
-  #rideSum .rsxtra button { flex: 1; height: 40px; border-radius: var(--r-sm); background: transparent; color: var(--fg-soft);
+  #rideSum .rsxtra { display: flex; gap: 12px; margin-top: 10px; padding: 0 20px; flex-wrap: wrap; }   /* 0.9.86: tura dodaje dugmad (Razdvoji/Preimenuj/Dodaj u turu) - red sme u dva reda */
+  #rideSum .rsxtra button { flex: 1 1 40%; height: 40px; border-radius: var(--r-sm); background: transparent; color: var(--fg-soft);
     border: 1px solid var(--line-strong); font: 600 13px var(--font-ui); cursor: pointer; }
+  /* TURA (0.9.86): spisak etapa po danima u sazetku ture - tap otvara sazetak same etape */
+  #rideSum .rsetape { margin: 10px 20px 0; border-top: 1px solid var(--line); padding-top: 8px; }
+  #rideSum .rsetape .ret { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 2px; }
+  #rideSum .rsetape .rday { font-size: 11px; color: var(--fg-muted); font-weight: 600; margin-top: 7px; }
+  #rideSum .rsetape .reta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line-hairline); cursor: pointer; }
+  #rideSum .rsetape .reta:last-child { border-bottom: none; }
+  #rideSum .rsetape .reta .rn { font-size: 13px; font-weight: 600; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #rideSum .rsetape .reta b { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--fg-strong); flex: none; }
   /* birac share template-a (7.8., Boskov izbor: pecat-polukrug / mapa-kolona / lepeza) */
   #shareTpl { position: fixed; inset: 0; z-index: 340; display: none; }
   #shareTpl.on { display: block; }
@@ -1942,6 +1952,15 @@
   .vrow .vkm { font-size: 16px; font-weight: 800; color: var(--fg-strong); }
   .vrow .vkm small { font-size: 11px; color: var(--fg-muted); font-weight: 600; }
   .vrow .vx { font-size: 11px; color: var(--fg-muted); font-weight: 600; margin-top: 1px; }
+  /* TURA (0.9.86): rezim izbora za "Zaokruzi turu" (obrazac chk prekidaca) + red akcija dnevnika */
+  .vrow .vchk { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--fg-faint); margin-left: 2px; }
+  .vrow.izabrana .vchk { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--bg); }
+  .vrow.izabrana .vt { color: var(--accent-label); }
+  .vakcije { display: flex; gap: 10px; margin-top: 10px; }
+  .vakcije .vakc { flex: 1; height: 38px; border-radius: var(--r-sm); background: transparent; color: var(--fg-soft);
+    border: 1px solid var(--line-strong); font: 600 13px var(--font-ui); cursor: pointer; }
+  .vakcije .vakc.glavna { background: linear-gradient(135deg, var(--accent), var(--orange-600)); color: var(--on-accent); border: 0; }
+  .vakcije .vakc:disabled { opacity: .45; cursor: default; }
   /* niski ekran (landscape telefon): sheet postaje desna kolona, mapa sa tragom ostaje levo */
   @media (max-height: 520px) { #rideSum .card { left: auto; right: 10px; transform: none; bottom: 10px; top: 10px;
     width: min(46vw, 400px); max-height: none; border-radius: var(--r-lg); border-bottom: 1px solid var(--line-strong);
@@ -2408,6 +2427,21 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
       <button class="ok" id="discOk">Razumem, vozi</button>
     </div>
   </div>
+  <!-- TURA (0.9.86): "Nastavljas turu?" pre starta - kad novi start pocinje blizu kraja
+       prethodne voznje (<=5 km, <=20 h). "Nastavi" lepi novu voznju kao etapu iste ture. -->
+  <div id="turaSheet" hidden role="dialog" aria-modal="true" aria-label="Nastavljaš turu?">
+    <div class="back"></div>
+    <div class="body">
+      <div class="grab"></div>
+      <div class="ttl">Nastavljaš turu?</div>
+      <div class="lst">
+        <p id="turaPitTxt">Krećeš blizu mesta gde se završila prethodna vožnja.</p>
+        <p class="sub">Nastavak lepi ovu vožnju kao etapu iste ture - svaka etapa zadržava svoje brojke i svoj zapis.</p>
+      </div>
+      <button class="ok" id="turaDa">Nastavi turu</button>
+      <button class="sec" id="turaNe">Nova vožnja</button>
+    </div>
+  </div>
   <!-- rezim prijava zajednice nad mapom: traka gore (jedini put nazad) + lista dole -->
   <div id="zajBar">
     <button class="nazad" id="zajNazad" type="button">‹ Zajednica<small id="zajBarSub">učitavam...</small></button>
@@ -2526,12 +2560,14 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
       </div>
     </div>
     <div class="rspark" id="rsSpark" hidden></div>
+    <!-- TURA (0.9.86): etape po danima; tap otvara sazetak etape (svaki dan cuva svoje brojke i replay) -->
+    <div class="rsetape" id="rsEtape" hidden></div>
     <div class="rskol" id="rsKol" hidden></div>
     <div class="tags" id="rsTags"></div>
     <div class="btns">
       <button class="shr" id="rsShare">Podeli</button><button class="cls" id="rsClose">Gotovo</button>
     </div>
-    <div class="rsxtra"><button id="rsGpx" type="button">Izvezi GPX</button><button id="rsRuta" type="button">Sačuvaj kao rutu</button></div>
+    <div class="rsxtra"><button id="rsNazadTura" type="button" hidden>‹ Nazad na turu</button><button id="rsGpx" type="button">Izvezi GPX</button><button id="rsRuta" type="button">Sačuvaj kao rutu</button><button id="rsTura" type="button" hidden>Dodaj u turu</button><button id="rsRazdvoji" type="button" hidden>Razdvoji turu</button><button id="rsPreim" type="button" hidden>Preimenuj</button></div>
   </div></div>
   <!-- Izmena stanica (11.8., Boskov zahtev "kao kod Google Maps-a"): pun ekran sa spiskom
        Od / A / B / C / Do, hvataljka za prevlacenje redosleda, X za brisanje, red za dodavanje,
@@ -4458,7 +4494,7 @@ async function importGpx(file) {
     logState({ phase: "error", msg: "gpx: " + String(e.message || e) });
   }
 }
-async function importGpxCoords(coords, label) {   // zajednicki motor: GPX fajl I "Sacuvaj voznju kao rutu" (7.8.)
+async function importGpxCoords(coords, label, bezSirovog) {   // zajednicki motor: GPX fajl I "Sacuvaj voznju kao rutu" (7.8.)
   state._lastRelKey = null;   // uvezen trag = nova relacija: sheet se skuplja i kamera preleti rutu
   const _pseq = ++state.planSeq;
   try {
@@ -4466,7 +4502,11 @@ async function importGpxCoords(coords, label) {   // zajednicki motor: GPX fajl 
     shareToast("Lepim trag na puteve…");
     let route;
     try { route = await traceGpxRoute(coords, "GPX · " + gpxName); }
-    catch (e) { route = rawGpxRoute(coords, "GPX · " + gpxName); }
+    catch (e) {
+      // bezSirovog (tura, 0.9.86 review): sirovi fallback bi rupu izmedju etapa nacrtao PRAVOM linijom - posten neuspeh umesto toga
+      if (bezSirovog) { shareToast("Ne mogu da zalepim turu na puteve - pokušaj kasnije."); return; }
+      route = rawGpxRoute(coords, "GPX · " + gpxName);
+    }
     if (_pseq !== state.planSeq) return;
     // polazak: "sada" u qplan rezimu, inace vrednost iz polja
     try {
@@ -7847,6 +7887,374 @@ function kolTikni(lo, la) {
   }
   if (novo) _zajPisi("mr_kolekcije", st);
 }
+/* ================= TURA (0.9.86): jedna fizicka tura u vise etapa =================
+   TURA = JEDAN mr_voznje zapis (model c iz istrage): omotac {tura:true, dana, etapeCnt,
+   agregati..., etape:[cele voznje VERBATIM]}. Jedan slot dnevnika, bez visecih referenci,
+   bez duplog brojanja; trag/replay se SASTAVLJAJU pri citanju (turaSum) - nikad se ne
+   dupliraju u zapis. Poeni/kolekcije/priznanja se pri spajanju i razdvajanju NE diraju:
+   etape su ih vec zaradile, tura samo prikazuje zbir.
+   Terminologija: "etapa ture" = cela voznja-dan; NIJE isto sto i "etapa" (deonica) rute
+   duz plana u planeru - ta rec dole u navigacionom kodu znaci drugo. */
+function turaDan(ms) {   // lokalna ponoc (obrazac isoNedelja: setHours(0,0,0,0)) - NIKAD toISOString (UTC pomera dan)
+  const d = new Date(ms); d.setHours(0, 0, 0, 0); return d.getTime();
+}
+function turaEtapaPocetak(r) { return ((r && r.ts) || 0) - ((r && r.min) || 0) * 60000; }   // ts je KRAJ voznje; start ~= ts - min
+function turaGap(pre, sad) {
+  /* Medju-etapni razmak ISTOG lokalnog dana, >=3 min -> pauza na kraju traga prethodne etape
+     (pumpa pre pozadinskog GPS-a, rucak...). Visednevni razmak (spavanje) se NIKAD ne knjizi -
+     nocenje nije pauza voznje. Prethodna etapa bez traga (kvota ga odnela): minuti se i dalje
+     broje u min/pauz, ali pin bez pozicije ne postoji (isti zakon kao placeholder u 0.9.83). */
+  const kraj = (pre && pre.ts) || 0, poc = turaEtapaPocetak(sad);
+  const min = Math.round((poc - kraj) / 60000);
+  if (min < 3) return null;
+  if (turaDan(kraj) !== turaDan(poc)) return null;
+  const t = (pre && pre.trag && pre.trag.length) ? pre.trag[pre.trag.length - 1] : null;
+  return { min, na: t ? [t[0], t[1], min] : null };   // trag nosi [lon, lat]
+}
+function turaAgregat(sl) {
+  /* Agregati po FIKSNOJ tabeli spec-a: km/mov/serp/kriv/kol/poeni = zbir; min/pauz = zbir +
+     istodnevni razmaci; maxK/lnL/lnR = max; kisa = ILI; momenti iz etape koja nosi maksimum;
+     avgK se UVEK preracunava km/(zbir mov) - prosek proseka bi lagao. sl = etape RASTUCE po ts. */
+  let km = 0, min = 0, mov = 0, pauz = 0, serp = 0, kriv = 0, kol = 0, poeni = 0, maxK = 0, kisa = false;
+  let lnL = null, lnR = null, momLnL = null, momLnR = null, momBrz = null, bK = -1;
+  const pauzeNa = [], dani = new Set();
+  for (let i = 0; i < sl.length; i++) {
+    const e = sl[i];
+    km += e.km || 0; min += e.min || 0; mov += e.mov || 0; pauz += e.pauz || 0;
+    serp += e.serp || 0; kriv += e.kriv || 0; kol += e.kol || 0; poeni += e.poeni || 0;
+    maxK = Math.max(maxK, e.maxK || 0); kisa = kisa || !!e.kisa;
+    if ((e.maxK || 0) > bK) { bK = e.maxK || 0; momBrz = e.momBrz || null; }   // momBrz iz etape sa max maxK
+    if (e.lnL != null && (lnL == null || e.lnL > lnL)) { lnL = e.lnL; momLnL = e.momLnL || null; }
+    if (e.lnR != null && (lnR == null || e.lnR > lnR)) { lnR = e.lnR; momLnR = e.momLnR || null; }
+    dani.add(turaDan(turaEtapaPocetak(e)));
+    dani.add(turaDan(e.ts || 0));   // etapa PREKO ponoci dodiruje OBA dana - dana i turaOpseg moraju da se slazu (review 0.9.86)
+    for (const p of e.pauzeNa || []) pauzeNa.push(p);
+    if (i + 1 < sl.length) {
+      const g = turaGap(e, sl[i + 1]);
+      if (g) { min += g.min; pauz += g.min; if (g.na) pauzeNa.push(g.na); }
+    }
+  }
+  km = Math.round(km * 10) / 10;
+  const avgK = mov > 0 ? Math.round(km / (mov / 60)) : 0;   // ista formula kao svez zapis (km / (movMs/3600000))
+  return { ts: sl[sl.length - 1].ts, tsOd: turaEtapaPocetak(sl[0]), dana: dani.size, etapeCnt: sl.length,
+    km, min, mov, pauz, serp, kriv, kol, poeni, maxK, avgK, lnL, lnR, kisa,
+    momBrz, momLnL, momLnR, pauzeNa: pauzeNa.length ? pauzeNa : null };
+}
+function turaNazDeo(naz, kraj) {
+  // "Jadrija → Beograd (prekinuto na 120 km)" -> "Jadrija"/"Beograd"; "Slobodna vožnja · Šibenik" -> "Šibenik"
+  const delovi = String(naz || "").split("→").map((x) => x.trim()).filter(Boolean);
+  let deo = kraj ? delovi[delovi.length - 1] : delovi[0];
+  deo = String(deo || "").replace(/\s*\(.*$/, "").trim();
+  if (deo.includes("·")) deo = deo.split("·").pop().trim();
+  return deo;
+}
+function turaAutoNaz(sl) {   // auto-ime: start PRVE -> kraj POSLEDNJE etape (obrazac parsiranja naz po "→")
+  const a = turaNazDeo(sl[0] && sl[0].naz, false), b = turaNazDeo(sl[sl.length - 1] && sl[sl.length - 1].naz, true);
+  if (a && b && a !== b) return a + " → " + b;
+  if (a) return a + " (kružna tura)";
+  return "Tura";
+}
+function turaNapravi(etape) {   // etape (bilo koji red) -> zapis ture; etape unutra RASTUCE po ts
+  const sl = etape.slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
+  const t = turaAgregat(sl);
+  t.tura = true; t.tip = "Tura"; t.nazPoi = null; t.naz = turaAutoNaz(sl); t.etape = sl;
+  return t;
+}
+function turaDodajEtapu(v, ts, rec) {
+  /* Append put (ulaz 1 i 3): zapis iz najave (tura ILI obicna voznja - obicna se zaokruzi u turu
+     od dve etape) + nova etapa -> tura na VRH dnevnika. Vraca turu, ili null kad zapisa vise
+     nema (kvota/brisanje) - pozivalac tada voznju upisuje zasebno, uz posten ton. */
+  if (!Array.isArray(v) || !rec) return null;
+  const i = v.findIndex((x) => x && x.ts === ts);
+  if (i === -1) return null;
+  const cilj = v[i];
+  const t = turaNapravi(cilj.tura ? (cilj.etape || []).concat([rec]) : [cilj, rec]);
+  if (cilj.tura && cilj.nazRucno) { t.naz = cilj.naz; t.nazRucno = true; }   // rucno ime prezivi novu etapu
+  v.splice(i, 1);
+  v.unshift(t);
+  return t;
+}
+function turaZaokruzi(v, tsSet) {
+  /* Rucno zaokruzivanje iz dnevnika (izbor po ts): izabrani zapisi -> jedna tura, hronoloske
+     etape. Izabrana TURA se rastapa u svoje etape - tura u turi ne postoji (model c). */
+  if (!Array.isArray(v)) return null;
+  const uzete = [], ostale = [];
+  for (const r of v) {
+    if (r && tsSet.has(r.ts)) { if (r.tura) uzete.push(...(r.etape || [])); else uzete.push(r); }
+    else ostale.push(r);
+  }
+  if (uzete.length < 2) return null;
+  const t = turaNapravi(uzete);
+  ostale.push(t);
+  ostale.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  return { v: ostale, tura: t };
+}
+function turaRazdvoji(v, ts) {
+  /* Razdvoji: etape nazad kao zasebni zapisi BAJT-ISTOVETNE (verbatim iz etape, premesti-ne-brisi),
+     tura nestaje. visak > 0 = povratak preko capa bi izbacio najstarije - pozivalac PRVO pita. */
+  if (!Array.isArray(v)) return null;
+  const i = v.findIndex((x) => x && x.tura && x.ts === ts);
+  if (i === -1) return null;
+  const nova = v.slice(0, i).concat(v[i].etape || [], v.slice(i + 1));
+  nova.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  return { v: nova, visak: Math.max(0, nova.length - DNEVNIK_CAP), etapeCnt: (v[i].etape || []).length };
+}
+const TURA_BLIZU_KM = 5;        // prag blizine za "Nastavljas turu?" / "Dodaj u turu"
+const TURA_SVEZE_H = 20;        // prvi spoj samostalnih voznji: prezivi noc, ne mesec
+const TURA_SVEZE_TURA_H = 48;   // nastavak POSTOJECE ture: dan odmora na dugoj turi ne sme da ubije pitanje (review 0.9.86)
+function turaKandidat(z, sadaTs, lo, la) {
+  /* Kapija za "Nastavljas turu?" i "Dodaj u turu": kraj traga <= TURA_BLIZU_KM od pozicije,
+     kraj <= TURA_SVEZE_H unazad - a kad je poslednji zapis vec TURA (poslednja voznja = njena
+     etapa), prozor je TURA_SVEZE_TURA_H. Zapis bez traga (kvota ga odnela) NIKAD ne pita -
+     bez pozicije nema postene ponude. Za turu vazi kraj traga POSLEDNJE etape. */
+  if (!z || !z.ts) return false;
+  const izvor = z.tura ? ((z.etape || [])[(z.etape || []).length - 1] || null) : z;
+  const t = (izvor && izvor.trag && izvor.trag.length) ? izvor.trag[izvor.trag.length - 1] : null;
+  if (!t || lo == null || la == null) return false;
+  const h = (sadaTs - z.ts) / 3600000;
+  if (!(h >= 0 && h <= (z.tura ? TURA_SVEZE_TURA_H : TURA_SVEZE_H))) return false;
+  return haversine(la, lo, t[1], t[0]) <= TURA_BLIZU_KM;   // trag nosi [lon, lat]!
+}
+function turaSum(r) {
+  /* READ adapter: tura -> sastavljen sazetak za rideSumShow/GPX/share/rutu. Trag = konkatenacija
+     etapa (u zapisu se NE duplira - dupliranje bi jelo kvotu, a per-zapis plafon od 1500 tacaka
+     bi 5000 km ture spljostio na tacku svakih 3,3 km). smp = konkatenacija sa BACK-TO-BACK
+     pomacima: kumulativna TRAJANJA etapa, ne zidni sat - replay (sumReplayInit) integrali put
+     iz uzoraka, pa bi rupa od prespavane noci pravila fantomske sate i kilometre. */
+  if (!r || !r.tura) return r;
+  const trag = [], tragSeg = [], smp = [];
+  let off = 0, imaSmp = false;
+  for (const e of r.etape || []) {
+    if (e.trag && e.trag.length > 1) { trag.push(...e.trag); tragSeg.push(e.trag); }   // SEGMENTIRANO: etapa = svoja linija, NIKAD ravan "let" izmedju udaljenih etapa (review 0.9.86)
+    if (e.smp && e.smp.length) {
+      imaSmp = true;
+      for (const x of e.smp) smp.push({ t: off + (x.t || 0), v: x.v || 0, ln: x.ln != null ? x.ln : null });
+      // pomak = max(kraj ose uzoraka, trajanje etape): monotona osa - zakrzljali smp (proredjen kvotom) ne sme da PREKLOPI sledecu etapu u replay-u (review 0.9.86)
+      off += Math.max(e.smp[e.smp.length - 1].t || 0, (e.mov || e.min || 0) * 60);
+    } else off += (e.mov || e.min || 0) * 60;   // etapa bez uzoraka: pomak po trajanju
+  }
+  return { ...r, trag: trag.length > 1 ? trag : null, tragSeg: tragSeg.length ? tragSeg : null, smp: (imaSmp && smp.length > 5) ? smp : null };
+}
+function tragSegmenti(s) {   // crtacki izvor istine: segmenti ture, ili ceo trag kao jedan segment
+  if (s && s.tragSeg && s.tragSeg.length) return s.tragSeg;
+  return (s && s.trag && s.trag.length > 1) ? [s.trag] : [];
+}
+function best3kmSeg(segs) {
+  /* Najvijugavija deonica UNUTAR JEDNE etape - prozor nikad ne prelazi sav dve etape (razmak
+     izmedju njih nije voznja). Indeksi se vracaju u RAVNOM (konkateniranom) tragu. */
+  let best = null, off = 0;
+  for (const g of segs) {
+    const b = best3km(g);
+    if (b && (!best || b.dens > best.dens)) best = { a: off + b.a, b: off + b.b, dens: b.dens };
+    off += g.length;
+  }
+  return best;
+}
+function turaOpseg(r) {   // opseg datuma ture za prikaz: "24.8.2026." ili "24.8.2026. - 7.9.2026."
+  const a = new Date(r.tsOd || r.ts).toLocaleDateString("sr-RS"), b = new Date(r.ts).toLocaleDateString("sr-RS");
+  return a === b ? a : a + " - " + b;
+}
+/* ---- dnevnik: JEDAN cap helper za sve upise (0.9.86) ----
+   Cap 20 -> 30 (tura oslobadja slotove, ali Nordkap u 15 etapa ne sme da pojede pola istorije).
+   Ukupna velicina se drzi ispod ~2 MB: degradacija tanji NAJVECI trag (zapis ILI etapa unutar
+   ture), pa najveci smp - NIKAD agregate. Golo v.slice(0,20) po pozivaocima (i u asinhronoj
+   preimeni!) je do sada seklo mimo jedne istine - sada svi upisi idu ovuda. */
+const DNEVNIK_CAP = 30;
+const DNEVNIK_MAX_B = 2 * 1024 * 1024;
+function dnevnikStanji(lista) {
+  /* Jedan korak degradacije: 1) prepolovi najveci trag (dok ima > 8 tacaka), 2) izbaci najveci
+     smp, 3) POSLEDNJA precka: izbaci i patrljak traga - pod ekstremnom kvotom MINIMALAN zapis
+     (samo brojke) mora da stane, kao sto je garantovala lestvica 0.9.82 (review 0.9.86). */
+  const kand = [];
+  for (const r of lista) { if (!r) continue; kand.push(r); if (r.tura && Array.isArray(r.etape)) for (const e of r.etape) if (e) kand.push(e); }
+  let naj = null;
+  for (const r of kand) if (r.trag && r.trag.length > 8 && (!naj || r.trag.length > naj.trag.length)) naj = r;
+  if (naj) { naj.trag = naj.trag.filter((_, i, a) => i % 2 === 0 || i === a.length - 1); return true; }
+  let najS = null;
+  for (const r of kand) if (r.smp && r.smp.length && (!najS || r.smp.length > najS.smp.length)) najS = r;
+  if (najS) { delete najS.smp; return true; }
+  let najT = null;
+  for (const r of kand) if (r.trag && r.trag.length && (!najT || r.trag.length > najT.trag.length)) najT = r;
+  if (najT) { delete najT.trag; return true; }
+  return false;
+}
+function dnevnikUpisi(v) {
+  /* Petlje idu DOK dnevnikStanji ima sta da preda (svaka precka nesto izbaci, pa je kraj
+     garantovan); 1000 je cvrsta ograda, ne radni broj - 30 zapisa x (halving traga + smp +
+     patrljak) staje daleko ispod nje. */
+  const lista = (Array.isArray(v) ? v : []).slice(0, DNEVNIK_CAP);
+  for (let i = 0; i < 1000; i++) {   // velicinski gard PRE kvote: 30 zapisa sa turama ume da naraste
+    let n = 0;
+    try { n = JSON.stringify(lista).length; } catch (e) { break; }
+    if (n <= DNEVNIK_MAX_B) break;
+    if (!dnevnikStanji(lista)) break;
+  }
+  let upis = _zajPisi("mr_voznje", lista);
+  for (let i = 0; !upis && i < 1000; i++) {   // kvota ipak puna: ista lestvica, korak po korak
+    if (!dnevnikStanji(lista)) break;
+    upis = _zajPisi("mr_voznje", lista);
+  }
+  return upis;
+}
+function dnevnikNadji(v, ts) {
+  // zapis po ts - i KROZ etape tura (asinhrona preimena mora da nadje etapu u turi); vraca { rec, tura }
+  if (!Array.isArray(v)) return null;
+  for (const r of v) {
+    if (!r) continue;
+    if (r.ts === ts && !r.tura) return { rec: r, tura: null };
+    if (r.tura) for (const e of r.etape || []) if (e && e.ts === ts) return { rec: e, tura: r };
+  }
+  return null;
+}
+function turaNazSveze(tura) {
+  /* Pravo ime ture iz TRAGA (asinhrono, isti obrazac kao preimena voznje): reverseName na prvoj
+     i poslednjoj tacki; upis nazad ISKLJUCIVO kroz cap-aware dnevnikUpisi. Rucno ime se ne dira. */
+  try {
+    if (!tura || tura.nazRucno) return;
+    const sl = tura.etape || [];
+    const a = sl[0] && sl[0].trag && sl[0].trag[0];
+    const kt = sl[sl.length - 1] && sl[sl.length - 1].trag;
+    const b = kt && kt[kt.length - 1];
+    if (!a || !b) return;
+    const tsMoj = tura.ts;
+    (async () => {
+      try {
+        const imeA = await reverseName(a[1], a[0], 12, true);
+        const imeB = await reverseName(b[1], b[0], 12, true);
+        if (!imeA || !imeB) return;
+        const novi = imeA === imeB ? imeA + " (kružna tura)" : imeA + " → " + imeB;
+        const v2 = _zajCitaj("mr_voznje", []);
+        const t2 = Array.isArray(v2) ? v2.find((x) => x && x.tura && x.ts === tsMoj) : null;
+        if (!t2 || t2.nazRucno) return;
+        t2.naz = novi;
+        dnevnikUpisi(v2);
+        const rel = document.getElementById("rsRel");
+        if (rel && rel.dataset.ts === String(tsMoj)) rel.textContent = novi;
+        const el2 = document.getElementById("rideSum");
+        if (el2 && el2._sum && el2._sum.ts === tsMoj) el2._sum.naz = novi;
+        try { renderVoznje("jaVoznje"); } catch (e) {}
+      } catch (e) {}
+    })();
+  } catch (e) {}
+}
+function turaZaokruziUI(box, targetId) {
+  /* TURA - ulaz 2: "Spoji u turu" nad izabranim zapisima dnevnika. Poeni/kolekcije/priznanja se
+     NE diraju - etape su ih vec zaradile. <2 izabrane dugme ionako ne pusta (disabled). */
+  const sel = box._sel || new Set();
+  if (sel.size < 2) return;
+  const v = _zajCitaj("mr_voznje", []);
+  const rez = turaZaokruzi(v, sel);
+  if (!rez) { shareToast("Izaberi bar dve vožnje."); return; }
+  if (!dnevnikUpisi(rez.v)) { shareToast("Dnevnik je pun - tura NIJE zaokružena."); return; }
+  box._selMode = false; box._sel = new Set();
+  try { turaNazSveze(rez.tura); } catch (e) {}
+  shareToast(`Tura zaokružena: ${rez.tura.naz} · ${rez.tura.km} km, ${rez.tura.etapeCnt} ${plSrp(rez.tura.etapeCnt, "etapa", "etape", "etapa")}`);
+  renderVoznje(targetId);
+  try { renderJaProfil(); } catch (e) {}
+}
+function turaRazdvojiUI(ts) {
+  /* Razdvoji iz sazetka ture. Kad bi povratak etapa preko capa izbacio najstarije zapise -
+     POSTENO upozorenje PRE, ne tiho gutanje. */
+  const v = _zajCitaj("mr_voznje", []);
+  const rez = turaRazdvoji(v, ts);
+  if (!rez) { shareToast("Ova tura više nije u dnevniku."); return; }
+  if (rez.visak > 0 && !confirm(`Razdvajanje vraća ${rez.etapeCnt} ${plSrp(rez.etapeCnt, "etapu", "etape", "etapa")} kao zasebne vožnje, a dnevnik prima najviše ${DNEVNIK_CAP} zapisa - ${rez.visak} ${plSrp(rez.visak, "najstariji zapis bi ispao", "najstarija zapisa bi ispala", "najstarijih zapisa bi ispalo")}.\n\nOK = razdvoji · Otkaži = odustani`)) return;
+  if (!dnevnikUpisi(rez.v)) { shareToast("Upis nije uspeo - tura ostaje kakva je."); return; }
+  try { if (window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
+  shareToast(`Tura razdvojena - ${rez.etapeCnt} ${plSrp(rez.etapeCnt, "etapa vraćena", "etape vraćene", "etapa vraćeno")} u dnevnik.`);
+  try { renderVoznje("jaVoznje"); renderJaProfil(); } catch (e) {}
+}
+function turaPreimenujUI(ts) {   // opciona preimena (prompt obrazac kao "Gde ti je kuca?"); rucno ime se vise ne pregazuje
+  const v = _zajCitaj("mr_voznje", []);
+  const t = Array.isArray(v) ? v.find((x) => x && x.tura && x.ts === ts) : null;
+  if (!t) { shareToast("Ova tura više nije u dnevniku."); return; }
+  const val = prompt("Ime ture:", t.naz || "");
+  if (!val || !val.trim()) return;
+  t.naz = val.trim().slice(0, 80); t.nazRucno = true;
+  if (!dnevnikUpisi(v)) { shareToast("Upis nije uspeo - dnevnik je pun."); return; }
+  const rel = document.getElementById("rsRel");
+  if (rel && rel.dataset.ts === String(ts)) rel.textContent = t.naz;
+  const el = document.getElementById("rideSum");
+  if (el && el._sum && el._sum.ts === ts) el._sum.naz = t.naz;
+  try { renderVoznje("jaVoznje"); } catch (e) {}
+}
+function turaPredlog(ishod, oporavak) {
+  /* TURA - ulaz 3: tihi predlog posle voznje. SAMO najava (tihoObavestenje doktrina - vest, ne
+     uzbuna); radnju nosi dugme "Dodaj u turu" u sazetku. Ista kapija blizine/vremena kao start
+     prompt, samo sto se ovde poredi POCETAK sveze voznje sa krajem prethodnog zapisa.
+     Posle OPORAVKA sazetak (pa ni dugme) ne postoji - ta poruka sme da obeca SAMO dnevnik. */
+  RIDE._turaPredlogTs = null;
+  try {
+    if (ishod !== "upisano") return;
+    const v = _zajCitaj("mr_voznje", []);
+    if (!Array.isArray(v) || v.length < 2) return;
+    const nova = v[0], pre = v[1];
+    if (!nova || nova.tura || !nova.trag || !nova.trag.length) return;   // vec zalepljena kao etapa (v[0] je tura) ili bez traga
+    const start = nova.trag[0];
+    if (!turaKandidat(pre, turaEtapaPocetak(nova), start[0], start[1])) return;
+    RIDE._turaPredlogTs = pre.ts;
+    tihoObavestenje(oporavak
+      ? 'Oporavljena vožnja se nastavlja na prethodnu - spoji ih: "Zaokruži turu" u Dnevniku.'
+      : 'Ova vožnja se nastavlja na prethodnu - spoji ih: "Dodaj u turu" u sažetku ili "Zaokruži turu" u dnevniku.');
+  } catch (e) {}
+}
+function turaDodajIzSazetka() {
+  /* Dugme "Dodaj u turu" iz sazetka: upravo upisana voznja (v[0]) se lepi na kandidata iz
+     turaPredlog. USTAJALI predlog (kandidat nestao, v[0] u medjuvremenu tura) -> POSTEN ton,
+     dugme se gasi, predlog se cisti - nikad nemo mrtvo dugme (review 0.9.86). */
+  const mrtavPredlog = () => {
+    RIDE._turaPredlogTs = null;
+    const b = document.getElementById("rsTura");
+    if (b) b.hidden = true;
+    shareToast("Predlog više ne važi.");
+  };
+  const ts = RIDE._turaPredlogTs;
+  if (!ts) { mrtavPredlog(); return; }
+  const v = _zajCitaj("mr_voznje", []);
+  if (!Array.isArray(v) || !v.length || v[0].tura) { mrtavPredlog(); return; }
+  const rec = v.shift();
+  const t = turaDodajEtapu(v, ts, rec);
+  if (!t) { mrtavPredlog(); return; }
+  if (!dnevnikUpisi(v)) { shareToast("Dnevnik je pun - tura NIJE upisana."); return; }   // predlog OSTAJE - vredi probati ponovo
+  RIDE._turaPredlogTs = null;
+  const bt = document.getElementById("rsTura");
+  if (bt) bt.hidden = true;
+  try { turaNazSveze(t); } catch (e) {}
+  shareToast("Dodato u turu: " + t.naz);
+  try { renderVoznje("jaVoznje"); renderJaProfil(); } catch (e) {}
+}
+function rsEtapeRender(s) {
+  /* Spisak etapa po danima u sazetku ture (lokalna ponoc!); tap otvara sazetak same etape -
+     svaki dan zadrzava svoje brojke i svoj replay (spec: intent). */
+  const box = document.getElementById("rsEtape");
+  if (!box) return;
+  if (!s || !s.tura || !s.etape || !s.etape.length) { box.hidden = true; box.innerHTML = ""; return; }
+  const dani = [];
+  for (const e of s.etape) {
+    const d = turaDan(turaEtapaPocetak(e));
+    if (!dani.length || dani[dani.length - 1].dan !== d) dani.push({ dan: d, etape: [] });
+    dani[dani.length - 1].etape.push(e);
+  }
+  box.innerHTML = '<div class="ret">Etape</div>' + dani.map((g, gi) =>
+    `<div class="rday">${gi + 1}. dan · ${new Date(g.dan).toLocaleDateString("sr-RS")}</div>` +
+    g.etape.map((e) => `<div class="reta" data-ts="${e.ts}" role="button" tabindex="0" aria-label="Otvori etapu: ${esc(e.naz)}"><span class="rn">${esc(e.naz)}</span><b>${e.km} km</b></div>`).join("")
+  ).join("");
+  box.hidden = false;
+  box._etape = s.etape;
+  box._tura = s;   // za "Nazad na turu" iz sazetka etape (listanje etapa ne sme svaki put od dnevnika - review 0.9.86)
+  if (!box._reg) {
+    box._reg = 1;
+    const otvori = (r) => {
+      const e = (box._etape || []).find((x) => x && String(x.ts) === r.dataset.ts);
+      if (e) { RIDE._turaNazad = box._tura; rideSumShow(e); }
+    };
+    box.addEventListener("click", (ev) => { const r = ev.target.closest(".reta"); if (r) { ev.stopPropagation(); otvori(r); } });
+    box.addEventListener("keydown", (ev) => {
+      if (ev.key !== "Enter" && ev.key !== " ") return;
+      const r = ev.target.closest(".reta"); if (r) { ev.preventDefault(); ev.stopPropagation(); otvori(r); }
+    });
+  }
+}
 /* dnevnik voznji: stopRide ga zove PRE ciscenja RIDE stanja; probe ispod 2 km se ne broje */
 function zabeleziVoznju() {
   // ishod (0.9.82 review): "upisano" | "kratka" (<2 km, dnevnik je ne prima po pravilu) | "nista" |
@@ -7924,10 +8332,11 @@ function zabeleziVoznju() {
       pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x && x[0] != null && x[2] > 0) : null,   // GDE si stajao (pin + let kamere iz sazetka); placeholder bez pozicije (0.9.83) ispada
       momLnL: LEAN.momL || null, momLnR: LEAN.momR || null,   // GDE je bio najveci nagib levo/desno - iz ISTOG garda koji pise maxL/maxR (0.9.82)
       kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
-    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; return "kratka"; }
+    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; RIDE.turaTs = null; return "kratka"; }
     const v0 = _zajCitaj("mr_voznje", []);
     const v = Array.isArray(v0) ? v0 : [];
-    v.unshift({ ts: Date.now(), naz, nazPoi, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
+    /* ts zapisa = ts sazetka (isti trenutak) - asinhrona preimena i tura-append ga traze po ts */
+    const rec = ({ ts: (RIDE.lastSummary && RIDE.lastSummary.ts) || Date.now(), naz, nazPoi, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
       kriv, maxK, avgK, lnL, lnR, lnChk, pauz,
       /* Trag i u dnevnik - gustina skalira sa duzinom (13.8.): 150 tacaka je za 373 km davalo
          korak od 2,5 km i pravolinijski crtez. Cilj ~455 m po tacki, plafon 800 (~17 KB po
@@ -7944,15 +8353,20 @@ function zabeleziVoznju() {
       momLnL: LEAN.momL ? [+LEAN.momL[0].toFixed(5), +LEAN.momL[1].toFixed(5), LEAN.momL[2]] : undefined,
       momLnR: LEAN.momR ? [+LEAN.momR[0].toFixed(5), +LEAN.momR[1].toFixed(5), LEAN.momR[2]] : undefined,
       pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x && x[0] != null && x[2] > 0).map((x) => [+x[0].toFixed(5), +x[1].toFixed(5), x[2]]) : undefined });
-    /* Upis sa tri odbrane od pune kvote (0.9.82 review): pun zapis -> proredjen trag -> minimalan
-       zapis BEZ traga i uzoraka. Bolje zapis bez crteza nego izgubljena voznja; a kad i to padne,
-       vozac dobija POSTENU poruku umesto lazne potvrde. */
-    let upis = _zajPisi("mr_voznje", v.slice(0, 20));
-    if (!upis && v[0] && v[0].trag && v[0].trag.length > 8) {
-      v[0].trag = v[0].trag.filter((_, i, a) => i % 2 === 0 || i === a.length - 1);
-      upis = _zajPisi("mr_voznje", v.slice(0, 20));
+    /* TURA (0.9.86): voznja startovana kao "Nastavi turu" (ili oporavljena sa turaTs u kontrolnoj
+       tacki) se lepi kao etapa na zapis iz najave. Zapis moze u medjuvremenu da nestane
+       (kvota/razdvajanje) - tada voznja ide zasebno, uz posten ton umesto tihog gutanja. */
+    let tura = null;
+    if (RIDE.turaTs) {
+      tura = turaDodajEtapu(v, RIDE.turaTs, rec);
+      if (!tura) { try { tihoObavestenje("Tura iz najave nije više u dnevniku - vožnja je upisana zasebno."); } catch (e) {} }
     }
-    if (!upis) { delete v[0].trag; delete v[0].smp; upis = _zajPisi("mr_voznje", v.slice(0, 20)); }
+    if (!tura) v.unshift(rec);
+    /* Upis kroz ZAJEDNICKI cap helper (0.9.86): dnevnikUpisi sece na 30, drzi ukupnu velicinu
+       (~2 MB) i pod kvotom tanji najveci trag pa smp - nikad agregate. Stara lestvica "proredjen
+       trag -> bez traga" zivi sada unutra, samo bira NAJVECI trag umesto slepo najnovijeg.
+       Bolje zapis bez crteza nego izgubljena voznja; a kad i to padne, POSTENA poruka. */
+    const upis = dnevnikUpisi(v);
     ishod = upis ? "upisano" : "neuspeh";
     if (RIDE.lastSummary) RIDE.lastSummary._upisano = upis;   // rsDt red ne sme da tvrdi "upisano u dnevnik" kad nije
     /* Naslov iz STVARNOG merenja (13.8., Boskov nalaz: kucao Jadriju iz Beograda, a meriti krenuo iz
@@ -7978,8 +8392,16 @@ function zabeleziVoznju() {
             rsPoiSet(novi, nazPoi);
           }
           const v2 = _zajCitaj("mr_voznje", []);
-          const moj = Array.isArray(v2) ? v2.find((x) => x.ts === tsMoje || x.naz === naz) : null;
-          if (moj) { moj.naz = novi; _zajPisi("mr_voznje", v2.slice(0, 20)); }
+          /* 0.9.86: zapis moze da zivi i kao ETAPA unutar ture (append put) - dnevnikNadji trazi
+             i kroz etape; upis nazad kroz cap-aware dnevnikUpisi (golo slice je seklo na stari cap).
+             Sveze ime etape osvezava i auto-ime ture (rucno ime se ne dira). */
+          let moj = dnevnikNadji(v2, tsMoje);
+          if (!moj && Array.isArray(v2)) { const m2 = v2.find((x) => x && !x.tura && x.naz === naz); if (m2) moj = { rec: m2, tura: null }; }
+          if (moj && moj.rec) {
+            moj.rec.naz = novi;
+            if (moj.tura && !moj.tura.nazRucno) moj.tura.naz = turaAutoNaz(moj.tura.etape || []);
+            dnevnikUpisi(v2);
+          }
         } catch (e) {}
       })();
     }
@@ -7995,13 +8417,14 @@ function zabeleziVoznju() {
         _zajPisi("mr_kolekcije", st);
       }
       if (RIDE.kisa) dodeliPriznanje("kisa");
-      shareToast(`Vožnja upisana: ${v[0].km} km, +${poeni}p` + (RIDE.kolCnt ? ` · kolekcije: ${RIDE.kolCnt} ${RIDE.kolCnt === 1 ? "nova tačka" : "nove tačke"}` : ""));
+      shareToast((tura ? `Etapa upisana u turu "${tura.naz}": ${rec.km} km, +${poeni}p` : `Vožnja upisana: ${rec.km} km, +${poeni}p`)
+        + (RIDE.kolCnt ? ` · kolekcije: ${RIDE.kolCnt} ${RIDE.kolCnt === 1 ? "nova tačka" : "nove tačke"}` : ""));
     } else {
       shareToast("Dnevnik je pun - vožnja NIJE upisana u dnevnik.");   // postena poruka umesto lazne potvrde (0.9.82 review)
     }
     for (const t of RIDE.kolProslave || []) shareToast(t);   // proslave odlozene sa voznje (pogled ne ide na ekran u krivini); poeni za njih su vec dodeljeni u voznji
   } catch (e) {}
-  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false;
+  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; RIDE.turaTs = null;
   return ishod;
 }
 /* ---- render sekcija taba Zajednica ---- */
@@ -8015,32 +8438,75 @@ function _vozUzorak() {   // preview=1: primer da dizajn ima sta da pokaze (nika
             pauzeNa: [[18.8514, 42.4019, 12], [18.9103, 42.4025, 6]],
             trag: [[18.7712,42.4247,18],[18.77854,42.42757,25],[18.78529,42.42936,31],[18.79097,42.42931,34],[18.79524,42.4272,33],[18.79799,42.42343,29],[18.79933,42.41886,23],[18.7996,42.41462,21],[18.79928,42.41172,27],[18.79896,42.41078,32],[18.79923,42.41185,34],[18.80057,42.41438,32],[18.80332,42.41738,27],[18.80759,42.41975,21],[18.81327,42.42055,23],[18.82002,42.41932,29],[18.82736,42.41617,33],[18.8347,42.41182,34],[18.84145,42.4073,31],[18.84713,42.40372,25],[18.8514,42.4019,18],[18.85415,42.40214,25],[18.85549,42.40414,31],[18.85576,42.40708,34],[18.85544,42.40985,33],[18.85512,42.41142,29],[18.85539,42.41107,23],[18.85673,42.40869,21],[18.85948,42.40474,27],[18.86375,42.40016,32],[18.86943,42.39605,34],[18.87618,42.3934,32],[18.88352,42.39276,27],[18.89086,42.39408,21],[18.89761,42.39674,23],[18.90329,42.39973,29],[18.90756,42.40192,33],[18.91031,42.40245,34],[18.91165,42.40092,31],[18.91192,42.39755,25],[18.9116,42.3931,18]] },
           { ts: Date.now() - 864e5, naz: "Beograd → Zlatibor", km: 192, min: 205, mov: 178, pauz: 22,
-            avgK: 65, maxK: 121, lnL: 28, lnR: 31, serp: 6, poeni: 216, kol: 0, kisa: false }];
+            avgK: 65, maxK: 121, lnL: 28, lnR: 31, serp: 6, poeni: 216, kol: 0, kisa: false },
+          // TURA (0.9.86): i preview pokazuje novi red/sazetak; gradi se kroz turaNapravi pa je po konstrukciji saglasna
+          turaNapravi([
+            { ts: Date.now() - 3 * 864e5, naz: "Beograd → Zlatibor", km: 230, min: 260, mov: 230, pauz: 20,
+              avgK: 60, maxK: 132, lnL: 30, lnR: 27, serp: 9, kriv: 64, poeni: 266, kol: 0, kisa: false,
+              momBrz: [19.9432, 43.9871], momLnL: [19.8514, 43.9412, 30], momLnR: [19.9021, 43.9633, 27],
+              trag: [[20.4612, 44.8125], [20.31, 44.62], [20.12, 44.41], [19.9432, 43.9871], [19.71, 43.73]],
+              smp: [{ t: 0, v: 0, ln: null }, { t: 3600, v: 82, ln: 12 }, { t: 9000, v: 68, ln: 21 }, { t: 15000, v: 55, ln: 9 }] },
+            { ts: Date.now() - 2 * 864e5, naz: "Zlatibor → Kotor", km: 214, min: 285, mov: 240, pauz: 30,
+              avgK: 54, maxK: 118, lnL: 34, lnR: 36, serp: 17, kriv: 88, poeni: 282, kol: 1, kisa: false,
+              momBrz: [19.2214, 43.1212], momLnL: [18.9103, 42.5533, 34], momLnR: [18.7712, 42.4247, 36],
+              pauzeNa: [[19.0982, 43.0871, 14]],
+              trag: [[19.71, 43.73], [19.4501, 43.3562], [19.2214, 43.1212], [18.9103, 42.5533], [18.7712, 42.4247]],
+              smp: [{ t: 0, v: 0, ln: null }, { t: 4200, v: 74, ln: 15 }, { t: 10800, v: 61, ln: 26 }, { t: 16500, v: 48, ln: 11 }] }])];
 }
 function renderVoznje(targetId, limit) {
   const box = document.getElementById(targetId || "jaVoznje");
   if (!box) return;
   let v = _zajCitaj("mr_voznje", []);
-  if (!v.length && ZAJ_PREVIEW) v = _vozUzorak();
+  let uzorak = false;
+  if (!v.length && ZAJ_PREVIEW) { v = _vozUzorak(); uzorak = true; }
   if (!v.length) {
     box.innerHTML = '<div class="stub">Završi prvu vožnju sa navigacijom i ovde ostaje zapis: kilometri, serpentine, poeni.</div>';
     return;
   }
   // V3 "tiket" redovi (Boskov izbor 6.8.): mirno, gusto, sve u redovima sa hairline razdvajanjem;
   // tap otvara pun sazetak (redovi su izgledali kao dugmad a nisu radili nista - Boskov nalaz 6.8.)
-  const list = v.slice(0, limit || 10);
-  box.innerHTML = list.map((r, i) => `<div class="vrow" data-vi="${i}" role="button" tabindex="0" aria-label="Otvori sažetak: ${esc(r.naz)}">
-    <div class="vl"><div class="vt">${esc(r.naz)}</div>
-      <div class="vs">${r.tip ? esc(r.tip) + " · " : ""}${new Date(r.ts).toLocaleDateString("sr-RS")}${r.kisa ? " · " + rIco("rain", 11) : ""}${r.kol ? " · kolekcija" : ""}</div></div>
+  /* TURA (0.9.86): red nosi data-ts umesto indeksa (spisak se sece i sortira - indeks bi posle
+     "Prikazi sve"/izbora otvarao POGRESNU voznju); rezim izbora za "Zaokruzi turu" potiskuje
+     otvaranje sazetka; eksplicitan limit (ulazak u tab) resetuje prikaz i izbor. */
+  if (limit != null) { box._limit = limit; box._sviPrikaz = false; box._selMode = false; box._sel = null; }
+  const sel = box._sel || (box._sel = new Set());
+  const selMode = !!box._selMode;
+  const list = v.slice(0, box._sviPrikaz ? DNEVNIK_CAP : (box._limit || 10));
+  box.innerHTML = list.map((r) => {
+    const ec = r.etapeCnt || (r.etape || []).length || 1;   // gard: "undefined etapa" ne sme na ekran (review 0.9.86)
+    return `<div class="vrow${selMode ? " selm" : ""}${selMode && sel.has(r.ts) ? " izabrana" : ""}" data-ts="${r.ts}" role="button" tabindex="0"${selMode ? ` aria-selected="${sel.has(r.ts)}"` : ""} aria-label="${selMode ? "Izaberi" : "Otvori sažetak"}: ${esc(r.naz)}">
+    ${selMode ? '<span class="vchk" aria-hidden="true"></span>' : ""}<div class="vl"><div class="vt">${esc(r.naz)}</div>
+      <div class="vs">${r.tura
+        ? `Tura · ${ec} ${plSrp(ec, "etapa", "etape", "etapa")}${r.dana > 1 ? ` · ${r.dana} dana` : ""} · ${turaOpseg(r)}`
+        : `${r.tip ? esc(r.tip) + " · " : ""}${new Date(r.ts).toLocaleDateString("sr-RS")}`}${r.kisa ? " · " + rIco("rain", 11) : ""}${r.kol ? " · kolekcija" : ""}</div></div>
     <div class="vr"><div class="vkm">${r.km}<small> km</small></div>
-      <div class="vx">${r.serp ? r.serp + " serp · " : ""}${r.lnL != null && (r.lnL || r.lnR) ? Math.max(r.lnL, r.lnR) + "° · " : ""}+${r.poeni}p</div></div>
-    <span class="vch"><svg viewBox="0 0 24 24" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg></span>
-  </div>`).join("");
+      <div class="vx">${r.serp ? r.serp + " serp · " : ""}${r.lnL != null && (r.lnL || r.lnR) ? Math.max(r.lnL, r.lnR) + "° · " : ""}${r.tura ? `${r.poeni}p ukupno` : `+${r.poeni}p`}</div></div>
+    ${selMode ? "" : '<span class="vch"><svg viewBox="0 0 24 24" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg></span>'}
+  </div>`; }).join("")
+  + (selMode
+    ? `<div class="vakcije"><button type="button" class="vakc glavna" data-vakc="spoji"${sel.size < 2 ? " disabled" : ""}>Spoji u turu${sel.size ? ` (${sel.size})` : ""}</button><button type="button" class="vakc" data-vakc="otkazi">Otkaži</button></div>`
+    : ((v.length > list.length || (!uzorak && v.length >= 2))
+      ? `<div class="vakcije">${v.length > list.length ? `<button type="button" class="vakc" data-vakc="sve">Prikaži sve (${v.length})</button>` : ""}${!uzorak && v.length >= 2 ? '<button type="button" class="vakc" data-vakc="tura">Zaokruži turu</button>' : ""}</div>` : ""));
   box._voznje = list;
   box.onclick = (e) => {
+    const ak = e.target.closest(".vakc");
+    if (ak) {
+      const a = ak.dataset.vakc;
+      if (a === "sve") { box._sviPrikaz = true; renderVoznje(targetId); }
+      else if (a === "tura") { box._selMode = true; box._sel = new Set(); box._sviPrikaz = true; renderVoznje(targetId); }   // izbor uvek nad CELIM spiskom
+      else if (a === "otkazi") { box._selMode = false; box._sel = new Set(); renderVoznje(targetId); }
+      else if (a === "spoji") turaZaokruziUI(box, targetId);
+      return;
+    }
     const row = e.target.closest(".vrow"); if (!row) return;
-    const s = box._voznje && box._voznje[+row.dataset.vi];
-    if (s) rideSumShow(s);
+    const ts = +row.dataset.ts;
+    if (box._selMode) {   // rezim izbora: tap bira, NE otvara
+      if (sel.has(ts)) sel.delete(ts); else sel.add(ts);
+      renderVoznje(targetId);
+      return;
+    }
+    const s = box._voznje && box._voznje.find((x) => x && x.ts === ts);
+    if (s) rideSumShow(s.tura ? turaSum(s) : s);   // tura kroz READ adapter: sastavljen trag/replay/GPX
   };
   box.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { const row = e.target.closest(".vrow"); if (row) { e.preventDefault(); box.onclick(e); } } };
 }
@@ -8138,8 +8604,11 @@ function renderJaProfil() {
     return;
   }
   const oveN = p.nedelje[isoNedelja(Date.now())] || 0;
+  /* TURA (0.9.86): tura je JEDAN slot dnevnika ali broji SVOJE etape - covek je vozio 15 puta,
+     ne jednom; km je vec tacan (agregat na zapisu ture, bez duplog brojanja) */
+  const brV = v.reduce((n, r) => n + (r && r.tura ? (r.etapeCnt || (r.etape || []).length || 1) : 1), 0);
   box.innerHTML = `<div class="jrow"><span>Poeni</span><b>${p.ukupno.toLocaleString("sr-RS")}${oveN ? " (+" + oveN + " ove nedelje)" : ""}</b></div>
-    <div class="jrow"><span>Vožnje sa navigacijom</span><b>${v.length}${ukKm ? " · " + ukKm + " km" : ""}</b></div>
+    <div class="jrow"><span>Vožnje sa navigacijom</span><b>${brV}${ukKm ? " · " + ukKm + " km" : ""}</b></div>
     ${ima.length ? '<div class="jpriz">' + ima.map((k) => `<span>${rIco("medal", 13)} ${esc(PRIZNANJA[k])}</span>`).join("") + "</div>"
                  : '<div class="jnote" style="margin-top:8px">Priznanja se otključavaju vožnjom - sama će se pojaviti ovde.</div>'}`;
   proveriPotvrde();
@@ -9156,8 +9625,16 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.85";
+const APP_VERSION = "0.9.86";
 const CHANGELOG = [
+  { v: "0.9.86", d: "25.08.2026.", stavke: [
+    "<b>Zaokruži turu.</b> Jedna fizička tura vožena u više delova (pumpa pre pozadinskog GPS-a, višednevna tura Beograd → Nordkap) sada u dnevniku živi kao JEDNA tura sa etapama: svaka etapa čuva svoje brojke i svoj replay, a tura nosi zbir kilometara, broj dana, ceo sastavljen trag, replay i jednu karticu za deljenje. U dnevniku: \"Zaokruži turu\" spaja izabrane vožnje (izbor po dva tapa), \"Razdvoji turu\" ih vraća tačno kakve su bile - uz pošteno upozorenje ako bi povratak preko kapaciteta izbacio najstarije zapise.",
+    "<b>\"Nastavljaš turu?\"</b> Kad novi start počinje do 5 km od kraja prethodne vožnje, a od nje nije prošlo više od 20 sati, aplikacija pita pre polaska: Nastavi turu (vožnja se lepi kao etapa - i ako iOS ubije aplikaciju usred vožnje) ili Nova vožnja. A posle vožnje koja liči na nastavak stiže tiho obaveštenje i dugme \"Dodaj u turu\" u sažetku.",
+    "Pošteno knjigovodstvo ture: razmak istog dana od 3+ minuta knjiži se kao pauza SA mestom (kraj traga prethodne etape); noć između etapa se NIKAD ne knjiži kao pauza. Prosek je uvek km / vreme u pokretu (nikad prosek proseka); najveći nagib i najbrža tačka nose i svoje pravo mesto - iz etape koja ih drži. Poeni, kolekcije i priznanja se pri spajanju i razdvajanju NE diraju (etape su ih već zaradile - tura prikazuje zbir), lični rekordi ture ignorišu (zbir 15 dana nije \"najduža vožnja\"), a profil broji etape kao vožnje.",
+    "Dnevnik prima 30 zapisa (do sada 20), dobio je \"Prikaži sve\" i sam se brani od prepunjavanja: pod pritiskom prvo proređuje najveći crtež traga, pa grafik brzine - nikad brojke.",
+    "Višednevna tura se prikazuje ljudski: opseg datuma, \"15 dana\", etape po danima u sažetku (tap otvara sažetak etape, \"Nazad na turu\" vraća) - trajanje nikad ne piše hiljade minuta.",
+    "Posle pregleda (3 pregledača): trag ture je POŠTENO isprekidan - svaka etapa svoja linija na mapi, u GPX-u svoj segment, na kartici svoj potez; razmak između etapa se nikad ne premošćava pravom linijom. Nastavak postojeće ture pita i posle dana odmora (48 h; prvi spoj ostaje 20 h). Lični rekordi vide i vožnje unutar tura - spajanje nikad ne skraćuje istoriju rekorda."
+  ] },
   { v: "0.9.85", d: "24.08.2026.", stavke: [
     "<b>Kombinovana je sada podrazumevana ruta.</b> Tvoja presuda: kombinovana, pa vijugava, pa najbrža. Kad prihvaćena kombinacija postoji, ona je PRVA kartica i unapred izabrana - sažetak, pilula na mapi i Kreni idu na nju, a najbrža je uvek poslednja kartica; i \"Stigni do\" bira polazak po njoj (po podrazumevanoj ruti). Bez kombinacije je sve tačno kao do sada (vijugava ostaje podrazumevana); gradska relacija i dalje bira najbržu, povratni krug ostaje bez kombinovane.",
     "<b>Sve 63 dobre deonice su u igri.</b> Tvoja presuda \"ubaci svih 63 deonica\": pravilo svežine (\"ocena od pre zime\") više NE isključuje deonicu iz izbora za kombinovanu - isključivalo je 37 od 63 kvalitetnih, pa su celi krajevi (Kopaonik) ostajali bez ijednog kandidata. Svežina i dalje pošteno utiče na REDOSLED: kandidat sa ocenom od pre zime nosi score × 0,85, pa sveža deonica pobeđuje inače jednaku staru. Poštenje o starosti ostaje na kartici Stanje puta: uz staru ocenu i dalje piše \"pre zime\".",
@@ -11650,6 +12127,52 @@ function disclaimerOK(nastavi) {
   el._nastavi = nastavi;
   return false;
 }
+/* TURA - ulaz 1 (0.9.86): "Nastavljas turu?" pre starta voznje, obrazac disclaimerOK. Vraca true
+   kad sme odmah da se krene (nema kandidata / sheeta / upravo odgovoreno); false kad je pitanje
+   upravo prikazano - pozivalac prekida, a oba dugmeta (i tap na pozadinu = "Nova voznja") zovu
+   pozivaoca ponovo. Kandidat: POSLEDNJI zapis dnevnika, kraj traga <=5 km od najbolje poznate
+   pozicije (geoRef: ziv GPS / kucni puck / poslednja pozicija) i kraj <=20 h unazad - turaKandidat;
+   zapis bez traga (kvota ga odnela) NIKAD ne pita. "Nastavi" ostavlja ts zapisa u RIDE._turaNastavi -
+   start ga preuzima u RIDE.turaTs POSLE svog reseta stanja. */
+function turaPitaj(nastavi) {
+  try {
+    if (RIDE._turaOdgovoreno) { RIDE._turaOdgovoreno = false; return true; }   // upravo odgovoreno sa sheeta - kreni
+    RIDE._turaNastavi = null;
+    const el = document.getElementById("turaSheet");
+    if (!el) return true;
+    const v = _zajCitaj("mr_voznje", []);
+    const z = Array.isArray(v) ? v[0] : null;
+    const p = geoRef();
+    if (!z || !p || p.lat == null || !turaKandidat(z, Date.now(), p.lon, p.lat)) return true;
+    const tx = document.getElementById("turaPitTxt");
+    if (tx) tx.innerHTML = `Krećeš blizu mesta gde se završila <b>${esc(z.naz || "prethodna vožnja")}</b>. Nastavljaš je kao turu?`;
+    if (!el._vez) {
+      el._vez = true;
+      const odgovori = (ts) => {
+        el.hidden = true;
+        RIDE._turaOdgovoreno = true; RIDE._turaNastavi = ts;
+        const f = el._nastavi; el._nastavi = null;
+        if (typeof f === "function") setTimeout(f, 60);
+      };
+      const da = document.getElementById("turaDa"), ne = document.getElementById("turaNe");
+      if (da) da.addEventListener("click", () => odgovori(el._ts));
+      if (ne) ne.addEventListener("click", () => odgovori(null));
+      const bk = el.querySelector(".back");
+      /* Tap na pozadinu = ODUSTANI OD CELOG STARTA (standardni dismiss gest, review 0.9.86):
+         nista se ne pokrece, covek tapne Kreni ponovo kad bude spreman. Odgovore Nastavi/Nova
+         nose ISKLJUCIVO dva dugmeta. */
+      if (bk) bk.addEventListener("click", () => { el.hidden = true; el._nastavi = null; turaPromptPonisti(); });
+    }
+    el._ts = z.ts; el._nastavi = nastavi; el.hidden = false;
+    return false;
+  } catch (e) { return true; }
+}
+function turaPromptPonisti() {
+  /* Rucni zastoj rukovanja prompt->start: odgovor sa sheeta vazi SAMO za start koji ga je pitao.
+     Zove se sa pozadinskog dismissa i sa SVAKOG ranog izlaza starta pre turaPitaj - kasnija,
+     nepovezana voznja ne sme da se zalepi na staru turu (review 0.9.86). */
+  RIDE._turaOdgovoreno = false; RIDE._turaNastavi = null;
+}
 /* Kartica sa navigacijom raste i pada (Zatim, najava, upozorenje o vremenu), a dugmad ispod nje
    su bila na fiksnoj visini pa su se pribijala uz nju. Merimo je i upisujemo u --navcard-h. */
 function navCardVisina() {
@@ -12122,18 +12645,21 @@ function rmrGpsSignal(cmd) {
   } catch (e) {}
 }
 function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ rute - trag/km/brzina/nagib/kolekcije, bez instrukcija
-  if (!disclaimerOK(startFreeRide)) return;   // jednom, pre prve voznje
+  // svaki rani izlaz PRE turaPitaj cisti rukovanje prompta - odgovor ne sme da prezivi u kasniju voznju (review 0.9.86)
+  if (!disclaimerOK(startFreeRide)) { turaPromptPonisti(); return; }   // jednom, pre prve voznje
   // sazetak PRETHODNE voznje ne sme da ostane preko nove (Boskov nalaz sa puta 10.8.)
   try { if (window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
   try { if (typeof zajModeOff === "function") zajModeOff("mapa"); } catch (e) {}   // u voznji nema bottomnav-a, pa ni izlaza iz rezima
-  if (document.body.classList.contains("riding")) return;
-  if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
+  if (document.body.classList.contains("riding")) { turaPromptPonisti(); return; }
+  if (!navigator.geolocation) { turaPromptPonisti(); alert("Lokacija nedostupna na ovom uređaju."); return; }
+  if (!turaPitaj(startFreeRide)) return;   // TURA ulaz 1 (0.9.86): "Nastavljas turu?" - dugmad zovu start ponovo
   try { homeLocHide(); } catch (e) {}
   try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
   rideSensorsInit();
   document.body.classList.remove("planning"); document.body.classList.add("riding", "freeride");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.freeRide = true; RIDE.freeNaz = null; RIDE.nav = null; RIDE.route = null; RIDE.total = 0;
+  RIDE.turaTs = RIDE._turaNastavi || null; RIDE._turaNastavi = null;   // TURA (0.9.86): odgovor sa sheeta prezivljava reset - voznja ce se zalepiti kao etapa
   RIDE._flim = null; RIDE._flimV = 0;   // svež limit-stroj (znak prošle vožnje ne sme da preživi)
   RIDE._fwx = null;   // sveza kisna najava
   RIDE.offCount = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
@@ -12276,12 +12802,14 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
 }
 function startRide() {
   const route = (typeof state !== "undefined" && state.routes) ? state.routes[state.selected] : null;
-  if (!route) return;
-  if (!disclaimerOK(startRide)) return;   // jednom, pre prve voznje
+  // svaki rani izlaz PRE turaPitaj cisti rukovanje prompta - odgovor ne sme da prezivi u kasniju voznju (review 0.9.86)
+  if (!route) { turaPromptPonisti(); return; }
+  if (!disclaimerOK(startRide)) { turaPromptPonisti(); return; }   // jednom, pre prve voznje
   // sazetak PRETHODNE voznje ne sme da ostane preko nove (Boskov nalaz sa puta 10.8.)
   try { if (window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
   try { if (typeof zajModeOff === "function") zajModeOff("mapa"); } catch (e) {}   // u voznji nema bottomnav-a, pa ni izlaza iz rezima
-  if (!navigator.geolocation) { alert("Lokacija nedostupna na ovom uređaju."); return; }
+  if (!navigator.geolocation) { turaPromptPonisti(); alert("Lokacija nedostupna na ovom uređaju."); return; }
+  if (!turaPitaj(startRide)) return;   // TURA ulaz 1 (0.9.86): i navigaciona voznja ume da bude etapa ture
   try { homeLocHide(); } catch (e) {}   // u voznji navigacioni marker preuzima; kucni puck + watch se gase
   try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
   rideSensorsInit();
@@ -12294,6 +12822,7 @@ function startRide() {
     .forEach((a) => a.classList.remove("maplibregl-compact-show")); } catch (e) {}
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
+  RIDE.turaTs = RIDE._turaNastavi || null; RIDE._turaNastavi = null;   // TURA (0.9.86): odgovor sa sheeta prezivljava reset - voznja ce se zalepiti kao etapa
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false;   // dnevnik voznje + kolekcije
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
   RIDE._stajeOd = null;   // ostaci prethodne voznje: stari trenutak stajanja bi "Drugu rutu" upalio na startu
@@ -12623,6 +13152,7 @@ function voznjaCkpSnimak(cilj) {   // snimak tekuce voznje (cist objekat - testi
     momR: LEAN.momR ? [+LEAN.momR[0].toFixed(5), +LEAN.momR[1].toFixed(5), LEAN.momR[2]] : null,
     pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x && x[0] != null && x[2] > 0).map((x) => [+x[0].toFixed(5), +x[1].toFixed(5), x[2]]) : null,   // placeholder bez pozicije (0.9.83) ne sme u snimak
     kisa: !!RIDE.kisa, kolCnt: RIDE.kolCnt || 0,   // bedz kise i brojac kolekcija ne smeju da nestanu sa oporavkom (0.9.82 review)
+    turaTs: RIDE.turaTs || null,   // TURA (0.9.86): iOS kill USRED etape - oporavljena voznja mora da nadje svoju turu
     leanChk: (RIDE.leanChk && RIDE.leanChk.n) ? { n: RIDE.leanChk.n, sum: Math.round((RIDE.leanChk.sum || 0) * 10) / 10 } : null,
     trag: mk(cilj || 800),
     smp: (RIDE.samples && RIDE.samples.length > 1)
@@ -12643,6 +13173,7 @@ function voznjaCkpHidrat(snap) {   // snimak -> RIDE/LEAN stanje, spremno za zab
   RIDE.samples = (snap.smp || []).map((x) => ({ t: x.t, v: x.v, ln: x.ln != null ? x.ln : null }));
   RIDE.momBrz = snap.momBrz || null;
   RIDE.kolCnt = snap.kolCnt || 0; RIDE.kisa = !!snap.kisa;   // oporavljena voznja zadrzava kisu i kolekcije (0.9.82 review)
+  RIDE.turaTs = snap.turaTs || null;   // TURA (0.9.86): oporavljena etapa se i dalje lepi na svoju turu
   RIDE.leanChk = (snap.leanChk && snap.leanChk.n) ? { n: snap.leanChk.n, sum: snap.leanChk.sum || 0 } : null;
   RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = [];
   LEAN.momL = snap.momL || null; LEAN.momR = snap.momR || null;
@@ -12732,10 +13263,11 @@ function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne 
      ne laznu potvrdu. */
   if (sacuvano) { obrisi(); shareToast("Vožnja je sačuvana u dnevnik (" + km + " km)."); }
   else shareToast("Upis u dnevnik NIJE uspeo - vožnja ostaje sačuvana, pitaću te ponovo pri sledećem pokretanju.");
+  try { turaPredlog(sacuvano ? "upisano" : "nista", true); } catch (e) {}   // TURA ulaz 3 (0.9.86): tihi predlog i posle oporavka - poruka obecava SAMO dnevnik (sazetka ovde nema)
   // hidrirano stanje ne sme da procuri u sledecu pravu voznju
   RIDE.t0 = null; RIDE.freeRide = false; RIDE.freeNaz = null; RIDE.trace = []; RIDE.samples = [];
   RIDE.trkM = 0; RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.pauseMs = 0; RIDE.pauzeNa = null; RIDE.momBrz = null;
-  RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.leanChk = null;
+  RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.leanChk = null; RIDE.turaTs = null;
   leanReset();
 }
 function stopRide() {
@@ -12743,8 +13275,8 @@ function stopRide() {
   /* Kontrolna tacka se brise SAMO kad je dnevnik potvrdjen (0.9.82 review): "upisano" ili legitimno
      "kratka"/"nista". Pad upisa (puna kvota) ili izuzetak -> tacka OSTAJE, pa sledece pokretanje
      ponovo ponudi cuvanje - voznja ne sme da nestane nemo. */
-  let dnevnikOk = false;
-  try { dnevnikOk = zabeleziVoznju() !== "neuspeh"; } catch (e) {}
+  let dnevnikOk = false, vozIshod = "nista";
+  try { vozIshod = zabeleziVoznju(); dnevnikOk = vozIshod !== "neuspeh"; } catch (e) {}
   if (dnevnikOk) { try { voznjaCkpObrisi(); } catch (e) {} }
   setTimeout(() => { try { if (HOMELOC.fix) homeLocSet(HOMELOC.fix.lat, HOMELOC.fix.lon, HOMELOC.fix.acc); homeLocStart(); } catch (e) {} }, 400);   // kucni puck se vraca posle voznje
   try {   // crna kutija u localStorage - "Izvezi dnevnik navigacije" cita odavde i posle restarta app-a
@@ -12771,14 +13303,15 @@ function stopRide() {
   try { speechSynthesis.cancel(); } catch (e) {}
   try { if (RIDE.lock) { RIDE.lock.release(); RIDE.lock = null; } } catch (e) {}
   document.body.classList.remove("riding", "freeride", "ridepaused");
-  RIDE.freeRide = false; RIDE.freeNaz = null; RIDE.paused = false; RIDE.pauseT0 = null; RIDE.pauseMs = 0; RIDE.pauzeNa = null;
+  RIDE.freeRide = false; RIDE.freeNaz = null; RIDE.paused = false; RIDE.pauseT0 = null; RIDE.pauseMs = 0; RIDE.pauzeNa = null; RIDE.turaTs = null;
   RIDE.pauseAuto = false; RIDE._pauzaCkpT = 0; RIDE._pauzaPitajOd = 0; RIDE._haosOd = 0; RIDE._haosT = 0; RIDE._pauzaRazlog = null; RIDE._pauzaIdx = null; RIDE._resumeCnt = 0;   // auto-pauza stroj se gasi sa voznjom (0.9.83)
   try { const pb = document.getElementById("ridePause"); if (pb) { pb.classList.remove("on"); pb.innerHTML = RIDE_PAUSE_SVG; } } catch (e) {}
   try { const pl = document.querySelector("#rideBarBottom .pill"); if (pl) pl.classList.remove("lon", "lact"); } catch (e) {}
+  try { turaPredlog(vozIshod); } catch (e) {}   // TURA ulaz 3 (0.9.86): tihi predlog PRE sazetka - dugme "Dodaj u turu" nosi radnju
   try { rideSumShow(); } catch (e) {}   // sazetak voznje (nagib/krivine/brzine) - posle skidanja riding klase
 }
 /* ---- Sazetak voznje na kraju (Boskov zahtev 5.8.): sve metrike + deljenje ---- */
-function rsTracePath(pts, w, h, pad) {   // normalizovan SVG path GPS traga (aspekt sacuvan, centriran); pad = broj ili {t,r,b,l}
+function rsTracePath(pts, w, h, pad, segs) {   // normalizovan SVG path GPS traga (aspekt sacuvan, centriran); pad = broj ili {t,r,b,l}; segs = etape ture (podpath po etapi)
   if (!pts || pts.length < 2) return null;
   const PD = typeof pad === "object" ? pad : { t: pad, r: pad, b: pad, l: pad };
   let loMin = 1e9, loMax = -1e9, laMin = 1e9, laMax = -1e9, laSum = 0;
@@ -12789,7 +13322,14 @@ function rsTracePath(pts, w, h, pad) {   // normalizovan SVG path GPS traga (asp
   const sc = Math.min((w - PD.l - PD.r) / dx, (h - PD.t - PD.b) / dy);
   const ox = PD.l + (w - PD.l - PD.r - dx * sc) / 2, oy = PD.t + (h - PD.t - PD.b - dy * sc) / 2;
   const P = pts.map((p) => [ox + (p[0] - loMin) * mlat * sc, oy + (laMax - p[1]) * sc]);
-  return { d: "M" + P.map((q) => q[0].toFixed(1) + "," + q[1].toFixed(1)).join(" L"), a: P[0], b: P[P.length - 1] };
+  const fmt = (q) => q[0].toFixed(1) + "," + q[1].toFixed(1);
+  let d;
+  if (segs && segs.length > 1) {   // tura: "M" po etapi - bez ravne spojnice preko rupe (0.9.86 review)
+    const delovi = []; let i = 0;
+    for (const g of segs) { if (g.length > 1) delovi.push("M" + P.slice(i, i + g.length).map(fmt).join(" L")); i += g.length; }
+    d = delovi.join(" ");
+  } else d = "M" + P.map(fmt).join(" L");
+  return { d, a: P[0], b: P[P.length - 1] };
 }
 /* Odlazak na tacku iz sazetka: sazetak se skuplja u traku (da se mapa vidi), kamera odleti
    na mesto i kratko se javi sta je tu bilo. Boskov zahtev sa puta: "zelim da vidim GDE". */
@@ -12945,11 +13485,14 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
         });
       } catch (e) {}
     }
-    map.addSource("sumtrag", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: pts } } });
+    /* TURA (0.9.86 review): svaka etapa je SVOJA linija (MultiLineString) - izmedju udaljenih
+       etapa NEMA ravne spojnice ("leta"); obicna voznja je jedan segment, crtez identican. */
+    const segs = tragSegmenti(s);
+    map.addSource("sumtrag", { type: "geojson", data: { type: "Feature", geometry: { type: "MultiLineString", coordinates: segs } } });
     map.addLayer({ id: "sumtrag-cas", type: "line", source: "sumtrag", layout: { "line-cap": "round", "line-join": "round" },
       paint: { "line-color": "#7c2d0a", "line-width": 9, "line-opacity": .6 } });
-    // najvijugavija deonica = PLAVI OREOL ISPOD traga (9.8.): iznad ostaje citljiva boja nagiba
-    const b3 = best3km(pts);
+    // najvijugavija deonica = PLAVI OREOL ISPOD traga (9.8.): iznad ostaje citljiva boja nagiba; racuna se PO etapi (prozor ne prelazi sav)
+    const b3 = best3kmSeg(segs);
     if (b3) {
       map.addSource("sumtrag-best", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: pts.slice(b3.a, b3.b + 1) } } });
       map.addLayer({ id: "sumtrag-bestln", type: "line", source: "sumtrag-best", layout: { "line-cap": "round", "line-join": "round" },
@@ -12958,7 +13501,8 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
     // 9.8. (Boskov zahtev "gde je tacka obaranja i koji ugao"): trag obojen PO NAGIBU, deonicu po deonicu
     const imaNagib = pts.some((p) => p.length > 2 && p[2] != null);
     if (imaNagib) {
-      map.addSource("sumtrag-nagib", { type: "geojson", data: { type: "FeatureCollection", features: _sumNagibFeats(pts) } });
+      // nagib-segmenti PO etapi: par preko sava dve etape bi nacrtao obojenu spojnicu preko rupe (0.9.86 review)
+      map.addSource("sumtrag-nagib", { type: "geojson", data: { type: "FeatureCollection", features: segs.flatMap((g) => _sumNagibFeats(g)) } });
       map.addLayer({ id: "sumtrag-nag", type: "line", source: "sumtrag-nagib", layout: { "line-cap": "round", "line-join": "round" },
         paint: { "line-color": ["get", "c"], "line-width": 5 } });
     } else {
@@ -13003,10 +13547,16 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
 }
 function licniRekord(s) {   // poredjenje SAMO sa sopstvenom istorijom (Boskova odluka: bez javnog ranga)
   try {
+    if (s && s.tura) return null;   // TURA (0.9.86): tura NIJE rekord-kandidat - etape su vec konkurisale svaka za sebe
     const sve = _zajCitaj("mr_voznje", []);
     if (!Array.isArray(sve)) return null;
-    const upisana = (s.km || 0) > 2;   // kratke probe se ne upisuju u dnevnik pa je [0] tudja
-    const ist = upisana ? sve.slice(1) : sve;
+    const upisana = (s.km || 0) > 2;   // kratke probe se ne upisuju u dnevnik pa se sveza voznja iskljucuje iz bazena samo kad je stvarno upisana
+    /* Bazen poredjenja = SVE pojedinacne voznje UKLJUCUJUCI etape unutar tura (spajanje NIKAD ne
+       sme da skrati istoriju rekorda - inace bi voznja posle spajanja lazno tvrdila "Novi licni
+       rekord"); iskljucuje se samo tura-AGREGAT (zbir 15 dana nije "najduza voznja") i sama
+       sveza voznja po ts (review 0.9.86). */
+    const ist = sve.flatMap((x) => x && x.tura ? (x.etape || []) : [x])
+      .filter((x) => x && !x.tura && !(upisana && s.ts && x.ts === s.ts));
     if (ist.length < 3) return null;   // prvih par voznji bi uvek bile "rekord" - ne obezvredjuj bedz
     const maxLn = Math.max(s.lnL || 0, s.lnR || 0);
     const prevLn = Math.max(0, ...ist.map((v) => Math.max(v.lnL || 0, v.lnR || 0)));
@@ -13038,10 +13588,12 @@ function vozGpx(s) {   // izvoz voznje kao GPX (share sheet na telefonu, downloa
   if (!pts || pts.length < 2) { shareToast("Ova vožnja nema sačuvan GPS trag."); return; }
   const d = new Date(s.ts || Date.now());
   const naz = String(s.naz || "Vožnja").replace(/[<>&"]/g, "");
+  // tura: JEDAN <trkseg> PO ETAPI (0.9.86 review) - GPX standardno tako nosi prekide, alati ih ne spajaju pravom linijom
+  const segs = tragSegmenti(s);
   const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="RouteMeRight" xmlns="http://www.topografix.com/GPX/1/1">\n' +
-    `<trk><name>${naz} · ${d.toLocaleDateString("sr-RS")}</name><trkseg>\n` +
-    pts.map((p) => `<trkpt lat="${p[1].toFixed(6)}" lon="${p[0].toFixed(6)}"/>`).join("\n") +
-    "\n</trkseg></trk>\n</gpx>";
+    `<trk><name>${naz} · ${d.toLocaleDateString("sr-RS")}</name>\n` +
+    segs.map((g) => "<trkseg>\n" + g.map((p) => `<trkpt lat="${p[1].toFixed(6)}" lon="${p[0].toFixed(6)}"/>`).join("\n") + "\n</trkseg>").join("\n") +
+    "\n</trk>\n</gpx>";
   const blob = new Blob([xml], { type: "application/gpx+xml" });
   const file = new File([blob], "RMR-voznja-" + d.toISOString().slice(0, 10) + ".gpx", { type: "application/gpx+xml" });
   if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ files: [file] }).catch(() => {});
@@ -13057,7 +13609,10 @@ async function vozKaoRuta(s) {   // odvozena voznja -> ruta u planeru (map-snap 
   if (!pts || pts.length < 2) { shareToast("Ova vožnja nema sačuvan GPS trag."); return; }
   try { document.getElementById("rideSum").classList.remove("on"); } catch (e) {}
   sumTragSkini();
-  await importGpxCoords(pts, (s.naz || "Moja vožnja").split("·")[0].trim());
+  /* Tura (0.9.86 review): tacke idu iz SEGMENATA (sve etape), a ruter ih lepi na puteve - rupa
+     izmedju etapa postaje put, NIKAD prava linija; zato za turu sirovi (pravolinijski) fallback
+     ne sme (bezSirovog) - bolje posten neuspeh nego ruta sa "letom". */
+  await importGpxCoords(tragSegmenti(s).flat(), (s.naz || "Moja vožnja").split("·")[0].trim(), !!s.tura);
 }
 /* ---------------- Sažetak po maketi B (docs/sazetak-B.html - ugovor, 13.8.) ----------------
    Dve stvari koje su iz makete falile u aplikaciji: REČENICA VOŽNJE ("Najbolje ti je bilo...")
@@ -13154,7 +13709,8 @@ async function sumMaketa(s, pts, svez) {
     kand.push({ km: t.km, c: [lnMom[0], lnMom[1]], boja: "#38bdf8",
       b: `Legao ${lnMom[2]}° ${lnMom === s.momLnR ? "udesno" : "ulevo"}`, pod: "najdublje na celoj turi" });
   }
-  const b3 = imaTrag ? best3km(pts) : null;
+  // tura: prozor najvijugavije NIKAD preko sava dve etape (0.9.86 review)
+  const b3 = imaTrag ? best3kmSeg((s.tragSeg && s.tragSeg.length) ? s.tragSeg : [pts]) : null;
   if (b3) kand.push({ km: cum[b3.a], c: [pts[b3.a][0], pts[b3.a][1]], boja: "#FF6A00",
     b: "Najvijugavija tri kilometra", pod: "plavi oreol na mapi" });
   const prvaPauza = pz.filter((p) => !kodKafane.has(p)).sort((a, b) => (b[2] || 0) - (a[2] || 0))[0];
@@ -13354,20 +13910,40 @@ function rideSumShow(sIn) {
     : (!sIn && RIDE.route && RIDE.route.coords && RIDE.route.coords.length > 1 ? RIDE.route.coords : null);
   const naMapi = sumTragNaMapi({ ...s, trag: pts, _svez: !sIn });
   // 0.9.82: crtez po putevima stize asinhrono i zameni SAMO koordinate (raw ostaje kad snap padne)
-  if (naMapi && s.trag && s.trag.length > 3) { try { sumTragSnap(s, s.trag); } catch (e) {} }
+  // TURA se NE snapuje (0.9.86 review): snap bi rupu izmedju etapa premostio putem - lazna neprekidnost
+  if (naMapi && s.trag && s.trag.length > 3 && !s.tura) { try { sumTragSnap(s, s.trag); } catch (e) {} }
   el.classList.toggle("dim", !naMapi);   // bez mape iza (stari dnevnik zapisi): zatamni pozadinu, ne providi se profil
   if (sIn && naMapi) {   // zapis iz dnevnika SA tragom: predji na mapu da se trag vidi (tab ekran bi je prekrio)
     try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
     try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   }
   const rx = document.querySelector("#rideSum .rsxtra");
-  if (rx) rx.style.display = (pts && pts.length > 1) ? "" : "none";   // bez traga nema ni GPX/Sacuvaj dugmadi
+  const imaTragX = !!(pts && pts.length > 1);
+  if (rx) rx.style.display = (imaTragX || s.tura) ? "" : "none";   // bez traga nema GPX/Sacuvaj; tura i bez traga nosi Razdvoji/Preimenuj
+  const _bx = document.getElementById("rsGpx"); if (_bx) _bx.hidden = !imaTragX;
+  const _br2 = document.getElementById("rsRuta"); if (_br2) _br2.hidden = !imaTragX;
+  /* TURA (0.9.86): "Dodaj u turu" SAMO na svezem sazetku sa zivim predlogom (turaPredlog);
+     Razdvoji/Preimenuj SAMO na sazetku ture */
+  const _bt = document.getElementById("rsTura"); if (_bt) _bt.hidden = !(!sIn && RIDE._turaPredlogTs);
+  const _brz = document.getElementById("rsRazdvoji"); if (_brz) _brz.hidden = !s.tura;
+  const _bp = document.getElementById("rsPreim"); if (_bp) _bp.hidden = !s.tura;
+  /* "Nazad na turu" (0.9.86 review): SAMO na sazetku etape otvorenom IZ spiska etapa ture -
+     listanje etapa ne sme svaki put od dnevnika. Vazi za jedno otvaranje (flag se trosi). */
+  const _bn = document.getElementById("rsNazadTura");
+  if (_bn) {
+    el._turaNazad = (sIn && !s.tura && RIDE._turaNazad) ? RIDE._turaNazad : null;
+    _bn.hidden = !el._turaNazad;
+    if (rx && el._turaNazad) rx.style.display = "";   // i etapa bez traga mora da ima put nazad
+  }
+  RIDE._turaNazad = null;
   const _rel = document.getElementById("rsRel");
   _rel.textContent = s.naz;
   _rel.dataset.ts = String(s.ts || "");   // da asinhrono ime iz stvarnog traga zna da je ovo i dalje ta vožnja
   rsPoiSet(s.naz, s.nazPoi);
   const d = new Date(s.ts);
-  document.getElementById("rsDt").textContent = (s.tip ? s.tip + " · " : "") + d.toLocaleDateString("sr-RS") + " · " + d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" })
+  document.getElementById("rsDt").textContent = s.tura
+    ? (s.tip ? s.tip + " · " : "") + turaOpseg(s) + (s.dana > 1 ? ` · ${s.dana} dana` : "") + " · upisano u dnevnik"   // TURA: OPSEG datuma, ne jedan dan (0.9.86)
+    : (s.tip ? s.tip + " · " : "") + d.toLocaleDateString("sr-RS") + " · " + d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" })
     + (s.km >= 2 && s._upisano !== false ? " · upisano u dnevnik" : "");   // maketa B meta red; kratke probe se ne upisuju pa ni ne tvrde; ni pun dnevnik ne sme da tvrdi (0.9.82 review)
   /* Blok brojki po maketi B (13.8.): tacno dva reda.
      Red 1: pređeno · ukupno · u pokretu · pauza.  Red 2: najbrže · prosek (u pokretu) · levo° · desno°.
@@ -13380,7 +13956,8 @@ function rideSumShow(sIn) {
   const pz = (s.pauzeNa || []).filter((p) => p && p.length > 2);
   const R1 = [], R2 = [];
   R1.push([s.km, "km", "pređeno", (pts && pts.length > 1) ? "trag" : null]);
-  R1.push([hm(s.min), s.min >= 60 ? "" : "min", "ukupno"]);
+  if (s.tura && s.dana > 1) R1.push([`${s.dana} dana · ${Math.round((s.min || 0) / 60)} h`, "", "ukupno"]);   // visednevna tura: dani + sati, NIKAD hiljade minuta (0.9.86)
+  else R1.push([hm(s.min), s.min >= 60 ? "" : "min", "ukupno"]);
   if (s.mov) R1.push([hm(s.mov), s.mov >= 60 ? "" : "min", "u pokretu"]);
   if (s.pauz) R1.push([hm(s.pauz), s.pauz >= 60 ? "" : "min", "pauza", pz.length ? "pauza" : null]);
   if (s.maxK) R2.push([s.maxK, "km/h", "najbrže", s.momBrz ? "brz" : null]);
@@ -13437,8 +14014,9 @@ function rideSumShow(sIn) {
     }
     if (kolHtml) { ko.hidden = false; ko.innerHTML = kolHtml; } else ko.hidden = true;
   }
+  try { rsEtapeRender(s); } catch (e) {}   // TURA (0.9.86): etape po danima; za obicnu voznju se krije
   const tg = [];
-  if (s.poeni) tg.push(`<span class="pts">+${s.poeni} poena</span>`);
+  if (s.poeni) tg.push(`<span class="pts">${s.tura ? s.poeni + " poena ukupno" : "+" + s.poeni + " poena"}</span>`);   // tura: etape su poene VEC donele - "+" bi lagao novu dodelu (0.9.86)
   if (s.serp) tg.push(`<span>${s.serp} ${plSerp(s.serp)}</span>`);
   if (s.kriv) tg.push(`<span>${s.kriv} ${plSrp(s.kriv, "krivina", "krivine", "krivina")}</span>`);
   if (s.kol) tg.push(`<span>${s.kol} ${s.kol === 1 ? "nova tačka kolekcije" : "nove tačke kolekcija"}</span>`);
@@ -13482,7 +14060,7 @@ function buildRideCanvas(s, foto) {
     x.fillStyle = sg; x.fillRect(0, 0, W, H);
   }
   if (!foto && s.trag && s.trag.length > 1) {   // bez fotke: trag voznje PUN, u praznom donjem delu kartice (kao V1 ekran)
-    const tw = rsTracePath(s.trag, W - 2 * P, 330, 30);   // donji slobodni pojas: ex-red zavrsava ~816, footer linija na 1232
+    const tw = rsTracePath(s.trag, W - 2 * P, 330, 30, s.tragSeg);   // donji slobodni pojas: ex-red zavrsava ~816, footer linija na 1232; tura = podpath po etapi (0.9.86)
     if (tw) { try {
       x.save(); x.translate(P, 866);
       const p2 = new Path2D(tw.d);
@@ -13498,14 +14076,14 @@ function buildRideCanvas(s, foto) {
   let wx = P;
   for (const [t, c] of [["Route", "#f8fafc"], ["Me", "#FF6A00"], ["Right", "#f8fafc"]]) { x.fillStyle = c; x.fillText(t, wx, 118); wx += x.measureText(t).width; }
   x.fillStyle = "#94a3b8"; x.font = F(600, 26);
-  const tag = "odvožena tura";
+  const tag = s.tura ? "Tura · " + (s.dana || 1) + " " + plSrp(s.dana || 1, "dan", "dana", "dana") : "odvožena tura";   // 0.9.86: prava tura nosi broj dana
   x.fillText(tag, W - P - x.measureText(tag).width, 118);
   let fs = 68; x.font = F(800, fs);
   while (x.measureText(s.naz).width > W - 2 * P && fs > 30) { fs -= 2; x.font = F(800, fs); }
   x.fillStyle = "#f8fafc"; x.fillText(s.naz, P, 230);
   const d = new Date(s.ts);
   x.fillStyle = "#94a3b8"; x.font = F(600, 31);
-  x.fillText(d.toLocaleDateString("sr-RS") + " · " + d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" }), P, 288);
+  x.fillText(s.tura ? turaOpseg(s) : d.toLocaleDateString("sr-RS") + " · " + d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" }), P, 288);   // tura: opseg datuma (0.9.86)
   x.strokeStyle = "rgba(148,163,184,.22)"; x.lineWidth = 2;
   x.beginPath(); x.moveTo(P, 336); x.lineTo(W - P, 336); x.stroke();
   let y = 430;
@@ -13525,7 +14103,9 @@ function buildRideCanvas(s, foto) {
   }
   y += 210;
   const rows = [];   // samo IZMERENE vrednosti - crtice za prazno su izgledale polomljeno (QA 6.8.)
-  rows.push([s.min >= 60 ? Math.floor(s.min / 60) + " h " + (s.min % 60) : s.min + " min", "trajanje"]);
+  rows.push(s.tura && s.dana > 1
+    ? [s.dana + " " + plSrp(s.dana, "dan", "dana", "dana") + " · " + Math.round((s.min || 0) / 60) + " h", "trajanje"]   // visednevna tura: nikad hiljade minuta (0.9.86)
+    : [s.min >= 60 ? Math.floor(s.min / 60) + " h " + (s.min % 60) : s.min + " min", "trajanje"]);
   if (s.avgK) rows.push([s.avgK + " km/h", "prosek u pokretu"]);
   if (s.maxK) rows.push([s.maxK + " km/h", "max brzina"]);
   if (s.kriv) rows.push([String(s.kriv), plSrp(s.kriv, "krivina", "krivine", "krivina")]);
@@ -13786,7 +14366,12 @@ async function stplMapaCanvas(s) {   // feed 1080x1350: offscreen mapa snapshot 
   const trag0 = s.trag;
   if (!trag0 || trag0.length < 2) throw new Error("vožnja nema GPS trag");
   const hide = !!document.getElementById("stplHide").checked;
-  const trag = hide ? tragBezStarta(trag0, 500) : trag0;
+  /* Tura (0.9.86 review): segment po etapi i na deljivoj mapi - bez ravne spojnice preko rupe.
+     Privatnost starta (500 m) vazi za PRVU etapu - tu je kucni start. */
+  const segs0 = tragSegmenti({ ...s, trag: trag0 });
+  const segs = hide ? [tragBezStarta(segs0[0], 500), ...segs0.slice(1)].filter((g) => g && g.length > 1) : segs0;
+  if (!segs.length) throw new Error("vožnja nema GPS trag");
+  const trag = segs.flat();
   const W = 1080, H = 1350;
   const div = document.createElement("div");
   div.style.cssText = "position:fixed;left:-2000px;top:0;width:540px;height:675px;";
@@ -13799,7 +14384,7 @@ async function stplMapaCanvas(s) {   // feed 1080x1350: offscreen mapa snapshot 
     m.once("styledata", () => stplDarkify(m));
     await new Promise((res) => { const t = setTimeout(res, 9000); m.on("load", () => { clearTimeout(t); res(); }); });
     stplDarkify(m);
-    m.addSource("r", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: trag } } });
+    m.addSource("r", { type: "geojson", data: { type: "Feature", geometry: { type: "MultiLineString", coordinates: segs } } });
     m.addLayer({ id: "rc", type: "line", source: "r", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "rgba(6,11,22,.6)", "line-width": 9 } });
     m.addLayer({ id: "rl", type: "line", source: "r", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#FF6A00", "line-width": 5 } });
     const b = trag.reduce((bb, c) => bb.extend(c), new maplibregl.LngLatBounds(trag[0], trag[0]));
@@ -14052,6 +14637,15 @@ async function stplPodeli(kind) {
   if (gx) gx.addEventListener("click", () => { if (el._sum) vozGpx(el._sum); });
   const rt = document.getElementById("rsRuta");
   if (rt) rt.addEventListener("click", () => { if (el._sum) vozKaoRuta(el._sum); });
+  /* TURA (0.9.86): Dodaj u turu (svez sazetak, predlog iz turaPredlog) + Razdvoji/Preimenuj (sazetak ture) */
+  const tb = document.getElementById("rsTura");
+  if (tb) tb.addEventListener("click", () => turaDodajIzSazetka());
+  const rzb = document.getElementById("rsRazdvoji");
+  if (rzb) rzb.addEventListener("click", () => { if (el._sum && el._sum.tura) turaRazdvojiUI(el._sum.ts); });
+  const prb = document.getElementById("rsPreim");
+  if (prb) prb.addEventListener("click", () => { if (el._sum && el._sum.tura) turaPreimenujUI(el._sum.ts); });
+  const nzb = document.getElementById("rsNazadTura");
+  if (nzb) nzb.addEventListener("click", () => { const t = el._turaNazad; el._turaNazad = null; if (t) rideSumShow(t); });
   const _fb = document.getElementById("rsFoto"), _fi = document.getElementById("rsFotoIn");
   {
     const x = document.getElementById("rsFotoX");
