@@ -3908,7 +3908,11 @@ function kuriraniKandidati(vij, brza, bjp, radovi) {
     if (!d || !Array.isArray(d.coords) || d.coords.length < 2) continue;
     if (!(d.ocena >= 4) || !jake(d) || (nfc(d.asfalt) !== "Nov" && nfc(d.asfalt) !== "Dobar") || !(d.km >= 10)) continue;
     if (nfc(d.saobracaj).indexOf("Jak") === 0) continue;   // gust saobracaj pojede bas ono zbog cega se deonica bira
-    if (bjpStarost(d.mg)) continue;                        // ocena od pre zime: "Dobar od proslog leta je u aprilu laz"
+    /* Starost ocene NE iskljucuje kandidata (presuda 24.8.: "ubaci svih 63 deonica") - pravilo
+       svezine je 37 od 63 kvalitetnih deonica drzalo van igre, pa su celi krajevi (Kopaonik)
+       ostajali bez ijednog kandidata. SVEZINA i dalje vazi u RANGIRANJU (score x 0,85 za ocenu
+       od pre zime - sveza deonica pobedjuje inace jednaku staru), a postenje o starosti ostaje
+       tamo gde se VIDI: kartica "Stanje puta" uz staru ocenu i dalje pise "pre zime". */
     const c = d.coords;
     if (!uOkviru(c[0]) && !uOkviru(c[c.length - 1]) && !uOkviru(c[Math.floor(c.length / 2)])) continue;
     const pok = bjpPokrivenost(vij, c);
@@ -3918,8 +3922,9 @@ function kuriraniKandidati(vij, brza, bjp, radovi) {
     let pa, pb;
     try { pa = navProject(vij, c[0][0], c[0][1]); pb = navProject(vij, c[c.length - 1][0], c[c.length - 1][1]); }
     catch (e) { continue; }
-    let ulaz = { km: pa.d / 1000, off: pa.offM, v: [c[0][0], c[0][1]], ime: d.naziv, kuriran: true };
-    let izlaz = { km: pb.d / 1000, off: pb.offM, v: [c[c.length - 1][0], c[c.length - 1][1]], ime: d.naziv, kuriran: true };
+    const starost = bjpStarost(d.mg);   // nosi se na kandidatu i savovima za KASNIJI prikaz (odluka o UI je Boskova) + rangiranje
+    let ulaz = { km: pa.d / 1000, off: pa.offM, v: [c[0][0], c[0][1]], ime: d.naziv, kuriran: true, starost };
+    let izlaz = { km: pb.d / 1000, off: pb.offM, v: [c[c.length - 1][0], c[c.length - 1][1]], ime: d.naziv, kuriran: true, starost };
     if (izlaz.km < ulaz.km) { const t = ulaz; ulaz = izlaz; izlaz = t; }   // deonica crtana suprotno od smera rute
     // ista pravila kao filter u _seciNaStanicama, za OBA sava; par ciji se savovi skoro dodiruju ne sije nista
     if (ulaz.off >= 3000 || izlaz.off >= 3000) continue;
@@ -3928,8 +3933,10 @@ function kuriraniKandidati(vij, brza, bjp, radovi) {
     // ruta koja isti put prolazi DVAPUT (petlja, povratak istom dolinom) projektuje krajeve na dva
     // razlicita prolaza - raspon mnogo duzi od same deonice ne sme da forsira ceo taj luk kao "dobar"
     if (izlaz.km - ulaz.km > d.km * 1.5 + 5) continue;
-    // score: koliko lezi na koridoru x koliko je dobra x koliko je duga (plafon 40 km da dzin ne pojede sve)
-    out.push({ ime: d.naziv, score: pok * d.ocena * Math.min(d.km, 40), ulaz, izlaz, koord: c });
+    // score: koliko lezi na koridoru x koliko je dobra x koliko je duga (plafon 40 km da dzin ne pojede sve);
+    // ocena od pre zime x 0,85 - starost ne iskljucuje, ali svezina i dalje odlucuje kod jednakih
+    out.push({ ime: d.naziv, score: pok * d.ocena * Math.min(d.km, 40) * (starost ? 0.85 : 1),
+      mg: d.mg || null, starost, ulaz, izlaz, koord: c });
   }
   out.sort((a, b) => b.score - a.score);
   const top = out.slice(0, 2);
@@ -4093,6 +4100,39 @@ function kombinovanaPrihvatljiva(hyb, vij, brza) {
   return kuriran
     ? hyb.totalDur <= vij.totalDur && (hyb.totalDur <= brza.totalDur * 1.5 || hyb.totalDur < vij.totalDur * 0.9)
     : hyb.totalDur < vij.totalDur * 0.9;
+}
+/* Ubacivanje prihvacene kombinovane u spisak ruta (presuda 24.8.: "Kombinovana postaje
+   podrazumevana, pa vijugava pa najbrza"). Kombinovana ide na POCETAK spiska - preporuka za
+   Valhallu bira indeks 0 (preporucenaRuta), pa je bas ona podrazumevano izabrana kartica.
+   Najbrza mora ostati POSLEDNJA kartica i kad iza nje stoji dodatni izbor ("Predeli"), pa se
+   najbrza po VREMENU premesta na kraj (ne po labeli - dedup ume da preimenuje prezivelu).
+   Bez prihvacene kombinacije spisak se NE dira - ponasanje identicno 0.9.84. */
+function ubaciKombinovanu(uniq, hyb, vij, brza) {
+  if (!kombinovanaPrihvatljiva(hyb, vij, brza)) return false;
+  if (uniq.some((u) => Math.abs(u.totalDist - hyb.totalDist) < 500 && Math.abs(u.totalDur - hyb.totalDur) < 60)) return false;
+  uniq.splice(0, 0, hyb);
+  let naj = null;
+  for (const r of uniq) if (r !== hyb) {
+    if (!naj || r.totalDur < naj.totalDur) naj = r;
+    // nereseno na minimumu: kartica koja NOSI labelu "Najbrža" ide na kraj, ne slucajni pobednik po redosledu
+    else if (r.totalDur === naj.totalDur && String(r.label || "").startsWith("Najbrža") && !String(naj.label || "").startsWith("Najbrža")) naj = r;
+  }
+  if (naj && uniq[uniq.length - 1] !== naj) { uniq.splice(uniq.indexOf(naj), 1); uniq.push(naj); }
+  return true;
+}
+/* Preporucena (podrazumevano izabrana) varijanta: GRADSKA relacija = najbrza (Boskov zakon 9.8.);
+   moto stil (Valhalla) = indeks 0 - kombinovana kad postoji (presuda 24.8.), inace vijugava;
+   OSRM fallback = najmirnija pa najbrza. */
+function preporucenaRuta(routes, gradska, engine) {
+  if (!Array.isArray(routes) || !routes.length) return 0;
+  if (gradska) return routes.reduce((bi, r, i, a) => (r.totalDur < a[bi].totalDur ? i : bi), 0);
+  if (engine === "valhalla") {
+    const hi = routes.findIndex((r) => r && r.hibrid);   // eksplicitni marker, ne polozaj: kombinovana kad postoji
+    return hi >= 0 ? hi : 0;
+  }
+  return routes
+    .map((r, i) => ({ i, w: Math.max(0, ...(r.assess || []).map((a) => a.level)), d: r.totalDur }))
+    .sort((a, b) => a.w - b.w || a.d - b.d)[0].i;
 }
 /* Stil kojim se preracunava OSTATAK rute od zadatog kilometra. Ime kaze "na km", ali pitanje je
    uvek "cime dalje", jer reroute jednim pozivom pravi celu preostalu rutu do cilja.
@@ -4290,9 +4330,6 @@ async function fetchRoutes(from, to) {
       if (!dup) uniq.push(r);
       else if (r.label && r.label.startsWith("Najbrža")) dup.label = r.label;
     }
-    const _minT = Math.min(...uniq.map((r) => r.totalDur));   // "Najbrža" sme da pise samo ako je STVARNO najbrža (autoput ume da bude duži I sporiji)
-    for (const r of uniq) if (r.label && r.label.startsWith("Najbrža") && r.totalDur > _minT * 1.03)
-      r.label = r.hasHighway ? "Autoput" : "Alternativa";
     // pametna se stopila sa najbrzom (ravnica bez vijugave alternative na obodu): ponudi PUN "predeli" stil
     // kao dodatni IZBOR na kraju liste - vozac bira svesno, preporuka ostaje brza/pametna (Boskov zakon 9.8.)
     // SAMO kad je sivena ruta pojedena dedupom: u punStil grani je stil 0 vec dovucen, pa bi ovo bio bacen poziv (review 9.8.)
@@ -4319,11 +4356,15 @@ async function fetchRoutes(from, to) {
            hibrid 600 km / 10 h 54 sa 296 km krivina, prema autoputu 614 km / 10 h 16 bez ijedne.
            Odlicna ruta, izbacena zbog 38 minuta. Cela presuda sada zivi u kombinovanaPrihvatljiva
            (kurirana i geometrijska grana imaju razlicita vremenska pravila - vidi belesku tamo). */
-        if (kombinovanaPrihvatljiva(hyb, vz, brza)
-          && !uniq.some((u) => Math.abs(u.totalDist - hyb.totalDist) < 500 && Math.abs(u.totalDur - hyb.totalDur) < 60))
-          uniq.splice(Math.min(1, uniq.length), 0, hyb);   // odmah IZA vijugave: to je sredina, ne dodatak na kraju
+        if (hyb) ubaciKombinovanu(uniq, hyb, vz, brza);   // presuda 24.8.: prihvacena kombinovana na CELO (indeks 0 = podrazumevana), najbrza na kraj
       } catch (e) {}   // kombinacija je bonus: njen pad ne sme da odnese vec dobijene rute
     }
+    /* "Najbrža" sme da pise samo ako je STVARNO najbrža (autoput ume da bude duži I sporiji).
+       Provera ide nad KONACNIM spiskom - posle ubacivanja kombinovane (0.9.85 review): kombinacija
+       brza od "Najbrže" kartice ne sme da ostavi laznu labelu. */
+    const _minT = Math.min(...uniq.map((r) => r.totalDur));
+    for (const r of uniq) if (r.label && r.label.startsWith("Najbrža") && r.totalDur > _minT * 1.03)
+      r.label = r.hasHighway ? "Autoput" : "Alternativa";
     uniq._gradska = gradska;   // presuda putuje UZ rute - commit pod planSeq guardom u plan()
     return uniq;
   } catch (e) {
@@ -6591,7 +6632,12 @@ function vsNajbrza(route) {
        nijedna varijanta ne ide autoputem, pa bi to bila tvrdnja koju ne mozemo da potkrepimo - ista
        greska kao "vreme na svakom kilometru" iz 0.9.38. */
     const ap = /autoput/i.test(naj.label || "") || naj.tollKm > 0;
-    return ` (${h ? h + " h " : ""}${mn ? mn + " min" : ""} duže od ${ap ? "autoputa" : "najbrže rute"}, ali vijugavo)`;
+    /* Kombinovana nije "vijugavo" - dobar deo se vozi bas autoputem (0.9.85). Njena postena
+       odbrana broja je sastav: koliko kilometara se STVARNO vozi krivinama (krivKm).
+       ZAOKRUZENA vrednost se cuva - "ali 0 km krivina" ne sme da se pojavi. */
+    const kkm = Number.isFinite(route.krivKm) ? Math.round(route.krivKm) : 0;
+    const zasto = route.hibrid ? (kkm > 0 ? `ali ${kkm} km krivina` : "ali sa krivinama") : "ali vijugavo";
+    return ` (${h ? h + " h " : ""}${mn ? mn + " min" : ""} duže od ${ap ? "autoputa" : "najbrže rute"}, ${zasto})`;
   } catch (e) { return ""; }
 }
 function renderTimeline(assess) {
@@ -8832,7 +8878,8 @@ async function plan() {
       if (r.wxFail) { r.weather = null; logState({ phase: "wx-fail", msg: String(_wx[i].reason && _wx[i].reason.message || "").slice(0, 60) }); }
     });
     if (arriveMode) {
-      // "Stigni do": nađi najmirniji polazak koji stiže do cilja (nerešeno → kasniji = manje čekanja)
+      // "Stigni do": nađi najmirniji polazak koji stiže do cilja (nerešeno → kasniji = manje čekanja).
+      // Polazak se bira po RUTI 0 - od 0.9.85 je to kombinovana kad postoji (namerno: bira se po podrazumevanoj).
       const r0 = state.routes[0];
       const maxDur = Math.max(...state.routes.map((r) => r.totalDur));   // najduza varijanta odredjuje krajnji polazak - SVAKA ruta mora da stigne do cilja
       const latest = timeInput.getTime() - maxDur * 1000;
@@ -8850,12 +8897,8 @@ async function plan() {
     }
     state.routes.forEach((r) => { r.assess = assessRoute(r, departure); });
 
-    // preporuka: moto stil = vijugava; GRADSKA relacija = najbrza (Boskov zakon 9.8.); OSRM fallback najmirnija pa najbrza
-    state.recommended = state._gradska
-      ? state.routes.reduce((bi, r, i, a) => (r.totalDur < a[bi].totalDur ? i : bi), 0)
-      : state.engine === "valhalla" ? 0 : state.routes
-      .map((r, i) => ({ i, w: Math.max(...r.assess.map((a) => a.level)), d: r.totalDur }))
-      .sort((a, b) => a.w - b.w || a.d - b.d)[0].i;
+    // preporuka zivi u preporucenaRuta: indeks 0 za Valhallu = kombinovana kad postoji (presuda 24.8.), inace vijugava
+    state.recommended = preporucenaRuta(state.routes, state._gradska, state.engine);
     state.selected = state.recommended;
 
     // Fini model (2,3 km) i guscanje tacaka SAMO za rutu koja se prikazuje - ostale varijante
@@ -9113,12 +9156,17 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.84";
+const APP_VERSION = "0.9.85";
 const CHANGELOG = [
+  { v: "0.9.85", d: "24.08.2026.", stavke: [
+    "<b>Kombinovana je sada podrazumevana ruta.</b> Tvoja presuda: kombinovana, pa vijugava, pa najbrža. Kad prihvaćena kombinacija postoji, ona je PRVA kartica i unapred izabrana - sažetak, pilula na mapi i Kreni idu na nju, a najbrža je uvek poslednja kartica; i \"Stigni do\" bira polazak po njoj (po podrazumevanoj ruti). Bez kombinacije je sve tačno kao do sada (vijugava ostaje podrazumevana); gradska relacija i dalje bira najbržu, povratni krug ostaje bez kombinovane.",
+    "<b>Sve 63 dobre deonice su u igri.</b> Tvoja presuda \"ubaci svih 63 deonica\": pravilo svežine (\"ocena od pre zime\") više NE isključuje deonicu iz izbora za kombinovanu - isključivalo je 37 od 63 kvalitetnih, pa su celi krajevi (Kopaonik) ostajali bez ijednog kandidata. Svežina i dalje pošteno utiče na REDOSLED: kandidat sa ocenom od pre zime nosi score × 0,85, pa sveža deonica pobeđuje inače jednaku staru. Poštenje o starosti ostaje na kartici Stanje puta: uz staru ocenu i dalje piše \"pre zime\".",
+    "Rečenica poređenja s autoputem za kombinovanu više ne kaže \"ali vijugavo\" (dobar deo se vozi baš autoputem) - sada pošteno kaže koliko kilometara krivina nosi, npr. \"38 min duže od autoputa, ali 296 km krivina\"."
+  ] },
   { v: "0.9.84", d: "24.08.2026.", stavke: [
     "<b>Kombinovana ruta sada zna za dobre deonice.</b> Tvoja vizija: autoput + deo puta za koji se zna da je dobar za vožnju + autoput + deo + cilj. Do sada je kombinovana ruta sredinu birala samo po geometriji (\"ovde izgleda vijugavo\"); sada gleda i u bazu zajednice (230 ocenjenih deonica sa punim trasama) i deonicu odličnih krivina, ocene 4+ i dobrog asfalta uz koridor ubaci kao obavezan vijugavi komad. U sastavu rute piše ime deonice, npr. \"Golubac - Donji Milanovac (Dunavska magistrala) krivinama\". Biraju se najviše dve, i samo one koje najbrža ruta zaobilazi - deonica preko koje autoput ionako ide ne donosi ništa. Posle sastavljanja se i proveri da ruta STVARNO ide preko deonice - ime u sastavu nikad ne stoji bez pokrića.",
     "Kombinovana sa takvom deonicom se prikazuje čim nije sporija od vijugave (staro pravilo \"mora biti bar 10% brža\" ju je gušilo baš tamo gde vredi), uz plafon zdravog razuma prema najbržoj koji nikad nije stroži od starog pravila. Pokušava se i kad su vijugava i najbrža vremenski blizu, i već od 100 km relacije (do sada od 150 km). Bez takve deonice se sve ponaša tačno kao do sada.",
-    "Deonica se ne forsira kad podatak ne zaslužuje poverenje: gust (jak) saobraćaj, ocena od pre zime (\"Dobar od prošlog leta je u aprilu laž\") ili aktivni radovi/zatvaranje na njoj - taj plan ide bez nje. Tvoje usputne stanice uvek imaju prednost: kad je budžet komada tesan, ispada najslabija kurirana deonica, nikad tvoja stanica."
+    "Deonica se ne forsira kad podatak ne zaslužuje poverenje: gust (jak) saobraćaj, ocena od pre zime (\"Dobar od prošlog leta je u aprilu laž\"; isključenje po starosti je važilo do 0.9.85 - od tada starost samo spušta redosled) ili aktivni radovi/zatvaranje na njoj - taj plan ide bez nje. Tvoje usputne stanice uvek imaju prednost: kad je budžet komada tesan, ispada najslabija kurirana deonica, nikad tvoja stanica."
   ] },
   { v: "0.9.83", d: "24.08.2026.", stavke: [
     "<b>Auto-pauza.</b> Staneš li duže od 3 minuta (kafana, pumpa, ćaskanje), vožnja se sama tiho pauzira - bez zvuka i bez pitanja, a računa se od treće minute stajanja. Semafor ne ostavlja nikakav trag: kratka auto-pauza (ispod 3 min) se na nastavku retroaktivno briše, kao da je nije ni bilo. Zaključavanje telefona ili odlazak u drugu aplikaciju dok stojiš pauzira odmah, a i uzimanje telefona sa nosača u mestu (senzori prepoznaju). Kreneš li (dva precizna fiksa preko 15 km/h) - vožnja se sama nastavlja, duža pauza je uredno zabeležena sa mestom i trajanjem.",
