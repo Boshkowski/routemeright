@@ -7631,7 +7631,7 @@ function zabeleziVoznju() {
     if (!RIDE.t0 || (!RIDE.route && !RIDE.freeRide)) return ishod;   // slobodna voznja nema rutu a ima dnevnik (6.8.)
     const km = ukupnoD / 1000;
     const min = Math.max(1, Math.round((Date.now() - RIDE.t0) / 60000));
-    const pauzMs = (RIDE.pauseMs || 0) + (RIDE.paused && RIDE.pauseT0 ? Date.now() - RIDE.pauseT0 : 0);
+    const pauzMs = (RIDE.pauseMs || 0) + (RIDE.paused && RIDE.pauseT0 ? Math.max(0, Date.now() - RIDE.pauseT0) : 0);   // klamp: resinhronizacija sata ne sme u minus (0.9.83 review)
     const pauz = pauzMs > 45000 ? Math.max(1, Math.round(pauzMs / 60000)) : 0;   // pauze u kafani - posteno u sazetku
     const c = RIDE.route ? RIDE.route._curves : null;   // sveze posle reroute-a; slobodna voznja NEMA brojanje krivina iz traga (raskrsnice bi lagale)
     const frac = Math.min(1, (RIDE.maxD || 0) / Math.max(1, RIDE.total));
@@ -7655,7 +7655,7 @@ function zabeleziVoznju() {
     const poeni = Math.round(km + serp * 4);
     const maxK = Math.round(RIDE.maxKmh || 0);
     const avgK = RIDE.movMs > 30000 ? Math.round(km / (RIDE.movMs / 3600000)) : 0;   // prosek U POKRETU, tek kad ima bar pola minuta
-    const lnL = LEAN.on ? Math.round(LEAN.maxL) : null, lnR = LEAN.on ? Math.round(LEAN.maxR) : null;
+    const lnL = (LEAN.on || LEAN.rekal) ? Math.round(LEAN.maxL) : null, lnR = (LEAN.on || LEAN.rekal) ? Math.round(LEAN.maxR) : null;   // Zavrsi USRED re-kalibracije ne sme da odnese maksimume cele voznje (0.9.83 review)
     // tip voznje (Boskov zahtev 6.8.: "kad se vozi u gradu, to treba da bude gradska voznja")
     // 9.8. (Boskov nalaz: 13,8 km po Beogradu proglaseno "Otvoreni put"): prosek na bulevaru ume da bude 45 km/h,
     // pa brzina sama ne razlikuje grad. Grad se PREPOZNAJE PO RITMU - semafori i spora deonice iz uzoraka voznje;
@@ -7692,7 +7692,7 @@ function zabeleziVoznju() {
       // `min` nosi pauze, pa km/min NIKAD ne daje avgK. Sa `mov` racun se zatvara: km / (mov/60) = avgK.
       // Napomena: min != mov + pauz - stajanje na semaforu nije ni jedno ni drugo (ni pauza ni pokret).
       mov: RIDE.movMs > 30000 ? Math.max(1, Math.round(RIDE.movMs / 60000)) : 0,
-      pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x[2] > 0) : null,   // GDE si stajao (pin + let kamere iz sazetka)
+      pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x && x[0] != null && x[2] > 0) : null,   // GDE si stajao (pin + let kamere iz sazetka); placeholder bez pozicije (0.9.83) ispada
       momLnL: LEAN.momL || null, momLnR: LEAN.momR || null,   // GDE je bio najveci nagib levo/desno - iz ISTOG garda koji pise maxL/maxR (0.9.82)
       kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
     if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; return "kratka"; }
@@ -7714,7 +7714,7 @@ function zabeleziVoznju() {
       momBrz: RIDE.momBrz ? [+RIDE.momBrz[0].toFixed(5), +RIDE.momBrz[1].toFixed(5)] : undefined,
       momLnL: LEAN.momL ? [+LEAN.momL[0].toFixed(5), +LEAN.momL[1].toFixed(5), LEAN.momL[2]] : undefined,
       momLnR: LEAN.momR ? [+LEAN.momR[0].toFixed(5), +LEAN.momR[1].toFixed(5), LEAN.momR[2]] : undefined,
-      pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x[2] > 0).map((x) => [+x[0].toFixed(5), +x[1].toFixed(5), x[2]]) : undefined });
+      pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x && x[0] != null && x[2] > 0).map((x) => [+x[0].toFixed(5), +x[1].toFixed(5), x[2]]) : undefined });
     /* Upis sa tri odbrane od pune kvote (0.9.82 review): pun zapis -> proredjen trag -> minimalan
        zapis BEZ traga i uzoraka. Bolje zapis bez crteza nego izgubljena voznja; a kad i to padne,
        vozac dobija POSTENU poruku umesto lazne potvrde. */
@@ -8930,8 +8930,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Isti spisak stoji i u docs/CHANGELOG.md za citanje van aplikacije. */
-const APP_VERSION = "0.9.82";
+const APP_VERSION = "0.9.83";
 const CHANGELOG = [
+  { v: "0.9.83", d: "24.08.2026.", stavke: [
+    "<b>Auto-pauza.</b> Staneš li duže od 3 minuta (kafana, pumpa, ćaskanje), vožnja se sama tiho pauzira - bez zvuka i bez pitanja, a računa se od treće minute stajanja. Semafor ne ostavlja nikakav trag: kratka auto-pauza (ispod 3 min) se na nastavku retroaktivno briše, kao da je nije ni bilo. Zaključavanje telefona ili odlazak u drugu aplikaciju dok stojiš pauzira odmah, a i uzimanje telefona sa nosača u mestu (senzori prepoznaju). Kreneš li (dva precizna fiksa preko 15 km/h) - vožnja se sama nastavlja, duža pauza je uredno zabeležena sa mestom i trajanjem.",
+    "<b>Nagib posle pauze ne laže.</b> Posle pauze od 3+ minuta - ili bilo koje koju je okinuo senzor (telefon uzet u ruke) - stara nula više ne važi. Umesto rizične kalibracije u pokretu: nagib pošteno ćuti dok se ne dokaže pravac (3 s bez skretanja preko 25 km/h), tamo se nula ponovo uhvati - a maksimumi LEVO/DESNO iz cele vožnje ostaju netaknuti, i upisuju se u dnevnik i ako vožnju završiš usred te tišine.",
+    "<b>Vožnja se snima i u pozadini (iPhone, priprema).</b> Sopstveni nativni GPS sloj beleži fikseve na disk dok je aplikacija u pozadini ili je ekran zaključan, pa ih na povratku ubaci u vožnju sa ORIGINALNIM vremenima - kilometri i minuti u pokretu izlaze isti kao da je aplikacija sve vreme gledala, bez duplog brojanja; stajanje od 3+ min u pozadini knjiži se kao pauza, a i vožnja koju iOS ubije u pozadini dobija svoj pozadinski rep pri oporavku. Aktivira se uz sledeći Xcode build; do tada sve radi kao do sada.",
+    "<b>Zaboravljena auto-pauza se sama zatvori.</b> Ako auto-pauza traje 4+ sata, aplikacija pita: završiti i sačuvati u dnevnik? Kontrolna tačka se piše odmah na ulasku u pauzu i osvežava na ~2 minuta, pa ni gašenje aplikacije u kafani ne odnosi vožnju."
+  ] },
   { v: "0.9.82", d: "24.08.2026.", stavke: [
     "<b>Vožnja preživi gašenje aplikacije.</b> iOS ume da ubije aplikaciju u toku snimanja - do sada je cela vožnja nestajala bez traga. Sada se na ~15 sekundi (i na svaki odlazak u pozadinu) čuva kontrolna tačka, pa te pri sledećem pokretanju čeka pitanje: sačuvaj u dnevnik ili odbaci.",
     "<b>Nagib: jedan izvor istine.</b> Rečenica, pločice LEVO/DESNO i pin na mapi su umeli da kažu različite brojeve (52 naspram 29 sa Jadrije). Mesto maksimuma se sada hvata u istom trenutku kad i sam maksimum, pa se svi prikazi slažu po konstrukciji. Uz to: ispod 1,5 stepeni instrument piše 0 - \"1 stepen\" na pravom autoputu je bio šum, ne merenje.",
@@ -10178,10 +10184,12 @@ const RIDE = { watch: null, nav: null, lock: null, lastFix: 0, offCount: 0, last
    To pokriva i bocni oslonac pri startu i nesavrsen polozaj na Quad Lock-u.
    Ugao je LICNI podatak (odluka 4.8.): dnevnik + summary + deljena kartica, nikad na server. */
 const LEAN = { on: false, uB: null, rB: null, fB: null, uB0: null, cal: [], buf: [], u: null,
-  cur: 0, maxL: 0, maxR: 0, momL: null, momR: null, kinEma: 0, kinV: null, strT: 0, crvT: 0, dir: 0, dirW: 0, lastUi: 0, suppressUntil: 0, hold: [] };
+  cur: 0, maxL: 0, maxR: 0, momL: null, momR: null, kinEma: 0, kinV: null, strT: 0, crvT: 0, dir: 0, dirW: 0, lastUi: 0, suppressUntil: 0, hold: [],
+  rekal: false, rekalOk: false, rekalStrT: 0, rekalV: null, rekalMirT: 0, rekalGyro: false };   // re-kalibracija posle duge pauze (0.9.83): nula tek na dokazanom pravcu (ili u mestu kad ziroskopa nema)
 function leanReset() { LEAN.on = false; LEAN.uB = null; LEAN.rB = null; LEAN.fB = null; LEAN.uB0 = null;
   LEAN.cal = []; LEAN.buf = []; LEAN.u = null; LEAN.cur = 0; LEAN.maxL = 0; LEAN.maxR = 0; LEAN.momL = null; LEAN.momR = null;
-  LEAN.kinEma = 0; LEAN.kinV = null; LEAN.strT = 0; LEAN.crvT = 0; LEAN.dir = 0; LEAN.dirW = 0; LEAN.suppressUntil = 0; LEAN.hold = []; }
+  LEAN.kinEma = 0; LEAN.kinV = null; LEAN.strT = 0; LEAN.crvT = 0; LEAN.dir = 0; LEAN.dirW = 0; LEAN.suppressUntil = 0; LEAN.hold = [];
+  LEAN.rekal = false; LEAN.rekalOk = false; LEAN.rekalStrT = 0; LEAN.rekalV = null; LEAN.rekalMirT = 0; LEAN.rekalGyro = false; }
 /* Matematika: NE koristimo beta/gamma direktno (telefon skoro uspravan na nosacu = gimbal
    singularitet, gamma preskace). Kvaternion (W3C ZXY) -> vektor "svetsko gore" u frame-u
    telefona; roll = ugao tog vektora u ravni desno/gore MOTORA. Kalibracija na "Kreni" hvata
@@ -10205,12 +10213,28 @@ function leanTick(e) {
   const u = _lup(_lq(e.alpha || 0, e.beta, e.gamma));
   LEAN.u = u;   // treba i kinematickom kanalu (devicemotion)
   if (!LEAN.uB) {   // kalibracija: ~1 s posle Kreni, telefon miruje na nosacu = to je "uspravno"
+    /* Posle duge pauze (LEAN.rekal) uzorci smeju da se skupljaju SAMO na dokazanom pravcu
+       (leanRekalTick postavlja rekalOk): "kalibracija u pokretu" van pravca bi upisala pogresnu
+       nulu koju pull-to-zero posle sidri zauvek. Bez pravca nagib POSTENO ostaje ugasen (0.9.83). */
+    if (LEAN.rekal && !LEAN.rekalOk && !LEAN.rekalGyro) {
+      /* Uredjaj BEZ rotationRate (review #10): leanRekalTick tada nikad ne kuca, pa bi nagib ostao
+         mrtav do kraja voznje. Rezervni uslov = originalna kalibracija sa Kreni: svez fiks i
+         mirovanje (<1 km/h) drzano ~3 s - telefon je tad na nosacu, nula je validna. */
+      const nowMir = Date.now();
+      const svezMir = RIDE.lastFixTs && nowMir - RIDE.lastFixTs < PAUZA_SVEZ_MS;
+      if (svezMir && (RIDE.spdKmh || 0) < 1) {
+        if (!LEAN.rekalMirT) LEAN.rekalMirT = nowMir;
+        if (nowMir - LEAN.rekalMirT > 3000) LEAN.rekalOk = true;
+      } else { LEAN.rekalMirT = 0; if (LEAN.rekalOk) { LEAN.rekalOk = false; LEAN.cal = []; } }
+    }
+    if (LEAN.rekal && !LEAN.rekalOk) { if (LEAN.cal.length) LEAN.cal = []; return; }
     LEAN.cal.push(u);
     if (LEAN.cal.length >= 45) {
       LEAN.uB = _ln([0, 1, 2].map((i) => LEAN.cal.reduce((s, v) => s + v[i], 0) / LEAN.cal.length));
       LEAN.uB0 = LEAN.uB;
       const fr = _lFrame(LEAN.uB); LEAN.fB = fr.fB; LEAN.rB = fr.rB;
       LEAN.on = true;
+      LEAN.rekal = false; LEAN.rekalOk = false; LEAN.rekalStrT = 0; LEAN.rekalV = null; LEAN.rekalMirT = 0;   // re-kalibracija (ako je tekla) je zavrsena
       try { if (localStorage.getItem("rmr2_leanui") !== "0") document.querySelector("#rideBarBottom .pill").classList.add("lon"); } catch (er) {}   // senzor ziv - pokazi uz brzinu (sem ako je zivi prikaz iskljucen u Ja)
     }
     return;
@@ -10910,10 +10934,10 @@ function rideAltStanje() {
     ab.setAttribute("aria-disabled", mogu ? "false" : "true");
   } catch (e) {}
 }
-function rideAltBrzina(kmh) {   // vodi racun OTKAD vozac stoji; zove se sa svakog fiksa
+function rideAltBrzina(kmh, ts, bezUi) {   // vodi racun OTKAD vozac stoji; zove se sa svakog fiksa (ts: replay pozadinskih fikseva daje ORIGINALNO vreme; bezUi: replay ne dira DOM po fiksu, 0.9.83)
   if ((kmh || 0) >= ALT_STOJI_KMH) RIDE._stajeOd = null;
-  else if (!RIDE._stajeOd) RIDE._stajeOd = Date.now();
-  rideAltStanje();
+  else if (!RIDE._stajeOd) RIDE._stajeOd = ts || Date.now();
+  if (!bezUi) rideAltStanje();
 }
 function altClose() { const s = document.getElementById("altSheet"); if (s) s.hidden = true; }
 async function altOpen() {
@@ -11341,7 +11365,14 @@ function rideSensorsInit() {   // kompas + nagib senzori: zajednicko za navigaci
           lastRot = now; try { RIDE.marker.setRotation(h); } catch (er) {}   // u normalnom rezimu marker rotira rAF kamera
         }
       };
-      RIDE._motionH = (e) => { if (RIDE.paused) return; try { leanMotion(e); } catch (er) {} };
+      RIDE._motionH = (e) => {
+        /* T3 detektor zivi IZNAD paused garda (0.9.83): dokaz "telefon uzet u ruke" nastaje bas
+           oko ulaska u pauzu, a i naoruzavanje/razoruzavanje mora da tece neprekidno. */
+        try { pauzaSenzorHaos(e && e.rotationRate, Date.now()); } catch (er) {}
+        if (RIDE.paused) return;
+        try { leanRekalTick(e && e.rotationRate, Date.now()); } catch (er) {}   // posle duge pauze: nova nula tek na dokazanom pravcu
+        try { leanMotion(e); } catch (er) {}
+      };
       const attach = () => {   // remove pa add: bezbedno i za ponovno kacenje posle pozadine
         window.removeEventListener("deviceorientation", RIDE._orientH);
         window.removeEventListener("devicemotion", RIDE._motionH);
@@ -11482,59 +11513,377 @@ function pauzaWxNastavak(trajalaMs) {
     navLog("pauza-wx-nastavak", { km: Math.round(kmSad), pauzaMin: Math.round(trajalaMs / 60000) });
   } catch (e) {}
 }
-function ridePauseToggle() {   // Boskov zahtev 6.8.: "kad stanemo u kafanu - da pauziramo"
-  if (!document.body.classList.contains("riding")) return;
+/* ---------- PAUZA: ulaz/izlaz + AUTO-PAUZA (0.9.83) ----------
+   Rucna pauza (dugme) i auto-pauza dele ISTI ulaz i izlaz - pauseAuto je samo MODIFIKATOR uz
+   RIDE.paused, pa svih devet postojecih paused gardova radi netaknuto. Modifikator gejtuje tri
+   stvari: tihi ulaz (bez glasa/toasta), auto-nastavak na pokret i pitanje posle sati mirovanja.
+   Okidaci (Boskov odobren dizajn, deferred-work 24.8.): T1 stajanje >=3 min (semafor od 170 s ne
+   okida NISTA i ne postoji ni kao 0-min stavka), T2 odlazak u pozadinu/zakljucavanje dok se stoji,
+   T3 rotacioni haos u mestu (telefon uzet sa nosaca). Sve odluke o brzini traze SVEZ fiks
+   (<PAUZA_SVEZ_MS) - zamrznuti spdKmh iz dzepa se nikad ne cita kao istina. */
+const PAUZA_AUTO_MS = 180000;       // T1: stajanje >= 3 min = tiha auto-pauza
+const PAUZA_SVEZ_MS = 4000;         // svezina fiksa za svaku odluku (model: leanMotion gard na ustajali fiks)
+const PAUZA_RESUME_KMH = 15;        // auto-nastavak tek preko 15 km/h (guranje motora po pumpi nije voznja)
+const PAUZA_REKAL_MS = 180000;      // pauza >= 3 min -> parcijalni reset nagiba + nula na dokazanom pravcu
+const PAUZA_IDLE_MS = 4 * 3600e3;   // auto-pauza >= 4 h -> pitanje "zavrsiti i sacuvati?"
+const PAUZA_HAOS_DPS = 120;         // T3: prag rotacionog haosa (deg/s magnitude)
+const PAUZA_HAOS_MS = 1800;         // T3: haos mora da traje ~2 s (kratak trzaj nosaca nije hvatanje telefona)
+function ridePauzaUdji(tiho, razlog) {   // ulaz u pauzu: rucni (dugme) i tihi (auto-okidaci T1/T2/T3)
+  if (RIDE.paused || !document.body.classList.contains("riding")) return;
   const pb = document.getElementById("ridePause");
-  if (!RIDE.paused) {
-    RIDE.paused = true; RIDE.pauseT0 = Date.now();
-    /* GDE si stao (11.8., Boskov zahtev "svaka brojka da nas odvede tu gde se desila"): trajanje
-       pauze se merilo od pocetka, ali mesto nikad - pa brojka "pauza" nije imala kuda da vodi.
-       Pamti se prva pauza sa poznatom pozicijom; duzina se dopisuje kad se vozac pokrene. */
-    try {
-      if (RIDE.pos && RIDE.pos.lo != null) RIDE.pauzeNa = (RIDE.pauzeNa || []).concat([[RIDE.pos.lo, RIDE.pos.la, 0]]);
-    } catch (e) {}
-    document.body.classList.add("ridepaused");
-    if (pb) { pb.innerHTML = RIDE_PLAY_SVG; pb.classList.add("on"); }
-    try { document.getElementById("rideInstr").textContent = "Pauza"; document.getElementById("rideDist").textContent = ""; } catch (e) {}
-    try { navLog("pauza", {}); } catch (e) {}
+  const sadU = Date.now();
+  RIDE.paused = true;
+  /* T1 se BACKDATE-uje (0.9.83 review #1): stajanje je pocelo PRE okidanja (mozda jos dok je
+     aplikacija bila u pozadini, preko replay-a) - knjigovodstveno pauza pocinje 3 min posle
+     pocetka stajanja. Prva 3 min stajanja NIKAD ne udju u pauseMs (semafor-zakon); svi ostali
+     okidaci (dugme, T2, T3) pocinju u trenutku okidanja. */
+  RIDE.pauseT0 = (razlog === "stajanje" && RIDE._stajeOd) ? Math.min(sadU, RIDE._stajeOd + PAUZA_AUTO_MS) : sadU;
+  RIDE.pauseAuto = !!tiho; RIDE._pauzaRazlog = razlog || null; RIDE._pauzaPitajOd = 0; RIDE._pauzaCkpT = sadU; RIDE._resumeCnt = 0;
+  /* GDE si stao (11.8., Boskov zahtev "svaka brojka da nas odvede tu gde se desila"): trajanje
+     pauze se merilo od pocetka, ali mesto nikad - pa brojka "pauza" nije imala kuda da vodi.
+     Stavka se UVEK gura (placeholder [null,null,0] kad GPS cuti), a izlaz pise ISKLJUCIVO preko
+     zapamcenog indeksa (review #4) - trajanje nikad ne moze da pregazi neku PRETHODNU pauzu. */
+  try {
+    RIDE.pauzeNa = (RIDE.pauzeNa || []).concat([(RIDE.pos && RIDE.pos.lo != null) ? [RIDE.pos.lo, RIDE.pos.la, 0] : [null, null, 0]]);
+    RIDE._pauzaIdx = RIDE.pauzeNa.length - 1;
+  } catch (e) {}
+  document.body.classList.add("ridepaused");
+  if (pb) { pb.innerHTML = RIDE_PLAY_SVG; pb.classList.add("on"); }
+  try { document.getElementById("rideInstr").textContent = "Pauza"; document.getElementById("rideDist").textContent = ""; } catch (e) {}
+  try { navLog(tiho ? "pauza-auto" : "pauza", tiho ? { razlog: razlog || "" } : {}); } catch (e) {}
+  if (tiho) {   // auto-ulaz je TIH (tihoObavestenje doktrina): vest, ne uzbuna - bez glasa, bez toasta
+    try { tihoObavestenje("Auto-pauza: stojiš, pa kilometraža i vreme miruju. Kreni i nastavljamo sami."); } catch (e) {}
+  } else {
     try { speakSr("Pauza."); } catch (e) {}
     shareToast("Pauza: kilometraža, vreme u pokretu i nagib su zamrznuti.");
-    pauzaWxStart();     // jedina dva posla koja u pauzi rade: štedljivi radar i tiha najava kiše
-    rideAltStanje();    // pauza JESTE stajanje - "Druga ruta" se pali odmah, bez čekanja praga
-  } else {
-    RIDE.paused = false;
-    const _ovaPauza = Math.max(0, Date.now() - (RIDE.pauseT0 || Date.now()));
-    RIDE.pauseMs = (RIDE.pauseMs || 0) + _ovaPauza;
-    try {   // upisi koliko je TA pauza trajala, na mesto gde je i pocela
-      const pz = RIDE.pauzeNa;
-      if (pz && pz.length) pz[pz.length - 1][2] = Math.round(_ovaPauza / 60000);
-    } catch (e) {}
-    RIDE.pauseT0 = null;
-    RIDE.lastFixTs = Date.now();   // movMs/watchdog krecu od sad, ne od pre pauze
-    try { LEAN.suppressUntil = Date.now() + 1000; } catch (e) {}
-    document.body.classList.remove("ridepaused");
-    if (pb) { pb.innerHTML = RIDE_PAUSE_SVG; pb.classList.remove("on"); }
-    try { document.getElementById("rideInstr").textContent = RIDE.freeRide ? "Snimam vožnju" : "…"; } catch (e) {}
-    try { navLog("nastavak", { pauzaMs: Math.round(RIDE.pauseMs) }); } catch (e) {}
-    try { speakSr("Nastavljamo."); } catch (e) {}
-    pauzaWxNastavak(_ovaPauza);   // svež radar + prognoza ostatka rute po NOVIM satima prolaska
-    /* Vozač stoji i u trenutku kad tapne Nastavi, pa "Druga ruta" ostaje aktivna dok stvarno ne
-       krene; prag stajanja se meri od sada, ne od trenutka ulaska u pauzu. */
-    RIDE._stajeOd = Date.now() - ALT_STOJI_MS;
-    rideAltStanje();
   }
+  pauzaWxStart();     // jedina dva posla koja u pauzi rade: štedljivi radar i tiha najava kiše
+  rideAltStanje();    // pauza JESTE stajanje - "Druga ruta" se pali odmah, bez čekanja praga
+  rmrGpsSignal("pauza");   // nativni kolektor prelazi na stedljivi profil (review #17)
+  try { voznjaCkp(true); } catch (e) {}   // kill u prva 2 min pauze ne sme da izgubi njen pocetak (review #5)
+}
+function ridePauzaIzadji(tiho, krajTs) {   // izlaz iz pauze; krajTs (opciono) = kad se pokret STVARNO desio (replay pozadinskih fikseva)
+  if (!RIDE.paused) return;
+  const pb = document.getElementById("ridePause");
+  const jeAuto = !!RIDE.pauseAuto, razlogP = RIDE._pauzaRazlog;
+  RIDE.paused = false;
+  const _kraj = krajTs || Date.now();
+  // klamp (review #7): zidni sat ume da se resinhronizuje - pauza nikad negativna, nikad preko 24 h
+  const _ovaPauza = Math.max(0, Math.min(_kraj - (RIDE.pauseT0 || _kraj), 24 * 3600e3));
+  /* KRATKA AUTO-PAUZA SE RETROAKTIVNO BRISE (review #3): zakljucan telefon na semaforu (T2) ili
+     kratak predah ne sme da ostavi NIKAKAV trag - ni u pauseMs ni u pauzeNa. Rucna pauza je
+     covekov svestan cin i uvek ostaje zabelezena. */
+  const _brisi = jeAuto && _ovaPauza < PAUZA_AUTO_MS;
+  try {   // upis/brisanje ISKLJUCIVO preko indeksa ove pauze (review #4)
+    const pz = RIDE.pauzeNa, idx = RIDE._pauzaIdx;
+    const vazi = pz && idx != null && idx >= 0 && idx < pz.length;
+    if (_brisi) { if (vazi) pz.splice(idx, 1); }
+    else if (vazi) {
+      if (pz[idx][0] == null && RIDE.pos && RIDE.pos.lo != null) { pz[idx][0] = RIDE.pos.lo; pz[idx][1] = RIDE.pos.la; }
+      if (pz[idx][0] == null) pz.splice(idx, 1);   // pauza bez ijedne pozicije nema kuda da vodi (trajanje ipak ide u pauseMs)
+      else pz[idx][2] = Math.round(_ovaPauza / 60000);
+    }
+    if (pz && !pz.length) RIDE.pauzeNa = null;
+  } catch (e) {}
+  if (!_brisi) RIDE.pauseMs = (RIDE.pauseMs || 0) + _ovaPauza;
+  RIDE.pauseT0 = null; RIDE.pauseAuto = false; RIDE._pauzaRazlog = null; RIDE._pauzaIdx = null; RIDE._pauzaPitajOd = 0; RIDE._resumeCnt = 0;
+  RIDE.lastFixTs = _kraj;   // movMs/watchdog krecu od sad, ne od pre pauze
+  try {
+    /* Re-kalibracija nagiba: duga pauza (>=3 min, i RUCNA i auto) ILI T3 okidac BILO KOJE duzine
+       (review #9 - senzor je DOKAZAO da je telefon bio u rukama, pa je nula sumnjiva i posle 90 s
+       placanja). Kratka obicna pauza: postojeci 1000 ms suppress, nista drugo. */
+    if (_ovaPauza >= PAUZA_REKAL_MS || razlogP === "senzor") pauzaLeanRekal();
+    else LEAN.suppressUntil = Date.now() + 1000;
+  } catch (e) {}
+  document.body.classList.remove("ridepaused");
+  if (pb) { pb.innerHTML = RIDE_PAUSE_SVG; pb.classList.remove("on"); }
+  try { document.getElementById("rideInstr").textContent = RIDE.freeRide ? "Snimam vožnju" : "…"; } catch (e) {}
+  try { navLog("nastavak", { pauzaMs: Math.round(RIDE.pauseMs), tiho: tiho ? 1 : 0 }); } catch (e) {}
+  if (tiho) { try { tihoObavestenje("Nastavljamo - pauza od " + Math.max(1, Math.round(_ovaPauza / 60000)) + " min je zabeležena."); } catch (e) {} }
+  else { try { speakSr("Nastavljamo."); } catch (e) {} }
+  pauzaWxNastavak(_ovaPauza);   // svež radar + prognoza ostatka rute po NOVIM satima prolaska
+  /* Vozač stoji i u trenutku kad tapne Nastavi, pa "Druga ruta" ostaje aktivna dok stvarno ne
+     krene; prag stajanja se meri od sada, ne od trenutka ulaska u pauzu. */
+  RIDE._stajeOd = Date.now() - ALT_STOJI_MS;
+  rideAltStanje();
+  rmrGpsSignal("nastavak");   // nativni kolektor nazad na pun navigacioni profil (review #17)
+}
+function ridePauseToggle() {   // Boskov zahtev 6.8.: "kad stanemo u kafanu - da pauziramo"
+  if (!document.body.classList.contains("riding")) return;
+  if (!RIDE.paused) ridePauzaUdji(false);
+  else ridePauzaIzadji(false);
+}
+function pauzaLeanRekal() {
+  /* Parcijalni reset nagiba posle duge pauze: NE leanReset() - maxL/maxR/momL/momR su statistika
+     VOZNJE i moraju da prezive svaku pauzu i re-kalibraciju. Brise se samo referentni okvir; nova
+     nula sme da se upise tek na dokazanom pravcu (>25 km/h bez skretanja 3 s - tamo je roll ~0 po
+     fizici), pa "kalibracija u pokretu" ne moze da upise otrovanu nulu. Do tada nagib POSTENO cuti:
+     leanTick bez uB ne meri, leanMotion bez on ne meri - nista ne pise u max dok LEAN.on ne ozivi. */
+  LEAN.uB = null; LEAN.uB0 = null; LEAN.fB = null; LEAN.rB = null;
+  LEAN.cal = []; LEAN.buf = []; LEAN.on = false;
+  LEAN.rekal = true; LEAN.rekalOk = false; LEAN.rekalStrT = 0; LEAN.rekalV = null; LEAN.rekalMirT = 0; LEAN.rekalGyro = false;
+  LEAN.suppressUntil = Date.now() + 3000;
+  try { const pl = document.querySelector("#rideBarBottom .pill"); if (pl) pl.classList.remove("lon", "lact"); } catch (e) {}
+}
+function leanRekalTick(rr, now) {
+  /* Dokazan pravac za re-kalibraciju: >25 km/h (svez fiks) i EMA rotacije ~0 drzano 3 s - iste
+     mehanike kao strOk u leanMotion, ali |yawB| ovde ne postoji (uB je null), pa se koristi
+     MAGNITUDA EMA-ovane rotacije. Stroza je od |yawB| (nosi i pitch), sto sme: cena je kasnija
+     nula, nikad pogresna. Kad pravac drzi 3 s, kalibraciona grana u leanTick sme da skuplja. */
+  if (!LEAN.rekal || !rr || rr.alpha == null) return;
+  LEAN.rekalGyro = true;   // ziroskop ZIV - rezervni "miran u mestu" uslov u leanTick se gasi (review #10)
+  if (!LEAN.rekalV) LEAN.rekalV = [0, 0, 0];
+  const gy = [rr.beta || 0, rr.gamma || 0, rr.alpha || 0];
+  for (let i = 0; i < 3; i++) LEAN.rekalV[i] += 0.1 * (gy[i] - LEAN.rekalV[i]);
+  const omega = Math.hypot(LEAN.rekalV[0], LEAN.rekalV[1], LEAN.rekalV[2]) * Math.PI / 180;   // rad/s
+  const svez = RIDE.lastFixTs && now - RIDE.lastFixTs < PAUZA_SVEZ_MS;
+  if (svez && (RIDE.spdKmh || 0) > 25 && omega < 0.015) {
+    if (!LEAN.rekalStrT) LEAN.rekalStrT = now;
+    if (now - LEAN.rekalStrT > 3000) LEAN.rekalOk = true;
+  } else {
+    LEAN.rekalStrT = 0;
+    if (LEAN.rekalOk) { LEAN.rekalOk = false; LEAN.cal = []; }   // pravac prekinut usred skupljanja - naceti uzorci se bacaju
+  }
+}
+function pauzaStoji(now) {   // "stvarno stoji": SVEZ fiks, brzina ispod praga, i to vec ALT_STOJI_MS (semafor vs GPS nula)
+  if (!RIDE.lastFixTs || now - RIDE.lastFixTs >= PAUZA_SVEZ_MS) return false;   // ustajali fiks = zamrznuta brzina, ne verujemo joj
+  if ((RIDE.spdKmh || 0) >= ALT_STOJI_KMH) return false;
+  return !!RIDE._stajeOd && now - RIDE._stajeOd >= ALT_STOJI_MS;
+}
+function pauzaSenzorHaos(rr, now) {
+  /* T3: telefon uzet sa nosaca dok se stoji (placanje, poruka) -> trenutna tiha pauza. Kljuc je
+     e.rotationRate, NE LEAN.buf varijansa: klamp >65 stepeni u leanTick IZGLADNJUJE buf bas kad se
+     telefon drzi u ruci. Naoruzan SAMO u mestu sa svezim fiksevima - preko 5 km/h ili sa ustajalim
+     fiksom NIKAD (vibracije i rupe u voznji ne smeju da pauziraju voznju). */
+  if (!rr || rr.alpha == null) return;
+  if (!document.body.classList.contains("riding")) { RIDE._haosOd = 0; return; }
+  const svez = RIDE.lastFixTs && now - RIDE.lastFixTs < PAUZA_SVEZ_MS;
+  if (!svez || (RIDE.spdKmh || 0) > 5 || !RIDE._stajeOd) { RIDE._haosOd = 0; return; }
+  const mag = Math.hypot(rr.alpha || 0, rr.beta || 0, rr.gamma || 0);
+  if (mag < PAUZA_HAOS_DPS) {
+    if (RIDE._haosT && now - RIDE._haosT > 600) RIDE._haosOd = 0;   // haos utihnuo - epizoda gotova
+    return;
+  }
+  if (!RIDE._haosOd) RIDE._haosOd = now;
+  RIDE._haosT = now;
+  if (now - RIDE._haosOd >= PAUZA_HAOS_MS && !RIDE.paused) ridePauzaUdji(true, "senzor");
+}
+function pauzaAutoTick(now) {
+  /* Srce auto-pauze: zove se iz wdInt-a (2.5 s, IZNAD paused garda - bez ijednog novog intervala),
+     iz pauziranog fix handlera (pauzaFixTick) i jednom posle replay-a pozadinskih fikseva. */
+  if (!document.body.classList.contains("riding") || !RIDE.gotFix) return;
+  if (!RIDE.paused) {
+    // T1: stajanje >= 3 min = tiha pauza; semafor (170 s) ne okida nista i ne ostavlja nikakav trag
+    if (pauzaStoji(now) && now - RIDE._stajeOd >= PAUZA_AUTO_MS) ridePauzaUdji(true, "stajanje");
+    return;
+  }
+  // u pauzi: kontrolna tacka na ~2 min - redovni pisci (voznjaCkp u fix handlerima) su ispod
+  // paused early-return-a, pa bi iOS kill u kafani inace odneo sve od ulaska u pauzu
+  if (!RIDE._pauzaCkpT || now - RIDE._pauzaCkpT >= 120000) { RIDE._pauzaCkpT = now; try { voznjaCkp(true); } catch (e) {} }
+  // auto-nastavak: SAMO auto-pauza (rucnu gasi samo dugme), SAMO svez fiks preko 15 km/h - i to
+  // DVA uzastopna precizna (acc<80) fiksa (review #6): GPS rasejanje u kafani ne sme da prekine pauzu
+  if (RIDE.pauseAuto && RIDE.lastFixTs && now - RIDE.lastFixTs < PAUZA_SVEZ_MS
+      && (RIDE.spdKmh || 0) > PAUZA_RESUME_KMH && (RIDE._resumeCnt || 0) >= 2) {
+    ridePauzaIzadji(true);
+    return;
+  }
+  // auto-pauza traje >= 4 h: covek je ocigledno zavrsio turu - pitaj (dok je aplikacija vidljiva);
+  // Otkazi = ostajemo u pauzi i pitamo ponovo za sat
+  if (RIDE.pauseAuto && RIDE.pauseT0 && now - RIDE.pauseT0 >= PAUZA_IDLE_MS
+      && now >= (RIDE._pauzaPitajOd || 0) && document.visibilityState !== "hidden") {
+    RIDE._pauzaPitajOd = now + 3600e3;
+    const _h = Math.max(1, Math.floor((now - RIDE.pauseT0) / 3600e3));
+    let _kraj = false;
+    try { _kraj = confirm("Vožnja je pauzirana " + _h + " h. Završiti i sačuvati u dnevnik?"); } catch (e) {}
+    if (_kraj) stopRide();
+  }
+}
+function fixBrzina(p, lo, la, tsMs) {
+  /* JEDNO mesto za brzinu iz fiksa (review #23): coords.speed kad postoji, inace delta pozicija
+     (iOS cesto ne da speed); kratak ispad drzi staru brzinu do 3 s. Pise RIDE.spdKmh/spdTs. */
+  let spdK = (p.coords.speed != null && p.coords.speed >= 0) ? p.coords.speed * 3.6
+           : speedFromFix(RIDE.lastFixObj, { lo, la, ts: tsMs });
+  if (spdK == null) spdK = (tsMs - (RIDE.spdTs || 0) < 3000) ? RIDE.spdKmh : 0;
+  else RIDE.spdTs = tsMs;
+  RIDE.spdKmh = spdK;
+  return spdK;
+}
+function pauzaFixTick(p, tsMs) {
+  /* Fiks U TOKU pauze: kilometraza/trag/statistika MIRUJU (obecanje pauze), ali se brzina i
+     svezina fiksa prate - bez toga auto-nastavak ne bi imao od cega da vidi da si krenuo. */
+  const la = p.coords.latitude, lo = p.coords.longitude;
+  RIDE.lastFixTs = tsMs;
+  const spdK = fixBrzina(p, lo, la, tsMs);
+  // dva uzastopna PRECIZNA fiksa preko praga = stvaran polazak (review #6); sve drugo nulira brojac
+  if ((p.coords.accuracy || 0) < 80 && spdK > PAUZA_RESUME_KMH) RIDE._resumeCnt = (RIDE._resumeCnt || 0) + 1;
+  else RIDE._resumeCnt = 0;
+  RIDE.lastFixObj = { lo, la, ts: tsMs };
+  pauzaAutoTick(tsMs);
 }
 /* Tacka GPS traga (0.9.82): zajednicko za navigaciju i slobodnu voznju. Kad trag predje 3000 tacaka
    proredi se CEO (pocetak se nikad ne sece - 9.8. nalaz "od Perleza"), ali korak upisa se VISE NE
    DUPLIRA: dupliranje je trajno podizalo korak do 200 m po tacki, pa su najstariji kilometri duge
    ture crtani kao iseckane prave preko brda (terenski nalaz 23.8., 340 km Jadrija-Beograd). */
-function tragBelezi(lo, la) {
+function tragBelezi(lo, la, bezNagiba) {
   if (!RIDE.trace) RIDE.trace = [];
   const tl = RIDE.trace[RIDE.trace.length - 1];
   if (!tl || haversine(tl[1], tl[0], la, lo) * 1000 > (RIDE._trStepM || 12)) {
-    RIDE.trace.push([lo, la, LEAN.on ? Math.round(LEAN.cur) : null]);   // 3. clan = nagib u toj tacki (mapa sazetka ga boji, 9.8.)
+    RIDE.trace.push([lo, la, (!bezNagiba && LEAN.on) ? Math.round(LEAN.cur) : null]);   // 3. clan = nagib u toj tacki (mapa sazetka ga boji, 9.8.); replay: null - zamrznut LEAN.cur bi lagao (0.9.83)
     if (RIDE.trace.length > 3000) RIDE.trace = RIDE.trace.filter((_, i, a) => i % 2 === 0 || i === a.length - 1);
   }
+}
+function fixKorak(p, tsMs, replay) {
+  /* Zajednicki korak po fiksu (0.9.83): brzina, odometar, trag, movMs, maxKmh i uzorci - JEDNA
+     matematika za oba ziva _onFix handlera (tsMs = Date.now()) i za replay pozadinskih fikseva
+     (tsMs = originalno CLLocation vreme, replay = true). Sve velicine izlaze iz ts delti, pa
+     pozadinski kilometri i minuti u pokretu ispadaju IDENTICNO kao da je aplikacija gledala.
+     U replay-u: bez DOM-a po fiksu (rideAltStanje ide jednom posle petlje) i bez nagiba u
+     uzorcima/tragu - LEAN.cur je zamrznut iz proslosti, ponovljen bi CRTAO izmisljenu ravnu
+     liniju nagiba u sazetku (review #11/#20). */
+  const la = p.coords.latitude, lo = p.coords.longitude;
+  const prevFixTs = RIDE.lastFixTs; RIDE.lastFixTs = tsMs;
+  const accFix = p.coords.accuracy || 0;
+  const spdK = fixBrzina(p, lo, la, tsMs);
+  try { rideAltBrzina(spdK, tsMs, replay); } catch (e) {}   // i slobodna voznja vodi _stajeOd (W1 parnost: auto-pauza + "Druga ruta")
+  if (accFix < 80) {   // odometar iz TRAGA - odometar duz rute je 5.8. STAO cim te (lazno) proglasi van rute
+    if (RIDE.lastTrk && spdK > 2) {
+      const stepM = haversine(RIDE.lastTrk.la, RIDE.lastTrk.lo, la, lo) * 1000;
+      if (stepM < 200) RIDE.trkM = (RIDE.trkM || 0) + stepM;   // GPS skok se ne broji u km
+    }
+    RIDE.lastTrk = { la, lo };
+    tragBelezi(lo, la, replay);   // zajednicka tacka traga (~12 m), bez dupliranja koraka
+  }
+  RIDE.lastFixObj = { lo, la, ts: tsMs };
+  try {   // statistika za summary: max iz pravog GPS speed-a + GDE; vreme U POKRETU; uzorci na ~3 s
+    if (accFix < 80 && p.coords.speed != null && spdK > RIDE.maxKmh && spdK < 260) { RIDE.maxKmh = spdK; RIDE.momBrz = [lo, la]; }
+    if (prevFixTs && spdK > 4) RIDE.movMs += Math.max(0, Math.min(5000, tsMs - prevFixTs));   // klamp: sat nazad ne sme u minus (review #7)
+    if (!RIDE._smpT || tsMs - RIDE._smpT >= 3000) {
+      RIDE._smpT = tsMs;
+      (RIDE.samples = RIDE.samples || []).push({ t: Math.round((tsMs - RIDE.t0) / 1000), v: Math.round(spdK), ln: (!replay && LEAN.on) ? Math.round(LEAN.cur) : null });
+      if (RIDE.samples.length > 2400) RIDE.samples = RIDE.samples.filter((_, i) => i % 2 === 0);
+    }
+  } catch (e) {}
+  return { la, lo, spdK, accFix, prevFixTs };
+}
+function rmrGpsPaket(fixes) {
+  /* Prijem pozadinskih fikseva iz nativnog sloja (RmrLokacija.swift preko AppDelegate drain-a).
+     Ugovor R1: sortiraj po ts, preskoci sve sto je zivi watch vec pokrio (ts <= lastFixTs) i sve
+     starije od pocetka OVE voznje (zaostali bafer ubijene stare voznje ne sme u novu), pa svaki
+     fiks kroz fixKorak sa ORIGINALNIM vremenom - km/movMs/max/uzorci izlaze iz ts delti.
+     Napredak po ruti, manevri i kolekcije se NE replay-uju: zivi watch ih ponovo sinhronise na
+     prvom sledecem fiksu (lastRouteI se zato resetuje - review #21).
+     Vraca "ok" cim je paket PREUZET (obradjen, legitimno odbacen ili sacuvan za oporavak) -
+     nativni sloj tad sme da obrise bafer; "nije" SAMO na gresku. Dugacak paket se obradjuje u
+     talasima od ~500 fikseva (setTimeout izmedju), da visecasovni bafer ne zamrzne glavni thread
+     (review #20). */
+  try {
+    if (!Array.isArray(fixes) || !fixes.length) return "ok";
+    try { if (fixes.some((f) => f && f.marker === "bafer-pun")) navLog("gps-bafer-pun", {}); } catch (e) {}   // nativni plafon prekoracen (review #17)
+    if (!document.body.classList.contains("riding") || !RIDE.t0) {
+      /* Voznja NE tece. Ako kontrolna tacka postoji (iOS ubio proces usred snimanja), pozadinski
+         rep se CUVA - voznjaOporavak ce ga zalepiti na hidrirani snimak (review #14); bez tacke
+         se baca kao i do sada. */
+      let sacuvan = false;
+      try {
+        if (localStorage.getItem(CKP_KEY) != null) {
+          let raw = JSON.stringify(fixes.filter((f) => f && f.ts != null));
+          while (raw.length > 1000000) {   // plafon ~1 MB: sece se NAJSTARIJE, rep (najnovije) ostaje
+            const arr = JSON.parse(raw);
+            raw = JSON.stringify(arr.slice(Math.ceil(arr.length / 4)));
+          }
+          localStorage.setItem(GPS_REP_KEY, raw);
+          sacuvan = true;
+        }
+      } catch (e) {}
+      try { navLog(sacuvan ? "gps-paket-sacuvan" : "gps-paket-odbacen", { n: fixes.length }); } catch (e) {}
+      return "ok";
+    }
+    const t0 = RIDE.t0 || 0;
+    const batch = fixes
+      .map((f) => f && { ts: +f.ts, la: +f.la, lo: +f.lo, spd: (f.spd != null && +f.spd >= 0) ? +f.spd : null,
+                         acc: +f.acc >= 0 ? +f.acc : 999 })   // CLLocation -1 = nepoznata preciznost - NE sme kroz acc<80 kapije (review #13)
+      .filter((f) => f && isFinite(f.ts) && isFinite(f.la) && isFinite(f.lo) && f.ts > t0)
+      .sort((a, b) => a.ts - b.ts);
+    // efektivna brzina po fiksu: CLLocation speed, a kad je nema (-1) - delta pozicija (review #12);
+    // bez ovoga bi se pozadinski pokret na uredjaju koji ne daje speed TRAJNO gubio
+    for (let i = 0; i < batch.length; i++)
+      batch[i].efK = batch[i].spd != null ? batch[i].spd * 3.6 : speedFromFix(i ? batch[i - 1] : null, batch[i]);
+    /* Auto-pauza + polazak u pozadini: pauza se zatvara U TRENUTKU prvog para preciznih fikseva u
+       pokretu (ista dva-fiksa robusnost kao uzivo, review #6), pa se minuti voznje ne knjize kao
+       pauza; dedup ispod onda pusta kroz fixKorak upravo fikseve POSLE tog trenutka. Rucnu pauzu
+       replay NE dira. */
+    if (RIDE.paused && RIDE.pauseAuto) {
+      for (let i = 0; i + 1 < batch.length; i++) {
+        const a = batch[i], b = batch[i + 1];
+        if (a.ts > (RIDE.lastFixTs || 0) && a.acc < 80 && b.acc < 80
+            && a.efK != null && a.efK > PAUZA_RESUME_KMH && b.efK != null && b.efK > PAUZA_RESUME_KMH) {
+          ridePauzaIzadji(true, a.ts);
+          break;
+        }
+      }
+    }
+    /* Stajanje CELO u pozadini (review #2): >=3 min mirovanja usred paketa = pauza kao da je T1
+       radio uzivo - prva 3 min su voznja (semafor-zakon + backdate), ostatak ide u pauzeNa +
+       pauseMs; ispod praga bi i uzivo bila izbrisana (review #3), pa se ne knjizi ni ovde.
+       Stajanje koje na KRAJU paketa jos traje se ne knjizi ovde - njega odmah ispod procenjuje
+       zivi pauzaAutoTick (backdate preko _stajeOd iz replay-a). */
+    let n = 0, zadnji = null, i0 = 0, stojiOd = null, stojiPoz = null, pokretCnt = 0, pokretTs = 0;
+    const gapKraj = (krajTs) => {
+      if (stojiOd == null) return;
+      const D = Math.max(0, Math.min(krajTs - stojiOd, 24 * 3600e3)) - PAUZA_AUTO_MS;
+      if (D >= PAUZA_AUTO_MS && stojiPoz) {
+        RIDE.pauzeNa = (RIDE.pauzeNa || []).concat([[stojiPoz.lo, stojiPoz.la, Math.round(D / 60000)]]);
+        RIDE.pauseMs = (RIDE.pauseMs || 0) + D;
+        try { navLog("pauza-replay", { min: Math.round(D / 60000) }); } catch (e) {}
+      }
+      stojiOd = null; stojiPoz = null;
+    };
+    const obradi = () => {
+      try {
+        const kraj = Math.min(batch.length, i0 + 500);
+        for (; i0 < kraj; i0++) {
+          const f = batch[i0];
+          if (RIDE.paused) break;   // pauza (ziva ili iz T2): fiksevi pauze se ne knjize, kao ni uzivo
+          if (f.ts <= (RIDE.lastFixTs || 0)) continue;   // vec pokriveno zivim watch-om
+          fixKorak({ coords: { latitude: f.la, longitude: f.lo, speed: f.spd, accuracy: f.acc, heading: null } }, f.ts, true);
+          n++; zadnji = f;
+          if (f.efK != null && f.acc < 80) {   // detekcija pozadinskog stajanja - ista dva-fiksa histereza kao resume
+            if (f.efK < ALT_STOJI_KMH) { if (stojiOd == null) { stojiOd = f.ts; stojiPoz = f; } pokretCnt = 0; }
+            else if (f.efK > PAUZA_RESUME_KMH) { pokretCnt++; if (pokretCnt === 1) pokretTs = f.ts; if (pokretCnt >= 2) { gapKraj(pokretTs); pokretCnt = 0; } }
+            else pokretCnt = 0;
+          }
+        }
+        if (i0 < batch.length && !RIDE.paused) { setTimeout(obradi, 0); return; }
+        if (zadnji) {
+          RIDE.pos = { lo: zadnji.lo, la: zadnji.la };
+          try { if (RIDE.marker && RIDE.marker._map) RIDE.marker.setLngLat([zadnji.lo, zadnji.la]); } catch (e) {}
+          if (!RIDE.freeRide) RIDE.lastRouteI = null;   // rutirana voznja: sledeci zivi fiks radi bezbednu GLOBALNU projekciju (review #21)
+        } else if (RIDE.paused && batch.length) {
+          const f = batch[batch.length - 1];   // u pauzi: samo pozicija/svezina, statistika miruje (kao zivi pauzirani handler)
+          if (f.ts > (RIDE.lastFixTs || 0)) { RIDE.lastFixTs = f.ts; RIDE.lastFixObj = { lo: f.lo, la: f.la, ts: f.ts }; RIDE.pos = { lo: f.lo, la: f.la }; }
+        }
+        try { rideAltStanje(); } catch (e) {}   // DOM jednom posle petlje, ne po fiksu (review #20)
+        try { navLog("gps-paket", { n: fixes.length, obradjeno: n }); } catch (e) {}
+        try { pauzaAutoTick(Date.now()); } catch (e) {}   // JEDNA ziva procena sa konacnim stanjem (pumpa: stoji i dalje -> pauza)
+        try { voznjaCkp(true); } catch (e) {}             // obogaceno stanje odmah u kontrolnu tacku
+      } catch (e) { try { navLog("gps-paket-greska", { m: String((e && e.message) || e) }); } catch (e2) {} }
+    };
+    obradi();
+    return "ok";   // paket je PREUZET (dug rep se dovrsava u talasima)
+  } catch (e) {
+    try { navLog("gps-paket-greska", { m: String((e && e.message) || e) }); } catch (e2) {}
+    return "nije";   // bafer na disku OSTAJE - novi pokusaj na sledecem povratku u prednji plan
+  }
+}
+try { window.rmrGpsPaket = rmrGpsPaket; } catch (e) {}
+function rmrGpsSignal(cmd) {
+  /* JS -> nativni GPS kolektor (iOS). Na webu, Androidu i pre prvog Xcode Run-a handler ne
+     postoji - tihi no-op, ponasanje identicno 0.9.82. Nikad @capacitor/geolocation (ne ume
+     allowsBackgroundLocationUpdates, a 5 s timeout mu trajno ubija watch). */
+  try {
+    const h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.rmrGps;
+    if (h) h.postMessage({ cmd });
+  } catch (e) {}
 }
 function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ rute - trag/km/brzina/nagib/kolekcije, bez instrukcija
   if (!disclaimerOK(startFreeRide)) return;   // jednom, pre prve voznje
@@ -11557,6 +11906,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   RIDE._stajeOd = null;   // ostaci prethodne voznje: stari trenutak stajanja ne sme da predje u novu
   try { pauzaWxStop(); RIDE._pauzaWxRek = null; } catch (e) {}   // i nijedan tajmer pauze ne prelazi u novu vožnju
   RIDE.paused = false; RIDE.pauseMs = 0; RIDE.pauseT0 = null; RIDE.pauzeNa = null;
+  RIDE.pauseAuto = false; RIDE._pauzaCkpT = 0; RIDE._pauzaPitajOd = 0; RIDE._haosOd = 0; RIDE._haosT = 0; RIDE._pauzaRazlog = null; RIDE._pauzaIdx = null; RIDE._resumeCnt = 0;   // svez auto-pauza stroj (0.9.83)
   RIDE.trkM = 0; RIDE.lastTrk = null; RIDE.lastFixObj = null; RIDE.leanChk = null; RIDE.trace = []; RIDE._trStepM = 12; RIDE._sumFoto = null;
   RIDE.samples = []; RIDE._smpT = 0; RIDE.momBrz = null;   // momenti nagiba zive na LEAN (momL/momR) - resetuje ih leanReset (0.9.82)
   RIDE.log = []; navLog("start-free", { v: APP_VERSION });
@@ -11610,9 +11960,12 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
     const la = p.coords.latitude, lo = p.coords.longitude;
     RIDE.gotFix = true; RIDE.pos = { lo, la };
     const nowFix = Date.now();
-    const prevFixTs = RIDE.lastFixTs; RIDE.lastFixTs = nowFix;
     const nc = document.querySelector("#rideBar .navcard"); if (nc) nc.classList.remove("acquiring", "nosignal");
-    if (RIDE.paused) { try { if (RIDE.marker && RIDE.marker._map) RIDE.marker.setLngLat([lo, la]); } catch (e) {} return; }
+    if (RIDE.paused) {   // PAUZA: statistika miruje; brzina/svezina se prate zbog auto-nastavka (0.9.83)
+      pauzaFixTick(p, nowFix);
+      try { if (RIDE.marker && RIDE.marker._map) RIDE.marker.setLngLat([lo, la]); } catch (e) {}
+      return;
+    }
     try {
       if (RIDE.marker) {
         if (!RIDE.marker._map) { RIDE.marker.setLngLat([lo, la]); RIDE.marker.addTo(map); }
@@ -11621,21 +11974,8 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
         if (hdgM != null && !isNaN(hdgM)) RIDE.marker.setRotation(hdgM);
       }
     } catch (e) {}
-    const accFix = p.coords.accuracy || 0;
-    let spdK = (p.coords.speed != null && p.coords.speed >= 0) ? p.coords.speed * 3.6
-             : speedFromFix(RIDE.lastFixObj, { lo, la, ts: nowFix });
-    if (spdK == null) spdK = (nowFix - (RIDE.spdTs || 0) < 3000) ? RIDE.spdKmh : 0;
-    else RIDE.spdTs = nowFix;
-    RIDE.spdKmh = spdK;
-    if (accFix < 80) {   // isti odometar/trag kao navigacija
-      if (RIDE.lastTrk && spdK > 2) {
-        const stepM = haversine(RIDE.lastTrk.la, RIDE.lastTrk.lo, la, lo) * 1000;
-        if (stepM < 200) RIDE.trkM = (RIDE.trkM || 0) + stepM;
-      }
-      RIDE.lastTrk = { la, lo };
-      tragBelezi(lo, la);   // 0.9.82: zajednicka tacka traga, bez dupliranja koraka
-    }
-    RIDE.lastFixObj = { lo, la, ts: nowFix };
+    const fx = fixKorak(p, nowFix);   // brzina/odometar/trag/movMs/max/uzorci - deljeno sa replay-em (0.9.83); i _stajeOd zivi i ovde (W1)
+    const spdK = fx.spdK, accFix = fx.accFix;
     navLog("ffix", { la: +la.toFixed(5), lo: +lo.toFixed(5), acc: Math.round(accFix), v: Math.round(spdK) });
     try { kolTikni(lo, la); } catch (e) {}
     if (!RIDE.freeNaz && accFix < 100) {   // ime kraja za sazetak stize asinhrono, ne blokira nista
@@ -11654,18 +11994,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
       const _ab = document.getElementById("rideAhead");
       if (_ab && RIDE.aheadHideAt && Date.now() > RIDE.aheadHideAt) { _ab.classList.remove("on"); RIDE.aheadHideAt = 0; }
     } catch (e) {}
-    try {
-      if (accFix < 80 && p.coords.speed != null && spdK > RIDE.maxKmh && spdK < 260) { RIDE.maxKmh = spdK; RIDE.momBrz = [lo, la]; }
-      if (prevFixTs && spdK > 4) RIDE.movMs += Math.min(5000, nowFix - prevFixTs);
-      /* 0.9.82: stari pisci momenata nagiba (RIDE.momLn*, _mxL/_mxR, _maxLnSeen) su OBRISANI -
-         citali su sirov LEAN.cur na 1 Hz bez garda drzanja, pa su davali VECE brojeve od plocica
-         (52 vs 29 na Jadriji). Momenat sada pise ISKLJUCIVO gard u leanTick/leanMotion (LEAN.momL/momR). */
-      if (!RIDE._smpT || nowFix - RIDE._smpT >= 3000) {
-        RIDE._smpT = nowFix;
-        (RIDE.samples = RIDE.samples || []).push({ t: Math.round((nowFix - RIDE.t0) / 1000), v: Math.round(spdK), ln: LEAN.on ? Math.round(LEAN.cur) : null });
-        if (RIDE.samples.length > 2400) RIDE.samples = RIDE.samples.filter((_, i) => i % 2 === 0);
-      }
-    } catch (e) {}
+    /* 0.9.83: max/movMs/uzorci sada zive u fixKorak (deljeno sa replay-em) - stari blok ovde je uklonjen. */
     try { voznjaCkp(); } catch (e) {}   // kontrolna tacka: iOS kill vise ne odnosi voznju (0.9.82)
     /* Pauza se ODUZIMA (11.8.). Bez ovoga je prikaz stajao dok si u kafani, pa na prvom fiksu posle
        nastavka skocio za celu duzinu pauze odjednom - posle 40 min sa 1:10 na 1:50. Poruka pauze
@@ -11690,8 +12019,13 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   };
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} }
   RIDE.watch = navigator.geolocation.watchPosition(RIDE._onFix, RIDE._onFixErr, NAV_GPS_OPTS);
+  rmrGpsSignal("start");   // nativni pozadinski kolektor (iOS) - na webu tihi no-op (0.9.83)
   clearInterval(RIDE.wdInt);
   RIDE.wdInt = setInterval(() => { try {
+    /* Pre-pauza sekcija (0.9.83, W1 parnost sa navigacionim wdInt-om): auto-pauza mora da kuca i u
+       pauzi i van nje, pa zivi IZNAD garda ispod; "Druga ruta" isto (vremenski prag stajanja). */
+    rideAltStanje();
+    pauzaAutoTick(Date.now());
     /* U pauzi watchdog cuti (11.8.). Bez ovog garda: telefon ode u dzep, fiksevi stanu, watchdog
        prepise "Pauza" tekstom "Slab GPS signal..." - i nista ga nikad ne vrati. Covek se vrati iz
        kafane, procita da se aplikacija muci, sedne i vozi DALJE U PAUZI, pa se gubi ostatak ture:
@@ -11795,6 +12129,7 @@ function startRide() {
   rideLock();
   ridePauseReg();
   RIDE.freeRide = false; RIDE.paused = false; RIDE.pauseMs = 0; RIDE.pauseT0 = null; RIDE.pauzeNa = null;   // navigaciona voznja = svez pauza-stroj
+  RIDE.pauseAuto = false; RIDE._pauzaCkpT = 0; RIDE._pauzaPitajOd = 0; RIDE._haosOd = 0; RIDE._haosT = 0; RIDE._pauzaRazlog = null; RIDE._pauzaIdx = null; RIDE._resumeCnt = 0;   // i svez auto-pauza stroj (0.9.83)
   try { const u = new SpeechSynthesisUtterance(""); speechSynthesis.speak(u); } catch (e) {}   // otkljucaj TTS na user gesture (iOS)
   if (!localStorage.getItem("rmr2_mutehint") && /iPhone|iPad/.test(navigator.userAgent)) {
     try { localStorage.setItem("rmr2_mutehint", "1"); } catch (e) {}
@@ -11829,7 +12164,7 @@ function startRide() {
     RIDE.gotFix = true;
     RIDE.pos = { lo, la };   // sheet "druga ruta" racuna od trenutne tacke
     if (RIDE.paused) {   // PAUZA (kafana): marker prati poziciju, ali km/trag/statistika/nagib/reroute/glas MIRUJU
-      RIDE.lastFixTs = Date.now();   // watchdog ne sme "Slab GPS" u pauzi
+      pauzaFixTick(p, Date.now());   // 0.9.83: lastFixTs + brzina + provera auto-nastavka (watchdog i dalje cuti)
       try { if (RIDE.marker && RIDE.marker._map) RIDE.marker.setLngLat([lo, la]); } catch (e) {}
       return;
     }
@@ -11845,23 +12180,11 @@ function startRide() {
       }
     } catch (e) {}
     const nowFix = Date.now();
-    const prevFixTs = RIDE.lastFixTs; RIDE.lastFixTs = nowFix;   // ODMAH - watchdog ne sme "Slab GPS" dok reroute uredno prima fikseve (review nalaz 6.8.)
-    const accFix = p.coords.accuracy || 0;
-    let spdK = (p.coords.speed != null && p.coords.speed >= 0) ? p.coords.speed * 3.6
-             : speedFromFix(RIDE.lastFixObj, { lo, la, ts: nowFix });   // iOS cesto ne da speed - onda delta pozicija
-    if (spdK == null) spdK = (nowFix - (RIDE.spdTs || 0) < 3000) ? RIDE.spdKmh : 0;   // kratak ispad: drzi staru do 3 s
-    else RIDE.spdTs = nowFix;
-    RIDE.spdKmh = spdK;
-    rideAltBrzina(spdK);   // "Druga ruta" se pali kad vozac stane, gasi cim krene
-    if (accFix < 80) {   // odometar iz TRAGA - odometar duz rute je 5.8. STAO cim te (lazno) proglasi van rute
-      if (RIDE.lastTrk && spdK > 2) {
-        const stepM = haversine(RIDE.lastTrk.la, RIDE.lastTrk.lo, la, lo) * 1000;
-        if (stepM < 200) RIDE.trkM = (RIDE.trkM || 0) + stepM;   // GPS skok se ne broji u km
-      }
-      RIDE.lastTrk = { la, lo };
-      tragBelezi(lo, la);   // 0.9.82: zajednicka tacka traga (~12 m), bez dupliranja koraka
-    }
-    RIDE.lastFixObj = { lo, la, ts: nowFix };
+    /* 0.9.83: brzina/odometar/trag/movMs/max/uzorci u fixKorak - ISTA matematika kao replay
+       pozadinskih fikseva; lastFixTs se i dalje pise ODMAH (unutra), pa watchdog ne sme "Slab GPS"
+       dok reroute uredno prima fikseve (review nalaz 6.8.). rideAltBrzina zivi u fixKorak. */
+    const fx = fixKorak(p, nowFix);
+    const spdK = fx.spdK, accFix = fx.accFix, prevFixTs = fx.prevFixTs;
     const pr = navProject(route, lo, la, RIDE.lastRouteI);
     RIDE.lastRouteI = pr.i;
     const d = pr.d;
@@ -11972,17 +12295,8 @@ function startRide() {
       wxLiveTick(route, curKm);   // ziva prognoza: preracun na 30 s (bez poziva), sveze brojke na 20 min
     } catch (e) {}
     document.getElementById("rideKmh").textContent = Math.round(spdK);   // brzina je izracunata na vrhu ticka (radi i kad GPS ne da speed - prikaz 5.8. ostajao na "0")
-    try {   // statistika voznje (summary): max/prosek brzine; brzina hrani i nagib (gate + kinematicki kanal)
-      if (accFix < 80 && p.coords.speed != null && spdK > RIDE.maxKmh && spdK < 260) { RIDE.maxKmh = spdK; RIDE.momBrz = [lo, la]; }   // max iz pravog GPS speed-a + GDE (pin u sazetku)
-      if (prevFixTs && spdK > 4) RIDE.movMs += Math.min(5000, nowFix - prevFixTs);   // vreme U POKRETU (pauza na pumpi ne kvari prosek); lastFixTs je vec upisan na vrhu ticka
-      /* 0.9.82: stari pisci momenata nagiba (RIDE.momLn*, _mxL/_mxR, _maxLnSeen) su OBRISANI -
-         momenat sada pise iskljucivo gard u leanTick/leanMotion (LEAN.momL/momR), pa se pin i plocica slazu. */
-      if (!RIDE._smpT || nowFix - RIDE._smpT >= 3000) {   // uzorci za krivu nagiba u sazetku (~3 s; pauza ne stize dovde)
-        RIDE._smpT = nowFix;
-        (RIDE.samples = RIDE.samples || []).push({ t: Math.round((nowFix - RIDE.t0) / 1000), v: Math.round(spdK), ln: LEAN.on ? Math.round(LEAN.cur) : null });
-        if (RIDE.samples.length > 2400) RIDE.samples = RIDE.samples.filter((_, i) => i % 2 === 0);   // duge ture: proredi
-      }
-    } catch (e) {}
+    /* 0.9.83: max/movMs/uzorci sada zive u fixKorak (deljeno sa replay-em) - stari blok ovde je uklonjen.
+       0.9.82 lekcija i dalje vazi: momente nagiba pise ISKLJUCIVO gard u leanTick/leanMotion. */
     try { voznjaCkp(); } catch (e) {}   // kontrolna tacka: iOS kill vise ne odnosi voznju (0.9.82)
     try { drawRoadLabel(route, d, lo, la); } catch (e) {}
     try {   // ogranicenje brzine: samo gde OSM zna; preko 7 km/h iznad -> brojka pocrveni
@@ -12016,11 +12330,13 @@ function startRide() {
   };
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} }   // dupli tap na Kreni ne sme da ostavi dva watcher-a
   RIDE.watch = navigator.geolocation.watchPosition(RIDE._onFix, RIDE._onFixErr, NAV_GPS_OPTS);
+  rmrGpsSignal("start");   // nativni pozadinski kolektor (iOS) - na webu tihi no-op (0.9.83)
   clearInterval(RIDE.wdInt);   // GPS watchdog - 5.8. je banner samouvereno cutao dok fiksevi ne stizu
   RIDE.wdInt = setInterval(() => { try {
     /* "Druga ruta" se osvezava PRE garda ispod: prag stajanja je vremenski, pa dugme mora da se
        upali i kad vozac stoji toliko dugo da fiksevi prestanu da se menjaju (i u pauzi). */
     rideAltStanje();
+    pauzaAutoTick(Date.now());   // auto-pauza kuca IZNAD paused garda: T1 van pauze; ckp/auto-nastavak/4h pitanje u pauzi (0.9.83)
     /* U pauzi watchdog cuti (11.8.). Bez ovog garda: telefon ode u dzep, fiksevi stanu, watchdog
        prepise "Pauza" tekstom "Slab GPS signal..." - i nista ga nikad ne vrati. Covek se vrati iz
        kafane, procita da se aplikacija muci, sedne i vozi DALJE U PAUZI, pa se gubi ostatak ture:
@@ -12051,6 +12367,7 @@ function startRide() {
    a na sledecem pokretanju korisnik bira: sacuvaj u dnevnik ili odbaci. JSON ostaje ispod ~25 KB
    (trag <=800 tacaka, isti filter kao dnevnik; kvota: prepolovi cilj traga i probaj JOS jednom). */
 const CKP_KEY = "mr_voznja_uToku";
+const GPS_REP_KEY = "mr_gps_rep";   // pozadinski rep ubijene voznje (0.9.83): rmrGpsPaket ga sacuva, voznjaOporavak ga zalepi na snimak
 function voznjaCkpSnimak(cilj) {   // snimak tekuce voznje (cist objekat - testira se round-trip)
   const now = Date.now();
   const mk = (n) => (RIDE.trace && RIDE.trace.length > 1)
@@ -12063,12 +12380,12 @@ function voznjaCkpSnimak(cilj) {   // snimak tekuce voznje (cist objekat - testi
     naz: RIDE.freeRide ? (RIDE.freeNaz || "Slobodna vožnja")
        : (g.from && g.from.name && g.to && g.to.name) ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` : null,
     trkM: Math.round(RIDE.trkM || 0), maxKmh: Math.round(RIDE.maxKmh || 0), movMs: Math.round(RIDE.movMs || 0),
-    pauzMs: Math.round((RIDE.pauseMs || 0) + (RIDE.paused && RIDE.pauseT0 ? now - RIDE.pauseT0 : 0)),
-    lnL: LEAN.on ? Math.round(LEAN.maxL) : null, lnR: LEAN.on ? Math.round(LEAN.maxR) : null,
+    pauzMs: Math.round((RIDE.pauseMs || 0) + (RIDE.paused && RIDE.pauseT0 ? Math.max(0, now - RIDE.pauseT0) : 0)),   // klamp: sat ume nazad (0.9.83 review)
+    lnL: (LEAN.on || LEAN.rekal) ? Math.round(LEAN.maxL) : null, lnR: (LEAN.on || LEAN.rekal) ? Math.round(LEAN.maxR) : null,   // i U TOKU re-kalibracije maksimumi moraju u snimak (0.9.83)
     momBrz: RIDE.momBrz ? [+RIDE.momBrz[0].toFixed(5), +RIDE.momBrz[1].toFixed(5)] : null,
     momL: LEAN.momL ? [+LEAN.momL[0].toFixed(5), +LEAN.momL[1].toFixed(5), LEAN.momL[2]] : null,
     momR: LEAN.momR ? [+LEAN.momR[0].toFixed(5), +LEAN.momR[1].toFixed(5), LEAN.momR[2]] : null,
-    pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x[2] > 0).map((x) => [+x[0].toFixed(5), +x[1].toFixed(5), x[2]]) : null,
+    pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x && x[0] != null && x[2] > 0).map((x) => [+x[0].toFixed(5), +x[1].toFixed(5), x[2]]) : null,   // placeholder bez pozicije (0.9.83) ne sme u snimak
     kisa: !!RIDE.kisa, kolCnt: RIDE.kolCnt || 0,   // bedz kise i brojac kolekcija ne smeju da nestanu sa oporavkom (0.9.82 review)
     leanChk: (RIDE.leanChk && RIDE.leanChk.n) ? { n: RIDE.leanChk.n, sum: Math.round((RIDE.leanChk.sum || 0) * 10) / 10 } : null,
     trag: mk(cilj || 800),
@@ -12111,14 +12428,47 @@ function voznjaCkp(force) {   // zove je svaki GPS tick (throttle ~15 s) + pageh
     }
   } catch (e) {}
 }
-function voznjaCkpObrisi() { try { localStorage.removeItem(CKP_KEY); RIDE._ckpT = 0; RIDE._ckpTrag = 0; } catch (e) {} }
+function voznjaCkpObrisi() { try { localStorage.removeItem(CKP_KEY); localStorage.removeItem(GPS_REP_KEY); RIDE._ckpT = 0; RIDE._ckpTrag = 0; } catch (e) {} }
 window.addEventListener("pagehide", () => { try { if (document.body.classList.contains("riding")) voznjaCkp(true); } catch (e) {} });
-document.addEventListener("visibilitychange", () => { try {
-  if (document.visibilityState === "hidden" && document.body.classList.contains("riding")) voznjaCkp(true);
-} catch (e) {} });
+function pauzaT2Hidden() {
+  /* T2 (0.9.83): odlazak u pozadinu/zakljucavanje DOK SE STOJI = trenutna tiha pauza. JS u
+     pozadini ne zivi, pa bi vreme voznje inace teklo do povratka; pokret u pozadini pokriva
+     nativni kolektor. Pauza se upisuje PRE kontrolne tacke, da je snimak vec nosi. Vrati li se
+     covek za <3 min, izlaz je RETROAKTIVNO brise (review #3) - semafor ne ostavlja trag. */
+  if (document.visibilityState !== "hidden" || !document.body.classList.contains("riding")) return;
+  if (!RIDE.paused && pauzaStoji(Date.now())) ridePauzaUdji(true, "pozadina");
+  voznjaCkp(true);
+}
+document.addEventListener("visibilitychange", () => { try { pauzaT2Hidden(); } catch (e) {} });
+function voznjaOporavakRep(snap) {
+  /* Pozadinski rep ubijene voznje (0.9.83 review #14): iOS ubije proces usred pozadinskog
+     snimanja - nativni bafer stigne tek na sledecem pokretanju, kad voznja vise ne tece, pa ga
+     rmrGpsPaket sacuva pod GPS_REP_KEY. Oporavak ga ovde zalepi NA hidrirano stanje: samo fiksevi
+     POSLE poslednje kontrolne tacke, kroz ISTI fixKorak, sa ts pomerenim za rebazu t0
+     (voznjaCkpHidrat je t0 vezala za "sada"), pa uzorci sednu na pravo mesto vremenske ose;
+     na kraju se t0 pomeri unazad da trajanje obuhvati i rep. */
+  let raw = null;
+  try { raw = localStorage.getItem(GPS_REP_KEY); } catch (e) {}
+  if (!raw) return;
+  let fixes = null;
+  try { fixes = JSON.parse(raw); } catch (e) {}
+  if (!Array.isArray(fixes) || !fixes.length || !snap || !snap.ts || !snap.t0) return;
+  const shift = RIDE.t0 - snap.t0;   // rebaza: hidrirani t0 zivi u "sada" koordinatama
+  const batch = fixes
+    .map((f) => f && { ts: +f.ts, la: +f.la, lo: +f.lo, spd: (f.spd != null && +f.spd >= 0) ? +f.spd : null, acc: +f.acc >= 0 ? +f.acc : 999 })
+    .filter((f) => f && isFinite(f.ts) && isFinite(f.la) && isFinite(f.lo) && f.ts > snap.ts)
+    .sort((a, b) => a.ts - b.ts);
+  if (!batch.length) return;
+  RIDE.lastFixTs = snap.ts + shift; RIDE.lastFixObj = null; RIDE.lastTrk = null; RIDE._smpT = 0;
+  for (const f of batch)
+    fixKorak({ coords: { latitude: f.la, longitude: f.lo, speed: f.spd, accuracy: f.acc, heading: null } }, f.ts + shift, true);
+  const rep = Math.max(0, Math.min(batch[batch.length - 1].ts - snap.ts, 864e5));   // klamp na dan (review #7; 864e5 - B8 gard brani satne prozore u oporavku)
+  RIDE.t0 -= rep;   // trajanje = do kraja repa, ne do kontrolne tacke
+  try { navLog("gps-rep-oporavak", { n: batch.length, repMs: rep }); } catch (e) {}
+}
 function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne tacke -> Sacuvaj / Odbaci
   if (document.body.classList.contains("riding")) return;   // voznja vec tece - njena kontrolna tacka se ne dira (0.9.82 review)
-  const obrisi = () => { try { localStorage.removeItem(CKP_KEY); } catch (e) {} };
+  const obrisi = () => { try { localStorage.removeItem(CKP_KEY); localStorage.removeItem(GPS_REP_KEY); } catch (e) {} };   // rep bez snimka je siroce - ide zajedno
   let raw = null;
   try { raw = localStorage.getItem(CKP_KEY); } catch (e) {}
   if (raw == null) return;
@@ -12137,6 +12487,7 @@ function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne 
   let sacuvano = false;
   try {
     voznjaCkpHidrat(snap);
+    try { voznjaOporavakRep(snap); } catch (e) {}   // pozadinski rep (GPS_REP_KEY): kilometri POSLE poslednje kontrolne tacke (review #14)
     sacuvano = zabeleziVoznju() === "upisano";
     RIDE.lastSummary = null;   // sazetak se ne otvara sam pri startu - zapis je u dnevniku (Vožnje)
   } catch (e) {}
@@ -12169,6 +12520,7 @@ function stopRide() {
   try { cancelAnimationFrame(RIDE.camRAF); RIDE.camRAF = null; } catch (e) {}
   try { navRideLayersOff(); } catch (e) {}   // vrati planersku (weather) liniju rute
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
+  rmrGpsSignal("stop");   // nativni kolektor se gasi sa voznjom; njegov disk-bafer se tada brise (0.9.83)
   try { clearInterval(RIDE.prijInt); RIDE.prijInt = null; } catch (e) {}
   try { nightRoads(false); } catch (e) {}   // svetlina mape nazad na pregledni nivo
   try { map.setPadding({ top: 0, bottom: 0, left: 0, right: 0 }); } catch (e) {}   // vrati kameru na centriranje van voznje
@@ -12184,6 +12536,7 @@ function stopRide() {
   try { if (RIDE.lock) { RIDE.lock.release(); RIDE.lock = null; } } catch (e) {}
   document.body.classList.remove("riding", "freeride", "ridepaused");
   RIDE.freeRide = false; RIDE.freeNaz = null; RIDE.paused = false; RIDE.pauseT0 = null; RIDE.pauseMs = 0; RIDE.pauzeNa = null;
+  RIDE.pauseAuto = false; RIDE._pauzaCkpT = 0; RIDE._pauzaPitajOd = 0; RIDE._haosOd = 0; RIDE._haosT = 0; RIDE._pauzaRazlog = null; RIDE._pauzaIdx = null; RIDE._resumeCnt = 0;   // auto-pauza stroj se gasi sa voznjom (0.9.83)
   try { const pb = document.getElementById("ridePause"); if (pb) { pb.classList.remove("on"); pb.innerHTML = RIDE_PAUSE_SVG; } } catch (e) {}
   try { const pl = document.querySelector("#rideBarBottom .pill"); if (pl) pl.classList.remove("lon", "lact"); } catch (e) {}
   try { rideSumShow(); } catch (e) {}   // sazetak voznje (nagib/krivine/brzine) - posle skidanja riding klase
