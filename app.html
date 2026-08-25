@@ -1825,6 +1825,26 @@
   #rideSum .card.dragging { transition: none; }
   #rideSum .grab, #rideSum #rsKick { touch-action: none; cursor: grab; }
   #rideSum .rsxtra { display: flex; gap: 12px; margin-top: 10px; padding: 0 20px; flex-wrap: wrap; }   /* 0.9.86: tura dodaje dugmad (Razdvoji/Preimenuj/Dodaj u turu) - red sme u dva reda */
+  /* OCENE DEONICA (0.9.89): kartica u sazetku - po deonici tri reda cipova (Asfalt/Saobracaj/Utisak),
+     isti radio-chip idiom kao share birac; brojevi 1-5, bez emodzija (RMR pravilo) */
+  #rideSum .rsocene { margin: 12px 20px 0; background: var(--surface-veil); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 12px 14px; }
+  #rideSum .rsocene .ont { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-muted); }
+  #rideSum .rsocene .ored { padding: 10px 0 6px; border-bottom: 1px solid var(--line-hairline); }
+  #rideSum .rsocene .ored:last-of-type { border-bottom: none; }
+  #rideSum .rsocene .onaz { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 700; color: var(--fg-strong); }
+  #rideSum .rsocene .onaz .okm { flex: none; color: var(--fg-muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+  #rideSum .rsocene .ogrp { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  #rideSum .rsocene .olab { flex: none; width: 72px; font-size: 11px; font-weight: 600; color: var(--fg-muted); }
+  #rideSum .rsocene .ochip { min-width: 44px; height: 38px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line-strong);
+    background: transparent; color: var(--fg-soft); font: 600 12px var(--font-ui); cursor: pointer; }   /* 38px meta za rukavice (pregled #12) */
+  #rideSum .rsocene .ochip.on { border-color: rgba(255,106,0,.65); color: var(--accent); background: rgba(255,106,0,.15); }
+  #rideSum .rsocene .ostar { min-width: 38px; padding: 0; font-variant-numeric: tabular-nums; }
+  #rideSum .rsocene .obel { width: 100%; margin-top: 8px; height: 34px; border-radius: var(--r-sm); border: 1px solid var(--line);
+    background: transparent; color: var(--fg); font: 400 13px var(--font-ui); padding: 0 10px; }
+  #rideSum .rsocene .obtns { display: flex; gap: 10px; margin-top: 12px; }
+  #rideSum .rsocene .obtns button { flex: 1; height: 38px; border-radius: var(--r-sm); border: 1px solid var(--line-strong);
+    background: transparent; color: var(--fg-soft); font: 600 13px var(--font-ui); cursor: pointer; }
+  #rideSum .rsocene .obtns #rsOceneSacuvaj { border-color: rgba(255,106,0,.65); color: var(--accent); }
   #rideSum .rsxtra button { flex: 1 1 40%; height: 40px; border-radius: var(--r-sm); background: transparent; color: var(--fg-soft);
     border: 1px solid var(--line-strong); font: 600 13px var(--font-ui); cursor: pointer; }
   /* TURA (0.9.86): spisak etapa po danima u sazetku ture - tap otvara sazetak same etape */
@@ -2570,6 +2590,9 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <div class="btns">
       <button class="shr" id="rsShare">Podeli</button><button class="cls" id="rsClose">Gotovo</button>
     </div>
+    <!-- OCENE DEONICA (0.9.89): posle sveze voznje - do 3 kurirane deonice koje je trag pokrio;
+         tiho, preskocivo, nikad ne blokira sazetak i nikad se ne vraca za istu voznju -->
+    <div class="rsocene" id="rsOcene" aria-live="polite" hidden></div>
     <div class="rsxtra"><button id="rsNazadTura" type="button" hidden>‹ Nazad na turu</button><button id="rsGpx" type="button">Izvezi GPX</button><button id="rsRuta" type="button">Sačuvaj kao rutu</button><button id="rsTura" type="button" hidden>Dodaj u turu</button><button id="rsRazdvoji" type="button" hidden>Razdvoji turu</button><button id="rsPreim" type="button" hidden>Preimenuj</button></div>
   </div></div>
   <!-- Izmena stanica (11.8., Boskov zahtev "kao kod Google Maps-a"): pun ekran sa spiskom
@@ -5997,6 +6020,15 @@ async function loadPutevi() {
       const d = await fetchData("data/stanje_puta.json?v=" + APP_VERSION, { timeoutMs: 9000 });
       state.bjp = d && Array.isArray(d.deonice) ? d : null;
     } catch { state.bjp = null; }   // bez fajla sloj prosto ne postoji
+    /* OCENE (0.9.89): korisnikova poslednja ocena po deonici se preslika preko NJEGOVOG
+       pogleda (prikaz + sivenje) - klonovi, fetch podaci se ne mutiraju (oceneOverlay).
+       Bez ijedne ocene identitet objekta se CUVA (kartica/testovi smeju da porede referencu). */
+    try {
+      if (state.bjp) {
+        const ov = oceneOverlay(state.bjp.deonice);
+        if (ov !== state.bjp.deonice) state.bjp = { ...state.bjp, deonice: ov };
+      }
+    } catch (e) {}
   }
   /* 0.9.87: pecena baza kuriranih koridora (tools/peci_deonice.py) - unija ide SAMO u
      state.bjpKur, za sivenje kombinovane. state.bjp ostaje ISKLJUCIVO stanje_puta:
@@ -6011,7 +6043,9 @@ async function loadPutevi() {
       kur = k && Array.isArray(k.deonice) ? k.deonice : null;
       state.bjpKurOk = !!kur;
     } catch { kur = null; }
-    state.bjpKur = ((state.bjp && state.bjp.deonice) || []).concat(kur || []);
+    let unija = ((state.bjp && state.bjp.deonice) || []).concat(kur || []);
+    try { unija = oceneOverlay(unija); } catch (e) {}   // OCENE (0.9.89): i unija za sivenje nosi korisnikov pogled
+    state.bjpKur = unija;
   }
   return state.bjp;
 }
@@ -7626,7 +7660,8 @@ async function supa(path, opts = {}) {
   const r = await fetch(SUPA_URL + "/rest/v1/" + path, { ...opts, signal,
     headers: { apikey: SUPA_KEY, Authorization: "Bearer " + SUPA_KEY,
       "Content-Type": "application/json", ...(opts.headers || {}) } });
-  if (!r.ok) { let t = ""; try { t = (await r.json()).message || ""; } catch (e) {} throw new Error(t || ("HTTP " + r.status)); }
+  if (!r.ok) { let t = ""; try { t = (await r.json()).message || ""; } catch (e) {}
+    const gr = new Error(t || ("HTTP " + r.status)); gr.status = r.status; throw gr; }   // status uz gresku (0.9.89): pozivaoci razlikuju "nema funkcije" (404) od otrovnog reda/mreze
   const ct = r.headers.get("content-type") || "";
   return ct.includes("json") ? r.json() : null;
 }
@@ -7638,7 +7673,17 @@ function deviceId() {
 }
 /* slanje sa redom za cekanje: bez mreze prijava ne propada nego saceka */
 function prijaveQueue() { try { return JSON.parse(localStorage.getItem("rmr2_prijave_out") || "[]"); } catch (e) { return []; } }
-function setPrijaveQueue(q) { try { localStorage.setItem("rmr2_prijave_out", JSON.stringify(q.slice(-10))); } catch (e) {} }
+function setPrijaveQueue(q) {
+  try {
+    /* Cap (0.9.89 pregled #4): red NIKAD ne sme prijavom opasnosti da plati ocenu - prijave
+       zadrzavaju svojih poslednjih 10 (kao do sada), ocene deonica svojih najnovijih 6
+       (OCENE_RED_CAP). Ukupno ograniceno, a saobracaj ocena ne moze da istisne prijavu. */
+    const oc = q.filter((r) => r && r.tip === "ocena-deonice");
+    const pr = q.filter((r) => !(r && r.tip === "ocena-deonice"));
+    const drzi = new Set(pr.slice(-10).concat(oc.slice(-OCENE_RED_CAP)));
+    localStorage.setItem("rmr2_prijave_out", JSON.stringify(q.filter((r) => drzi.has(r))));
+  } catch (e) {}
+}
 /* baza je bez kvacica (sljunak/divljac) - klijent prevodi u oba smera */
 const TIP2DB = { "kamera": "kamera_mobilna", "šljunak": "sljunak", "divljač": "divljac" };
 const DB2TIP = { "kamera_mobilna": "kamera", "sljunak": "šljunak", "divljac": "divljač" };
@@ -7687,8 +7732,12 @@ function flushPrijave() {
     const q = prijaveQueue();
     if (!q.length) return;
     const sada = Date.now();
-    const ostaju = q.filter((r) => sada - (r._ts || sada) < 30 * 60000);   // starije od 30 min nema smisla slati
-    const row = ostaju.shift();   // najvise JEDNA po ciklusu (trigger dozvoljava 1/min po uredjaju)
+    const jeOcena = (r) => r && r.tip === "ocena-deonice";
+    // prijava opasnosti starija od 30 min nema smisla; ocena deonice (0.9.89) ne zastareva
+    // tako - ceka i danima (OCENE_ROK_MS), npr. dok backend semu ne dobije ili mreze ne bude
+    const ostaju = q.filter((r) => sada - (r._ts || sada) < (jeOcena(r) ? OCENE_ROK_MS : 30 * 60000));
+    const iPr = ostaju.findIndex((r) => !jeOcena(r));
+    const row = iPr >= 0 ? ostaju.splice(iPr, 1)[0] : null;   // najvise JEDNA prijava po ciklusu (trigger dozvoljava 1/min po uredjaju)
     if (row) {
       try {
         const { _ts, ...body } = row;
@@ -7700,14 +7749,329 @@ function flushPrijave() {
         else if (!/HTTP 4|constraint|invalid/i.test(msg)) ostaju.unshift(row);   // mrezna greska - ostaje; trajna 4xx se baca
       }
     }
-    setPrijaveQueue(ostaju);
+    const iOc = ostaju.findIndex(jeOcena);
+    const oc = iOc >= 0 ? ostaju.splice(iOc, 1)[0] : null;    // i najvise JEDNA ocena po ciklusu, nezavisno od prijava
+    if (oc) {
+      try { const { _ts, ...body } = oc; await upisiOcenu(body); }
+      catch (e) {
+        /* (pregled #5) otrovan red se BACA odmah (trajna 4xx: constraint/invalid), kao kod
+           prijava - nikad 14-dnevna petlja. IZUZETAK je 404: backend jos nema ocene-semu
+           (docs/supabase-ocene.sql), pa red posteno ceka; mreza/5xx/anti-spam takodje cekaju,
+           i to na KRAJU reda - neisporuciva ocena ne sme da zaglavi prijave opasnosti. */
+        const st = e && e.status;
+        const otrovna = st != null && st >= 400 && st < 500 && st !== 404 && !/Polako|limit/i.test(String(e.message || e));
+        if (!otrovna) ostaju.push(oc);
+      }
+    }
+    /* (pregled #3) zavrsni upis preko SVEZEG citanja: red dopisan TOKOM await-a gore (nova
+       prijava/ocena) mora da prezivi - goli setPrijaveQueue(ostaju) bi ga nemo pregazio.
+       Dopune idu iskljucivo na kraj reda (posalji* + setPrijaveQueue), pa je visak = svez.slice(q.length). */
+    const svez = prijaveQueue();
+    setPrijaveQueue(ostaju.concat(svez.slice(q.length)));
   })().catch(() => {}).finally(() => { _flushing = null; });
   return _flushing;
 }
 try { window.addEventListener("online", () => { try { flushPrijave(); } catch (e) {} }); } catch (e) {}
+/* (pregled #2) i na STARTU aplikacije: ocena sacuvana na kraju voznje je do sada cekala
+   SLEDECU voznju (interval zivi samo u voznji) ili online event - sada red proba i sam,
+   malo posle podizanja, da mrezni promasaj sinoc ne znaci ocenu zaglavljenu danima. */
+try { setTimeout(() => { try { flushPrijave(); } catch (e) {} }, 7000); } catch (e) {}
 function prijavaStarost(ts) {
   const min = Math.max(0, Math.round((Date.now() - new Date(ts).getTime()) / 60000));
   return min < 1 ? "upravo prijavljeno" : min < 60 ? "pre " + min + " min" : "pre " + Math.round(min / 60) + " h";
+}
+/* ---------------- OCENE DEONICA (0.9.89) ----------------
+   Boskov nalog 25.8. (umesto odbijenog "(izracunato)" bedza): vozac na KRAJU voznje oceni
+   kurirane deonice koje je stvarno vozio - Booking stil, tri reda po deonici (Asfalt /
+   Saobracaj / Utisak), preskocivo jednim tapom, NIKAD u toku voznje (glasovna doktrina).
+   Ocena zivi lokalno (mr_ocene), preslika se preko KORISNIKOVOG pogleda na bazu (prikaz +
+   sivenje - fajlovi baze se ne diraju) i putuje u zajednicu POSTOJECIM kanalom prijava
+   (isti device-id, isti red za cekanje) - BEZ ijedne koordinate. Prikaz tudjih ocena
+   (agregati) je REZERVISAN za Atlas i ne postoji u v1 (send-only). */
+const OCENE_CAP = 100;             // mr_ocene: najstarije ispadaju
+const OCENE_MAX = 3;               // najvise deonica u kartici (najduza odvozena prva)
+const OCENA_PRAG = 0.6;            // ista pokrivenost kao sivenje/kartica stanja (bjpPokrivenost)
+const OCENE_ROK_MS = 14 * 864e5;   // red za slanje: ocena ne zastareva za 30 min kao prijava opasnosti
+const OCENE_RED_CAP = 6;           // najvise ocena u redu za slanje (prijave imaju svojih 10 - vidi setPrijaveQueue)
+const OCENE_BELESKA_MAX = 160;     // JEDAN broj svuda: input maxlength, slice pri upisu, SQL check (pregled #17)
+/* IDENTITET DEONICE (pregled #1): `br` u stanje_puta je broj DRZAVNOG PUTA, ne id deonice -
+   11 deonica deli br 21 (76 duplikata na 158 redova), a 72 deonice br uopste NEMAJU. Kljuc
+   je zato NAZIV (jedinstven 229/230 + sve pecene). Jedini sudar ("[R13] Kolašin - Berane" x2)
+   deli i od-do, pa se razdvaja JOS i kilometrazom - to su dve fizicki razlicite deonice iste
+   relacije (11,1 i 25,0 km). Spisak sudara cuva test nad PRAVOM bazom (tools/ocene.test.mjs):
+   nov sudar u podacima obara test i trazi dopunu spiska. br ostaje cisto informativan -
+   i lokalno i na serveru (agregacija za Atlas ide po nazivu). */
+const OCENE_DUPLI_NAZIV = { "[R13] Kolašin - Berane": 1 };
+function deonicaKljuc(d) {
+  if (!d) return "";
+  const n = String(d.naziv || "").normalize("NFC").slice(0, 120);
+  return OCENE_DUPLI_NAZIV[n]
+    ? n + "|" + String(d.od || "").normalize("NFC") + "-" + String(d.do || "").normalize("NFC") + "|" + (d.km != null ? d.km : "")
+    : n;
+}
+function oceneUcitaj() { const o = _zajCitaj("mr_ocene", []); return Array.isArray(o) ? o : []; }
+function ocenaSacuvaj(o) {
+  const lista = oceneUcitaj();
+  lista.unshift(o);
+  return _zajPisi("mr_ocene", lista.slice(0, OCENE_CAP));
+}
+function ocenePoslednje(lista) {   // kljuc deonice -> najnovija korisnikova ocena (latest wins; starije ostaju u listi kao istorija)
+  const m = {};
+  for (const o of (Array.isArray(lista) ? lista : [])) {
+    const k = o && (o.kljuc || o.naziv);
+    if (!k) continue;
+    if (!m[k] || (o.ts || 0) > (m[k].ts || 0)) m[k] = o;
+  }
+  return m;
+}
+/* Korisnikov pogled na bazu: njegova poslednja ocena po deonici (kljuc = deonicaKljuc) zameni
+   asfalt/saobracaj, utisak postane ocena (1-5 direktno), mg = datum ocene (time TERENSKOJ
+   deonici kod NJEGA pada i kazna svezine x0,85 u rangiranju - pecene je nikad nisu ni imale).
+   Vraca NOV niz sa klonovima - izvorni niz i objekti se NE mutiraju (fetch kes / testovi
+   porede bajt u bajt); bez ijedne ocene vraca ISTI niz (identitet cuva memo potrosace).
+   Delimicna ocena (samo utisak) menja SAMO ono sto je covek stvarno rekao. izvor se ne dira.
+   NAMERNA POSLEDICA (presuda pregleda #16): tvoja niska ocena (utisak < 4, asfalt Loš/Makadam
+   ili saobracaj Jak) IZBACUJE deonicu iz TVOJE kombinovane - kuriraniKandidati filtrira po
+   ovim poljima i to se ne menja: vozio si, znas. Zajednicki fajl i tudji pogled ostaju netaknuti. */
+function oceneOverlay(deonice, lista) {
+  if (!Array.isArray(deonice) || !deonice.length) return deonice;
+  const moje = ocenePoslednje(lista == null ? oceneUcitaj() : lista);
+  let ima = false; for (const k in moje) { ima = true; break; }
+  if (!ima) return deonice;
+  let promena = false;
+  const out = deonice.map((d) => {
+    const o = d ? moje[deonicaKljuc(d)] : null;
+    if (!o) return d;
+    promena = true;
+    const n = { ...d };
+    if (o.asfalt) n.asfalt = o.asfalt;
+    if (o.saobracaj) n.saobracaj = o.saobracaj;
+    if (o.utisak) n.ocena = o.utisak;
+    const dt = new Date(Number.isFinite(o.ts) ? o.ts : Date.now());   // (pregled #13) pokvaren ts nikad ne sme dati mg [NaN, NaN]
+    n.mg = [dt.getFullYear(), dt.getMonth() + 1];
+    n.azurirano = "tvoja ocena";   // kartica pise starost posteno - ovo JESTE svezije od baze, ali je licno
+    return n;
+  });
+  return promena ? out : deonice;
+}
+function oceneOsveziPogled() {   // posle sveze ocene: i vec ucitana baza u memoriji vidi novi pogled
+  try {
+    if (state.bjp && Array.isArray(state.bjp.deonice)) {
+      const ov = oceneOverlay(state.bjp.deonice);
+      if (ov !== state.bjp.deonice) state.bjp = { ...state.bjp, deonice: ov };
+    }
+    if (Array.isArray(state.bjpKur) && state.bjpKur.length) state.bjpKur = oceneOverlay(state.bjpKur);
+  } catch (e) {}
+}
+/* Detekcija: koje kurirane deonice je SVEZA voznja stvarno pokrila. Isti matcher kao sivenje
+   (bjpPokrivenost >= 0,6 / 250 m), rutoliki omotac oko traga = coords + cumDist U METRIMA
+   (sumCum vraca km) - bez metara bi se korak uzorkovanja rute pogresno racunao. */
+function oceneKandidati(trag, deonice) {
+  if (!Array.isArray(trag) || trag.length < 8 || !Array.isArray(deonice)) return [];
+  const cum = [0];
+  for (let i = 1; i < trag.length; i++)
+    cum.push(cum[i - 1] + haversine(trag[i - 1][1], trag[i - 1][0], trag[i][1], trag[i][0]) * 1000);
+  const ruta = { coords: trag, cumDist: cum };
+  let loMin = 1e9, loMax = -1e9, laMin = 1e9, laMax = -1e9;   // bbox predfilter kao kuriraniKandidati
+  for (const p of trag) {
+    if (p[0] < loMin) loMin = p[0]; if (p[0] > loMax) loMax = p[0];
+    if (p[1] < laMin) laMin = p[1]; if (p[1] > laMax) laMax = p[1];
+  }
+  const uOkviru = (p) => p[0] > loMin - 0.02 && p[0] < loMax + 0.02 && p[1] > laMin - 0.02 && p[1] < laMax + 0.02;
+  const out = [], videli = {};
+  for (const d of deonice) {
+    // identitet po KLJUCU, ne po br (pregled #1): deonice bez br su ravnopravno ocenjive
+    if (!d || !d.naziv || !Array.isArray(d.coords) || d.coords.length < 2) continue;
+    const kljuc = deonicaKljuc(d);
+    if (videli[kljuc]) continue;
+    const c = d.coords;
+    if (!c.some(uOkviru)) continue;   // (pregled #14) SVE tacke, ne tri uzorka - stvarno odvozena deonica ne sme tiho da ispadne
+    const p = bjpPokrivenost(ruta, c);
+    if (p < OCENA_PRAG) continue;
+    videli[kljuc] = 1;
+    out.push({ kljuc, br: d.br != null ? d.br : null, naziv: String(d.naziv).normalize("NFC").slice(0, 120),
+      izvor: d.izvor || null, km: Math.round((d.km || 0) * p * 10) / 10 });
+  }
+  out.sort((a, b) => b.km - a.km);   // najduza ODVOZENA prva
+  return out.slice(0, OCENE_MAX);
+}
+/* Slanje u zajednicu: POSTOJECI kanal prijava (isti device-id, isti red rmr2_prijave_out).
+   U redu ocena nosi tip "ocena-deonice" i NIKAD nema lat/lon kljuceve - nikakva koordinata
+   ne izlazi sa uredjaja. Backend: docs/supabase-ocene.sql (ista Supabase instanca kao
+   prijave); dok SQL nije pusten, ocena strpljivo ceka u redu (OCENE_ROK_MS). */
+function ocenaRed(o) {
+  return { tip: "ocena-deonice", device_id: deviceId(), _ts: Date.now(), br: o.br, naziv: o.naziv,
+    izvor: o.izvor || null, asfalt: o.asfalt || null, saobracaj: o.saobracaj || null,
+    utisak: o.utisak || null, beleska: o.beleska || null };
+}
+async function upisiOcenu(row) {
+  const b = { p_br: row.br, p_naziv: row.naziv, p_izvor: row.izvor, p_asfalt: row.asfalt,
+    p_saobracaj: row.saobracaj, p_utisak: row.utisak, p_beleska: row.beleska, p_device: row.device_id };
+  try { await supa("rpc/oceni_v1", { method: "POST", body: JSON.stringify(b) }); return; }
+  catch (e) {
+    /* (pregled #6) fallback POST SAMO kad RPC ne postoji (HTTP 404) - na timeout/abort/mreznu
+       gresku RPC je MOGAO da prodje, pa bi drugi mrezni pokusaj rizikovao dupli insert. */
+    if (!(e && e.status === 404)) throw e;
+  }
+  await supa("ocene", { method: "POST", body: JSON.stringify({ br: row.br, naziv: row.naziv, izvor: row.izvor,
+    asfalt: row.asfalt, saobracaj: row.saobracaj, utisak: row.utisak, beleska: row.beleska, device_id: row.device_id }) });
+}
+function posaljiOcenu(o) {
+  const row = ocenaRed(o);
+  (async () => {
+    try { const { _ts, ...body } = row; await upisiOcenu(body); return; }
+    catch (e) {
+      // otrovan red (trajna 4xx koja NIJE 404 ni anti-spam) se ne cuva - isto pravilo kao flush (#5)
+      const st = e && e.status;
+      if (st != null && st >= 400 && st < 500 && st !== 404 && !/Polako|limit/i.test(String(e.message || e))) return;
+    }
+    try { if (_flushing) await _flushing; } catch (e) {}   // (pregled #3) dopuna reda tek POSLE zivog flusha - bez ukrstenih upisa
+    setPrijaveQueue([...prijaveQueue(), row]);   // pad slanja: TIHO ceka u redu (i 404 dok backend semu ne dobije)
+  })().catch(() => {});
+}
+/* Kartica u sazetku. Detekciju pokrece SAMO stopRide posle "upisano" (svez sazetak, ista
+   kapija kao turaPredlog) - istorijski/tura zapis iz dnevnika je nikad ne vidi, oporavak
+   nema sazetak pa nema ni karticu. Preskoci/Sacuvaj brisu kandidata: ista voznja ne pita dvaput. */
+function oceneNudi(ishod) {
+  RIDE._oceneKand = null;
+  RIDE._oceneSeq = (RIDE._oceneSeq || 0) + 1;   // (pregled #10) zig generacije: dve brze voznje ne smeju da ukrste kandidate
+  if (ishod !== "upisano") return;
+  const s = RIDE.lastSummary;
+  if (!s || !Array.isArray(s.trag) || s.trag.length < 8) return;   // legacy/kratka: bez traga nema detekcije
+  const ts = s.ts, trag = s.trag, mojSeq = RIDE._oceneSeq;
+  (async () => {
+    try {
+      const bjp = await loadPutevi();
+      if (RIDE._oceneSeq !== mojSeq) return;   // u medjuvremenu je krenula/stala NOVA voznja - ovaj nalaz je bajat
+      const baza = (state.bjpKur && state.bjpKur.length) ? state.bjpKur : ((bjp && bjp.deonice) || []);
+      const kand = oceneKandidati(trag, baza);
+      if (!kand.length || RIDE._oceneSeq !== mojSeq) return;
+      RIDE._oceneKand = { ts, kand };
+      oceneKarticaRender();   // sazetak je u medjuvremenu vec na ekranu - kartica se tiho doda
+    } catch (e) {}
+  })();
+}
+function ocenaTap(i, p, v) {   // jedan tap = izbor; ponovni tap ponistava (nista nije obavezno)
+  const k = RIDE._oceneKand;
+  if (!k || !k.kand[i]) return null;
+  const sel = k.kand[i].sel || (k.kand[i].sel = {});
+  sel[p] = sel[p] === v ? null : v;
+  return sel[p];
+}
+function oceneKarticaRender() {
+  const el = document.getElementById("rideSum"), box = document.getElementById("rsOcene");
+  if (!el || !box) return;
+  const k = RIDE._oceneKand;
+  // SAMO svez sazetak TE voznje (el._svez postavlja rideSumShow); sve drugo - kartice nema
+  if (!k || !el._svez || !el._sum || el._sum.ts !== k.ts) { box.hidden = true; box.innerHTML = ""; return; }
+  /* Recnik cipova = recnik BAZE (pregled #11): asfalt Nov/Dobar/Loš/Makadam (4 makadam deonice
+     postoje, a i motor-upozorenja zavise od te vrednosti), saobracaj kanonski Slab/Srednji/Jak.
+     U bazi zive i legacy varijante ("Umeren", "Srednji/Slab", "Jak / Srednji") - one se NE nude,
+     a potrosaci ih citaju prefiksom gde je bitno (kuriraniKandidati: indexOf("Jak") === 0). */
+  const chip = (v, extra) => `<button type="button" class="ochip${extra || ""}" role="radio" aria-checked="false" data-v="${v}"` +
+    (typeof v === "number" ? ` aria-label="${v} od 5"` : "") + `>${v}</button>`;
+  box.innerHTML = `<div class="ont">Oceni deonice koje si vozio</div>` + k.kand.map((d, i) =>
+    `<div class="ored" data-i="${i}">` +
+    `<div class="onaz"><span>${esc(d.naziv)}</span><span class="okm">~${Math.round(d.km)} km</span></div>` +
+    `<div class="ogrp" data-p="asfalt" role="radiogroup" aria-label="Asfalt">` +
+      `<span class="olab">Asfalt</span>` + ["Nov", "Dobar", "Loš", "Makadam"].map((v) => chip(v)).join("") + `</div>` +
+    `<div class="ogrp" data-p="saobracaj" role="radiogroup" aria-label="Saobraćaj">` +
+      `<span class="olab">Saobraćaj</span>` + ["Slab", "Srednji", "Jak"].map((v) => chip(v)).join("") + `</div>` +
+    `<div class="ogrp" data-p="utisak" role="radiogroup" aria-label="Utisak 1 do 5">` +
+      `<span class="olab">Utisak</span>` + [1, 2, 3, 4, 5].map((v) => chip(v, " ostar")).join("") + `</div>` +
+    `<input class="obel" type="text" maxlength="${OCENE_BELESKA_MAX}" placeholder="Beleška (nije obavezno)">` +
+    `</div>`).join("") +
+    `<div class="obtns"><button type="button" id="rsOceneSacuvaj">Sačuvaj</button><button type="button" id="rsOceneSkip">Preskoči</button></div>`;
+  /* (pregled #9) render je idempotentan sa PODACIMA: vec izabrani cipovi i beleska se vracaju
+     iz sel - povratak na svez sazetak (posle dnevnika) ne sme da izgubi netaknut izbor. */
+  k.kand.forEach((d, i) => {
+    const sel = d.sel;
+    if (!sel) return;
+    const red = box.querySelector(`.ored[data-i="${i}"]`);
+    if (!red) return;
+    for (const p of ["asfalt", "saobracaj", "utisak"]) {
+      if (sel[p] == null) continue;
+      red.querySelectorAll(`.ogrp[data-p="${p}"] .ochip`).forEach((b) => {
+        const bv = p === "utisak" ? +b.dataset.v : b.dataset.v;
+        b.classList.toggle("on", p === "utisak" ? bv <= sel[p] : bv === sel[p]);
+        b.setAttribute("aria-checked", bv === sel[p] ? "true" : "false");
+      });
+    }
+    const bel = red.querySelector(".obel");
+    if (bel && sel.beleska) bel.value = sel.beleska;
+  });
+  box.hidden = false;
+  if (!box._reg) {   // handleri jednom, podaci zive u RIDE._oceneKand (isti obrazac kao rsEtape)
+    box._reg = 1;
+    box.addEventListener("click", (ev) => {
+      const kk = RIDE._oceneKand;
+      const c = ev.target.closest(".ochip");
+      if (c && kk) {
+        ev.stopPropagation();
+        const g = c.closest(".ogrp"), red = c.closest(".ored");
+        if (!g || !red) return;
+        const p = g.dataset.p;
+        const v = p === "utisak" ? +c.dataset.v : c.dataset.v;
+        const sada = ocenaTap(+red.dataset.i, p, v);
+        g.querySelectorAll(".ochip").forEach((b) => {   // utisak se pali 1..n (zvezdice brojevima, bez emodzija)
+          const bv = p === "utisak" ? +b.dataset.v : b.dataset.v;
+          b.classList.toggle("on", sada != null && (p === "utisak" ? bv <= sada : bv === sada));
+          b.setAttribute("aria-checked", sada != null && bv === sada ? "true" : "false");   // (pregled #12) radio semantika: checked = IZABRANA vrednost
+        });
+        return;
+      }
+      const b = ev.target.closest("button");
+      if (b && b.id === "rsOceneSacuvaj") { ev.stopPropagation(); oceneSacuvajTap(); }
+      else if (b && b.id === "rsOceneSkip") { ev.stopPropagation(); oceneSkipTap(); }
+    });
+    box.addEventListener("input", (ev) => {   // beleska u sel odmah - Sacuvaj ne mora nazad u DOM
+      const t = ev.target;
+      if (!t || !t.classList || !t.classList.contains("obel")) return;
+      const red = t.closest(".ored"), kk = RIDE._oceneKand;
+      if (!red || !kk || !kk.kand[+red.dataset.i]) return;
+      const sel = kk.kand[+red.dataset.i].sel || (kk.kand[+red.dataset.i].sel = {});
+      sel.beleska = t.value;
+    });
+  }
+}
+function oceneSacuvajTap() {
+  const k = RIDE._oceneKand;
+  if (!k) return;
+  const spremne = [];
+  let samoBeleska = false;
+  for (const d of k.kand) {
+    const sel = d.sel || {};
+    const asfalt = sel.asfalt || null, saobracaj = sel.saobracaj || null, utisak = sel.utisak || null;
+    const beleska = (sel.beleska && String(sel.beleska).trim()) ? String(sel.beleska).trim().slice(0, OCENE_BELESKA_MAX) : null;
+    if (!asfalt && !saobracaj && !utisak) {
+      if (beleska) samoBeleska = true;   // (pregled #8) tekst bez ocene se NE baca cutke - posten hint dole
+      continue;   // red bez ijednog tapa = precutno preskocen
+    }
+    spremne.push({ kljuc: d.kljuc || d.naziv, br: d.br != null ? d.br : null,
+      naziv: String(d.naziv || "").slice(0, 120), izvor: d.izvor || null, ts: Date.now(),
+      asfalt, saobracaj, utisak, beleska });
+  }
+  if (samoBeleska) { shareToast("Uz belešku tapni i ocenu."); return; }   // kartica OSTAJE - nista jos nije baceno ni sacuvano
+  if (!spremne.length) { shareToast("Tapni bar jednu ocenu, ili Preskoči."); return; }   // prazan Sacuvaj ne rusi karticu
+  let upis = 0;
+  for (const o of spremne) if (ocenaSacuvaj(o)) upis++;
+  for (const o of spremne) { try { posaljiOcenu(o); } catch (e) {} }   // salje se SVAKA (re-rate: obe idu, lokalno vazi poslednja)
+  RIDE._oceneKand = null;
+  RIDE._svezSum = null;   // kandidat razresen - svez sazetak se vise ne vraca sam
+  const box = document.getElementById("rsOcene");
+  if (box) { box.hidden = true; box.innerHTML = ""; }
+  try { oceneOsveziPogled(); } catch (e) {}
+  try { setTimeout(() => { try { flushPrijave(); } catch (e) {} }, 4000); } catch (e) {}   // (pregled #2) red proba i odmah posle cuvanja, ne tek u sledecoj voznji
+  /* (pregled #7) POSTEN glas: slanje jos nije potvrdjeno - kaze se sta je sigurno (sacuvano)
+     i sta sledi (salje se cim bude mreze); nikad "poslato" bez dokaza. */
+  shareToast(upis ? (spremne.length === 1 ? "Ocena sačuvana - šalje se čim bude mreže." : "Ocene sačuvane - šalju se čim bude mreže.")
+    : "Lokalni upis nije uspeo - ocena se ipak šalje zajednici.");
+}
+function oceneSkipTap() {   // nista se ne cuva i ista voznja vise ne pita
+  RIDE._oceneKand = null;
+  RIDE._svezSum = null;
+  const box = document.getElementById("rsOcene");
+  if (box) { box.hidden = true; box.innerHTML = ""; }
 }
 /* tudje prijave duz rute: bbox upit pa filter na ~1,5 km od linije */
 async function loadPrijave(route, force) {
@@ -9740,8 +10104,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.88";
+const APP_VERSION = "0.9.89";
 const CHANGELOG = [
+  { v: "0.9.89", d: "25.08.2026.", stavke: [
+    "<b>Oceni deonice koje si vozio.</b> Kad sačuvaš vožnju, sažetak tiho ponudi do tri kurirane deonice koje je tvoj trag stvarno pokrio (najduža prva): Asfalt (Nov/Dobar/Loš/Makadam), Saobraćaj (Slab/Srednji/Jak) i Utisak (1-5) - po jedan tap, uz neobaveznu belešku. Sačuvaj ili Preskoči: kartica nikad ne blokira sažetak, ne pita u toku vožnje i ne vraća se za istu vožnju; zapis iz dnevnika je nikad ne prikazuje.",
+    "<b>Tvoja ocena osvežava TVOJ pogled na bazu.</b> Od sledećeg učitavanja deonica tvoj asfalt/saobraćaj i utisak (kao ocena) važe u kartici Stanje na putevima i u šivenju kombinovane, sa svežim datumom - terenskoj deonici tvoja ocena time skida i kaznu svežine u rangiranju (izračunate je nikad nisu ni imale). Ako istu deonicu oceniš ponovo, važi poslednja ocena. NAMERNO: tvoja niska ocena (utisak ispod 4, loš asfalt/makadam ili jak saobraćaj) izbacuje tu deonicu iz TVOJE kombinovane - vozio si, znaš. Fajlovi baze se ne diraju - ovo važi samo kod tebe, dok agregati zajednice stižu sa Atlasom.",
+    "<b>U zajednicu ide bez ijedne koordinate.</b> Ocena putuje POSTOJEĆIM kanalom prijava (isti nasumični broj uređaja, isti red za čekanje bez mreže): samo oznaka deonice, tri vrednosti i eventualna beleška - nikakva lokacija, nikakav trag. Bez mreže ocena strpljivo čeka i šalje se kad je bude.",
+    "Ispod haube: nova test suite tools/ocene.test.mjs u CI (detekcija pokrivenosti nad sintetičkim tragom, overlay pravila sa latest-wins i bez mutacije izvora, cap skladišta, red za slanje BEZ koordinata - eksplicitni assert, kapija svežeg sažetka, DOM kartice); privatnost.html dopunjena rečenicom o ocenama deonica; backend šema u docs/supabase-ocene.sql."
+  ] },
   { v: "0.9.88", d: "25.08.2026.", stavke: [
     "<b>Šest tvojih presuda sa debrifa 25.8., u jednoj maloj rundi.</b>",
     "<b>Pečena deonica ima svoje mesto u kombinovanoj.</b> Do sada su dve terenske deonice po score-u umele da isteraju pečenu (izračunat koridor) iz izbora. Sada, kad uz rutu postoje obe vrste znanja, kombinovana šije najbolju terensku I najbolju pečenu zajedno. Terenska i dalje ima prednost: kad je budžet šavova tesan, pečena ispada prva, a tvoje usputne stanice pobeđuju obe.",
@@ -13444,6 +13814,7 @@ function stopRide() {
   try { const pb = document.getElementById("ridePause"); if (pb) { pb.classList.remove("on"); pb.innerHTML = RIDE_PAUSE_SVG; } } catch (e) {}
   try { const pl = document.querySelector("#rideBarBottom .pill"); if (pl) pl.classList.remove("lon", "lact"); } catch (e) {}
   try { turaPredlog(vozIshod); } catch (e) {}   // TURA ulaz 3 (0.9.86): tihi predlog PRE sazetka - dugme "Dodaj u turu" nosi radnju
+  try { oceneNudi(vozIshod); } catch (e) {}   // OCENE (0.9.89): koje kurirane deonice je trag pokrio - kartica stize u svez sazetak
   try { rideSumShow(); } catch (e) {}   // sazetak voznje (nagib/krivine/brzine) - posle skidanja riding klase
 }
 /* ---- Sazetak voznje na kraju (Boskov zahtev 5.8.): sve metrike + deljenje ---- */
@@ -14167,6 +14538,9 @@ function rideSumShow(sIn) {
   fotoStanje(null);   // 11.8.: preko fotoStanje, ne golim innerHTML - inace se pojede natpis dugmeta
   if (fi) fi.value = "";
   el._sum = s;
+  el._svez = !sIn;   // OCENE (0.9.89): kartica ocena sme SAMO na svez sazetak, nikad na zapis iz dnevnika
+  if (!sIn) RIDE._svezSum = s;   // (pregled #10) pamti se za povratak posle posete dnevniku - neposlat izbor ne sme da nasuka
+  try { oceneKarticaRender(); } catch (e) {}
   el.classList.remove("peek");
   el.classList.add("on");
   document.body.classList.add("sumopen");   // planer se sklanja dok stoji sazetak
@@ -14765,10 +15139,21 @@ async function stplPodeli(kind) {
   if (!el) return;
   // "Zatvori" gasi sve i vraca planer; prevlacenje nadole SAMO skuplja (trag ostaje na mapi)
   const zatvoriSum = () => {
+    const bioSvez = !!el._svez;
     el.classList.remove("on", "peek");
     document.body.classList.remove("sumopen");
     try { sumTragSkini(); } catch (e) {}
     const cd0 = el.querySelector(".card"); if (cd0) cd0.style.transform = "";
+    /* OCENE (0.9.89, pregled #10): zatvaranje ISTORIJSKOG sazetka dok zivi neposlat kandidat
+       ocene VRACA svez sazetak (kartica + netaknut izbor iz sel) - poseta dnevniku ne sme da
+       nasuka izbor. Namerno zatvaranje SVEZEG sazetka je konacno: nista se ne vraca samo. */
+    if (bioSvez) { RIDE._svezSum = null; return; }
+    try {
+      if (RIDE._oceneKand && RIDE._svezSum && RIDE._svezSum.ts === RIDE._oceneKand.ts) {
+        RIDE.lastSummary = RIDE._svezSum;
+        rideSumShow();
+      }
+    } catch (e) {}
   };
   window.rideSumZatvori = zatvoriSum;
   const skupiSum = () => { const cd0 = el.querySelector(".card"); if (cd0) cd0.style.transform = ""; el.classList.add("peek"); };
