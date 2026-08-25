@@ -3958,7 +3958,9 @@ function kuriraniKandidati(vij, brza, bjp, radovi) {
     let pa, pb;
     try { pa = navProject(vij, c[0][0], c[0][1]); pb = navProject(vij, c[c.length - 1][0], c[c.length - 1][1]); }
     catch (e) { continue; }
-    const starost = bjpStarost(d.mg);   // nosi se na kandidatu i savovima za KASNIJI prikaz (odluka o UI je Boskova) + rangiranje
+    // 0.9.87 (pregled): pecena deonica (nosi `izvor`) je IZUZETA iz kazne svezine - geometrija
+    // koridora ne stari kao terenska ocena asfalta; x0,85 vazi samo za bazu zajednice (bez izvora)
+    const starost = d.izvor ? null : bjpStarost(d.mg);   // nosi se na kandidatu i savovima za KASNIJI prikaz (odluka o UI je Boskova) + rangiranje
     let ulaz = { km: pa.d / 1000, off: pa.offM, v: [c[0][0], c[0][1]], ime: d.naziv, kuriran: true, starost };
     let izlaz = { km: pb.d / 1000, off: pb.offM, v: [c[c.length - 1][0], c[c.length - 1][1]], ime: d.naziv, kuriran: true, starost };
     if (izlaz.km < ulaz.km) { const t = ulaz; ulaz = izlaz; izlaz = t; }   // deonica crtana suprotno od smera rute
@@ -3998,7 +4000,11 @@ async function hibridnaRuta(from, to, vij, brza) {
       const rs = await loadRoadStatus();
       for (const cc in ((rs && rs.countries) || {})) for (const it of ((rs.countries[cc] || {}).items || [])) radovi.push(it);
     } catch (e) { radovi = []; }
-    if (bjp) kur = kuriraniKandidati(vij, brza, bjp, radovi);
+    // 0.9.87: kandidati se biraju nad UNIJOM stanje_puta + pecene kurirane trase
+    // (state.bjpKur puni loadPutevi); bez unije (stariji kes, pad fetch-a) vazi bjp -
+    // ponasanje identicno 0.9.85. Kartica "Stanje na putevima" i dalje cita samo bjp.
+    const bazaKand = (state.bjpKur && state.bjpKur.length) ? { deonice: state.bjpKur } : bjp;
+    if (bazaKand) kur = kuriraniKandidati(vij, brza, bazaKand, radovi);
   } catch (e) { kur = []; }
   const prof = _kmProfil(vij), kom0 = _komadi(prof);
   const dosKm = kom0.reduce((a, k) => a + (k.dobar ? 0 : k.do - k.od), 0);
@@ -5936,11 +5942,30 @@ async function loadEditorial() {
 const BJP_BOJA = { "Nov": "#3b82f6", "Dobar": "#16a34a", "Loš": "#FF6A00", "Makadam": "#a16207" };
 const BJP_LOSE = { "Loš": 1, "Makadam": 1 };   // motor se pominje SAMO na lošoj strani
 async function loadPutevi() {
-  if (state.bjp) return state.bjp;
-  try {
-    const d = await fetchData("data/stanje_puta.json?v=" + APP_VERSION, { timeoutMs: 9000 });
-    state.bjp = d && Array.isArray(d.deonice) ? d : null;
-  } catch { state.bjp = null; }   // bez fajla sloj prosto ne postoji
+  // memo (0.9.87 pregled): pad velikog stanje_puta se NE ponavlja na svaki poziv
+  // (bjpProbano), a prolazni pad kurirane sme ponovo da proba kasnije u sesiji (bjpKurOk)
+  if (!state.bjpProbano) {
+    state.bjpProbano = 1;
+    try {
+      const d = await fetchData("data/stanje_puta.json?v=" + APP_VERSION, { timeoutMs: 9000 });
+      state.bjp = d && Array.isArray(d.deonice) ? d : null;
+    } catch { state.bjp = null; }   // bez fajla sloj prosto ne postoji
+  }
+  /* 0.9.87: pecena baza kuriranih koridora (tools/peci_deonice.py) - unija ide SAMO u
+     state.bjpKur, za sivenje kombinovane. state.bjp ostaje ISKLJUCIVO stanje_puta:
+     karticu "Stanje na putevima" pune ocene vozaca sa terena, pa izracunata trasa tamo
+     ne sme da se pojavi - kartica cita state.bjp/povratnu vrednost i za bjpKur ne zna
+     (iskljucenje konstrukcijom, ne filterom). Pad ucitavanja = sivenje vidi samo
+     stanje_puta, ponasanje identicno 0.9.85; nikad greska prema korisniku. */
+  if (!state.bjpKurOk) {
+    let kur = null;
+    try {
+      const k = await fetchData("data/deonice_kurirane.json?v=" + APP_VERSION, { timeoutMs: 9000 });
+      kur = k && Array.isArray(k.deonice) ? k.deonice : null;
+      state.bjpKurOk = !!kur;
+    } catch { kur = null; }
+    state.bjpKur = ((state.bjp && state.bjp.deonice) || []).concat(kur || []);
+  }
   return state.bjp;
 }
 /* Motor se pominje SAMO kad je put loš, i to kao rečenica a ne kao ocena. Na dobroj strani
@@ -9625,8 +9650,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.86";
+const APP_VERSION = "0.9.87";
 const CHANGELOG = [
+  { v: "0.9.87", d: "25.08.2026.", stavke: [
+    "<b>Kombinovana ruta sada zna za SVE kurirano znanje.</b> Do sada je dobre deonice videla samo u bazi zajednice (230 ocenjenih deonica sa punim trasama); sada vidi i 71 novu: 41 poznatu rutu (Kanjon Tare, Golija, Ovčarsko-kablarska, Srce Šumadije...), 9 proverenih koridora sa motorute istraživanja i 21 relaciju koju zajednica preporučuje po forumima. Trase su izračunate istim moto profilom kojim aplikacija vozi (tools/peci_deonice.py) - planiraš li preko takvog koridora, kombinovana ga ušije kao vijugavi komad, sa imenom u sastavu rute.",
+    "Svaka ispečena trasa je pre ulaska prošla trostruku proveru: poklapanje tačaka sa putem kod dva nezavisna rutera, bez sumnjivo kratkih etapa, i kilometraža prema ručno unetim dužinama (±25%). 173 koridora koji proveru NISU prošli stoje u data/audit_pecenja.json sa razlogom, za ručnu odluku - ništa nije tiho odbačeno; tvoja odluka iz audita (data/pecenje_dozvoljeno.json) važi pri sledećem pečenju.",
+    "<b>Poštena polja.</b> Pečena deonica nikad ne glumi terensko znanje: ocena je uvek 4 (težina staze nije ocena kvaliteta), gustina saobraćaja se ne izmišlja (polje se izostavlja), deonica koju su vozači već ocenili na terenu se NE duplira (terenska pobeđuje), a zatvoreni krugovi se ne isporučuju dok ih šivenje ne ume iskoristiti. Starost pečene trase ne kažnjava izbor - geometrija koridora ne stari kao ocena asfalta.",
+    "<b>Kartica \"Stanje na putevima\" ostaje netaknuta.</b> Izračunata trasa se tamo NIKAD ne pojavljuje: karticu i dalje pune isključivo ocene koje su vozači uneli na terenu. Nove deonice postoje samo za šivenje kombinovane rute - odvojen fajl, odvojen tok, isključenje po konstrukciji.",
+    "Novi fajl putuje uz aplikaciju isto kao stanje_puta (u paketu za telefon), pa kurirano šivenje radi i bez mreže."
+  ] },
   { v: "0.9.86", d: "25.08.2026.", stavke: [
     "<b>Zaokruži turu.</b> Jedna fizička tura vožena u više delova (pumpa pre pozadinskog GPS-a, višednevna tura Beograd → Nordkap) sada u dnevniku živi kao JEDNA tura sa etapama: svaka etapa čuva svoje brojke i svoj replay, a tura nosi zbir kilometara, broj dana, ceo sastavljen trag, replay i jednu karticu za deljenje. U dnevniku: \"Zaokruži turu\" spaja izabrane vožnje (izbor po dva tapa), \"Razdvoji turu\" ih vraća tačno kakve su bile - uz pošteno upozorenje ako bi povratak preko kapaciteta izbacio najstarije zapise.",
     "<b>\"Nastavljaš turu?\"</b> Kad novi start počinje do 5 km od kraja prethodne vožnje, a od nje nije prošlo više od 20 sati, aplikacija pita pre polaska: Nastavi turu (vožnja se lepi kao etapa - i ako iOS ubije aplikaciju usred vožnje) ili Nova vožnja. A posle vožnje koja liči na nastavak stiže tiho obaveštenje i dugme \"Dodaj u turu\" u sažetku.",
