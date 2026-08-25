@@ -1830,10 +1830,13 @@
   /* TURA (0.9.86): spisak etapa po danima u sazetku ture - tap otvara sazetak same etape */
   #rideSum .rsetape { margin: 10px 20px 0; border-top: 1px solid var(--line); padding-top: 8px; }
   #rideSum .rsetape .ret { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-muted); margin-bottom: 2px; }
-  #rideSum .rsetape .rday { font-size: 11px; color: var(--fg-muted); font-weight: 600; margin-top: 7px; }
   #rideSum .rsetape .reta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line-hairline); cursor: pointer; }
+  #rideSum .rsetape .reta .rlab { font-size: 10.5px; font-weight: 600; color: var(--fg-muted); }   /* "Etapa N · datum" / "N. vožnja · vreme" (presuda 25.8.) */
   #rideSum .rsetape .reta:last-child { border-bottom: none; }
-  #rideSum .rsetape .reta .rn { font-size: 13px; font-weight: 600; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* .rn = dve slozene linije (oznaka + naziv); min-width:0 pusta flex stavku da se skupi, pa
+     elipsa radi PO LINIJI i na 320 px - blok u nowrap kontejneru bi klipovao bez elipse (pregled 25.8.) */
+  #rideSum .rsetape .reta .rn { min-width: 0; font-size: 13px; font-weight: 600; color: var(--fg); }
+  #rideSum .rsetape .reta .rn .rlab, #rideSum .rsetape .reta .rn .rnaz { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #rideSum .rsetape .reta b { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--fg-strong); flex: none; }
   /* birac share template-a (7.8., Boskov izbor: pecat-polukrug / mapa-kolona / lepeza) */
   #shareTpl { position: fixed; inset: 0; z-index: 340; display: none; }
@@ -2717,6 +2720,12 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
         <button id="jaAuto" class="jlink" type="button">prati telefon (auto)</button>
         <label class="jrow"><span>Glas navigacije</span><input type="checkbox" id="jaSound" class="jsw"></label>
         <label class="jrow"><span>Živi nagib u vožnji</span><input type="checkbox" id="jaLean" class="jsw"></label>
+        <label class="jrow"><span>Podrazumevana ruta</span><select id="jaDefRuta">
+          <option value="kombinovana">Kombinovana</option>
+          <option value="vijugava">Vijugava</option>
+          <option value="najbrza">Najbrža</option>
+        </select></label>
+        <div class="jnote">Gradska relacija uvek bira najbržu; podešavanje važi od sledećeg plana.</div>
         <button id="jaNavlog" class="jlink" type="button" onclick="navExportLog()">izvezi dnevnik navigacije (za prijavu problema)</button>
         <div class="jnote">Promena teme se primenjuje odmah (app se osveži).</div>
       </div>
@@ -3974,13 +3983,33 @@ function kuriraniKandidati(vij, brza, bjp, radovi) {
     // score: koliko lezi na koridoru x koliko je dobra x koliko je duga (plafon 40 km da dzin ne pojede sve);
     // ocena od pre zime x 0,85 - starost ne iskljucuje, ali svezina i dalje odlucuje kod jednakih
     out.push({ ime: d.naziv, score: pok * d.ocena * Math.min(d.km, 40) * (starost ? 0.85 : 1),
-      mg: d.mg || null, starost, ulaz, izlaz, koord: c });
+      pecena: !!d.izvor, mg: d.mg || null, starost, ulaz, izlaz, koord: c });
   }
   out.sort((a, b) => b.score - a.score);
-  const top = out.slice(0, 2);
   // dva kandidata ne smeju da se preklapaju po kilometrazi (ni ugnjezdeno): preklop bi isti komad
-  // forsirao dvaput i dvostruko trosio budzet savova - slabiji ispada, u OBA smera rute
-  if (top.length === 2 && !(top[1].izlaz.km + 2 <= top[0].ulaz.km || top[1].ulaz.km >= top[0].izlaz.km + 2)) top.pop();
+  // forsirao dvaput i dvostruko trosio budzet savova - u OBA smera rute
+  const razdvojeni = (a, b) => (a.izlaz.km + 2 <= b.ulaz.km || a.ulaz.km >= b.izlaz.km + 2);
+  /* DVE VRSTE ZNANJA (presuda 25.8.): pecena deonica (izracunat koridor, nosi `izvor`) zasluzuje
+     SVOJ slot pored terenske - do sada su dve terenske po score-u umele da poteru pecenu iz top-2.
+     Terenska ima BEZUSLOVNO prvenstvo (pregled 25.8.: raniji "disjunktni top-4" je jacoj peceni
+     preko jedine terenske dozvoljavao da je izbaci i vrati par od dve pecene): prvo se uzima
+     najbolja terenska, pa najbolja pecena RAZDVOJENA od nje; pecena preko iste kilometraze gubi
+     od terenske i kad nosi veci score - isti zakon kao dedup u pecenju ("terenska pobedjuje" na
+     istom putu). Terenska je prva u paru: na pritisak budzeta (hibridnaRuta uzima dok staje)
+     pecena ispada pre terenske - drugi slot DODAJE pecenu, nikad ne menja terensku. Par od dve
+     pecene sme SAMO kad terenske uopste nema; sa jednom vrstom u igri sve je tacno kao do sada
+     (top-2 po score, preklop izbacuje slabijeg). */
+  const terSve = out.filter((k) => !k.pecena), pecSve = out.filter((k) => k.pecena);
+  if (terSve.length && pecSve.length) {
+    const t0 = terSve[0];
+    const p0 = pecSve.find((k) => razdvojeni(k, t0));
+    if (p0) return [t0, p0];
+    // nijedna pecena ne staje uz najbolju terensku: dopuni drugom terenskom, kao do sada
+    const t1 = terSve.find((k) => k !== t0 && razdvojeni(k, t0));
+    return t1 ? [t0, t1] : [t0];
+  }
+  const top = out.slice(0, 2);
+  if (top.length === 2 && !razdvojeni(top[1], top[0])) top.pop();
   return top;   // najvise dva kandidata = najvise cetiri sava
 }
 async function hibridnaRuta(from, to, vij, brza) {
@@ -4039,8 +4068,9 @@ async function hibridnaRuta(from, to, vij, brza) {
      prednost: svaki sav koji secne dodaje jedan komad, a preko 8 komada _seciNaStanicama odustaje.
      Budzet se meri PROBNIM secenjem samih stanica (ne brojanjem): stanica koja nista ne secne
      (van koridora, pada na postojeci sav) ne sme da istisne kandidata koji staje. Kurirani par
-     (ulaz + izlaz = 2 sava) se prima dok staje u ostatak, po score opadajuce - najslabiji
-     kandidat ispada prvi, tvoja stanica nikad. */
+     (ulaz + izlaz = 2 sava) se prima dok staje u ostatak, redom iz kuriraniKandidati - kod
+     mesovitog para (terenska + pecena, presuda 25.8.) terenska je prva pa na pritisak budzeta
+     pecena ispada pre terenske; tvoja stanica nikad. */
   const probni = _seciNaStanicama(kom0, stanice, prof.N);
   if (!probni) return null;   // tvoje stanice same probijaju budzet - isto kao do sada
   let slobodno = 8 - probni.length;
@@ -4162,19 +4192,36 @@ function ubaciKombinovanu(uniq, hyb, vij, brza) {
   if (naj && uniq[uniq.length - 1] !== naj) { uniq.splice(uniq.indexOf(naj), 1); uniq.push(naj); }
   return true;
 }
-/* Preporucena (podrazumevano izabrana) varijanta: GRADSKA relacija = najbrza (Boskov zakon 9.8.);
-   moto stil (Valhalla) = indeks 0 - kombinovana kad postoji (presuda 24.8.), inace vijugava;
-   OSRM fallback = najmirnija pa najbrza. */
+/* Preporucena (podrazumevano izabrana) varijanta: GRADSKA relacija = najbrza (Boskov zakon 9.8.,
+   ne dira je nijedno podesavanje); moto stil (Valhalla) = izbor vozaca iz Ja taba (mr_defRuta,
+   presuda 25.8.): "kombinovana" (fabricki, i za nepoznatu/nedostupnu vrednost) = hibrid marker
+   kad postoji inace vijugava; "vijugava" = prva ne-hibrid kartica (indeks 0 stil 0.9.84);
+   "najbrza" = najkrace vreme. OSRM fallback = najmirnija pa najbrza. */
 function preporucenaRuta(routes, gradska, engine) {
   if (!Array.isArray(routes) || !routes.length) return 0;
   if (gradska) return routes.reduce((bi, r, i, a) => (r.totalDur < a[bi].totalDur ? i : bi), 0);
   if (engine === "valhalla") {
+    let zel = "kombinovana";
+    try { const v = localStorage.getItem("mr_defRuta"); if (v === "vijugava" || v === "najbrza" || v === "kombinovana") zel = v; } catch (e) {}
+    if (zel === "najbrza") return routes.reduce((bi, r, i, a) => (r && (!a[bi] || r.totalDur < a[bi].totalDur) ? i : bi), 0);   // gard: rupa u spisku ne sme da obori izbor
     const hi = routes.findIndex((r) => r && r.hibrid);   // eksplicitni marker, ne polozaj: kombinovana kad postoji
-    return hi >= 0 ? hi : 0;
+    if (zel === "vijugava" || hi < 0) {
+      const vi = routes.findIndex((r) => r && !r.hibrid);
+      return vi >= 0 ? vi : (hi >= 0 ? hi : 0);
+    }
+    return hi;
   }
   return routes
     .map((r, i) => ({ i, w: Math.max(0, ...(r.assess || []).map((a) => a.level)), d: r.totalDur }))
     .sort((a, b) => a.w - b.w || a.d - b.d)[0].i;
+}
+/* Kartica deljenog stila (0.9.88, "Vozi i ti"): indeks kartice ciji label pocinje deljenim
+   stilom, ili -1 (nema takve = tiho, preporuka ostaje). GRADSKA relacija je IZNAD linka
+   (zakon 9.8.): tudji link ne sme da preglasi bezbednosno pravilo za grad. */
+function stilIzLinkaIndeks(routes, stil, gradska) {
+  if (!stil || gradska || !Array.isArray(routes)) return -1;
+  const t = String(stil).toLowerCase();
+  return routes.findIndex((r) => r && r.label && String(r.label).toLowerCase().startsWith(t));
 }
 /* Stil kojim se preracunava OSTATAK rute od zadatog kilometra. Ime kaze "na km", ali pitanje je
    uvek "cime dalje", jer reroute jednim pozivom pravi celu preostalu rutu do cilja.
@@ -6691,17 +6738,25 @@ function vsNajbrza(route) {
     if (rs.length < 2 || !route) return "";
     const naj = rs.reduce((m, x) => (x.totalDur < m.totalDur ? x : m), rs[0]);
     const d = Math.round((route.totalDur - naj.totalDur) / 60);
-    if (d < 10) return "";   // ista stvar - nema sta da se pravda
+    /* Kombinovana se objasnjava SAMA, Boskovim recima (presuda 25.8.): "najbrže do najlepših
+       delova" + koliko kilometara POZNATE (kurirane) deonice ruta stvarno nosi. Bez kurirane
+       deonice (cisto geometrijska kombinacija) postena varijanta je sastav: koliko kilometara
+       se STVARNO vozi krivinama (krivKm, 0.9.85) - ZAOKRUZENA vrednost, pa "0 km" nikad ne
+       stoji uz broj. Recenica vazi i kad je kombinovana vremenski uz najbrzu (d < 10): kartica
+       i tada mora da kaze ZASTO postoji. */
+    let zasto = "ali vijugavo";
+    if (route.hibrid) {
+      const kurKm = Math.round((route.hibrid || []).reduce((a, x) => a + ((x && x.nazivDeonice && Number.isFinite(x.do - x.od)) ? (x.do - x.od) : 0), 0));   // gard: jedan pokvaren komad ne sme NaN-om da otruje recenicu
+      const kkm = Number.isFinite(route.krivKm) ? Math.round(route.krivKm) : 0;
+      zasto = kurKm > 0 ? `najbrže do najlepših delova - ${kurKm} km poznate deonice usput`
+        : kkm > 0 ? `najbrže do krivina - ${kkm} km krivina` : "najbrže do krivina";
+      if (d < 10) return ` (${zasto})`;
+    } else if (d < 10) return "";   // ista stvar - nema sta da se pravda
     const h = Math.floor(d / 60), mn = d % 60;
     /* Ne tvrdi "autoput" ako ga nema (11.8., druga runda). Na kratkoj ili potpuno sporednoj relaciji
        nijedna varijanta ne ide autoputem, pa bi to bila tvrdnja koju ne mozemo da potkrepimo - ista
        greska kao "vreme na svakom kilometru" iz 0.9.38. */
     const ap = /autoput/i.test(naj.label || "") || naj.tollKm > 0;
-    /* Kombinovana nije "vijugavo" - dobar deo se vozi bas autoputem (0.9.85). Njena postena
-       odbrana broja je sastav: koliko kilometara se STVARNO vozi krivinama (krivKm).
-       ZAOKRUZENA vrednost se cuva - "ali 0 km krivina" ne sme da se pojavi. */
-    const kkm = Number.isFinite(route.krivKm) ? Math.round(route.krivKm) : 0;
-    const zasto = route.hibrid ? (kkm > 0 ? `ali ${kkm} km krivina` : "ali sa krivinama") : "ali vijugavo";
     return ` (${h ? h + " h " : ""}${mn ? mn + " min" : ""} duže od ${ap ? "autoputa" : "najbrže rute"}, ${zasto})`;
   } catch (e) { return ""; }
 }
@@ -8079,6 +8134,28 @@ function turaOpseg(r) {   // opseg datuma ture za prikaz: "24.8.2026." ili "24.8
   const a = new Date(r.tsOd || r.ts).toLocaleDateString("sr-RS"), b = new Date(r.ts).toLocaleDateString("sr-RS");
   return a === b ? a : a + " - " + b;
 }
+function relZaZapis(s) {
+  /* READ adapter za deljenje (0.9.88): planirana relacija zapisa, za "Vozi i ti" link.
+     Obican zapis nosi svoj rel (uhvacen na startu voznje). Tura: kad SVE etape voze istu
+     relaciju (ista porodica from/to - prekinuta pa oporavljena voznja, isti plan u vise dana),
+     vazi rel prve etape ceo (sa stanicama); inace se sastavlja from PRVE -> to POSLEDNJE etape,
+     bez stanica (one pripadaju pojedinacnim planovima, ne celoj turi). Stari zapisi bez rel
+     (i tura cija prva/poslednja etapa ga nema): null - pozivalac link tiho izostavlja. */
+  if (!s) return null;
+  if (!s.tura) return s.rel || null;
+  const et = s.etape || [];
+  const prvi = et.length ? (et[0] && et[0].rel) : null;
+  if (!prvi || !prvi.from || !prvi.to) return null;
+  if (et.every((e) => e && e.rel && e.rel.from === prvi.from && e.rel.to === prvi.to)) return prvi;
+  const zad = et[et.length - 1] && et[et.length - 1].rel;
+  /* NAMERNA asimetrija (pregled 25.8.): pojedinacan zapis sa rel.from === rel.to se DELI - to je
+     planiran povratni krug i njegove stanice ga cine smislenim planom. SASTAVLJENA relacija ture
+     "A -> A" se NE deli: stanice pojedinacnih etapa se ovde ne prenose (pripadaju svojim
+     planovima), pa bi link primaocu trazio rutu od A do A bez ijedne tacke izmedju - prazno
+     obecanje. Zato krug vazi samo kad ga je covek stvarno isplanirao, ne kad ga sklopi zbir. */
+  if (!zad || !zad.to || prvi.from === zad.to) return null;
+  return { from: prvi.from, to: zad.to, vias: [], stil: null };
+}
 /* ---- dnevnik: JEDAN cap helper za sve upise (0.9.86) ----
    Cap 20 -> 30 (tura oslobadja slotove, ali Nordkap u 15 etapa ne sme da pojede pola istorije).
    Ukupna velicina se drzi ispod ~2 MB: degradacija tanji NAJVECI trag (zapis ILI etapa unutar
@@ -8163,17 +8240,18 @@ function turaNazSveze(tura) {
   } catch (e) {}
 }
 function turaZaokruziUI(box, targetId) {
-  /* TURA - ulaz 2: "Spoji u turu" nad izabranim zapisima dnevnika. Poeni/kolekcije/priznanja se
-     NE diraju - etape su ih vec zaradile. <2 izabrane dugme ionako ne pusta (disabled). */
+  /* TURA - ulaz 2: "Poveži vožnje u turu" (ime po presudi 25.8.; ranije "Zaokruži/Spoji") nad
+     izabranim zapisima dnevnika. Poeni/kolekcije/priznanja se NE diraju - etape su ih vec
+     zaradile. <2 izabrane dugme ionako ne pusta (disabled). */
   const sel = box._sel || new Set();
   if (sel.size < 2) return;
   const v = _zajCitaj("mr_voznje", []);
   const rez = turaZaokruzi(v, sel);
   if (!rez) { shareToast("Izaberi bar dve vožnje."); return; }
-  if (!dnevnikUpisi(rez.v)) { shareToast("Dnevnik je pun - tura NIJE zaokružena."); return; }
+  if (!dnevnikUpisi(rez.v)) { shareToast("Dnevnik je pun - tura NIJE povezana."); return; }
   box._selMode = false; box._sel = new Set();
   try { turaNazSveze(rez.tura); } catch (e) {}
-  shareToast(`Tura zaokružena: ${rez.tura.naz} · ${rez.tura.km} km, ${rez.tura.etapeCnt} ${plSrp(rez.tura.etapeCnt, "etapa", "etape", "etapa")}`);
+  shareToast(`Tura povezana: ${rez.tura.naz} · ${rez.tura.km} km, ${rez.tura.etapeCnt} ${plSrp(rez.tura.etapeCnt, "etapa", "etape", "etapa")}`);
   renderVoznje(targetId);
   try { renderJaProfil(); } catch (e) {}
 }
@@ -8219,8 +8297,8 @@ function turaPredlog(ishod, oporavak) {
     if (!turaKandidat(pre, turaEtapaPocetak(nova), start[0], start[1])) return;
     RIDE._turaPredlogTs = pre.ts;
     tihoObavestenje(oporavak
-      ? 'Oporavljena vožnja se nastavlja na prethodnu - spoji ih: "Zaokruži turu" u Dnevniku.'
-      : 'Ova vožnja se nastavlja na prethodnu - spoji ih: "Dodaj u turu" u sažetku ili "Zaokruži turu" u dnevniku.');
+      ? 'Oporavljena vožnja se nastavlja na prethodnu - "Poveži vožnje u turu" u Dnevniku.'
+      : 'Ova vožnja se nastavlja na prethodnu - "Dodaj u turu" u sažetku ili "Poveži vožnje u turu" u dnevniku.');
   } catch (e) {}
 }
 function turaDodajIzSazetka() {
@@ -8249,21 +8327,21 @@ function turaDodajIzSazetka() {
   try { renderVoznje("jaVoznje"); renderJaProfil(); } catch (e) {}
 }
 function rsEtapeRender(s) {
-  /* Spisak etapa po danima u sazetku ture (lokalna ponoc!); tap otvara sazetak same etape -
-     svaki dan zadrzava svoje brojke i svoj replay (spec: intent). */
+  /* Spisak etapa u sazetku ture; tap otvara sazetak same etape - svaki dan zadrzava svoje brojke
+     i svoj replay (spec: intent). Imenovanje po presudi 25.8.: visednevna tura broji etape
+     ("Etapa N · <datum>"), jednodnevna broji voznje ("N. vožnja · <vreme>") - dan sa dve voznje
+     nije dva "dana", a etapa duge ture nije obicna voznja. Datum/vreme = POCETAK etape
+     (turaEtapaPocetak, lokalno vreme). */
   const box = document.getElementById("rsEtape");
   if (!box) return;
   if (!s || !s.tura || !s.etape || !s.etape.length) { box.hidden = true; box.innerHTML = ""; return; }
-  const dani = [];
-  for (const e of s.etape) {
-    const d = turaDan(turaEtapaPocetak(e));
-    if (!dani.length || dani[dani.length - 1].dan !== d) dani.push({ dan: d, etape: [] });
-    dani[dani.length - 1].etape.push(e);
-  }
-  box.innerHTML = '<div class="ret">Etape</div>' + dani.map((g, gi) =>
-    `<div class="rday">${gi + 1}. dan · ${new Date(g.dan).toLocaleDateString("sr-RS")}</div>` +
-    g.etape.map((e) => `<div class="reta" data-ts="${e.ts}" role="button" tabindex="0" aria-label="Otvori etapu: ${esc(e.naz)}"><span class="rn">${esc(e.naz)}</span><b>${e.km} km</b></div>`).join("")
-  ).join("");
+  const viseDana = (s.dana || 0) > 1;
+  const rec = viseDana ? "etapu" : "vožnju";   // i aria govori istim recnikom kao vidljiva oznaka (pregled 25.8.)
+  box.innerHTML = `<div class="ret">${viseDana ? "Etape" : "Vožnje"}</div>` + s.etape.map((e, i) => {
+    const poc = new Date(turaEtapaPocetak(e));
+    const lab = viseDana ? `Etapa ${i + 1} · ${poc.toLocaleDateString("sr-RS")}` : `${i + 1}. vožnja · ${fmtTime(poc)}`;
+    return `<div class="reta" data-ts="${e.ts}" role="button" tabindex="0" aria-label="Otvori ${rec}: ${esc(e.naz)}"><span class="rn"><span class="rlab">${lab}</span><span class="rnaz">${esc(e.naz)}</span></span><b>${e.km} km</b></div>`;
+  }).join("");
   box.hidden = false;
   box._etape = s.etape;
   box._tura = s;   // za "Nazad na turu" iz sazetka etape (listanje etapa ne sme svaki put od dnevnika - review 0.9.86)
@@ -8356,13 +8434,18 @@ function zabeleziVoznju() {
       mov: RIDE.movMs > 30000 ? Math.max(1, Math.round(RIDE.movMs / 60000)) : 0,
       pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x && x[0] != null && x[2] > 0) : null,   // GDE si stajao (pin + let kamere iz sazetka); placeholder bez pozicije (0.9.83) ispada
       momLnL: LEAN.momL || null, momLnR: LEAN.momR || null,   // GDE je bio najveci nagib levo/desno - iz ISTOG garda koji pise maxL/maxR (0.9.82)
+      rel: RIDE.rel || null,   // planirana relacija (0.9.88): sazetak deli "Vozi i ti" link; slobodna voznja je nema
       kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
-    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; RIDE.turaTs = null; return "kratka"; }
+    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; RIDE.turaTs = null; RIDE.rel = null; return "kratka"; }
     const v0 = _zajCitaj("mr_voznje", []);
     const v = Array.isArray(v0) ? v0 : [];
     /* ts zapisa = ts sazetka (isti trenutak) - asinhrona preimena i tura-append ga traze po ts */
     const rec = ({ ts: (RIDE.lastSummary && RIDE.lastSummary.ts) || Date.now(), naz, nazPoi, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
       kriv, maxK, avgK, lnL, lnR, lnChk, pauz,
+      /* Planirana relacija (0.9.88): zapis nosi rel {from, to, vias, stil} uhvacen na startu -
+         deljenje kasnije gradi "Vozi i ti" link kroz postojeci ?demo= format. Slobodna voznja
+         i stari zapisi ga nemaju - link se tada tiho izostavlja, bez placeholder-a. */
+      rel: RIDE.rel || undefined,
       /* Trag i u dnevnik - gustina skalira sa duzinom (13.8.): 150 tacaka je za 373 km davalo
          korak od 2,5 km i pravolinijski crtez. Cilj ~455 m po tacki, plafon 800 (~17 KB po
          voznji, 20 voznji ~340 KB - localStorage to nosi). */
@@ -8449,7 +8532,7 @@ function zabeleziVoznju() {
     }
     for (const t of RIDE.kolProslave || []) shareToast(t);   // proslave odlozene sa voznje (pogled ne ide na ekran u krivini); poeni za njih su vec dodeljeni u voznji
   } catch (e) {}
-  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; RIDE.turaTs = null;
+  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false; RIDE.turaTs = null; RIDE.rel = null;
   return ishod;
 }
 /* ---- render sekcija taba Zajednica ---- */
@@ -8509,9 +8592,9 @@ function renderVoznje(targetId, limit) {
     ${selMode ? "" : '<span class="vch"><svg viewBox="0 0 24 24" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg></span>'}
   </div>`; }).join("")
   + (selMode
-    ? `<div class="vakcije"><button type="button" class="vakc glavna" data-vakc="spoji"${sel.size < 2 ? " disabled" : ""}>Spoji u turu${sel.size ? ` (${sel.size})` : ""}</button><button type="button" class="vakc" data-vakc="otkazi">Otkaži</button></div>`
+    ? `<div class="vakcije"><button type="button" class="vakc glavna" data-vakc="spoji"${sel.size < 2 ? " disabled" : ""}>Poveži u turu${sel.size ? ` (${sel.size})` : ""}</button><button type="button" class="vakc" data-vakc="otkazi">Otkaži</button></div>`
     : ((v.length > list.length || (!uzorak && v.length >= 2))
-      ? `<div class="vakcije">${v.length > list.length ? `<button type="button" class="vakc" data-vakc="sve">Prikaži sve (${v.length})</button>` : ""}${!uzorak && v.length >= 2 ? '<button type="button" class="vakc" data-vakc="tura">Zaokruži turu</button>' : ""}</div>` : ""));
+      ? `<div class="vakcije">${v.length > list.length ? `<button type="button" class="vakc" data-vakc="sve">Prikaži sve (${v.length})</button>` : ""}${!uzorak && v.length >= 2 ? '<button type="button" class="vakc" data-vakc="tura">Poveži vožnje u turu</button>' : ""}</div>` : ""));
   box._voznje = list;
   box.onclick = (e) => {
     const ak = e.target.closest(".vakc");
@@ -9391,9 +9474,15 @@ async function plan() {
     }
     state.routes.forEach((r) => { r.assess = assessRoute(r, departure); });
 
-    // preporuka zivi u preporucenaRuta: indeks 0 za Valhallu = kombinovana kad postoji (presuda 24.8.), inace vijugava
+    // preporuka zivi u preporucenaRuta: za Valhallu izbor iz Ja taba (mr_defRuta, presuda 25.8.;
+    // fabricki kombinovana kad postoji, inace vijugava), gradska i OSRM po svojim zakonima
     state.recommended = preporucenaRuta(state.routes, state._gradska, state.engine);
     state.selected = state.recommended;
+    if (state._stilIzLinka) {   // link "Vozi i ti" (0.9.88): unapred se bira kartica deljenog stila
+      const zi = stilIzLinkaIndeks(state.routes, state._stilIzLinka, state._gradska);
+      state._stilIzLinka = null;   // POTROSEN na prvom planu - i kad kartice nema; dalje bira covek
+      if (zi >= 0) { state.recommended = zi; state.selected = zi; }
+    }
 
     // Fini model (2,3 km) i guscanje tacaka SAMO za rutu koja se prikazuje - ostale varijante
     // se porede grubom prognozom i ne placamo ih. Oba koraka su tiha: ako padnu, ostaje kao pre.
@@ -9416,6 +9505,7 @@ async function plan() {
     setStatus("");
     // sheetAfterPlan sada zove selectRoute u trenutku kad je ruta spremna (kasni pad = Boskov nalaz 7.8.)
   } catch (e) {
+    state._stilIzLinka = null;   // pad plana trosi i stil iz linka - bajat flag ne sme da bira karticu nekog KASNIJEG, nevezanog plana
     const raw = String(e.message || e);
     // 5.8.: pad PRETRAGE se prikazivao kao pad RUTERA i odveo na pogresan trag - geo greske nose e.geo i svoju poruku
     const friendly = e && e.geo ? raw
@@ -9650,8 +9740,17 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.87";
+const APP_VERSION = "0.9.88";
 const CHANGELOG = [
+  { v: "0.9.88", d: "25.08.2026.", stavke: [
+    "<b>Šest tvojih presuda sa debrifa 25.8., u jednoj maloj rundi.</b>",
+    "<b>Pečena deonica ima svoje mesto u kombinovanoj.</b> Do sada su dve terenske deonice po score-u umele da isteraju pečenu (izračunat koridor) iz izbora. Sada, kad uz rutu postoje obe vrste znanja, kombinovana šije najbolju terensku I najbolju pečenu zajedno. Terenska i dalje ima prednost: kad je budžet šavova tesan, pečena ispada prva, a tvoje usputne stanice pobeđuju obe.",
+    "<b>Podrazumevana ruta je tvoj izbor.</b> U Ja tabu: Kombinovana (fabrički), Vijugava ili Najbrža - plan unapred bira tu karticu. Gradska relacija i dalje bira najbržu, sve ostale kartice ostaju u ponudi.",
+    "<b>Kombinovana kartica kaže ZAŠTO, tvojim rečima:</b> \"najbrže do najlepših delova - N km poznate deonice usput\". Bez poznate deonice: \"najbrže do krivina - N km krivina\". Rečenica stoji i kad je kombinovana vremenski uz najbržu.",
+    "<b>Jedan rečnik za ture:</b> akcija u dnevniku se sada svuda zove \"Poveži vožnje u turu\". U sažetku ture višednevna tura broji etape (\"Etapa 2 · 25.8.2026.\"), a više vožnji istog dana su vožnje (\"2. vožnja · 14:30\"). Pitanje na startu ostaje \"Nastavljaš turu?\".",
+    "<b>\"Vozi i ti\" - deljena vožnja nosi link.</b> Vožnja startovana iz plana pamti relaciju (od, do, stanice, stil), pa uz karticu za deljenje ide i link koji primaocu otvara ISTI plan u aplikaciji - bez ikakvog servera. Link namerno nosi PLANIRANU relaciju: preračunavanje rute usred vožnje ga ne menja (odvezeno deliš GPX-om). Slobodna vožnja i stari zapisi se dele tačno kao do sada, bez linka i bez praznih obećanja. I \"Podeli sažetak\" iz planera sada nosi stil izabrane kartice - primalac sleće na tvoju karticu.",
+    "Ispod haube: nova test suite tools/nadogradnja.test.mjs u CI - dnevnici i kontrolne tačke iz starijih formata (0.9.80/0.9.82/0.9.83/0.9.86) provlače se kroz današnje čitače: bez pada, bez gubitka, i čitanje nikad ne piše. Format sme da raste samo ako stari podaci prežive."
+  ] },
   { v: "0.9.87", d: "25.08.2026.", stavke: [
     "<b>Kombinovana ruta sada zna za SVE kurirano znanje.</b> Do sada je dobre deonice videla samo u bazi zajednice (230 ocenjenih deonica sa punim trasama); sada vidi i 71 novu: 41 poznatu rutu (Kanjon Tare, Golija, Ovčarsko-kablarska, Srce Šumadije...), 9 proverenih koridora sa motorute istraživanja i 21 relaciju koju zajednica preporučuje po forumima. Trase su izračunate istim moto profilom kojim aplikacija vozi (tools/peci_deonice.py) - planiraš li preko takvog koridora, kombinovana ga ušije kao vijugavi komad, sa imenom u sastavu rute.",
     "Svaka ispečena trasa je pre ulaska prošla trostruku proveru: poklapanje tačaka sa putem kod dva nezavisna rutera, bez sumnjivo kratkih etapa, i kilometraža prema ručno unetim dužinama (±25%). 173 koridora koji proveru NISU prošli stoje u data/audit_pecenja.json sa razlogom, za ručnu odluku - ništa nije tiho odbačeno; tvoja odluka iz audita (data/pecenje_dozvoljeno.json) važi pri sledećem pečenju.",
@@ -10402,28 +10501,13 @@ function init() {
       const t = new Date(Date.now() + 24 * 3600e3);
       $("depart").value = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}T09:00`;
     }
-    /* Stanice iz podeljenog linka. Primaju se SAMO delovi sa ispravnim koordinatama -
-       polovicna stanica (ime bez tacke) bi trazila geokodiranje usred ucitavanja i
-       mogla bi da udje u state kao nepotpun objekat, a state.vias se cita na ~70 mesta.
-       Only parts with valid coordinates are accepted: a half-formed via would need an
-       async geocode mid-load and state.vias is read in ~70 places. */
-    const vp = params.get("via");
-    if (vp) {
-      state.vias = vp.split("~").map((part) => {
-        const at = part.lastIndexOf("@");
-        if (at < 0) return null;   // at === 0 je ispravno: stanica BEZ imena (samo tacka na mapi)
-        const co = part.slice(at + 1).split(",").map(Number);
-        if (co.length !== 2 || !co.every(Number.isFinite)) return null;
-        /* Koordinate van Zemlje se odbacuju: v = [lon, lat]. Bez ovoga izmisljen ili
-           pokvaren link ubaci stanicu koju ruter ne moze da dosegne, pa plan tiho padne.
-           Off-Earth coordinates are rejected: v = [lon, lat]. Without this a mangled link
-           inserts a waypoint the router can never reach and planning fails silently. */
-        if (Math.abs(co[0]) > 180 || Math.abs(co[1]) > 90) return null;
-        let nm = ""; try { nm = decodeURIComponent(part.slice(0, at)); } catch (e) { nm = part.slice(0, at); }
-        return { t: "stop", v: [co[0], co[1]], name: nm };
-      }).filter(Boolean);
-      try { if (typeof renderViaChips === "function") renderViaChips(); } catch (e) {}
-    }
+    // Stanice iz podeljenog linka - pravila (sirova tilda, +, koordinatne kapije) zive u parseVias,
+    // odmah uz graditelja shareLinkIz: parser i graditelj su PAR i menjaju se zajedno.
+    state.vias = parseVias(location.search);
+    if (state.vias.length) { try { if (typeof renderViaChips === "function") renderViaChips(); } catch (e) {} }
+    // stil iz deljenog linka (0.9.88, "Vozi i ti"): posle plana se unapred bira kartica tog
+    // stila (vidi plan()); nepoznat/izostavljen stil = ponasanje kao do sada, tiho
+    state._stilIzLinka = params.get("stil") || null;
     setTimeout(plan, 300); // ne zavisi od mape
   }
 }
@@ -12691,6 +12775,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   document.body.classList.remove("planning"); document.body.classList.add("riding", "freeride");
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.freeRide = true; RIDE.freeNaz = null; RIDE.nav = null; RIDE.route = null; RIDE.total = 0;
+  RIDE.rel = null;   // slobodna voznja nema planiranu relaciju - zapis bez rel = deljenje bez linka (0.9.88)
   RIDE.turaTs = RIDE._turaNastavi || null; RIDE._turaNastavi = null;   // TURA (0.9.86): odgovor sa sheeta prezivljava reset - voznja ce se zalepiti kao etapa
   RIDE._flim = null; RIDE._flimV = 0;   // svež limit-stroj (znak prošle vožnje ne sme da preživi)
   RIDE._fwx = null;   // sveza kisna najava
@@ -12855,6 +12940,23 @@ function startRide() {
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   RIDE.nav = buildNav(route); RIDE.offCount = 0; RIDE.lastReroute = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
   RIDE.turaTs = RIDE._turaNastavi || null; RIDE._turaNastavi = null;   // TURA (0.9.86): odgovor sa sheeta prezivljava reset - voznja ce se zalepiti kao etapa
+  /* rel (0.9.88): planirana relacija se hvata NA STARTU voznje - zapis u dnevniku kasnije nosi
+     link "Vozi i ti" koji primaocu rekonstruise isti plan (from/to/stanice/stil) kroz postojeci
+     ?demo= format, bez ikakvog servera. Slobodna voznja nema plan pa ni rel (startFreeRide ga
+     nulira) - link se tada tiho izostavlja. Stil = koren labele izabrane kartice ("Kombinovana",
+     "Vijugava", "Najbrža"...) - primaocu se po njemu unapred bira ista kartica.
+     NAMERNO se NE azurira na reroute/altApply (odluka, pregled 25.8.): link deli PLAN sa kojim
+     je covek krenuo, ne odvezeno - odvezeno deli GPX/trag. Skretanje s puta usred voznje ne sme
+     tiho da promeni relaciju koju primalac dobija. */
+  try {
+    const g0 = state.geocode || {};
+    RIDE.rel = (g0.from && g0.from.name && g0.to && g0.to.name) ? {
+      from: g0.from.name, to: g0.to.name,
+      vias: (state.vias || []).filter((v) => v && Array.isArray(v.v) && Number.isFinite(v.v[0]) && Number.isFinite(v.v[1]))
+        .map((v) => ({ name: (v.name || "").trim() || null, v: [+v.v[0].toFixed(4), +v.v[1].toFixed(4)] })),
+      stil: stilKoren(route.label),
+    } : null;
+  } catch (e) { RIDE.rel = null; }
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = []; RIDE.arrived = false;   // dnevnik voznje + kolekcije
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
   RIDE._stajeOd = null;   // ostaci prethodne voznje: stari trenutak stajanja bi "Drugu rutu" upalio na startu
@@ -13185,6 +13287,7 @@ function voznjaCkpSnimak(cilj) {   // snimak tekuce voznje (cist objekat - testi
     pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x && x[0] != null && x[2] > 0).map((x) => [+x[0].toFixed(5), +x[1].toFixed(5), x[2]]) : null,   // placeholder bez pozicije (0.9.83) ne sme u snimak
     kisa: !!RIDE.kisa, kolCnt: RIDE.kolCnt || 0,   // bedz kise i brojac kolekcija ne smeju da nestanu sa oporavkom (0.9.82 review)
     turaTs: RIDE.turaTs || null,   // TURA (0.9.86): iOS kill USRED etape - oporavljena voznja mora da nadje svoju turu
+    rel: RIDE.rel || null,   // planirana relacija (0.9.88): ni iOS kill ne sme da odnese "Vozi i ti" link
     leanChk: (RIDE.leanChk && RIDE.leanChk.n) ? { n: RIDE.leanChk.n, sum: Math.round((RIDE.leanChk.sum || 0) * 10) / 10 } : null,
     trag: mk(cilj || 800),
     smp: (RIDE.samples && RIDE.samples.length > 1)
@@ -13206,6 +13309,7 @@ function voznjaCkpHidrat(snap) {   // snimak -> RIDE/LEAN stanje, spremno za zab
   RIDE.momBrz = snap.momBrz || null;
   RIDE.kolCnt = snap.kolCnt || 0; RIDE.kisa = !!snap.kisa;   // oporavljena voznja zadrzava kisu i kolekcije (0.9.82 review)
   RIDE.turaTs = snap.turaTs || null;   // TURA (0.9.86): oporavljena etapa se i dalje lepi na svoju turu
+  RIDE.rel = snap.rel || null;   // planirana relacija (0.9.88): stariji snimak je nema - zapis tada ide bez linka, tiho
   RIDE.leanChk = (snap.leanChk && snap.leanChk.n) ? { n: snap.leanChk.n, sum: snap.leanChk.sum || 0 } : null;
   RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.kolProslave = [];
   LEAN.momL = snap.momL || null; LEAN.momR = snap.momR || null;
@@ -13299,7 +13403,7 @@ function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne 
   // hidrirano stanje ne sme da procuri u sledecu pravu voznju
   RIDE.t0 = null; RIDE.freeRide = false; RIDE.freeNaz = null; RIDE.trace = []; RIDE.samples = [];
   RIDE.trkM = 0; RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.pauseMs = 0; RIDE.pauzeNa = null; RIDE.momBrz = null;
-  RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.leanChk = null; RIDE.turaTs = null;
+  RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.leanChk = null; RIDE.turaTs = null; RIDE.rel = null;
   leanReset();
 }
 function stopRide() {
@@ -14586,15 +14690,39 @@ async function stplTap(kind) {
 }
 async function stplPodeli(kind) {
   const cv = STPL.ready[kind]; if (!cv) return;
+  /* "Vozi i ti" (0.9.88): voznja startovana iz plana nosi rel, pa uz karticu ide i link koji
+     primaocu otvara ISTU relaciju (postojeci ?demo= format, graditelj shareLinkIz). Slobodna
+     voznja i stari zapisi bez rel: deli se samo slika, tacno kao do sada - bez placeholder-a. */
+  let vozi = null;
+  try {
+    const rel = relZaZapis(STPL.sum);
+    if (rel && rel.from && rel.to) vozi = "Vozi i ti: " + shareLinkIz(rel.from, rel.to, rel.vias, null, rel.stil);
+  } catch (e) { vozi = null; }
   try {
     const blob = await new Promise((res) => cv.toBlob(res, "image/jpeg", 0.92));
     const file = blob ? new File([blob], "rmr-" + kind + ".jpg", { type: "image/jpeg" }) : null;
-    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; }
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      /* slika + tekst SAMO kad platforma to eksplicitno prima (pregled 25.8.): iOS ume da odbije
+         ili tiho ispusti text uz files - tada link ide u klipbord, kao na desktopu, uz poruku.
+         (canShare ume i da slaze "true" pa share sheet ipak ispusti tekst - terenska provera na
+         uredjaju je obavezna, repo pravilo: testiranje = dokaz na uredjaju.) */
+      if (vozi && navigator.canShare({ files: [file], text: vozi })) {
+        await navigator.share({ files: [file], text: vozi });
+        return;
+      }
+      await navigator.share({ files: [file] });
+      if (vozi) {
+        try { await navigator.clipboard.writeText(vozi); shareToast('Link "Vozi i ti" je kopiran - nalepi ga uz sliku.'); } catch (e) {}
+      }
+      return;
+    }
     if (blob) {
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob); a.download = "rmr-" + kind + ".jpg"; a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-      shareToast("Slika sačuvana.");
+      let kop = false;   // desktop/bez share sheeta: link ide preko klipborda - i tada bez rel nema ni pomena linka
+      if (vozi) { try { await navigator.clipboard.writeText(vozi); kop = true; } catch (e) {} }
+      shareToast(kop ? "Slika sačuvana, link \"Vozi i ti\" je kopiran." : "Slika sačuvana.");
     }
   } catch (e) { if (e && e.name !== "AbortError") shareToast("Deljenje nije uspelo."); }
 }
@@ -14935,28 +15063,67 @@ function renderResultHero(route) {
   }
 }
 /* ---- deljenje sazetka voznje: slika (canvas u brend stilu) ili link ---- */
-function shareLink() {
-  const g = state.geocode || {};
-  const from = (($("from") && $("from").value) || (g.from && g.from.name) || "").trim();
-  const to = (($("to") && $("to").value) || (g.to && g.to.name) || "").trim();
-  const dep = ($("depart") && $("depart").value) || "";
-  /* Stanice nose KOORDINATE, ne samo ime: ruta se rekonstruise tacno, bez ponovnog
+function shareLinkIz(from, to, vias, dep, stil) {
+  /* JEDAN graditelj deljenog linka (0.9.88): i planersko "Podeli sažetak" i "Vozi i ti" iz
+     dnevnika (rel zapisa) prave isti ?demo= format koji startup parser vec ume da procita.
+     Stanice nose KOORDINATE, ne samo ime: ruta se rekonstruise tacno, bez ponovnog
      geokodiranja (isto ime ume da padne na drugo mesto), i bez dodatnog poziva ka
      Nominatimu. Ime ide uz njih samo kao natpis.
      Waypoints carry COORDINATES, not just a name: the route reconstructs exactly,
      with no re-geocoding (the same name can resolve elsewhere) and no extra
      Nominatim call. The name rides along only as a label. */
   /* Tilda razdvaja stanice, a encodeURIComponent je NE kodira (spada u neoznacene znake),
-     pa bi ime tipa "Kafana ~ Vidikovac" razbilo link na dve polovicne stanice. Kodira se rucno.
+     pa bi ime tipa "Kafana ~ Vidikovac" razbilo link na dve polovicne stanice. Kodira se rucno
+     (popravka iz 0.9.82 ere - vazi za SVAKOG pozivaoca ovog graditelja).
      The tilde separates waypoints and encodeURIComponent leaves it alone (it is an unreserved
      mark), so a name like "Kafana ~ Vidikovac" would split the link into two broken stops. */
-  const via = (state.vias || [])
-    .filter((v) => Array.isArray(v.v) && Number.isFinite(v.v[0]) && Number.isFinite(v.v[1]))
+  const via = (vias || [])
+    .filter((v) => v && Array.isArray(v.v) && Number.isFinite(v.v[0]) && Number.isFinite(v.v[1]))
     .map((v) => `${encodeURIComponent((v.name || "").trim()).replace(/~/g, "%7E")}@${v.v[0].toFixed(4)},${v.v[1].toFixed(4)}`)
     .join("~");
-  return `${location.origin}${location.pathname}?demo=1&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}` +
+  /* Kanonicno poreklo van https (pregled 25.8.): Capacitor ljuska zivi na capacitor://localhost,
+     a lokalni dev na http - takav link primaocu ne otvara NISTA. Van https se zato emituje
+     kanonican sajt (isti koji je vec ukucan u supa() i na brend karticama). */
+  const koren = location.protocol === "https:" ? location.origin + location.pathname : "https://routemeright.app/app.html";
+  return `${koren}?demo=1&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}` +
     (via ? `&via=${via}` : "") +
-    (dep ? `&depart=${encodeURIComponent(dep.slice(0, 16))}` : "");
+    (dep ? `&depart=${encodeURIComponent(dep.slice(0, 16))}` : "") +
+    (stil ? `&stil=${encodeURIComponent(stil)}` : "");   // 0.9.88: primaocu se unapred bira kartica deljenog stila
+}
+function parseVias(search) {
+  /* Parser deljenih stanica - PAR graditelja shareLinkIz (startup ?demo= tok ga zove).
+     Radi nad SIROVOM vrednoscu, ne kroz params.get (0.9.88 - verifikacija tilda-pravila iz
+     0.9.82): URLSearchParams dekodira %7E nazad u ~ PRE deljenja, pa bi ime "Kafana ~ Vidikovac" -
+     koje graditelj bas zato kodira - opet puklo na dve polovicne stanice. Separator je SAMO
+     sirova tilda; svaki deo se dekodira POSLE secenja. Rucno pisani linkovi umeju + umesto
+     razmaka (URLSearchParams bi ga tako i citao) - pa se + prevodi u %20 pre dekodiranja;
+     literal + iz graditelja stize kao %2B i ostaje netaknut.
+     Primaju se SAMO delovi sa ispravnim koordinatama - polovicna stanica (ime bez tacke) bi
+     trazila geokodiranje usred ucitavanja, a state.vias se cita na ~70 mesta. Koordinate van
+     Zemlje se odbacuju (v = [lon, lat]) - pokvaren link ne sme da ubaci nedostiznu stanicu. */
+  const vp = (String(search || "").match(/[?&]via=([^&#]*)/) || [])[1] || "";
+  if (!vp) return [];
+  const dek = (s) => { const t = String(s).replace(/\+/g, "%20"); try { return decodeURIComponent(t); } catch (e) { return t; } };
+  return vp.split("~").map((part) => {
+    const at = part.lastIndexOf("@");
+    if (at < 0) return null;   // at === 0 je ispravno: stanica BEZ imena (samo tacka na mapi)
+    const co = dek(part.slice(at + 1)).split(",").map(Number);
+    if (co.length !== 2 || !co.every(Number.isFinite)) return null;
+    if (Math.abs(co[0]) > 180 || Math.abs(co[1]) > 90) return null;
+    return { t: "stop", v: [co[0], co[1]], name: dek(part.slice(0, at)) };
+  }).filter(Boolean);
+}
+function stilKoren(label) {   // koren labele kartice ("Kombinovana · autoput i krivine" -> "Kombinovana") - kljuc `stil` parametra
+  return String(label || "").split("·")[0].trim() || null;
+}
+function shareLink() {
+  const g = state.geocode || {};
+  const from = (($("from") && $("from").value) || (g.from && g.from.name) || "").trim();
+  const to = (($("to") && $("to").value) || (g.to && g.to.name) || "").trim();
+  const dep = ($("depart") && $("depart").value) || "";
+  // i planersko deljenje nosi stil IZABRANE kartice (pregled 25.8.) - primalac slece na istu karticu
+  const r = state.routes && state.routes[state.selected];
+  return shareLinkIz(from, to, state.vias, dep, stilKoren(r && r.label));
 }
 function buildShareCanvas(route) {
   const W = 1080, H = 1350, P = 72;
@@ -15358,6 +15525,15 @@ function offOpen() { const s = document.getElementById("offSheet"); if (s) { s.h
 })();
 
 /* ---- P3: Ja podesavanja (tema mape + zvuk) ---- */
+function jaDefRutaInit() {
+  /* Presuda 25.8.: podrazumevana ruta je IZBOR vozaca (mr_defRuta); fabricki ostaje kombinovana.
+     Imenovana funkcija (ne inline u IIFE) da bi je test suite izvrsavala 1:1 - hidracija iz
+     skladista + upis na promenu; cita je preporucenaRuta pri svakom planu. */
+  const dr = document.getElementById("jaDefRuta");
+  if (!dr) return;
+  try { const v = localStorage.getItem("mr_defRuta"); if (v === "vijugava" || v === "najbrza" || v === "kombinovana") dr.value = v; } catch (e) {}
+  dr.addEventListener("change", () => { try { localStorage.setItem("mr_defRuta", dr.value); } catch (e) {} });
+}
 (function(){
   const th = document.getElementById("jaDark"), snd = document.getElementById("jaSound"), ja = document.getElementById("jaAuto");
   if (!th) return;
@@ -15380,6 +15556,7 @@ function offOpen() { const s = document.getElementById("offSheet"); if (s) { s.h
       if (host && mh && mw) { host.appendChild(mh); host.appendChild(mw); }
     }
   } catch (e) {}
+  jaDefRutaInit();
   const ln = document.getElementById("jaLean");
   if (ln) {   // council 5.8.: prekidac za zivi prikaz nagiba - merenje i dnevnik rade uvek, samo se broj na ekranu gasi
     ln.checked = localStorage.getItem("rmr2_leanui") !== "0";
