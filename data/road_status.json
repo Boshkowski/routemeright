@@ -1,5 +1,5 @@
 {
- "updated": "2026-08-26T04:54+00:00",
+ "updated": "2026-08-26T05:48+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -7,57 +7,159 @@
    "ok": true,
    "items": [
     {
+     "type": "Okvara vozila",
+     "title": "A1-E61, E70, Ljubljana - Koper: Okvara vozila",
+     "detail": "A1, Ljubljana - Koper, počivališče Lom - priključek Unec v smeri Kopra, okvara vozila, oviran promet.",
+     "region": "A1-E61, E70, Ljubljana - Koper"
+    },
+    {
+     "type": "Delo",
+     "title": "A1-E70, Ljubljana - juž. obvoznica: Delo",
+     "detail": "A1, Ljubljana - južna obvoznica, priključek Ljubljana center - priključek Ljubljana Rudnik v smeri Malenc, dela, oviran promet, košnja.",
+     "region": "A1-E70, Ljubljana - juž. obvoznica"
+    },
+    {
+     "type": "Delo",
+     "title": "R2-404, Podgrad - Ilirska Bistrica: Delo",
+     "detail": "R2-404, Podgrad - Ilirska Bistrica, Podgrad - Harije, oviran promet, košnja, do 14:00.",
+     "region": "R2-404, Podgrad - Ilirska Bistrica"
+    },
+    {
+     "type": "Zastoj",
+     "title": "A1-E57, Ljubljana  - vzh. obvoznica: Zastoj",
+     "detail": "A1, Ljubljana - vzhodna obvoznica, razcep Zadobrova iz smeri Zaloške proti Sneberjam, zastoj.",
+     "region": "A1-E57, Ljubljana  - vzh. obvoznica"
+    },
+    {
+     "type": "Zastoj",
+     "title": "A1-E57, Ljubljana - Maribor: Zastoj",
+     "detail": "A1, Ljubljana - Maribor, razcep Zadobrova - priključek Ljubljana Šentjakob v smeri Celja, zastoj, dolžina: 1 km in 500 m.",
+     "region": "A1-E57, Ljubljana - Maribor"
+    },
+    {
+     "type": "Delo",
+     "title": "A4-E59, Gruškovje (Hrvaška) - Maribor: Delo",
+     "detail": "A4, Gruškovje (Hrvaška) - Maribor, priključek Podlehnik - priključek Zlatoličje v smeri Maribora, dela, oviran promet.",
+     "region": "A4-E59, Gruškovje (Hrvaška) - Maribor"
+    },
+    {
+     "type": "Delo",
+     "title": "A2-E70, Ljubljana - Obrežje: Delo",
+     "detail": "A2, Ljubljana - Obrežje, počivališče Starine - priključek Dobruška vas v smeri Obrežja, dela, zaprt prehitevalni pas.",
+     "region": "A2-E70, Ljubljana - Obrežje"
+    },
+    {
+     "type": "Delo",
+     "title": "R2-439, Bratonci - Križevci: Delo",
+     "detail": "R2-439, Bratonci - Križevci, Banovci - Križevci, izmenično enosmerni promet, pomična zapora, popravilo bankin, do 16:00.",
+     "region": "R2-439, Bratonci - Križevci"
+    },
+    {
+     "type": "Zastoj",
+     "title": "A1-E57, Ljubljana - Maribor: Zastoj",
+     "detail": "A1, Ljubljana - Maribor, izvoz 12 Dramlje - predor Pletovarje v smeri Maribora, območje zastojev, zamuda: 14 min, dolžina: 3 km in 400 m.",
+     "region": "A1-E57, Ljubljana - Maribor"
+    },
+    {
+     "type": "Delo",
+     "title": "G1-4, Slovenj Gradec - Gornji Dolič: Delo",
+     "detail": "G1-4, Velenje - Slovenj Gradec, pri Mislinji, izmenično enosmerni promet, pomična zapora, zalivanje reg in razpok, do 15:00.",
+     "region": "G1-4, Slovenj Gradec - Gornji Dolič"
+    },
+    {
+     "type": "Zastoj",
+     "title": "A1-E61, E70, Koper - Ljubljana: Zastoj",
+     "detail": "A1, Koper - Ljubljana, priključek Dragomer - priključek Brezovica v smeri Ljubljane, zastoj, zamuda: 2 min, dolžina: 2 km in 700 m.",
+     "region": "A1-E61, E70, Koper - Ljubljana"
+    },
+    {
+     "type": "Delo",
+     "title": "A2-E61, Karavanke - Ljubljana: Delo",
+     "detail": "A2, Karavanke - Ljubljana, priključek Brnik - priključek Vodice v smeri Ljubljane, dela, oviran promet.",
+     "region": "A2-E61, Karavanke - Ljubljana"
+    },
+    {
+     "type": "Delo",
+     "title": "R1-230, Radenci - Vučja Vas: Delo",
+     "detail": "R1-230, Radenci - Vučja vas, Hrastje - Turjanci, izmenično enosmerni promet, pomična zapora, zalivanje reg in razpok, do 15:00.",
+     "region": "R1-230, Radenci - Vučja Vas"
+    },
+    {
+     "type": "Delo",
+     "title": "G1-1, Dravograd - Radlje: Delo",
+     "detail": "G1-1, Dravograd - Maribor, v Dravogradu, izmenično enosmerni promet, obrezovanje rastlinja, do 8:30.",
+     "region": "G1-1, Dravograd - Radlje"
+    },
+    {
+     "type": "Delo",
+     "title": "A2-E70, Obrežje - Ljubljana: Delo",
+     "detail": "A2, Obrežje - Ljubljana, izvoz 18 Grosuplje zahod, Cikava - izvoz 18 Grosuplje zahod, Cikava v smeri Ljubljane, dela, oviran promet.",
+     "region": "A2-E70, Obrežje - Ljubljana"
+    },
+    {
+     "type": "Delo",
+     "title": "RT-912, Novaki - Cerkno: Delo",
+     "detail": "RT-912, Novaki - Cerkno, Cerkno - Dolenji Novaki, izmenično enosmerni promet, pomična zapora, košnja, do 15:00.",
+     "region": "RT-912, Novaki - Cerkno"
+    },
+    {
+     "type": "Delo",
+     "title": "A2-E61, Ljubljana - Karavanke: Delo",
+     "detail": "A2, Ljubljana - Karavanke, priključek Kranj zahod - priključek Naklo v smeri Karavank, Avstrije, dela, oviran promet.",
+     "region": "A2-E61, Ljubljana - Karavanke"
+    },
+    {
+     "type": "Delo",
+     "title": "RT-919, Žuniči - Vinica: Delo",
+     "detail": "RT-919, Vinica - Žuniči, pri Balkovcih, izmenično enosmerni promet, pomična zapora, sanacija brežin, do 17:00.",
+     "region": "RT-919, Žuniči - Vinica"
+    },
+    {
+     "type": "Delo",
+     "title": "A2-E70, Ljubljana - Obrežje: Delo",
+     "detail": "A2, Ljubljana - Obrežje, izvoz Smednik - prehod Obrežje v smeri Obrežja, dela, oviran promet.",
+     "region": "A2-E70, Ljubljana - Obrežje"
+    },
+    {
+     "type": "Delo",
+     "title": "A1-E57, Ljubljana - Maribor: Delo",
+     "detail": "A1, Ljubljana - Maribor, predor Ločica - predor Ločica v smeri Maribora, dela, oviran promet.",
+     "region": "A1-E57, Ljubljana - Maribor"
+    },
+    {
+     "type": "Delo",
+     "title": "R3-658, Dobliče - Sveta Ana - Stari Trg: Delo",
+     "detail": "R3-658, Dobliče - Sv. Ana - Stari trg, oviran promet, košnja, do 19:00.",
+     "region": "R3-658, Dobliče - Sveta Ana - Stari Trg"
+    },
+    {
      "type": "Delo",
      "title": "R3-662, Metlika - Božakovo: Delo",
      "detail": "R3-662, Metlika - Božakovo, oviran promet, košnja, do 19:00.",
      "region": "R3-662, Metlika - Božakovo"
     },
     {
-     "type": "Delo",
-     "title": "A1-E61, E70, Ljubljana - Koper: Delo",
-     "detail": "A1, Ljubljana - Koper, predor Kastelec v smeri Kopra, dela, zaprt vozni pas.",
-     "region": "A1-E61, E70, Ljubljana - Koper"
-    },
-    {
      "type": "Zastoj",
-     "title": "A1-E57, Ljubljana - Maribor: Zastoj",
-     "detail": "A1, Ljubljana - Maribor, priključek Dramlje - predor Pletovarje v smeri Maribora, zastoj, zamuda: 6 min, dolžina: 3 km.",
-     "region": "A1-E57, Ljubljana - Maribor"
+     "title": "G2-108, Dolsko - Šentjakob : Zastoj",
+     "detail": "G2-108, Dolsko - Šentjakob, zastoj, dolžina: 600 m.",
+     "region": "G2-108, Dolsko - Šentjakob"
     },
     {
      "type": "Zastoj",
      "title": "R3-644, Domžale - Šentjakob - Ljubljana: Zastoj",
-     "detail": "R3-644, Domžale - Šentjakob - Ljubljana, zastoj, dolžina: 1 km.",
+     "detail": "R3-644, Domžale - Šentjakob - Ljubljana, zastoj, dolžina: 1 km in 400 m.",
      "region": "R3-644, Domžale - Šentjakob - Ljubljana"
     },
     {
      "type": "Zastoj",
-     "title": "R1-211, Medno - Ljubljana: Zastoj",
-     "detail": "R1-211, Medno - Ljubljana, zastoj, dolžina: 800 m.",
-     "region": "R1-211, Medno - Ljubljana"
-    },
-    {
-     "type": "Ovire",
-     "title": "A1-E57, Maribor - Ljubljana: Ovire",
-     "detail": "A1, Maribor - Ljubljana, pred priključkom Celje vzhod v smeri Ljubljane, pnevmatika, oviran promet.",
-     "region": "A1-E57, Maribor - Ljubljana"
-    },
-    {
-     "type": "Okvara vozila",
-     "title": "A1-E57, Maribor - Ljubljana: Okvara vozila",
-     "detail": "A1, Maribor - Ljubljana, pred priključkom Celje vzhod v smeri Ljubljane, okvara tovornega vozila, oviran promet.",
-     "region": "A1-E57, Maribor - Ljubljana"
-    },
-    {
-     "type": "Zastoj",
      "title": "A1-E61, E70, Koper - Ljubljana: Zastoj",
-     "detail": "A1, Koper - Ljubljana, priključek Vrhnika - priključek Brezovica v smeri Ljubljane, območje zastojev, zamuda: 8 min, dolžina: 8 km in 700 m.",
+     "detail": "A1, Koper - Ljubljana, priključek Logatec - priključek Vrhnika v smeri Ljubljane, zastoj, zamuda: 2 min, dolžina: 2 km in 300 m.",
      "region": "A1-E61, E70, Koper - Ljubljana"
     },
     {
      "type": "Zastoj",
      "title": "G2-104, Trzin - Črnuče: Zastoj",
-     "detail": "G2-104, Trzin - Črnuče, zastoj, dolžina: 3 km.",
+     "detail": "G2-104, Trzin - Črnuče, zastoj, dolžina: 2 km in 200 m.",
      "region": "G2-104, Trzin - Črnuče"
     },
     {
@@ -67,10 +169,10 @@
      "region": "G2-106, Kočevje - Livold"
     },
     {
-     "type": "Ovire",
-     "title": "A2-E61, Karavanke - Ljubljana: Ovire",
-     "detail": "A2, Karavanke - Ljubljana, priključek Lesce - počivališče Radovljica v smeri Ljubljane, predmet na vozišču, oviran promet.",
-     "region": "A2-E61, Karavanke - Ljubljana"
+     "type": "Zastoj",
+     "title": "A1-E57, Maribor - Ljubljana: Zastoj",
+     "detail": "A1, Maribor - Ljubljana, uvoz Sl. Konjice - predor Golo Rebro v smeri Ljubljane, zastoj, zamuda: 11 min, dolžina: 3 km.",
+     "region": "A1-E57, Maribor - Ljubljana"
     },
     {
      "type": "Delo",
@@ -81,7 +183,7 @@
     {
      "type": "Zastoj",
      "title": "A2-E70, Obrežje - Ljubljana: Zastoj",
-     "detail": "A2, Obrežje - Ljubljana, priključek Bič - počivališče Podsmreka v smeri Ljubljane, območje zastojev, zamuda: 11 min, dolžina: 4 km in 200 m.",
+     "detail": "A2, Obrežje - Ljubljana, priključek Bič - počivališče Podsmreka v smeri Ljubljane, območje zastojev, zamuda: 13 min, dolžina: 4 km in 200 m.",
      "region": "A2-E70, Obrežje - Ljubljana"
     },
     {
@@ -93,19 +195,13 @@
     {
      "type": "Zastoj",
      "title": "A1-E57, Maribor - Ljubljana: Zastoj",
-     "detail": "A1, Maribor - Ljubljana, priključek Krtina - priključek Ljubljana Šentjakob v smeri Ljubljane, območje zastojev, zamuda: 19 min, dolžina: 9 km in 500 m.",
+     "detail": "A1, Maribor - Ljubljana, priključek Krtina - priključek Ljubljana Šentjakob v smeri Ljubljane, območje zastojev, zamuda: 13 min, dolžina: 5 km in 400 m.",
      "region": "A1-E57, Maribor - Ljubljana"
     },
     {
      "type": "Delo",
      "title": "A2-E61, Ljubljana - Karavanke: Delo",
      "detail": "A2, Ljubljana - Karavanke, uvoz Jesenice zahod - predor Karavanke v smeri Karavank, Avstrije, dela, zaprt prehitevalni pas.",
-     "region": "A2-E61, Ljubljana - Karavanke"
-    },
-    {
-     "type": "Okvara vozila",
-     "title": "A2-E61, Ljubljana - Karavanke: Okvara vozila",
-     "detail": "A2, Ljubljana - Karavanke, priključek Brezje - priključek Radovljica v smeri Karavank, Avstrije, okvara tovornega vozila, oviran promet.",
      "region": "A2-E61, Ljubljana - Karavanke"
     },
     {
@@ -149,111 +245,27 @@
      "title": "G1-1, Ruta - Maribor  (Koroški Most): Delo",
      "detail": "G1-1, Maribor - Dravograd, pri Vurmatu, izmenično enosmerni promet, kratkotrajne popolne zapore (do 15 minut), sečnje in spravila lesa, do 31. 8. 2026, kratkotrajne popolne zapore med 8:30 in 15. uro.",
      "region": "G1-1, Ruta - Maribor  (Koroški Most)"
-    },
-    {
-     "type": "Delo",
-     "title": "R3-679, Breg - Sevnica - Brestanica: Delo",
-     "detail": "R3-679, Breg - Sevnica - Brestanica, pri Brestanici, izmenično enosmerni promet, sanacija obodnega zidu, do 31. 8. 2026.",
-     "region": "R3-679, Breg - Sevnica - Brestanica"
-    },
-    {
-     "type": "Delo",
-     "title": "R2-412, Kr  (Kidričeva cesta - Iskra): Delo",
-     "detail": "R2-412, Kranj, v Kranju, na Stari cesti na mostu čez Savo, dela, izmenično enosmerni promet, do 30. 8. 2026.",
-     "region": "R2-412, Kr  (Kidričeva cesta - Iskra)"
-    },
-    {
-     "type": "Delo",
-     "title": "R1-216, Ivančna Gorica - Krka: Delo",
-     "detail": "R1-216, Ivančna Gorica - Krka, pri avtocestnem priključku Ivančna Gorica, izmenično enosmerni promet, obnova vozišča, do 24. 10. 2026.",
-     "region": "R1-216, Ivančna Gorica - Krka"
-    },
-    {
-     "type": "Delo",
-     "title": "R2-418, Dobruška Vas - Šentjernej: Delo",
-     "detail": "R2-418, Škocjan - Dobruška vas - Šentjernej, pri Dobravi pri Škocjanu, izmenično enosmerni promet, izgradnja pločnika, do 31. 8. 2026.",
-     "region": "R2-418, Dobruška Vas - Šentjernej"
-    },
-    {
-     "type": "Delo",
-     "title": "R3-608, Lokve - Čepovan: Delo",
-     "detail": "R3-608, Lokve - Čepovan, pri Čepovanu, izmenično enosmerni promet, izgradnja optične povezave, do 25. 9. 2026, med 18. in 7. uro. Popolna zapora je v dnevnem času med 7. in 18. uro.",
-     "region": "R3-608, Lokve - Čepovan"
-    },
-    {
-     "type": "Delo",
-     "title": "R3-745, Dolge Njive - Spodnji Duplek: Delo",
-     "detail": "R3-745, Dolge Njive - Spodnji Duplek, v Spodnjem Dupleku, pri osnovni šoli, izmenično enosmerni promet, asfaltiranje, do 26. 8. 2026.",
-     "region": "R3-745, Dolge Njive - Spodnji Duplek"
-    },
-    {
-     "type": "Delo",
-     "title": "H4 , Razdrto - Nova Gorica: Delo",
-     "detail": "H4, Razdrto - Nova Gorica, priključek Vipava - pokrit vkop Vipavski Križ v smeri Vrtojbe, Italije, dela, promet poteka po enem voznem pasu v vsako smer.",
-     "region": "H4 , Razdrto - Nova Gorica"
-    },
-    {
-     "type": "Delo",
-     "title": "H4 , Razdrto - Nova Gorica: Delo",
-     "detail": "H4, Razdrto - Nova Gorica, uvoz 2 Ajdovščina v smeri Vrtojbe, Italije, dela, popolna zapora.",
-     "region": "H4 , Razdrto - Nova Gorica"
-    },
-    {
-     "type": "Delo",
-     "title": "R3-711, Rače - Kungota - Kidričevo: Delo",
-     "detail": "R3-711, Rače - Kungota - Kidričevo, v Račah, izmenično enosmerni promet, izgradnje kablovoda, do 31. 8. 2026.",
-     "region": "R3-711, Rače - Kungota - Kidričevo"
-    },
-    {
-     "type": "Delo",
-     "title": "G1-4, Gornji Dolič - Velenje: Delo",
-     "detail": "G1-4, Velenje - Slovenj Gradec, pri Paki pri Velenju, izmenično enosmerni promet, preplastitev vozišča, do 3. 10. 2026.",
-     "region": "G1-4, Gornji Dolič - Velenje"
-    },
-    {
-     "type": "Delo",
-     "title": "G1-5, Brestanica - Krško: Delo",
-     "detail": "G1-5, Brestanica - Krško, pri Krškem, popolna zapora, ureditev ceste, do 16. 1. 2027. Obvoz: po regionalni cesti Krško - Brežice, glavni cesti Brestanica - Krško in po lokalnih cestah.",
-     "region": "G1-5, Brestanica - Krško"
-    },
-    {
-     "type": "Delo",
-     "title": "LC-069020, Ljubljana - Brinje - Videm - Dolsko: Delo",
-     "detail": "LC Dol pri Ljubljani - Šentjakob, med naseljema Brinje in Beričevo, dela, popolna zapora, do 10. 10. 2026.",
-     "region": "LC-069020, Ljubljana - Brinje - Videm - Dolsko"
-    },
-    {
-     "type": "Delo",
-     "title": "R1-222, Zagorje - Most Čez Savo: Delo",
-     "detail": "R1-222, Zagorje - Most čez Savo, pri Šklendrovcu, popolna zapora, gradnje krožišča in rekonstrukcija mostu, do 30. 8. 2026, do 19. ure. Obvoz: Šklendrovec - Most čez Savo - Bevško - Zagorje.",
-     "region": "R1-222, Zagorje - Most Čez Savo"
-    },
-    {
-     "type": "Delo",
-     "title": "R1-219, Bizeljsko - Čatež: Delo",
-     "detail": "R1-219, Bizeljsko - Čatež, Stara vas-Bizeljsko, izmenično enosmerni promet, izgradnja pločnika, do 25. 3. 2027.",
-     "region": "R1-219, Bizeljsko - Čatež"
-    },
-    {
-     "type": "Delo",
-     "title": "R1-215, Trebnje - Mokronog: Delo",
-     "detail": "R1-215, Trebnje - Mokronog, na Rakovniku pri Šentrupertu, izmenično enosmerni promet, izvedbe ukrepov v območju šolske poti, do 20. 9. 2026.",
-     "region": "R1-215, Trebnje - Mokronog"
-    },
-    {
-     "type": "Delo",
-     "title": "R1-220, Krško - Brežice: Delo",
-     "detail": "R1-220, Krško - Brežice, v Brežicah, izmenično enosmerni promet, ureditve križišča, kolesarskih in peš poti, do 16. 11. 2026.",
-     "region": "R1-220, Krško - Brežice"
     }
    ],
-   "fetched": "2026-08-26T04:54+00:00"
+   "fetched": "2026-08-26T05:48+00:00"
   },
   "HR": {
    "name": "Hrvatska",
    "source": "HAK",
    "ok": true,
    "items": [
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Na autocesti A1 izlaz iz tunela Sv Rok smjer Dubrovnik zbog oštećenja kolnika vozi se uz ograničenje brzine od 80 km/h po dvije prometne trake. Molimo korisnike za oprez.",
+     "region": "A1"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A1 na 238+400 km između tunela Čelinka i PUO Jasenice u smjeru Dubrovnika. Zbog oštećenja odbojne ograde promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A1"
+    },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
@@ -267,15 +279,15 @@
      "region": "A1"
     },
     {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Na autocesti A1 izlaz iz tunela Sv Rok smjer Dubrovnik zbog oštećenja kolnika vozi se uz ograničenje brzine od 80 km/h po dvije prometne trake. Molimo korisnike za oprez.",
+     "type": "guzva/dogadjaj (Nesreća)",
+     "title": "A1 - Nesreća",
+     "detail": "Prometna nesreća na autocesti A1 na 316+900 km između čvora Šibenik i čvora Skradin na kolniku u smjeru Zagreba. Promet se vodi jednom prometnom trakom uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
      "region": "A1"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A1 na 238+400 km između tunela Čelinka i PUO Jasenice u smjeru Dubrovnika. Zbog oštećenja odbojne ograde promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Predmet na autocesti A1 između čvora Karlovac i odmorišta Draganić na kolniku u smjeru Zagreba. Vozi se uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A1"
     },
     {
@@ -299,7 +311,7 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Slavonski Brod zapad i čvora Sredanci, u smjeru Lipovca. Promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za dodatni oprez.",
+     "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -311,13 +323,13 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme na kolniku autoceste A3, na kraku 11 čvora Kosnica (kolnik u smjeru Bregane/Radničke ceste), promet se odvija uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Slavonski Brod zapad i čvora Sredanci, u smjeru Lipovca. Promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za dodatni oprez.",
      "region": "A3"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Zbog oštećenja opreme na kolniku autoceste A3, na kraku 11 čvora Kosnica (kolnik u smjeru Bregane/Radničke ceste), promet se odvija uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -329,31 +341,19 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3"
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
      "detail": "Zbog prometnog rasterećenja privoza čvoru Zagreb zapad (Jankomir) iz smjera Lipovca (A3) u smjeru Grada Zagreba, iz smjera Bregane (A3) i Macelja (A2) u smjeru Grada Zagreba (most Sava - Jankomir), prometuje se jednim prometnim trakom uz privremeno regulaciju prometa. Planirano trajanje je do 31.12.",
      "region": "A3"
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3"
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
      "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3 između 135+000 km i 142+000 km, na kolniku, u smjeru Lipovca, promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
-     "region": "A3"
-    },
-    {
-     "type": "guzva/dogadjaj (Radovi)",
-     "title": "A3 - Radovi",
-     "detail": "Radovi na održavanju na autocesti A3 između 90+700 km i 93+800 km , između čvora Popovača i čvora Kutina na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Predviđeno trajanje radova je do 01.09.2026. Molimo korisnike za oprez.",
-     "region": "A3"
-    },
-    {
-     "type": "guzva/dogadjaj (Radovi)",
-     "title": "A3 - Radovi",
-     "detail": "Zbog radova na rekonstrukciji odmorišta Kraljeva Velika sjever, smjer Bregana, za sav promet zatvoren je zaustavni trak od 117+100 km do 116+000 km u smjeru Bregane te je zatvoreno i odmorište Kraljeva velika sjever. Promet se na tom dijelu vodi po dvije prometne trake uz ograničenje brzine od 80 km",
      "region": "A3"
     },
     {
@@ -366,6 +366,18 @@
      "type": "guzva/dogadjaj (Radovi)",
      "title": "A3 - Radovi",
      "detail": "Zbog radova na rekonstrukciji odmorišta Kraljeva Velika jug, smjer Lipovac, za sav promet zatvoren je zaustavni trak od 115+500 km do 117+000 km u smjeru Lipovca te je zatvoreno i odmorište Kraljeva Velika jug. Promet se na tom dijelu odvija voznim i preticajnim trakom uz ograničenje brzine na 80 km",
+     "region": "A3"
+    },
+    {
+     "type": "guzva/dogadjaj (Radovi)",
+     "title": "A3 - Radovi",
+     "detail": "Zbog radova na rekonstrukciji odmorišta Kraljeva Velika sjever, smjer Bregana, za sav promet zatvoren je zaustavni trak od 117+100 km do 116+000 km u smjeru Bregane te je zatvoreno i odmorište Kraljeva velika sjever. Promet se na tom dijelu vodi po dvije prometne trake uz ograničenje brzine od 80 km",
+     "region": "A3"
+    },
+    {
+     "type": "guzva/dogadjaj (Radovi)",
+     "title": "A3 - Radovi",
+     "detail": "Radovi na održavanju na autocesti A3 između 90+700 km i 93+800 km , između čvora Popovača i čvora Kutina na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Predviđeno trajanje radova je do 01.09.2026. Molimo korisnike za oprez.",
      "region": "A3"
     },
     {
@@ -387,6 +399,12 @@
      "region": "A4"
     },
     {
+     "type": "guzva/dogadjaj (Nesreća)",
+     "title": "A4 - Nesreća",
+     "detail": "Prometna nesreća na autocesti A4 na 95+000 km između čvora Zagreb istok i čvora Sesvete na kolniku u smjeru Goričana. Vozi se uz ograničenje brzine od 40 km/h. Molimo korisnike za oprez.",
+     "region": "A4"
+    },
+    {
      "type": "guzva/dogadjaj (Radovi)",
      "title": "A4 - Radovi",
      "detail": "Izvođenje radova proširenja postojećeg službenog prolaza na autocesti A4 između 47+693 km i 47+789 km između čvora Novi Marof i čvora Breznički Hum. Promet se vodi jednom prometnom trakom u oba smjera uz ograničenje brzine od 60 km/h. Predviđeno trajanje radova je do 04.09.2026. Molimo korisnike za ",
@@ -397,6 +415,12 @@
      "title": "A4 - Radovi",
      "detail": "Zbog radova na održavanju na autocesti A4 između 95+000 km i 91+800 km, između čvora Zagreb istok i čvora Popovec na kolniku u smjeru Goričan, promet se vodi dvosmjerno po dvije sužene trake na kolniku u smjeru Zagreba i jednom suženom trakom u smjeru Goričana. Na kolniku u smjeru Goričana promet se",
      "region": "A4"
+    },
+    {
+     "type": "guzva/dogadjaj (Radovi)",
+     "title": "A5 - Radovi",
+     "detail": "Radovi na održavanju na autocesti A5 između 41+000 km i 43+000 km , između čvora Čepin i čvora Đakovo na kolniku u smjeru BiH. Promet se vodi jednom prometnom trakom uz ograničenje brzine od 80 km/h. Predviđeno trajanje radova je do 26.08.2026 u 18:00 h. Molimo korisnike za oprez.",
+     "region": "A5"
     },
     {
      "type": "guzva/dogadjaj (Radovi)",
@@ -469,33 +493,9 @@
      "title": "D29-1 - Radovi",
      "detail": "radovi - cesta zatvorena",
      "region": "D29-1"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "D10-102 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D10-102"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "D38-2 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D38-2"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "D29-1 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D29-1"
-    },
-    {
-     "type": "zatvaranje (Radovi)",
-     "title": "D14-P15-0002 - Radovi",
-     "detail": "radovi - cesta zatvorena",
-     "region": "D14-P15-0002"
     }
    ],
-   "fetched": "2026-08-26T04:54+00:00"
+   "fetched": "2026-08-26T05:48+00:00"
   },
   "RS": {
    "name": "Srbija",
@@ -743,7 +743,7 @@
      "region": "Smederevo-Kovin"
     }
    ],
-   "fetched": "2026-08-26T04:54+00:00"
+   "fetched": "2026-08-26T05:48+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -991,7 +991,7 @@
      "region": "Granični prijelazi"
     }
    ],
-   "fetched": "2026-08-26T04:54+00:00"
+   "fetched": "2026-08-26T05:48+00:00"
   },
   "ME": {
    "name": "Crna Gora",
@@ -1077,7 +1077,7 @@
      "region": "Crna Gora"
     }
    ],
-   "fetched": "2026-08-26T04:54+00:00"
+   "fetched": "2026-08-26T05:48+00:00"
   },
   "MK": {
    "name": "S. Makedonija",
@@ -1169,7 +1169,7 @@
      "region": "Прилеп – Битола"
     }
    ],
-   "fetched": "2026-08-26T04:54+00:00"
+   "fetched": "2026-08-26T05:48+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -1237,7 +1237,7 @@
      "region": "Tiranë-Durrës"
     }
    ],
-   "fetched": "2026-08-26T04:54+00:00"
+   "fetched": "2026-08-26T05:48+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -1305,7 +1305,7 @@
      "region": "Граница с Република Сърбия"
     }
    ],
-   "fetched": "2026-08-26T04:54+00:00"
+   "fetched": "2026-08-26T05:48+00:00"
   },
   "RO": {
    "name": "Rumunija",
@@ -1553,7 +1553,7 @@
      "region": "Neamt"
     }
    ],
-   "fetched": "2026-08-26T04:54+00:00"
+   "fetched": "2026-08-26T05:48+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -1741,7 +1741,7 @@
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-08-26T04:54+00:00"
+   "fetched": "2026-08-26T05:48+00:00"
   }
  },
  "meteo": {
@@ -1957,7 +1957,44 @@
     "region": "Mostar"
    }
   ],
-  "ME": [],
+  "ME": [
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Montenegro - Central",
+    "detail": "nivo: narandzasto | pojava: High Temperature | vazi: 2026-08-26T05:00 do 2026-08-27T21:00",
+    "region": "Central"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Montenegro - Continental and Mountains",
+    "detail": "nivo: narandzasto | pojava: High Temperature | vazi: 2026-08-26T04:54 do 2026-08-27T21:59",
+    "region": "Continental and Mountains"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange High-temperature Warning issued for Montenegro - Adriatic coast",
+    "detail": "nivo: narandzasto | pojava: High Temperature | vazi: 2026-08-26T04:54 do 2026-08-27T21:59",
+    "region": "Adriatic coast"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Forest-fire Warning issued for Montenegro - Continental and Mountains",
+    "detail": "nivo: zuto | pojava: Forest Fire | vazi: 2026-08-25T22:00 do 2026-08-27T21:59",
+    "region": "Continental and Mountains"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Forest-fire Warning issued for Montenegro - Central",
+    "detail": "nivo: zuto | pojava: Forest Fire | vazi: 2026-08-25T22:00 do 2026-08-27T21:59",
+    "region": "Central"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Forest-fire Warning issued for Montenegro - Adriatic coast",
+    "detail": "nivo: zuto | pojava: Forest Fire | vazi: 2026-08-25T22:00 do 2026-08-27T21:59",
+    "region": "Adriatic coast"
+   }
+  ],
   "MK": [],
   "BG": [
    {
@@ -2171,120 +2208,6 @@
     "title": "Yellow Thunderstorm Warning issued for Romania - Alba",
     "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-26T05:00 do 2026-08-26T20:00",
     "region": "Alba"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Vâlcea",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Vâlcea"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Timiș",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Timiș"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Suceava",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Suceava"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Sibiu",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Sibiu"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Prahova",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Prahova"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Neamț",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Neamț"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Mureș",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Mureș"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Mehedinți",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Mehedinți"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Maramureș",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Maramureș"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Iași",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Iași"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Hunedoara",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Hunedoara"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Harghita",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Harghita"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Gorj",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Gorj"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Dolj",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Dolj"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Dâmbovița",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Dâmbovița"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Covasna",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Covasna"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Cluj",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Cluj"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Caraș-Severin",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Caraș-Severin"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Romania - Brașov",
-    "detail": "nivo: zuto | pojava: awareness_type=3, awareness_level=2 | vazi: 2026-08-25T13:00 do 2026-08-26T05:00",
-    "region": "Brașov"
    }
   ],
   "GR": [
@@ -2380,5 +2303,45 @@
    }
   ]
  },
- "borders": []
+ "borders": [
+  {
+   "prelaz": "Karasovići",
+   "zemlja": "HR",
+   "ulaz_auto": "2 h",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "26.08.2026 05:45:23",
+   "lat": 42.490472,
+   "lon": 18.434121,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Bajakovo",
+   "zemlja": "HR",
+   "ulaz_auto": "do 30 min.",
+   "izlaz_auto": "do 30 min.",
+   "ulaz_teretno": "4 h",
+   "izlaz_teretno": "-",
+   "ocitano": "26.8.2026. 5:38:53",
+   "lat": 45.05,
+   "lon": 19.1,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Tovarnik",
+   "zemlja": "HR",
+   "ulaz_auto": "-",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "1 h",
+   "izlaz_teretno": "-",
+   "ocitano": "26.8.2026. 7:13:10",
+   "lat": 45.157234,
+   "lon": 19.170414,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  }
+ ]
 }
