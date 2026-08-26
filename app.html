@@ -1207,6 +1207,20 @@
     #searchOverlay .st { flex: 1; min-width: 0; }
     #searchOverlay .st b { display: block; color: var(--fg-strong); font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #searchOverlay .st span { display: block; color: var(--fg-muted); font-size: 13px; font-weight: 400; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #searchOverlay .sic.m { background: rgba(56,189,248,.13); } #searchOverlay .sic.m svg { stroke: #38bdf8; }
+    /* red precica Kuca / Posao / Sacuvano (0.9.91): horizontalan kao kod Google-a, meta 44 px */
+    #searchOverlay .schips { display: flex; gap: 8px; overflow-x: auto; padding: 12px 2px 4px; scrollbar-width: none; }
+    #searchOverlay .schips::-webkit-scrollbar { display: none; }
+    #searchOverlay .schip { flex: none; display: flex; align-items: center; gap: 9px; min-height: 48px; max-width: 62vw;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-full); padding: 6px 15px 6px 7px;
+      cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+    #searchOverlay .schip:active { background: var(--fill-wash); }
+    #searchOverlay .schip .ci { width: 34px; height: 34px; border-radius: var(--r-full); flex: none; display: flex; align-items: center; justify-content: center; background: rgba(255,106,0,.14); }
+    #searchOverlay .schip .ci svg { width: 17px; height: 17px; stroke: var(--accent); fill: none; }
+    #searchOverlay .schip.sv .ci { background: rgba(56,189,248,.13); } #searchOverlay .schip.sv .ci svg { stroke: #38bdf8; }
+    #searchOverlay .schip .ct { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
+    #searchOverlay .schip .ct b { color: var(--fg-strong); font-size: 13px; font-weight: 700; line-height: 1.2; }
+    #searchOverlay .schip .ct span { color: var(--fg-muted); font-size: 12px; font-weight: 400; max-width: 46vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #searchOverlay .ssect { font-size: 11px; font-weight: 600; color: var(--fg-muted); letter-spacing: .14em; margin: 16px 6px 4px; }
     #searchOverlay .sadv { display: block; width: 100%; margin-top: 18px; background: none; border: 1px dashed var(--line-strong); border-radius: var(--r-lg); padding: 12px; color: var(--fg-muted); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
   }
@@ -1255,6 +1269,30 @@
   body.zajmap #zajList .zbtns { gap: 12px; margin-top: 8px; }
   body.zajmap #zajList .zbtns button { min-height: 44px; padding: 0 14px; font-size: 13px; font-weight: 600; }
   body.zajmap #zajList .zrow { padding: 12px; margin-bottom: 10px; }
+  /* ---- IZABERI NA MAPI (0.9.91): nisan u centru + traka potvrde. Overlay ne hvata dodir
+     (pointer-events: none) osim same trake - inace bi pojeo pomeranje mape ispod nisana. */
+  #pickMap { display: none; }
+  body.pickmap #pickMap { display: block; position: fixed; inset: 0; z-index: 45; pointer-events: none; }
+  body.pickmap #homeSheet, body.pickmap #homeChrome, body.pickmap #homeFabs, body.pickmap #routePill,
+  body.pickmap .map-tools, body.pickmap .compass-btn, body.pickmap #verBadge { display: none !important; }
+  body.pickmap #panel, body.pickmap #qbar, body.pickmap #bottomnav { display: none !important; }
+  /* nisan je simetrican krug - njegovo SREDISTE mora da legne na centar mape (proba 25.8.:
+     margin-top -48px ga je dizao za celu visinu, pa je tacka bila iznad onoga sto se cilja) */
+  #pickMap .pmx { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
+  #pickMap .pmx svg { width: 48px; height: 48px; }
+  #pickMap .pmbar { pointer-events: auto; position: absolute; left: 12px; right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom)); background: var(--bg-veil); border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg); box-shadow: var(--shadow-md); padding: 12px 14px 12px; }
+  #pickMap .pmt b { display: block; font-size: 15px; font-weight: 800; color: var(--fg-strong); letter-spacing: -.01em; }
+  #pickMap .pmt span { display: block; font-size: 12px; color: var(--fg-muted); margin-top: 2px; }
+  #pickMap .pmb { display: flex; gap: 9px; margin-top: 11px; }
+  #pickMap .pmc { flex: none; min-height: 48px; padding: 0 18px; border-radius: var(--r-lg);
+    background: transparent; border: 1px solid var(--line-strong); color: var(--fg); font: 600 14px var(--font-ui); cursor: pointer; }
+  #pickMap .pmok { flex: 1; min-height: 48px; border-radius: var(--r-lg); border: 0;
+    background: linear-gradient(135deg, var(--accent), var(--orange-600)); color: var(--on-accent);
+    font: 800 15px var(--font-ui); cursor: pointer; }
+  #pickMap .pmok[disabled] { opacity: .6; }
   /* ---- ATLAS DEONICA (0.9.90): izlozba kurirane baze po maketi V5 (docs/atlas-makete/v5-kombinovana.html).
      Mapa gore sa SVIM deonicama u jednoj boji (bez porekla - presuda 25.8.), prevlacivi sheet dole:
      kartica izabrane deonice, pretraga, Top 10 + kolekcije, ulaz u punu listu sa filterima.
@@ -1386,7 +1424,14 @@
   #atlasSheet .avise { display: block; margin: 4px 16px 10px; width: calc(100% - 32px); min-height: 44px;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
     color: var(--fg); font: 600 13px var(--font-ui); cursor: pointer; }
-  body.atlas #bottomnav { display: none; }         /* traka gore je jedini put nazad - bez dva izlaza */
+  /* 0.9.91 (Boskov nalog 25.8.): donja traka OSTAJE i u Atlasu. Do 0.9.90 je bila skrivena
+     ("traka gore je jedini put nazad"), ali je Atlas sada pocetni ekran taba Rute, pa bi
+     skrivena traka znacila da iz pocetnog ekrana nema izlaza. Traka gore vodi u LISTU ruta,
+     donja traka u ostale tabove; oba puta gase rezim (vidi slusaoca u atlas IIFE). */
+  body.atlas #atlasSheet { bottom: 0; }
+  @media (max-width: 900px), (max-height: 520px) {
+    body.atlas #atlasSheet { bottom: calc(58px + max(env(safe-area-inset-bottom), 8px)); padding-bottom: 0; }
+  }
   body.atlas #homeSheet, body.atlas #homeChrome, body.atlas #homeFabs { display: none !important; }
   body.atlas .map-tools, body.atlas #routePill, body.atlas .compass-btn { display: none !important; }   /* izlozba je mirna: bez radara/slojeva/pilule rute preko nje */
   #atlasSheet .selcard:focus-visible, #atlasSheet .mini:focus-visible, #atlasSheet .arow:focus-visible,
@@ -2236,7 +2281,7 @@
     #searchOverlay .shead { padding: 8px calc(14px + var(--sr)) 8px calc(14px + var(--sl)); }
     #searchOverlay .sbody { padding-left: calc(14px + var(--sl)); padding-right: calc(14px + var(--sr));
       display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; align-content: start; }
-    #searchOverlay .sfrom, #searchOverlay .ssect { grid-column: 1 / -1; }
+    #searchOverlay .sfrom, #searchOverlay .ssect, #searchOverlay .schips { grid-column: 1 / -1; }
     #searchOverlay #sRecent, #searchOverlay #sSugg { display: contents; }   /* wrapperi predloga: .srow deca teku u obe kolone */
   }
 /* rezervne cene troska: sklopljeno po defaultu - polja su zbunjivala (Boskov nalaz 6.8.: "zasto putarina 0,06 kad dole pise 0 €") */
@@ -2709,12 +2754,25 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <div class="sbody" id="sBody">
       <div class="sfrom" id="sFrom"><span>OD</span> <b id="sFromName">Moja lokacija</b></div>
       <div class="srow" data-srow="myloc" id="sMyLoc"><span class="sic"><svg viewBox="0 0 24 24" stroke-width="2" style="width:19px;height:19px;stroke:#38bdf8;fill:none"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.5" fill="#38bdf8" stroke="none"/></svg></span><div class="st"><b>Moja lokacija</b><span>koristi GPS poziciju</span></div></div>
-      <div class="srow" data-srow="home"><span class="sic h"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><div class="st"><b>Kuća</b><span id="sHomeSub">postavi jednom i kreni</span></div></div>
-      <div class="srow" data-srow="saved"><span class="sic s"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></span><div class="st"><b>Sačuvane rute</b><span id="sSavedSub">—</span></div></div>
+      <!-- 0.9.91 (Boskov nalog 25.8., Google obrazac "odakle ideš"): tvoja lokacija, pa izbor na
+           mapi, pa red precica (Kuca / Posao / Sacuvano). Kuca i Sacuvane su bili puni redovi -
+           sada su cipovi, jer red precica mora da stane iznad "Nedavno" bez skrola. -->
+      <div class="srow" data-srow="mapa" id="sPickMap"><span class="sic m"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 21s7-6.4 7-11a7 7 0 10-14 0c0 4.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></span><div class="st"><b>Izaberi na mapi</b><span>pomeri mapu i potvrdi tačku</span></div></div>
+      <div class="schips" id="sChips"></div>
       <div class="ssect" id="sRecentT">NEDAVNO</div>
       <div id="sRecent"></div>
       <div id="sSugg"></div>
 
+    </div>
+  </div>
+  <!-- IZABERI NA MAPI (0.9.91): Google-ov "Choose on map" - nisan stoji u centru, mapa se pomera
+       ispod njega, dole traka sa potvrdom. Radi i za POLAZAK i za CILJ (SEARCH_MODE), jer je
+       Boskova zamerka 25.8. bila bas na tok "kad pita odakle ides". -->
+  <div id="pickMap" hidden>
+    <div class="pmx" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="9" stroke="#FF6A00" stroke-width="2.6"/><path d="M24 2v9M24 37v9M2 24h9M37 24h9" stroke="#FF6A00" stroke-width="2.6" stroke-linecap="round"/><circle cx="24" cy="24" r="2.2" fill="#FF6A00"/></svg></div>
+    <div class="pmbar" role="dialog" aria-label="Izaberi tačku na mapi">
+      <div class="pmt"><b id="pmTitle">Gde ideš?</b><span id="pmSub">pomeri mapu - tačka je tačno na nišanu</span></div>
+      <div class="pmb"><button type="button" class="pmc" id="pmOtkazi">Otkaži</button><button type="button" class="pmok" id="pmOk">Ovde</button></div>
     </div>
   </div>
   <div id="rideBar">
@@ -3048,7 +3106,7 @@ const LEVEL_NAMES = ["vedro/suvo", "oprez", "nevreme"];
 const $ = (id) => document.getElementById(id);
 const state = { planSeq: 0, _activeSeq: 0, routes: [], selected: 0, markers: [], geocode: {}, revCache: {},
   vias: [], viaMarkers: [], hazardMode: false, famousApplied: null, pendingFamous: null,
-  pendingAtlas: null, atlasApplied: null,   // 0.9.90 Atlas: naoruzana namera "Vodi me preko nje" + primenjena deonica (ogledalo famous para)
+  pendingAtlas: null, atlasApplied: null, atlasCoords: null,   // 0.9.90 Atlas: naoruzana namera "Vodi me preko nje" + primenjena deonica (ogledalo famous para); coords od 0.9.91 (kurirani sav bez cene)
   catMarkers: { fuel: [], food: [], camp: [], cam: [], pause: [], work: [], hazard: [], meet: [], mesto: [] }, editorialMarkers: [], layerVis: {},
   _mestaUzRutu: new Set() };   // 13.8.: mapPoi/nearMarkers uklonjeni - POI slojevi su uvek upaljeni
 
@@ -3739,7 +3797,20 @@ async function geoPhotonSugg(q, n) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SI
   } catch (e) { return []; }
 }
 const TT_KEY = "VfscYxmsXo35nz1UOf200QmtgzkWsZ6E";   // TomTom Fuzzy Search - Boskov kljuc (poslat 18.7., identifikovan i verifikovan 7.8.); free ~2.5k/mes pa se zove SAMO u Enter-kaskadi, nikad iz sugestija
+/* 0.9.91: ljuska u telefonu NE ZOVE TomTom. Ključ je javan (stoji u app.html na routemeright.app),
+   pa ga cuva domenska whitelist - a ona radi preko CORS Origin zaglavlja i prima SAMO domene.
+   Izmereno 26.8. na pravom API-ju: routemeright.app 200, Android ljuska (https://localhost) 200
+   posle dodavanja "localhost", iPhone ljuska (capacitor://localhost) 403 - i sa "localhost" i sa
+   "*localhost". TomTom parsira Origin kao URL i odbacuje nepoznatu semu pre nego sto uporedi host.
+   Zato se poziv sa ne-http porekla i ne salje: bio bi zagarantovano 403, jedan uzaludan odlazak na
+   mrezu i greska u konzoli na svakoj pretrazi. Kaskada nastavlja dalje (Overpass, urednicka baza) -
+   ponasanje je isto kao kad TomTom nista ne nadje. Kad dodje proksi pred launch, ovaj cuvar sam
+   prestaje da vazi jer poreklo poziva vise nece biti ljuska. */
+function tomtomMozeOdavde() {
+  try { return /^https?:$/.test(location.protocol); } catch (e) { return true; }
+}
 async function geoTomTom(q) {   // komercijalna POI baza + jake adrese; cuvar: POI mora da deli rec sa upitom (fuzzy ume "Nike" za "Motor Bike Shop")
+  if (!tomtomMozeOdavde()) return null;
   const ref = geoRef();
   try {
     const bias = ref && ref.lat != null ? `&lat=${ref.lat.toFixed(4)}&lon=${ref.lon.toFixed(4)}` : "";
@@ -4222,6 +4293,32 @@ function kuriraniKandidati(vij, brza, bjp, radovi) {
   if (top.length === 2 && !razdvojeni(top[1], top[0])) top.pop();
   return top;   // najvise dva kandidata = najvise cetiri sava
 }
+/* ---- ATLAS DEONICA JE VEC PLACEN KURIRANI SAV (0.9.91, Boskova presuda 26.8.) ----
+   "Vodi me preko nje" salje deonicu kao STANICE, a tvoje stanice uvek imaju prednost nad
+   kuriranim parom u budzetu od osam komada - pa je kartica Kombinovana na Atlas relaciji
+   nestajala. Izmereno 26.8., ista relacija Beograd - Zlatibor: bez Atlasa cetiri kartice sa
+   Kombinovanom (222 km / 3h41), sa Atlas deonicom "Kosjeric - Valjevo" tri kartice bez nje.
+   Boskova presuda: "Atlas su rute koje znamo i koje treba da budu uvek predlozene, a ne da se
+   menja." Deonica iz Atlasa JESTE ono sto kurirano sivenje pokusava da usije, a njeni ulaz i
+   izlaz SU vec stanice - dakle savovi postoje i ne trose nista. Ovde se od nje pravi kandidat
+   sa NULA cene: komadi izmedju krajeva voze vijugavim stilom i deonica se imenuje u sastavu.
+   Sama trasa se ne dira - stanice ostaju kakve jesu, ruter ide istim putem. */
+function atlasKandidat(vij, N) {
+  if (!state.atlasApplied || !Array.isArray(state.atlasCoords) || state.atlasCoords.length < 2) return null;
+  const c = state.atlasCoords;
+  let pa, pb;
+  try { pa = navProject(vij, c[0][0], c[0][1]); pb = navProject(vij, c[c.length - 1][0], c[c.length - 1][1]); }
+  catch (e) { return null; }
+  const ime = typeof atlasNaslov === "function" ? atlasNaslov(state.atlasApplied) : String(state.atlasApplied);
+  let ulaz = { km: pa.d / 1000, off: pa.offM, v: [c[0][0], c[0][1]], ime, kuriran: true, starost: null };
+  let izlaz = { km: pb.d / 1000, off: pb.offM, v: [c[c.length - 1][0], c[c.length - 1][1]], ime, kuriran: true, starost: null };
+  if (izlaz.km < ulaz.km) { const t = ulaz; ulaz = izlaz; izlaz = t; }   // deonica crtana suprotno od smera rute
+  // ista pravila kao za svaki drugi kurirani par - deonica koja ne lezi na rutu ne sme nista da forsira
+  if (ulaz.off >= 3000 || izlaz.off >= 3000) return null;
+  if (!(ulaz.km > 3 && ulaz.km < N - 3 && izlaz.km > 3 && izlaz.km < N - 3)) return null;
+  if (!(izlaz.km - ulaz.km > 3)) return null;
+  return { ime, score: Infinity, pecena: false, mg: null, starost: null, ulaz, izlaz, koord: c, atlas: true };
+}
 async function hibridnaRuta(from, to, vij, brza) {
   // kapija PRE trosenja poziva: kratka relacija ili mala razlika ne zasluzuje jos 5 poziva ruteru
   if (!vij || !brza || !vij.coords || vij.coords.length < 50) return null;
@@ -4258,7 +4355,12 @@ async function hibridnaRuta(from, to, vij, brza) {
      profil nema smenu, ali kurirani savovi sami prave komade - bas to je "autoput + deonica + cilj". */
   const generickeKapije = () => vij.totalDist >= 150000 && vij.totalDur > brza.totalDur * 1.25
     && kom0.length >= 3 && dosKm >= prof.N * 0.2 && dobKm >= 40;
-  if (!kur.length && !generickeKapije()) return null;
+  /* 0.9.91: Atlas deonica se racuna PRE ove kapije. Bila je ispod nje, pa je na relaciji gde baza
+     nema kandidata a vremena su bliska (izmereno: Beograd - Zlatibor preko "Kosjeric - Valjevo",
+     vijugava 4h11 prema najbrzoj 3h43 = odnos 1,12 < 1,25) hibridnaRuta izlazila jednu liniju
+     ranije - i deonica koju vozac IZRICITO trazi nikad nije stigla da bude razlog za karticu. */
+  const atlasKd = atlasKandidat(vij, prof.N);
+  if (!kur.length && !atlasKd && !generickeKapije()) return null;
   const naKm = (k) => {
     const c = k * 1000;
     for (let i = 0; i < vij.cumDist.length; i++) if (vij.cumDist[i] >= c) return { lat: vij.coords[i][1], lon: vij.coords[i][0] };
@@ -4271,9 +4373,33 @@ async function hibridnaRuta(from, to, vij, brza) {
      na njenom kilometru, a tacka sava je bas ta stanica - pa je nijedan komad ne moze preskociti.
      Vijugava ruta (`vij`) stanice vec postuje, jer se ona vuce sa njima. */
   const stanice = ((state.vias || []).map((it) => {
-    try { const p = navProject(vij, it.v[0], it.v[1]); return { km: p.d / 1000, off: p.offM, v: it.v, ime: it.name || null }; }
+    try { const p = navProject(vij, it.v[0], it.v[1]); return { km: p.d / 1000, off: p.offM, v: it.v, ime: it.name || null, t: it.t }; }
     catch (e) { return null; }
   }).filter(Boolean));
+  /* ---- ATLAS DEONICA: neme tacke IZNUTRA ne postaju savovi (0.9.91, presuda 26.8.) ----
+     "Vodi me preko nje" salje deonicu kao do 15 lokacija - dva imenovana kraja i do 13 NEMIH
+     tacaka duz trase. Svaka od njih je do sada postajala sav, pa je `probni` odmah probijao
+     budzet od osam komada i hibridnaRuta je izlazila na prvoj liniji: zato Kombinovana na Atlas
+     relaciji nije ni pokusavana (izmereno 26.8., Beograd - Zlatibor). Neme tacke su tu samo da
+     ruter STVARNO vozi deonicu; komad izmedju njena dva kraja se ionako vozi vijugavim stilom,
+     a na kraju se ceo posao proverava pokrivenoscu (>=60% na 250 m) - ako ruter ipak ode drugim
+     putem, kombinacija pada i vraca se na postojeci fallback. Nijedna DRUGA ruta se ne dira:
+     vijugava, balans i najbrza i dalje voze sa svim tackama, pa Atlas trasa ostaje kakva jeste.
+     Tvoje imenovane stanice (t === "stop") se NIKAD ne skidaju. */
+  if (atlasKd) {
+    const ac = state.atlasCoords || [];
+    const korak = Math.max(1, Math.floor(ac.length / 200));
+    const uzDeonicu = (v) => {
+      for (let i = 0; i < ac.length; i += korak) if (haversine(v[1], v[0], ac[i][1], ac[i][0]) <= 0.25) return true;
+      return false;
+    };
+    for (let i = stanice.length - 1; i >= 0; i--) {
+      const st = stanice[i];
+      if (st.t === "stop") continue;                                        // tvoja imenovana stanica ostaje uvek
+      if (!(st.km > atlasKd.ulaz.km && st.km < atlasKd.izlaz.km)) continue;  // van raspona deonice
+      if (uzDeonicu(st.v)) stanice.splice(i, 1);
+    }
+  }
   /* Kurirani savovi ulaze u ISTI budzet komada kao tvoje stanice, a TVOJE STANICE UVEK dobijaju
      prednost: svaki sav koji secne dodaje jedan komad, a preko 8 komada _seciNaStanicama odustaje.
      Budzet se meri PROBNIM secenjem samih stanica (ne brojanjem): stanica koja nista ne secne
@@ -4285,7 +4411,16 @@ async function hibridnaRuta(from, to, vij, brza) {
   if (!probni) return null;   // tvoje stanice same probijaju budzet - isto kao do sada
   let slobodno = 8 - probni.length;
   const kurUzeti = [];
-  for (const kd of kur) if (slobodno >= 2) { kurUzeti.push(kd); slobodno -= 2; }
+  /* Atlas deonica ulazi PRVA i BEZ CENE: njena dva kraja su tvoje imenovane stanice, vec u
+     `probni`, pa _seciNaStanicama nema sta novo da secne (sav u krugu od 1 km od postojece
+     granice se ne sece). Zato ne dira `slobodno`. Kandidati iz baze koji se preklapaju sa njom
+     se preskacu - preklop bi isti komad forsirao dvaput i trosio savove bez potrebe. */
+  if (atlasKd) kurUzeti.push(atlasKd);
+  for (const kd of kur) {
+    if (slobodno < 2) break;
+    if (atlasKd && !(atlasKd.izlaz.km + 2 <= kd.ulaz.km || atlasKd.ulaz.km >= kd.izlaz.km + 2)) continue;
+    kurUzeti.push(kd); slobodno -= 2;
+  }
   // kandidati postoje ali nijedan ne staje u budzet: ovo je obicna (geometrijska) kombinacija,
   // pa za nju vaze i danasnje kapije - relaksacija ide SAMO uz kandidate koji stvarno ulaze
   if (!kurUzeti.length && !generickeKapije()) return null;
@@ -4341,8 +4476,20 @@ async function hibridnaRuta(from, to, vij, brza) {
     /* Sastav ne sme da IMENUJE deonicu kojom ruta ne ide: ruter je izmedju krajeva deonice mogao
        da izabere drugi put. Zato se svaka kurirana deonica proveri protiv SASIVENE rute istim
        merilom kojim je i birana (>=60% na 250 m); pad provere = pad rutiranja (postojeci fallback). */
-    for (const kd of kandidati)
-      if (bjpPokrivenost(hyb, kd.koord) < 0.6) throw new Error(`kurirana deonica nije odvezena: ${kd.ime}`);
+    /* Prag pokrivenosti nije isti za dve vrste znanja (0.9.91). Deonica koju je sivenje SAMO
+       naslo uz koridor je bonus - 0,6 je dovoljno. Deonica koju je vozac IZRICITO trazio iz
+       Atlasa je obecanje: njene neme tacke su izostavljene iz savova, pa komad izmedju krajeva
+       vozi jedan slobodan poziv rutera i teorijski sme da preseca. Zato se za nju prag racuna
+       iz VIJUGAVE rute, koja po konstrukciji vozi sve tacke deonice - kombinovana mora da je
+       pokrije bar jednako dobro (tolerancija 5 procentnih poena). Time se prag sam kalibrise:
+       izmereno 26.8. na "Kosjeric - Valjevo" i vijugava i kombinovana daju 0,923 (7,7% je
+       merenje na 250 m, ne preskocen deo puta), pa prag ispada 0,873 i kartica prolazi posteno.
+       Pad praga = `sasij` baca, kombinovana se ne nudi, a vozac dobija vijugavu sa SVIM tackama -
+       tacno ponasanje od pre ove promene. */
+    for (const kd of kandidati) {
+      const prag = kd.atlas ? Math.max(0.6, bjpPokrivenost(vij, kd.koord) - 0.05) : 0.6;
+      if (bjpPokrivenost(hyb, kd.koord) < prag) throw new Error(`kurirana deonica nije odvezena: ${kd.ime}`);
+    }
     return hyb;
   };
   if (kurUzeti.length) {
@@ -4394,13 +4541,34 @@ function ubaciKombinovanu(uniq, hyb, vij, brza) {
   if (uniq.some((u) => Math.abs(u.totalDist - hyb.totalDist) < 500 && Math.abs(u.totalDur - hyb.totalDur) < 60)) return false;
   uniq.splice(0, 0, hyb);
   let naj = null;
-  for (const r of uniq) if (r !== hyb) {
-    if (!naj || r.totalDur < naj.totalDur) naj = r;
-    // nereseno na minimumu: kartica koja NOSI labelu "Najbrža" ide na kraj, ne slucajni pobednik po redosledu
-    else if (r.totalDur === naj.totalDur && String(r.label || "").startsWith("Najbrža") && !String(naj.label || "").startsWith("Najbrža")) naj = r;
-  }
+  for (const r of uniq) if (r !== hyb && (!naj || r.totalDur < naj.totalDur)) naj = r;
+  /* Kartica koja NOSI labelu "Najbrža" ide na kraj i kad nije bas najbrza po sekundi (0.9.91).
+     Do sada je vazilo samo tacno izjednacenje, pa je izmereno 26.8. na Beograd - Zlatibor:
+     Balans 3h42:36 i Najbrža 3h43:12 - trideset sekundi razlike je "Najbrzu" ostavilo TRECU,
+     iako zakon 24.8. kaze da je ona poslednja kartica. Prozor je 3% - isti kojim se dole sudi i
+     sama labela (iznad njega kartica ionako prestaje da se zove "Najbrža"). */
+  if (naj && !String(naj.label || "").startsWith("Najbrža"))
+    for (const r of uniq) if (r !== hyb && String(r.label || "").startsWith("Najbrža") && r.totalDur <= naj.totalDur * 1.03) { naj = r; break; }
   if (naj && uniq[uniq.length - 1] !== naj) { uniq.splice(uniq.indexOf(naj), 1); uniq.push(naj); }
   return true;
+}
+/* Redosled kartica prati IZBOR IZ PROFILA (0.9.91, Boskova presuda 26.8.: "ako neko izabere koje
+   rute preferira u svom profilu, to treba da izbacuje"). Do sada je kombinovana bila prva kartica
+   i kad si u Ja tabu izabrao Vijugavu - bila je samo unapred IZABRANA, a stajala druga.
+   Dva zakona ostaju iznad ovoga i zato se ne diraju:
+     - GRADSKA relacija (zakon 9.8.) - tamo ovo uopste ne radi, poziv je iza `if (!gradska)`;
+     - "Najbrza je uvek POSLEDNJA kartica" (presuda 24.8.) - zato izbor "najbrza" NE premesta
+       nista: ta kartica je i dalje unapred izabrana (preporucenaRuta), ali ostaje na kraju.
+       Podizanje autoputa na vrh spiska bi bilo tiho guranje vozaca na autoput. */
+function poredajPoIzboru(uniq) {
+  let zel = "kombinovana";
+  try { const v = localStorage.getItem("mr_defRuta"); if (v === "vijugava" || v === "najbrza" || v === "kombinovana") zel = v; } catch (e) {}
+  if (zel === "najbrza" || !Array.isArray(uniq) || uniq.length < 2) return uniq;
+  /* Koja je kartica "tvoj izbor" zna SAMO preporucenaRuta - ovde se ne izvodi drugi put.
+     Time je i pravilo jednostavno: prva kartica je uvek ona koja je unapred izabrana. */
+  const i = preporucenaRuta(uniq, false, "valhalla");
+  if (i > 0 && !String((uniq[i] || {}).label || "").startsWith("Najbrža")) { const [r] = uniq.splice(i, 1); uniq.splice(0, 0, r); }
+  return uniq;
 }
 /* Preporucena (podrazumevano izabrana) varijanta: GRADSKA relacija = najbrza (Boskov zakon 9.8.,
    ne dira je nijedno podesavanje); moto stil (Valhalla) = izbor vozaca iz Ja taba (mr_defRuta,
@@ -4664,6 +4832,7 @@ async function fetchRoutes(from, to) {
     const _minT = Math.min(...uniq.map((r) => r.totalDur));
     for (const r of uniq) if (r.label && r.label.startsWith("Najbrža") && r.totalDur > _minT * 1.03)
       r.label = r.hasHighway ? "Autoput" : "Alternativa";
+    if (!gradska) poredajPoIzboru(uniq);   // 0.9.91: tvoj izbor iz profila je i PRVA kartica, ne samo unapred izabrana
     uniq._gradska = gradska;   // presuda putuje UZ rute - commit pod planSeq guardom u plan()
     return uniq;
   } catch (e) {
@@ -6049,6 +6218,71 @@ function _tekstNosiRef(t, refovi) {
    propusta u data/road_status.json. Ostale zemlje jos nemaju geometriju - njihovi redovi zato
    idu kroz postenu etiketu, ne kroz tvrdnju. */
 const RAD_BLIZU_KM = 30;
+/* ---- STANJE NA PUTEVIMA: sta uopste sme na ekran (0.9.91, Boskov nalaz 25.8.) ----
+   Na relaciji Beograd - kuca (64 km, polazak 14:30) kartica je nudila dve "izmene rezima" na
+   E75, iz 2023. i iz 2025. godine, obe za teretna vozila preko 12 t - i tri meteo-upozorenja
+   koja vaze TEK od 22:00 tog dana. Nijedan od tih pet redova vozac motora ne moze da upotrebi.
+   Cetiri kapije, redom po tome koliko buke skidaju:
+   1) TERETNJACI: zabrane po nosivosti (kamioni, autobusi) ne ticu se motocikla - nikad na ekran.
+   2) STAROST: zapis koji SAM nosi datum stariji od pola godine je arhiva, ne stanje na putu.
+   3) BEZ KOORDINATE: vise ne ide kao pun red sa hedzom "(mozda daleko od tvoje deonice)", nego
+      kao JEDNA tiha linija na dnu - posteno kaze da tacnu lokaciju ne znamo, a ne otima prostor.
+   4) METEO: samo upozorenje cije se vazenje POKLAPA sa prozorom voznje (polazak -> dolazak +2 h),
+      i na srpskom - dotle je pisalo "nivo: zuto | pojava: High temperature". */
+const RAD_STARO_DANA = 180;
+const RAD_TERETNO = /teretn|tovorn|nosivost|kamion|autobus|vozila preko|preko\s*\d+([.,]\d+)?\s*t\b|\bt\s*ukupne/i;
+const RAD_SVA_VOZILA = /sva vozila|svih vozila|sve ucesnike|sve učesnike|za sav saobraćaj|za sav saobracaj/i;
+function _radTeretno(it) {   // zabrana koja se tice SAMO teretnih - motor prolazi, red je suvisan
+  const t = String(it.title || "") + " " + String(it.detail || "");
+  return RAD_TERETNO.test(t) && !RAD_SVA_VOZILA.test(t);
+}
+function _radDatum(it) {   // datum koji zapis SAM nosi ("26.4.2023.", "2025-04-25"); null kad ga nema
+  const t = String(it.title || "") + " " + String(it.detail || "");
+  let m = t.match(/(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})/);
+  if (m) { const d = new Date(+m[3], +m[2] - 1, +m[1]).getTime(); return isFinite(d) ? d : null; }
+  m = t.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m) { const d = new Date(+m[1], +m[2] - 1, +m[3]).getTime(); return isFinite(d) ? d : null; }
+  return null;
+}
+function _radStaro(it, sad) {
+  const d = _radDatum(it);
+  return d != null && (sad - d) > RAD_STARO_DANA * 86400000;
+}
+/* MET Norway/Meteoalarm salju vreme u UTC; kolektor ga upisuje kao "...T22:00Z" (starije
+   datoteke nemaju oznaku zone - tada se ISTO cita kao UTC, jer je izvor uvek bio UTC). */
+function _meteoProzor(w) {
+  const t = String(w && w.detail || "") + " " + String(w && w.title || "");
+  const m = t.match(/vazi:\s*(\S+)\s+do\s+(\S+)/i);
+  if (!m) return null;
+  const ms = (x) => { const s0 = /[Zz]|[+-]\d{2}:?\d{2}$/.test(x) ? x : x + "Z"; const v = Date.parse(s0); return isFinite(v) ? v : null; };
+  const a = ms(m[1]), b = ms(m[2]);
+  return a != null && b != null ? [a, b] : null;
+}
+const METEO_NIVO = { zuto: "žuto", narandzasto: "narandžasto", crveno: "crveno", zeleno: "zeleno" };
+const METEO_POJAVA = { "high temperature": "visoka temperatura", "low temperature": "niska temperatura",
+  "wind": "vetar", "rain": "kiša", "snow": "sneg", "snow-ice": "sneg i poledica", "snow/ice": "sneg i poledica",
+  "ice": "poledica", "thunderstorm": "grmljavina", "thunderstorms": "grmljavina", "rain-flood": "kiša i bujice",
+  "flood": "poplava", "fog": "magla", "forest fire": "opasnost od požara", "forestfire": "opasnost od požara",
+  "coastal event": "olujno more", "coastalevent": "olujno more", "avalanches": "lavine", "avalanche": "lavine" };
+const METEO_REGION = { "Western Serbia": "Zapadna Srbija", "Southwestern Serbia": "Jugozapadna Srbija",
+  "Eastern Serbia": "Istočna Srbija", "Southeastern Serbia": "Jugoistočna Srbija",
+  "Northern Serbia": "Severna Srbija", "Central Serbia": "Centralna Srbija", "Sumadija": "Šumadija",
+  "Backa": "Bačka", "Belgrade": "Beograd", "Kosovo": "Kosovo" };
+function _meteoPojava(w) {   // "Moderate High temperature" -> "visoka temperatura"
+  const m = String(w && w.detail || "").match(/pojava:\s*([^|]+)/i);
+  let p = (m ? m[1] : "").trim();
+  p = p.replace(/^(moderate|severe|extreme|minor|slight)\s+/i, "").trim();
+  return METEO_POJAVA[p.toLowerCase()] || p;
+}
+function _meteoNivo(w) {
+  const m = String(w && w.detail || "").match(/nivo:\s*([^|]+)/i);
+  const n = (m ? m[1] : "").trim().toLowerCase();
+  return METEO_NIVO[n] || (n && n !== "?" ? n : "");
+}
+function _meteoRegion(w) {
+  const r = String(w && w.region || "").trim();
+  return METEO_REGION[r] || r;
+}
 function _radKmOdRute(it, route) {
   const R = (route && route.coords) || [];   // [lon, lat]
   if (!R.length) return null;
@@ -6140,37 +6374,51 @@ async function renderRoadStatus(route) {
      nema, red se i dalje prikazuje ali POSTENO - "Na cesti X" uz napomenu da mozda nije tvoja
      deonica. Nikad se ne tvrdi "na tvojoj ruti" bez provere. */
   const refovi = _refoviRute(route);
-  const naRuti = [];
+  const naRuti = [], neznano = [];
+  const sad = Date.now();
   for (const cc of ccs) {
     const c = rs.countries && rs.countries[cc];
     if (!c || !c.ok || !c.items) continue;
     for (const it of c.items) {
       const ref = _tekstNosiRef(it.title + " " + (it.detail || ""), refovi);
       if (!ref) continue;
+      if (_radTeretno(it)) continue;    // kapija 1: zabrana po nosivosti - motor prolazi
+      if (_radStaro(it, sad)) continue; // kapija 2: zapis stariji od pola godine je arhiva
       const dKm = _radKmOdRute(it, route);
       if (dKm != null && dKm > RAD_BLIZU_KM) continue;   // dokazano daleko - ne prikazuj
+      if (dKm == null) { neznano.push({ ...it, cc, ref }); continue; }   // kapija 3: tiha linija na dnu
       naRuti.push({ ...it, cc, ime: c.name, ref, dKm });
     }
   }
-  // izmereno blizu ide pre neprovernog, pa tek onda po tezini dogadjaja
-  naRuti.sort((a, b) => (a.dKm == null) - (b.dKm == null) || (ROAD_PRIO[a.type] ?? 9) - (ROAD_PRIO[b.type] ?? 9));
+  naRuti.sort((a, b) => (ROAD_PRIO[a.type] ?? 9) - (ROAD_PRIO[b.type] ?? 9));   // sve je izmereno blizu - ostaje tezina dogadjaja
   for (const it of naRuti.slice(0, 6))
-    rows.push(`<li>${rIco("roadworks", 14)} <b class="warn-inline">` +
-      (it.dKm != null ? `Na tvojoj ruti (${esc(it.ref)})` : `Na cesti ${esc(it.ref)}`) + `</b>` +
-      (it.dKm == null ? ` <span class="poi-dist">(možda daleko od tvoje deonice)</span>` : "") +
+    rows.push(`<li>${rIco("roadworks", 14)} <b class="warn-inline">Na tvojoj ruti (${esc(it.ref)})</b>` +
       ` · ${esc(it.title)}` +
       (it.detail && it.detail !== it.title ? ` <span class="poi-dist">${esc(it.detail.slice(0, 140))}</span>` : "") + `</li>`);
   /* Samo ono sto te DODIRUJE (11.8.). Ovde je do danas isla i druga petlja koja je dodavala do pet
      radova PO ZEMLJI bez obzira na rutu - zatvoren put kod Vranja dok vozis na Zlatibor. Ta petlja
      je sama nosila najveci deo kartice od 1502 px, a nijedan njen red nije bio na tvom putu.
      Meteo upozorenja ostaju: nose ime regiona, ticu se bezbednosti i ima ih najvise tri. */
+  /* Meteo: samo ono sto se poklapa sa PROZOROM VOZNJE. Upozorenje koje pocinje u 22:00, a ti
+     stizes u 15:30, nije upozorenje nego vest. Zapis bez citljivog vazenja se i dalje prikazuje
+     (necitljivo vreme nije dokaz da ne vazi) - ali na srpskom, ne "nivo: zuto | pojava: High temperature". */
+  const dolazak = dep0 + ((route && route.totalDur) || 0) * 1000 + 2 * 3600e3;   // +2 h: pauza, kafa, obilazak
   for (const cc of ccs)
-    for (const w of (rs.meteo && rs.meteo[cc] || []).slice(0, 3))
-      rows.push(`<li>${rIco("storm", 14)} <b>${esc(w.region)}</b>: ${esc(w.detail || w.title)}</li>`);
+    for (const w of (rs.meteo && rs.meteo[cc] || []).filter((w0) => { const p = _meteoProzor(w0); return !p || (p[0] <= dolazak && p[1] >= dep0); }).slice(0, 3)) {
+      const poj = _meteoPojava(w), niv = _meteoNivo(w);
+      rows.push(`<li>${rIco("storm", 14)} <b>${esc(_meteoRegion(w))}</b>: ${esc(poj || w.title)}` +
+        (niv ? ` <span class="poi-dist">(${esc(niv)} upozorenje)</span>` : "") + `</li>`);
+    }
+  /* Zapisi bez koordinate: JEDNA tiha linija na dnu umesto vise punih redova sa hedzom.
+     Izvor zna samo oznaku ceste, pa iskreno pisemo da tacno mesto ne znamo. */
+  const nzRef = [...new Set(neznano.map((x) => x.ref))].slice(0, 3);
+  if (nzRef.length)
+    rows.push(`<li><span class="poi-dist">Još ${neznano.length} ${plSrp(neznano.length, "prijava", "prijave", "prijava")} sa ` +
+      `${esc(nzRef.join(", "))} bez tačne lokacije - može biti bilo gde na toj cesti.</span></li>`);
   if (!rows.length) { card.style.display = "none"; return; }
   list.innerHTML = rows.slice(0, 8).join("");
   const upd = rs.updated ? new Date(rs.updated) : null;
-  $("roadsNote").textContent = "Radovi i zatvaranja na tvojoj ruti, plus ono što stoji na istoj cesti a ne znamo tačno gde, i meteo-upozorenja za te krajeve." + (upd ? ` Ažurirano: ${upd.toLocaleString("sr-RS", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric" })}.` : "");
+  $("roadsNote").textContent = "Radovi, zatvaranja i meteo-upozorenja izmerena NA tvojoj ruti i za sate dok si na putu. Zabrane za teretna vozila i zapisi stariji od pola godine se ne prikazuju." + (upd ? ` Ažurirano: ${upd.toLocaleString("sr-RS", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "numeric" })}.` : "");
   card.style.display = "";
 }
 async function loadEditorial() {
@@ -6598,7 +6846,8 @@ async function savedSlojCrtaj() {   // kuća + sačuvane (offline) rute - uvek n
   };
   try {
     const h = JSON.parse(localStorage.getItem("rmr2_home") || "null");
-    if (h && h.lat != null) pinS(h.lat, h.lon, "Kuća" + (h.name ? ": " + h.name.split(",")[0] : ""), '<path d="M3 11l9-8 9 8"/><path d="M5 9v12h14V9"/>');
+    // 0.9.91: i pin na mapi ide kroz čuvara - golo "10" nikad kao ime kuće
+    if (h && h.lat != null) { const hn = mestoIme(h, ""); pinS(h.lat, h.lon, "Kuća" + (hn ? ": " + hn.split(",")[0] : ""), '<path d="M3 11l9-8 9 8"/><path d="M5 9v12h14V9"/>'); }
   } catch (e) {}
   try {
     const svi = await offAll();
@@ -7519,7 +7768,7 @@ function renderViaChips() {
   state.viaMarkers = [];
   el.innerHTML = "";
   const replan = (resetFamous = true) => {
-    if (resetFamous) { state.famousApplied = null; state.atlasApplied = null; }
+    if (resetFamous) { state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null; }
     renderViaChips();
     if (state.routes.length) plan();
   };
@@ -7734,7 +7983,7 @@ function renderViaChips() {
     if (!state.vias.length) return;
     const it0 = state.vias[0];
     const nm = (it0.t === "stop" && it0.name) ? it0.name : ((await reverseName(it0.v[1], it0.v[0], 14)) || "stanica");
-    if (it0.t !== "stop") { state.famousApplied = null; state.atlasApplied = null; }   // via poznate rute / Atlas deonice postala polazak -> vise nije ta ruta
+    if (it0.t !== "stop") { state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null; }   // via poznate rute / Atlas deonice postala polazak -> vise nije ta ruta
     state.vias.splice(0, 1);
     $("from").value = nm;
   };
@@ -7742,7 +7991,7 @@ function renderViaChips() {
     if (!state.vias.length) return;
     const itL = state.vias[state.vias.length - 1];
     const nm = (itL.t === "stop" && itL.name) ? itL.name : ((await reverseName(itL.v[1], itL.v[0], 14)) || "stanica");
-    if (itL.t !== "stop") { state.famousApplied = null; state.atlasApplied = null; }
+    if (itL.t !== "stop") { state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null; }
     state.vias.pop();
     $("to").value = nm;
   };
@@ -10011,7 +10260,12 @@ async function plan() {
       state.pendingAtlas = null;
       if (!roundGen && atlasNameraVazi(dA)) {
         const vA = atlasVias(dA, from);
-        if (vA && vA.length) { state.vias = vA; state.atlasApplied = dA.kljuc || dA.naziv; state.famousApplied = null; renderViaChips(); }
+        if (vA && vA.length) {
+          state.vias = vA; state.atlasApplied = dA.kljuc || dA.naziv; state.famousApplied = null;
+          // 0.9.91: geometrija ostaje pri ruci - kurirano sivenje je koristi kao SAV BEZ CENE (atlasKandidat)
+          state.atlasCoords = Array.isArray(dA.coords) && dA.coords.length > 1 ? dA.coords : null;
+          renderViaChips();
+        }
       }
     }
 
@@ -10324,8 +10578,19 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.90";
+const APP_VERSION = "0.9.91";
 const CHANGELOG = [
+  { v: "0.9.91", d: "25.08.2026.", stavke: [
+    "<b>Atlas je sada početni ekran taba Rute.</b> Tap na Rute otvara mapu sa svim deonicama - odmah se vidi da su tu, bez ulazne kartice. Donja traka ostaje vidljiva u Atlasu (bila je skrivena): povuci izlog nadole i mapa je skoro cela tvoja, a četiri taba su i dalje na dohvat. Traka gore (\"‹ Atlas deonica\") i dalje vodi u listu ruta i tamo te ostavlja - dok si u listi, tab Rute te ne vraća u mapu.",
+    "<b>Izabrana deonica se konačno vidi.</b> Do sada je nosila istu narandžastu kao i ostalih tristo koridora, samo malo deblju. Sada dobija cijan oreol, a ostatak izložbe se pritamni dok izbor traje. Cela kartica izabrane deonice je dugme - tap bilo gde po njoj vodi u \"Vodi me preko nje\" (radi i sa tastature).",
+    "<b>Kuća se više ne zove \"10\".</b> Adresa sačuvana kao goli kućni broj sada se sama izleči iz koordinata (\"Breza 10\") pri prvom pokretanju sa mrežom, upis nove adrese prolazi kroz istog čuvara, a nijedan ekran više ne pušta broj kao ime - ni polje DO, ni naslov rute, ni pin na mapi. Čuvar je postojao od 0.9.82, ali samo u pretrazi; put \"Gde ti je kuća?\" ga je zaobilazio, pa je jedan loš geokod ostao zapisan u telefonu.",
+    "<b>Pretraga po Google obrascu.</b> Ispod \"Kuda ćeš danas?\" ide tvoja lokacija, pa \"Izaberi na mapi\", pa red prečica: Kuća, Posao (nov slot), Sačuvano - i tek onda Nedavno. \"Izaberi na mapi\" je pravi nišan: stoji u centru, mapa se pomera ispod njega, dole potvrda. Radi i za POLAZAK, ne samo za cilj - dugi pritisak je uvek postavljao samo odredište.",
+    "<b>\"Stanje na putevima\" pokazuje samo ono što možeš da upotrebiš.</b> Zabrane za teretna vozila (kamioni, nosivost preko 12 t) više ne idu na ekran - motor tuda prolazi. Zapisi koji sami nose datum stariji od pola godine su arhiva, ne stanje na putu. Prijave bez koordinate više nisu puni redovi sa \"možda daleko od tvoje deonice\", nego jedna tiha linija na dnu. Meteo-upozorenja se seku prozorom vožnje (upozorenje koje počinje u 22 h, a ti stižeš u 15.30, nije upozorenje nego vest) i pišu na srpskom - dotle je stajalo \"nivo: zuto | pojava: High temperature\".",
+    "<b>Kombinovana se vraća na Atlas relacije.</b> Kad rutu vodiš preko deonice iz Atlasa, ta deonica JE ono što kombinovana pokušava da ušije - a do sada je nestajala: \"Vodi me preko nje\" šalje deonicu kao stanice, tvoje stanice uvek imaju prednost u budžetu od osam komada, i kartica se nije ni pokušavala. Izmereno na Beograd - Zlatibor preko \"Kosjerić - Valjevo\": pre 3 kartice bez Kombinovane, sada 4 sa njom na vrhu (211 km, 3h41), a sastav piše \"Kosjerić - Valjevo krivinama\". Deonica se ne dira - vijugava, balans i najbrža i dalje voze sa svim tačkama, a ako ruter ipak ode drugim putem, provera pokrivenosti obori kombinaciju umesto da laže.",
+    "<b>Podrazumevana ruta iz profila je sada i PRVA kartica.</b> Do sada je kombinovana stajala prva čak i kad si u Ja tabu izabrao Vijugavu - bila je samo unapred izabrana, a druga po redu. Izuzetak ostaje Najbrža: kad nju izabereš, unapred je izabrana ali ostaje poslednja kartica - guranje autoputa na vrh spiska bi bilo tiho nagovaranje.",
+    "<b>TomTom se više ne zove iz aplikacije na telefonu.</b> Ključ je javan (stoji u app.html na sajtu), pa ga čuva domenska whitelist - ali ona gleda CORS poreklo i prima samo domene. Izmereno na pravom API-ju: sajt 200, Android ljuska 200 čim je dodat \"localhost\", iPhone ljuska 403 i sa \"localhost\" i sa \"*localhost\" (TomTom odbacuje šemu capacitor:// pre nego što uporedi host). Zato se poziv sa telefona i ne šalje - bio bi zagarantovano odbijen. Pretraga nastavlja postojećim izvorima; pravo rešenje je proksi pred launch.",
+    "Ispod haube: nova test suite tools/mesta-put.test.mjs u CI (12. suite, 24 testa; ukupno 406 testova) - pokriva sva tri sloja čuvara imena, sve četiri kapije kartice stanja i Atlas deonicu kao kurirani šav; kolektor meteo-upozorenja upisuje vreme sa izričitom oznakom zone (ranije je odsecao \"+00:00\", pa je app čitao UTC kao lokalne sate)."
+  ] },
   { v: "0.9.90", d: "25.08.2026.", stavke: [
     "<b>Atlas deonica - sve probrane deonice na jednoj mapi.</b> U tabu Rute nova ulazna kartica otvara Atlas: mapa sa svim deonicama u jednoj boji, tapni koridor za detalje (tap na prazno otpušta izbor). Kartica deonice nosi kilometražu, ocenu, uvek tri čipa (Asfalt / Krivine / Saobraćaj - gde podatka nema, tako i piše) i ocene zajednice (prosek, broj, mesec poslednje) - a bez ijedne ocene pošten poziv: budi prvi.",
     "<b>Pretraga, Top 10 i kolekcije.</b> Nađi deonicu po nazivu ili mestu (od/do), listaj uredničku desetku i kolekcije (Kanjoni i klisure, Prevoji i planine, Jadranska linija), ili otvori punu listu sa filterima: zemlja, dužina, ocena. Izbor iz liste pamti tvoje filtere i nudi povratak tačno tamo gde si stao. Sve radi i bez mreže, iz lokalnih podataka.",
@@ -11306,12 +11571,28 @@ function closeSearch(zadrziAtlas) {
   if (!zadrziAtlas) atlasNameraGasi();
   document.body.classList.remove("searching");
 }
+const SCHIP_IKONE = {
+  home: '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
+  work: '<svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/></svg>',
+  saved: '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>',
+};
+function schip(k, ime, pod, kl) {
+  return '<button class="schip' + (kl ? " " + kl : "") + '" type="button" data-chipm="' + k + '">' +
+    '<span class="ci">' + SCHIP_IKONE[k] + '</span><span class="ct"><b>' + esc(ime) + "</b><span>" + esc(pod) + "</span></span></button>";
+}
+function renderSChips() {   // 0.9.91: red precica ispod "Izaberi na mapi" (Kuca / Posao / Sacuvano)
+  const el = document.getElementById("sChips");
+  if (!el) return;
+  const h = mestoCitaj("home"), w = mestoCitaj("work");
+  let sv = []; try { sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]"); } catch (e) {}
+  el.innerHTML =
+    schip("home", "Kuća", h ? mestoIme(h, "sačuvana tačka") : "postavi jednom") +
+    schip("work", "Posao", w ? mestoIme(w, "sačuvana tačka") : "postavi jednom") +
+    schip("saved", "Sačuvano", sv.length ? sv.length + (sv.length === 1 ? " ruta" : " ruta") : "još ništa", "sv");
+}
 function updateSearchStatic() {
   try {
-    const h = JSON.parse(localStorage.getItem("rmr2_home") || "null");
-    document.getElementById("sHomeSub").textContent = h ? h.name : "postavi jednom i kreni";
-    const sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
-    document.getElementById("sSavedSub").textContent = sv.length ? sv.length + " sačuvanih" : "još nema sačuvanih";
+    renderSChips();
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
     document.getElementById("sRecentT").style.display = rec.length ? "" : "none";
     document.getElementById("sRecent").innerHTML = rec.slice(0, 6).map((r, i) =>
@@ -11368,7 +11649,7 @@ function scheduleNetSugg(q) {   // FAZA 1 typeahead (9.8., Google princip "biras
 function renderSugg(q) {
   const sugg = document.getElementById("sSugg");
   const isTyping = q.trim().length >= 2;
-  ["sRecentT", "sRecent"].forEach((id) => { document.getElementById(id).style.display = isTyping ? "none" : ""; });
+  ["sRecentT", "sRecent", "sChips"].forEach((id) => { const e0 = document.getElementById(id); if (e0) e0.style.display = isTyping ? "none" : ""; });
   document.querySelectorAll("#sBody > .srow").forEach((r) => {
     r.style.display = isTyping ? "none" : (r.id === "sMyLoc" && SEARCH_MODE !== "from" ? "none" : "flex"); });
   if (!isTyping) {   // review 9.8.: odgovor u letu je znao da ubaci redove u ponovo otvorenu pretragu
@@ -11412,7 +11693,7 @@ function renderSugg(q) {
   const gde = jak ? red.length : Math.min(recN, red.length);
   sugg.innerHTML = red.slice(0, gde).join("") + `<div id="sNet"></div>` + red.slice(gde).join("") +
     `<div class="srow" data-geo="1"><span class="sic">${rIco("route", 18)}</span><div class="st"><b>Traži "${esc(q.trim())}"</b><span>mesta i adrese (OpenStreetMap)</span></div></div>` +
-    `<div class="srow" data-pickmap="1"><span class="sic">${rIco("pin", 18)}</span><div class="st"><b>Izaberi na mapi</b><span>drži prst na mapi - "Vodi me ovde"</span></div></div>`;   // nikad corsokak (6.8.)
+    `<div class="srow" data-pickmap="1"><span class="sic m">${rIco("pin", 18)}</span><div class="st"><b>Izaberi na mapi</b><span>pomeri mapu i potvrdi tačku</span></div></div>`;   // nikad corsokak (6.8.)
   sugg._hits = hits; sugg._q = q.trim(); sugg._net = []; sugg._jak = jak;
   scheduleNetSugg(sugg._q);
 }
@@ -11449,15 +11730,138 @@ function _imeOdredista(sel) {   // konacno ime za DO polje / naslov relacije / "
   } catch (e) {}
   return _imeDoteraj(sel);
 }
+/* ---- SAČUVANA MESTA: Kuća i Posao (0.9.91) ----------------------------------
+   Boškov nalaz 25.8.: u pretrazi je pod "Kuća" pisalo golo "10", a naslov rute "Beograd → 10",
+   iako je čuvar golog kućnog broja (_imeDoteraj) uveden još 0.9.82. Uzrok je isti obrazac kao
+   zaboravljeni `npx cap copy`: čuvar je stajao SAMO na potrošaču pretrage (pickDestination),
+   a put "Gde ti je kuća?" -> geocode() -> localStorage nije prolazio kroz njega. Jedan loš
+   geokod tako ostaje zapisan u telefonu zauvek i svaki ekran ga posle veruje na reč.
+   Zato tri sloja: (1) UPIS ide kroz čuvara, (2) ZATEČENA otrovana vrednost se leči reverznim
+   geokodom na pokretanju (mestaZaleci), (3) PRIKAZ nikad ne pusti broj kao ime. */
+const MESTO_KLJUC = { home: "rmr2_home", work: "rmr2_work" };
+const MESTO_REC = { home: "Kuća", work: "Posao" };
+function mestoCitaj(k) { try { return JSON.parse(localStorage.getItem(MESTO_KLJUC[k]) || "null"); } catch (e) { return null; } }
+function mestoUpisi(k, m) { try { localStorage.setItem(MESTO_KLJUC[k], JSON.stringify(m)); } catch (e) {} }
+function mestoIme(m, podr) {   // ime za ekran: goli kućni broj NIKAD ne ide kao ime (dok lečenje ne stigne)
+  if (!m || !m.name) return podr || "";
+  return _imeSmisleno(m.name) ? String(m.name) : (podr || "sačuvana tačka");
+}
+async function reverseAdresa(lat, lon) {   // "Breza 10" iz koordinata; geoName zna red: POI ime > "Ulica broj" > naselje
+  try {
+    const j = await geoFetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&zoom=18&format=json&addressdetails=1&namedetails=1&accept-language=hr,sr-Latn,en`, 7000);
+    const n = geoName(j || {}, "");
+    return _imeSmisleno(n) ? n : "";
+  } catch (e) { return ""; }
+}
+const KUCNI_BROJ_NA_KRAJU = /\s\d+[a-z]?([/-]\d+[a-z]?)?$/i;
+function mestoSpoji(broj, nm) {   // reverz vrati ulicu bez broja -> "Breza" + "10" = "Breza 10"
+  if (!broj) return nm;
+  /* Reverz ume da vrati adresu koja VEC nosi svoj broj ("Užička 16"). Tada zapamceni broj ne
+     sme da se doda - proba u pregledacu 25.8. je dala "Užička 16 10". Broj se lepi samo na
+     ime bez broja, i nikad dvaput. */
+  if (KUCNI_BROJ_NA_KRAJU.test(nm)) return nm;
+  const esc0 = String(broj).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp("(^|\\s)" + esc0 + "$").test(nm) ? nm : nm + " " + broj;
+}
+async function mestaZaleci() {   // jednom po pokretanju: otrovano ime ("10") -> prava adresa iz koordinata
+  for (const k of Object.keys(MESTO_KLJUC)) {
+    const m = mestoCitaj(k);
+    if (!m || m.lat == null || _imeSmisleno(m.name)) continue;
+    const broj = m.name && jeKucniBroj(m.name) ? String(m.name).trim() : "";
+    const nm = await reverseAdresa(m.lat, m.lon);
+    if (!nm) continue;   // bez mreže se ne dira ništa - sledeće pokretanje probа opet
+    m.name = mestoSpoji(broj, nm);
+    mestoUpisi(k, m);
+    try { updateQuickLabels(); } catch (e) {}
+    try { updateSearchStatic(); } catch (e) {}
+  }
+}
+async function mestoPostavi(k) {   // "postavi jednom i kreni" - upis PROLAZI kroz čuvara imena
+  const val = prompt(k === "work" ? "Gde ti je posao? Unesi mesto ili adresu:" : "Gde ti je kuća? Unesi mesto ili adresu:");
+  if (!val) return null;
+  const g = await geocode(val);
+  const m = { name: _imeDoteraj({ n: g.name, q: val }), lat: g.lat, lon: g.lon };
+  mestoUpisi(k, m);
+  try { updateQuickLabels(); } catch (e) {}
+  try { updateSearchStatic(); } catch (e) {}
+  return m;
+}
+async function mestoIzaberi(k) {   // Kuća/Posao poštuju SEARCH_MODE - isto mesto je i polazak i cilj (Google obrazac)
+  let m = mestoCitaj(k);
+  if (!m) {
+    try { m = await mestoPostavi(k); }
+    catch (er) { alert(er && er.geo ? er.message : "Ne mogu da nađem tu adresu - probaj drugačiji naziv."); return; }
+    if (!m) return;
+  }
+  pickDestination({ n: mestoIme(m, MESTO_REC[k]), lat: m.lat, lon: m.lon });
+}
+/* 0.9.91: prelazak na tab koji radi APLIKACIJA, ne vozac. Slusalac donje trake gasi naoruzanu
+   Atlas nameru na svaku promenu taba - a ovi klikovi su deo istog toka, ne izlazak iz njega.
+   Cuva se PRETHODNA vrednost, ne "false": ugnjezdeni pozivi (pickMapOtvori -> atlasZatvori ->
+   ovaj isti helper) bi inace ugasili zastavicu spoljnjem pozivaocu, pa bi njegov klik prosao
+   nezasticen - tacno kvar koji je 25.8. gubio deonicu na putu kroz "Izaberi na mapi". */
+function nasTabKlik(tab) {
+  let pre = false;
+  try { pre = !!ATLAS._prebacuje; ATLAS._prebacuje = true; } catch (e) {}
+  try { const a = document.querySelector('#bottomnav a[data-tab="' + tab + '"]'); if (a) a.click(); }
+  finally { try { ATLAS._prebacuje = pre; } catch (e) {} }
+}
+/* ---- IZABERI NA MAPI (0.9.91) --------------------------------------------
+   Google obrazac "Choose on map": nišan STOJI u centru ekrana, vozač pomera mapu ispod njega
+   pa potvrdi. Do sada je taj red samo savetovao dugi pritisak (shareToast), a dugi pritisak
+   je uvek postavljao CILJ - pa polazak sa mape nije imao put. Ovde mod prati SEARCH_MODE.
+   Ime tačke stiže reverznim geokodom; kad ga nema (mreža, pusto polje), tačka i dalje radi -
+   nosi koordinate, isto kao "Vodi me ovde". */
+let PICKMAP = null;
+function pickMapOtvori(mode) {
+  if (typeof map === "undefined" || !map) return;
+  PICKMAP = { mode: mode === "from" ? "from" : "to" };
+  closeSearch(true);   // izbor tačke je nastavak istog toka - Atlas namera ostaje
+  try { if (typeof atlasZatvori === "function") atlasZatvori("mapa"); } catch (e) {}   // dva režima nad istom mapom se ne mešaju
+  nasTabKlik("planer");   // mapa mora da se vidi - i namera "Vodi me preko nje" mora da prezivi ovaj prelazak
+  document.body.classList.add("pickmap");
+  const el = document.getElementById("pickMap"); if (el) el.hidden = false;
+  const t = document.getElementById("pmTitle"); if (t) t.textContent = PICKMAP.mode === "from" ? "Odakle krećeš?" : "Gde ideš?";
+  const sub = document.getElementById("pmSub"); if (sub) sub.textContent = "pomeri mapu - tačka je tačno na nišanu";
+  const ok = document.getElementById("pmOk"); if (ok) { ok.disabled = false; ok.textContent = "Ovde"; }
+  try { if (map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
+}
+function pickMapZatvori() {
+  PICKMAP = null;
+  document.body.classList.remove("pickmap");
+  const el = document.getElementById("pickMap"); if (el) el.hidden = true;
+}
+async function pickMapPotvrdi() {
+  if (!PICKMAP || typeof map === "undefined" || !map) return;
+  const mode = PICKMAP.mode;
+  const c = map.getCenter();
+  const ok = document.getElementById("pmOk"); if (ok) ok.disabled = true;
+  const sub = document.getElementById("pmSub"); if (sub) sub.textContent = "tražim adresu…";
+  let ime = "";
+  try { ime = await reverseAdresa(c.lat, c.lng); } catch (e) {}
+  if (!PICKMAP || PICKMAP.mode !== mode) return;   // otkazano dok je reverz trajao - ne otimaj ekran
+  pickMapZatvori();
+  SEARCH_MODE = mode;
+  pickDestination({ n: ime || ("Tačka " + c.lat.toFixed(4) + ", " + c.lng.toFixed(4)), lat: c.lat, lon: c.lng });
+}
 async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
   closeSearch(true);   // izabran je cilj - Atlas namera prezivljava do plan() (0.9.90)
-  const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();   // sa Rute/Mesta taba: predji na planer (tab ekran je prekrivao sve)
+  /* 0.9.91: prelazak na Planer je NAS, ne "vozac je promenio tab" - inace ga slusalac donje
+     trake shvati kao izlaz i ugasi naoruzanu Atlas nameru. Izmereno u pregledacu 25.8. i na
+     netaknutoj 0.9.90: "Vodi me preko nje" pa izbor NOVOG cilja gubio je deonicu (vias 0),
+     jer closeSearch(true) skine "searching" pre nego sto ovaj klik stigne do slusaoca. Deonica
+     je ulazila u rutu samo kad se zadrzi postojeci cilj - a to je bio jedini put koji je 0.9.90
+     probala. */
+  nasTabKlik("planer");   // sa Rute/Mesta taba: predji na planer (tab ekran je prekrivao sve)
   document.body.classList.add("planning");
   if (mqMobile.matches) { document.body.classList.add("qplan"); if (window.qbarSync) qbarSync(); }   // R6: pravo na rezultat, bez formulara
   if (SEARCH_MODE === "from") {   // biran je POLAZAK
     try { if (window.qplanFromOk) qplanFromOk(); setStatus(""); } catch (e) {}
-    document.getElementById("from").value = sel.n;
-    if (sel.lat != null) state.fromOverride = { name: sel.n, lat: sel.lat, lon: sel.lon };
+    /* 0.9.91: i POLAZAK ide kroz čuvara imena. Do sada je samo cilj prolazio kroz _imeOdredista,
+       pa je isti loš geokod koji je pravio "→ 10" umeo da napiše "10 → Zlatibor". */
+    const imeOd = _imeOdredista(sel);
+    document.getElementById("from").value = imeOd;
+    if (sel.lat != null) state.fromOverride = { name: imeOd, lat: sel.lat, lon: sel.lon };
     SEARCH_MODE = "to";
     if (document.getElementById("to").value.trim()) document.getElementById("planBtn").click();   // ako je cilj vec tu - odmah preracunaj
     return;
@@ -11470,7 +11874,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
   }
   const rg = document.getElementById("roundGen");
   if (rg && rg.checked) { rg.checked = false; rg.dispatchEvent(new Event("change")); }   // novi cilj = nije vise kruzna (od=do petlja)
-  state.vias = []; state.famousApplied = null; state.atlasApplied = null; try { renderViaChips(); } catch (e) {}   // pendingAtlas prezivljava NAMERNO - plan() ga trosi posle geokodiranja (0.9.90)
+  state.vias = []; state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null; try { renderViaChips(); } catch (e) {}   // pendingAtlas prezivljava NAMERNO - plan() ga trosi posle geokodiranja (0.9.90)
   const imeDo = _imeOdredista(sel);   // 0.9.82: golo "10" nikad u DO polje/naslov/"cilj:"; kod kuce pise "Kuća"
   document.getElementById("to").value = imeDo;
   if (sel.lat != null) state.searchTo = { name: imeDo, lat: sel.lat, lon: sel.lon };
@@ -11511,6 +11915,13 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
     catch (er) { alert(er && er.geo ? er.message : "Ne mogu da nađem to mesto - probaj drugačiji naziv."); renderSugg(si.value); }   // posle greske: Trazi ponovo + Izaberi na mapi ostaju na ekranu
   });
   so.addEventListener("click", async (e) => {
+    const chip = e.target.closest("[data-chipm]");   // 0.9.91: red precica Kuca / Posao / Sacuvano
+    if (chip) {
+      const k = chip.dataset.chipm;
+      if (k === "saved") { closeSearch(); const sb = document.querySelector('[data-quick="saved"]'); if (sb) sb.click(); return; }
+      mestoIzaberi(k);
+      return;
+    }
     const row = e.target.closest(".srow"); if (!row) return;
     if (row.dataset.srow === "myloc") {
       if (SEARCH_MODE === "from") {
@@ -11540,16 +11951,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
       }
       return;
     }
-    if (row.dataset.srow === "home") {
-      closeSearch();
-      const hb = document.querySelector('[data-quick="home"]'); if (hb) hb.click();   // postojeci Kuca tok
-      return;
-    }
-    if (row.dataset.srow === "saved") {
-      closeSearch();
-      const sb = document.querySelector('[data-quick="saved"]'); if (sb) sb.click();
-      return;
-    }
+    if (row.dataset.srow === "mapa") { pickMapOtvori(SEARCH_MODE === "from" ? "from" : "to"); return; }   // 0.9.91: nisan nad mapom, kao Google "Choose on map"
     if (row.dataset.recent != null) {
       const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
       const r = rec[+row.dataset.recent]; if (!r) return;
@@ -11567,9 +11969,8 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
       document.getElementById("planBtn").click();
       return;
     }
-    if (row.dataset.pickmap) {   // izlaz kad pretraga ne nalazi: postojeci dugi-pritisak tok
-      closeSearch();
-      shareToast('Drži prst na mapi tamo gde hoćeš da ideš - iskočiće "Vodi me ovde".');
+    if (row.dataset.pickmap) {   // izlaz kad pretraga ne nalazi (0.9.91: pravi nišan, ne vise savet o dugom pritisku)
+      pickMapOtvori(SEARCH_MODE === "from" ? "from" : "to");
       return;
     }
     if (row.dataset.hit != null) { const sg2 = document.getElementById("sSugg"); pickDestination({ ...sg2._hits[+row.dataset.hit], q: sg2._q || "" }); return; }
@@ -11586,8 +11987,8 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
 /* ---- app2 Faza 3.1: GPS polazak + brza dugmad + sheet drag + vožnja ---- */
 function updateQuickLabels() {
   try {
-    const h = JSON.parse(localStorage.getItem("rmr2_home") || "null");
-    const hb = document.querySelector('[data-quick="home"] span'); if (hb) hb.textContent = h ? h.name : "postavi";
+    const h = mestoCitaj("home");
+    const hb = document.querySelector('[data-quick="home"] span'); if (hb) hb.textContent = h ? mestoIme(h, "sačuvana tačka") : "postavi";
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
     const rb = document.querySelector('[data-quick="recent"] span'); if (rb) rb.textContent = rec.length ? rec[0].to : "—";   // destinacija, ne relacija (13.8.)
     const sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
@@ -15492,7 +15893,7 @@ async function stplPodeli(kind) {
   ["from", "to"].forEach((id) => { const el = document.getElementById(id); if (el) el.addEventListener("input", () => {
     if (typeof state === "undefined") return;
     if (state.famousApplied || state.atlasApplied) {   // 0.9.90 (B3): ogledalo famousApplied reseta - stanice Atlas deonice ne smeju da prezive rucno kucanje
-      state.vias = []; state.famousApplied = null; state.atlasApplied = null;
+      state.vias = []; state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null;
       try { renderViaChips(); } catch (e) {}
     }
   }); });
@@ -15501,18 +15902,15 @@ async function stplPodeli(kind) {
     const q = b.dataset.quick;
     try {
       if (q === "home") {
-        let h = JSON.parse(localStorage.getItem("rmr2_home") || "null");
+        let h = mestoCitaj("home");
         if (!h) {
-          const val = prompt("Gde ti je kuća? Unesi mesto ili adresu:");
-          if (!val) return;
           b.querySelector("span").textContent = "tražim…";
-          const g = await geocode(val);
-          h = { name: g.name, lat: g.lat, lon: g.lon };
-          localStorage.setItem("rmr2_home", JSON.stringify(h)); updateQuickLabels();
+          h = await mestoPostavi("home");   // 0.9.91: upis prolazi kroz čuvara imena (nikad golo "10")
+          if (!h) updateQuickLabels();
           return;
         }
         state.homeTo = h;
-        document.getElementById("to").value = h.name;
+        document.getElementById("to").value = mestoIme(h, "Kuća");
         gpsPrefill(false); openPlanning();
         setTimeout(() => { if (document.getElementById("from").value.trim()) document.getElementById("planBtn").click(); }, 1400);
       }
@@ -16371,7 +16769,8 @@ function openLayersSheet() {
    ne placaju. "Vodi me preko nje" NE uvodi novo rutiranje: deonica postane usputne stanice u
    postojecem planeru, a postojece kurirano sivenje je prepozna i imenuje u sastavu rute. */
 const ATLAS = { on: false, baza: null, geo: null, sel: null, q: "", lista: false, fil: {}, prikazano: 0, prikazanoQ: 0,
-  markeri: [], _tap: null, _n: 0, _gen: 0, _vis: null, _prevHazard: false, _povratak: null, _skrol: 0 };
+  markeri: [], _tap: null, _n: 0, _gen: 0, _vis: null, _prevHazard: false, _povratak: null, _skrol: 0,
+  _lista: false, _prebacuje: false };   // 0.9.91: _lista = vozac je u listi ruta (tab ga ne vraca u mapu); _prebacuje = nas klik na tab
 const ATLAS_ROK_MS = 10 * 60000;   // B4: naoruzana namera "Vodi me preko nje" traje najvise 10 minuta
 const ATLAS_ZEMLJE = { RS: "Srbija", ME: "Crna Gora", BA: "BiH", HR: "Hrvatska", SI: "Slovenija", MK: "Makedonija",
   AL: "Albanija", XK: "Kosovo", BG: "Bugarska", RO: "Rumunija", GR: "Grčka", AT: "Austrija", IT: "Italija", HU: "Mađarska" };
@@ -16511,12 +16910,16 @@ function atlasSloj(baza) {
   map.addLayer({ id: "atlas", type: "line", source: ATLAS_IZVOR,
     layout: { "line-cap": "round", "line-join": "round" },
     paint: { "line-color": "#FF6A00", "line-width": 2.4, "line-opacity": 0.55 } });
+  /* 0.9.91 (Boskov nalaz 25.8.: "kad se izaberu deonice, da se zna koja se izabrala"):
+     izabrana je do sada bila ista narandzasta, samo malo deblja - na mapi punoj narandzastih
+     koridora to se nije videlo. Sada nosi CIJAN oreol (ista boja kojom aplikacija svuda pise
+     brojeve), a ostatak izlozbe se pritamni na 0,16 dok izbor traje (atlasIstakni). */
   map.addLayer({ id: "atlas-sel-casing", type: "line", source: ATLAS_IZVOR, filter: ["==", ["get", "k"], ""],
     layout: { "line-cap": "round", "line-join": "round" },
-    paint: { "line-color": "#FF6A00", "line-width": 9, "line-opacity": 0.3 } });
+    paint: { "line-color": "#38bdf8", "line-width": 11, "line-opacity": 0.55 } });
   map.addLayer({ id: "atlas-sel", type: "line", source: ATLAS_IZVOR, filter: ["==", ["get", "k"], ""],
     layout: { "line-cap": "round", "line-join": "round" },
-    paint: { "line-color": "#FF6A00", "line-width": 3.6, "line-opacity": 1 } });
+    paint: { "line-color": "#FF6A00", "line-width": 4.2, "line-opacity": 1 } });
 }
 function atlasSlojSkini() {
   if (map) {
@@ -16570,6 +16973,8 @@ function atlasIstakni(kljuc) {
   const f = ["==", ["get", "k"], kljuc || ""];
   map.setFilter("atlas-sel", f);
   map.setFilter("atlas-sel-casing", f);
+  // ostatak izlozbe se pritamni dok izbor traje - izabrana deonica mora da se vidi iz prve
+  try { if (map.getLayer("atlas")) map.setPaintProperty("atlas", "line-opacity", kljuc ? 0.16 : 0.55); } catch (e) {}
   const d = kljuc && ATLAS.baza ? ATLAS.baza.find((x) => x.kljuc === kljuc) : null;
   if (!d) return;
   const dot = (boja) => { const el = document.createElement("div");
@@ -16601,6 +17006,29 @@ function atlasTapHandler(e) {
   if (!feats || !feats.length) { atlasDeselektuj(); return; }   // G6: tap na prazan deo mape otpusta izbor (kartica se sklanja), bez izlaska iz rezima
   const f = atlasNajblizi(feats, e.lngLat.lat, e.lngLat.lng);
   if (f && f.properties && f.properties.k) atlasIzaberi(f.properties.k); else atlasDeselektuj();
+}
+/* 0.9.91: kadar je do sada racunao samo na sheet. Otkad je donja traka vidljiva i u Atlasu,
+   njena visina se DODAJE na postojeci udeo (0,42 za pregled / 0,5 za izabranu) - proba 25.8.
+   sa fiksnih 0,58 je Balkan svela na saku piksela izmedju Libije i Ukrajine. */
+function atlasDno(osnova) {
+  const h = (typeof window !== "undefined" && window.innerHeight) || 1;
+  let navH = 0;
+  try { const nav = document.getElementById("bottomnav");
+    if (nav && getComputedStyle(nav).display !== "none") navH = nav.getBoundingClientRect().height || 0; } catch (e) {}
+  return Math.min(0.72, (osnova || 0.42) + navH / h);
+}
+/* 0.9.91: pocetni kadar Atlasa se pravi preko JEZGRA, ne preko krajnjih tacaka. Baza ima
+   nekoliko dalekih deonica (Stelvio, Grossglockner, Transfagarasan), pa je okvir "od Italije
+   do Bugarske" spustao Balkan na saku piksela usred Sredozemlja - a Atlas je sada pocetni
+   ekran, gde vozac treba da VIDI da su rute tu. Zato se odseca po 5% sa svake strane; daleke
+   deonice i dalje postoje na mapi, samo ne diktiraju prvi kadar. */
+function atlasJezgro(tacke, udeo) {
+  if (!tacke || tacke.length < 20) return tacke;
+  const p = udeo == null ? 0.05 : udeo;
+  const lo = tacke.map((t) => t[0]).sort((a, b) => a - b);
+  const la = tacke.map((t) => t[1]).sort((a, b) => a - b);
+  const i0 = Math.floor(lo.length * p), i1 = Math.ceil(lo.length * (1 - p)) - 1;
+  return [[lo[i0], la[i0]], [lo[i1], la[i1]]];
 }
 function atlasUokviri(coords, dno) {   // kadar preko datih koordinata, sa mestom za sheet dole
   if (!map || !coords.length) return;
@@ -16681,7 +17109,7 @@ function atlasKartica(d, agg) {   // JEDNA kartica za sve puteve izbora (mapa/pr
   const ref = atlasRoadref(d);   // UVEK samo zemlja - nikad broj puta (vidi atlasRoadref: sinteticki br bi izmislio put i odao poreklo)
   const oc = d.ocena != null ? Math.round(d.ocena * 10) / 10 : null;
   const ocTx = oc != null ? oc.toFixed(1).replace(".", ",") : null;
-  return '<div class="selcard" data-k="' + esc(d.kljuc) + '" role="button" tabindex="0" aria-label="Izabrana deonica ' + esc(atlasNaslov(d.naziv)) + '">' +
+  return '<div class="selcard" data-k="' + esc(d.kljuc) + '" role="button" tabindex="0" aria-label="Izabrana deonica ' + esc(atlasNaslov(d.naziv)) + ' - vodi me preko nje">' +
     '<div class="metarow"><span class="sellbl">Izabrana deonica</span><span class="roadref">' + esc(ref) + "</span></div>" +
     "<h2>" + esc(atlasNaslov(d.naziv)) + "</h2>" +
     '<div class="statrow"><span class="akm">' + atlasKmTx(d.km) + "<small>km</small></span>" +
@@ -16829,11 +17257,13 @@ function atlasIzaberi(kljuc) {
   ATLAS.sel = kljuc;
   ATLAS.lista = false;
   try { atlasIstakni(kljuc); } catch (e) {}
-  const sh = document.getElementById("atlasSheet"); if (sh) sh.classList.remove("peek");
+  /* 0.9.91: izbor vraca sheet u NORMALNO stanje - iz "peek" se kartica ne bi videla, a iz
+     "pun" (88dvh) bi izabrana deonica ostala ispod sheeta. Kadar zna i za donju traku. */
+  if (typeof ATLAS._stanje === "function") ATLAS._stanje(""); else { const sh = document.getElementById("atlasSheet"); if (sh) sh.classList.remove("peek"); }
   atlasSheetCrtaj();
   const telo = document.getElementById("atlasTelo"); if (telo) telo.scrollTop = 0;
   atlasAggOsvezi();
-  atlasUokviri(d.coords, 0.5);
+  atlasUokviri(d.coords, atlasDno(0.5));
 }
 function atlasDeselektuj() {   // G6: tap na prazan deo mape otpusta izbor - bez izlaska iz rezima
   if (!ATLAS.on || !ATLAS.sel) return;
@@ -16851,9 +17281,22 @@ function atlasAggOsvezi() {   // red "Ocene zajednice" stize naknadno; bajat odg
     if (el && d) el.innerHTML = atlasOcenaRed(mapa ? (mapa[d.naziv] || null) : null);
   }).catch(() => {});
 }
+/* 0.9.91: Atlas je POCETNI EKRAN taba Rute (Boskov nalog 25.8.: "nek ova atlas mapa bude
+   dostupna kad otvoris mapu"). Mapa zivi ispod planer-ekrana, pa se rezim i dalje pali
+   preko njega, ali donja traka mora da pokazuje Rute - inace bi vozac bio u Atlasu a traka
+   bi svetlela na Planeru. */
+function atlasNavOznaci() {
+  try {
+    document.querySelectorAll(".tabscreen").forEach((x) => x.classList.remove("on"));
+    const ra = document.querySelector('#bottomnav a[data-tab="rute"]');
+    document.querySelectorAll("#bottomnav a").forEach((x) => x.classList.toggle("on", x === ra));
+    if (map && map.resize) setTimeout(() => map.resize(), 60);
+  } catch (e) {}
+}
 async function atlasOtvori() {
-  if (ATLAS.on) return;
+  if (ATLAS.on) { atlasNavOznaci(); return; }
   ATLAS.on = true;
+  ATLAS._lista = false;
   ATLAS.sel = null; ATLAS.lista = false; ATLAS.q = ""; ATLAS.fil = {}; ATLAS.prikazano = 0;
   ATLAS.prikazanoQ = 0; ATLAS._povratak = null; ATLAS._skrol = 0;
   const gen = ++ATLAS._gen;   // D1: zatvori+otvori u trci je duplo registrovao map click I dvaput utisao slojeve
@@ -16863,7 +17306,8 @@ async function atlasOtvori() {
   state.hazardMode = false;
   try { const hb = document.querySelector(".hz-btn"); if (hb) hb.classList.remove("on"); } catch (e) {}
   document.body.classList.add("atlas");
-  const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();   // mapa mora biti vidljiva (zajmap obrazac)
+  nasTabKlik("planer");   // mapa mora biti vidljiva (zajmap obrazac); klik je NAS, ne izlazak iz toka
+  atlasNavOznaci();   // ...ali traka pokazuje Rute: Atlas je pocetni ekran tog taba
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
   const sh = document.getElementById("atlasSheet"); if (sh) sh.classList.remove("peek");
   const sub = document.getElementById("atlasBarSub"); if (sub) sub.textContent = "učitavam deonice...";
@@ -16880,7 +17324,7 @@ async function atlasOtvori() {
     try { atlasSloj(baza); } catch (e) {}
     try { atlasSlojeveUtisaj(); } catch (e) {}   // POI/radar/stara ruta ne mesaju se sa izlozbom
     if (!ATLAS._tap) { ATLAS._tap = atlasTapHandler; map.on("click", ATLAS._tap); }   // D1: nikad dva ista slusaoca
-    if (baza.length) { const sve = []; for (const d of baza) { sve.push(d.coords[0], d.coords[d.coords.length - 1]); } atlasUokviri(sve, 0.42); }
+    if (baza.length) { const sve = []; for (const d of baza) { sve.push(d.coords[0], d.coords[d.coords.length - 1]); } atlasUokviri(atlasJezgro(sve), atlasDno(0.42)); }
   }
   atlasSheetCrtaj();
 }
@@ -16896,7 +17340,18 @@ function atlasZatvori(kuda) {
   ATLAS._prevHazard = false;
   ATLAS.sel = null; ATLAS._povratak = null;
   const cd = document.getElementById("atlasCilj"); if (cd && !cd.hidden) atlasCiljZatvori(false);   // rezim se gasi, dijalog ne sme da ostane
-  if (kuda === "rute") { const ra = document.querySelector('#bottomnav a[data-tab="rute"]'); if (ra) ra.click(); }
+  /* 0.9.91: "‹ Atlas deonica" vodi u LISTU ruta i tamo te ostavlja - dok si u tom tabu tab
+     Rute vise ne otvara mapu (ATLAS._lista). Prvi sledeci ulazak u tab opet pocinje od mape. */
+  if (kuda === "rute") { ATLAS._lista = true; const ra = document.querySelector('#bottomnav a[data-tab="rute"]'); if (ra) ra.click(); }
+  else if (kuda === "mapa") {
+    /* Rezim se gasi nad mapom (plan, voznja, "Vodi me preko nje"). Traka je dotle pokazivala
+       Rute, pa mora da se vrati na Planer - ali SAMO ako smo stvarno ostali na mapi. Kad je
+       gasenje doslo od tapa na drugi tab, taj tab je vec oznacen i ovde se nista ne dira. */
+    try {
+      const on = document.querySelector("#bottomnav a.on");
+      if (on && on.dataset.tab === "rute" && !document.querySelector(".tabscreen.on")) nasTabKlik("planer");
+    } catch (e) {}
+  }
 }
 /* ---- "Vodi me preko nje": deonica -> usputne stanice postojeceg planera ----
    Ulaz/izlaz su IMENOVANE stanice (od/do ili naziv rascepljen na " - "), izmedju su NEME via
@@ -17030,8 +17485,9 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
     if (!sh) return;
     sh.classList.toggle("peek", s === "peek");
     sh.classList.toggle("pun", s === "pun");
-    ATLAS._stanje = s;
+    ATLAS._stanjeTx = s;
   }
+  ATLAS._stanje = atlasStanje;   // 0.9.91: i atlasIzaberi mora da vrati sheet u normalno stanje
   if (sh && gb) {
     let y0 = null, t0 = 0, pre = "", h0 = 0, vuce = false;
     const kraj = () => { sh.style.transform = ""; sh.style.transition = ""; y0 = null; vuce = false; };
@@ -17065,7 +17521,11 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
   const telo = document.getElementById("atlasTelo");
   if (telo) {
     telo.addEventListener("click", (e) => {
-      if (e.target.closest("#atlasVodi")) { atlasVodiMe(); return; }
+      /* 0.9.91 (Boskov nalog 25.8.: "i da moze da se klikne pa da se ide na ono vodi me tamo"):
+         cela kartica izabrane deonice je dugme, ne samo traka "Vodi me preko nje". Kartica je
+         od 0.9.90 nosila role="button", ali je klik padao u granu [data-k] koja preskace vec
+         izabranu deonicu - pa se nista nije desavalo. */
+      if (e.target.closest("#atlasVodi") || e.target.closest(".selcard")) { atlasVodiMe(); return; }
       const fb = e.target.closest("[data-fg]");
       if (fb) {
         if (fb.dataset.fv) ATLAS.fil[fb.dataset.fg] = fb.dataset.fv; else delete ATLAS.fil[fb.dataset.fg];
@@ -17100,6 +17560,7 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
       const b = e.target.closest && e.target.closest('[role="button"][data-k]');
       if (!b) return;
       e.preventDefault();
+      if (b.classList.contains("selcard")) { atlasVodiMe(); return; }   // 0.9.91: kartica izabrane radi i sa tastature
       if (b.dataset.k !== ATLAS.sel) atlasIzaberi(b.dataset.k);
     });
     telo.addEventListener("input", (e) => {
@@ -17117,7 +17578,20 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
     atlasBaza().then((b) => { ATLAS._n = b.length; atlasBrojUpisi(b.length); }).catch(() => {});
   });
   document.querySelectorAll("#bottomnav a").forEach((a) => a.addEventListener("click", () => {   // B4: promena taba trosi nameru
+    /* 0.9.91: NAS klik na tab (paljenje rezima, povratak na Planer posle gasenja) mora da
+       izadje PRVI - inace je i gasio naoruzanu nameru. Uhvaceno probom 25.8.: tap na karticu
+       "Vodi me preko nje" je otvarao pretragu sa praznim pendingAtlas, pa deonica nije ulazila
+       u rutu. Provera "je li promena taba" ide tek posle. */
+    if (ATLAS._prebacuje) return;
     if (!ATLAS.on && !document.body.classList.contains("searching")) atlasNameraGasi();
+    if (a.dataset.tab === "rute") {
+      if (ATLAS._lista) return;              // vozac je bas trazio listu - ne otimaj mu je nazad
+      if (ATLAS.on) { atlasNavOznaci(); return; }   // vec u Atlasu: samo vrati mapu ispod
+      atlasOtvori();
+      return;
+    }
+    ATLAS._lista = false;                    // izlazak iz taba: sledeci ulazak opet pocinje od mape
+    if (ATLAS.on) atlasZatvori("mapa");      // Atlas ne sme da preziv i preko drugog taba (CSS !important sakriva tudji UI)
   }));
 })();
 
@@ -17329,7 +17803,15 @@ try {   // povratak posle reload-a zbog promene teme: nazad na Ja tab (ne na poc
 
 init();   // R13: app zivi ODMAH - bikes.json (nekritican) stize naknadno i osvezi selecte
 loadBikes().then(() => { try { if (window.refreshBikeSelects) refreshBikeSelects(); } catch (e) {} });
-setTimeout(() => { try { voznjaOporavak(); } catch (e) {} }, 900);   // 0.9.82: nezavrsena voznja (iOS kill) - ponudi Sacuvaj/Odbaci kad se UI slegne
+setTimeout(() => { try { voznjaOporavak(); } catch (e) {} }, 900);
+/* 0.9.91: lecenje zatecenih sacuvanih mesta (Kuca/Posao zapisani kao goli kucni broj "10").
+   Ide POSLE prvog crtanja i sam je tih - bez mreze ne dira nista, sledece pokretanje proba opet. */
+setTimeout(() => { try { mestaZaleci(); } catch (e) {} }, 1800);
+(function(){   // dugmad nisana "Izaberi na mapi"
+  const ok = document.getElementById("pmOk"), ot = document.getElementById("pmOtkazi");
+  if (ok) ok.addEventListener("click", () => { pickMapPotvrdi(); });
+  if (ot) ot.addEventListener("click", () => { pickMapZatvori(); });
+})();   // 0.9.82: nezavrsena voznja (iOS kill) - ponudi Sacuvaj/Odbaci kad se UI slegne
 
 /* ===== NAS KALENDAR / OUR DATE-TIME PICKER =================================
    Iskacuci kalendar pregledaca je hrom pregledaca: CSS ga ne dodiruje, izgleda
