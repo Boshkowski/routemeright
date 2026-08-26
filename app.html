@@ -1069,6 +1069,7 @@
   .jlink { background: none; border: none; color: var(--accent-text); font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; font-family: inherit; padding: 8px 0; display: block; min-height: 32px; }
   #jaMotorHost #motoHead { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 12px 13px; cursor: pointer; font-family: inherit; color: var(--fg-strong); font-size: 13px; font-weight: 600; text-align: left; }
   #jaMotorHost #motoHead .ms { flex: 1; color: var(--fg-muted); font-size: 13px; font-weight: 400; text-align: right; }
+  #motoSum.prazno { color: var(--accent-label); font-weight: 600; }   /* nije izabran: poziv na akciju, ne tiha siva tvrdnja */
   #jaMotorHost #motoWrap { display: none; }
   #jaMotorHost #motoWrap.open { display: block; }
   #jaMotorHost input, #jaMotorHost select { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 11px 13px; color: var(--fg-strong); font-size: 16px; font-weight: 600; font-family: inherit; width: 100%; margin-top: 8px; }
@@ -1324,6 +1325,14 @@
   #atlasSheet .selcard { margin: 0 16px 12px; background: var(--surface); border: 1px solid rgba(255,106,0,.4);
     border-radius: var(--r-lg); padding: 11px 13px; box-shadow: var(--shadow-md); }
   #atlasSheet .selcard .metarow { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  /* 0.9.92 (Boskovo pitanje 26.8.: "sta ako greskom izaberemo?"): izlaz iz izbora mora da se VIDI.
+     Tap na prazan deo mape ga otpusta od 0.9.90, ali to niko ne moze da pogodi - a otkad je cela
+     kartica dugme za "Vodi me preko nje", slucajan tap vise i kosta. Meta je 44 px sa negativnim
+     marginama, pa ne gura naslov. */
+  #atlasSheet .selcard .selx { flex: none; width: 44px; height: 44px; margin: -12px -10px -12px 0;
+    background: none; border: 0; color: var(--fg-muted); font: 400 17px var(--font-ui); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
+  #atlasSheet .selcard .selx:active { color: var(--fg-strong); }
   #atlasSheet .selcard .sellbl { font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--fg-faint); }
   #atlasSheet .selcard .roadref { font-family: var(--font-num); font-size: 10px; color: var(--fg-faint); letter-spacing: .08em; text-transform: uppercase; }
   #atlasSheet .selcard h2 { font-size: 17px; font-weight: 800; letter-spacing: -.01em; color: var(--fg-strong); margin: 4px 0 0; }
@@ -1444,20 +1453,44 @@
      bez diranja stanja; Atlasove tacke ulaza/izlaza nose .atlas-dot pa ostaju */
   body.atlas .maplibregl-marker:not(.atlas-dot) { display: none !important; }
   /* odricanje odgovornosti pre prve voznje; #turaSheet (0.9.86) deli isti jezik - pitanje pre starta */
-  #discSheet, #turaSheet, #atlasCilj { position: fixed; inset: 0; z-index: 340; }
-  #discSheet .back, #turaSheet .back, #atlasCilj .back { position: absolute; inset: 0; background: rgba(2,6,16,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-  #discSheet .body, #turaSheet .body, #atlasCilj .body { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: min(560px, 100%);
+  #discSheet, #turaSheet, #atlasCilj, #mestoSheet { position: fixed; inset: 0; z-index: 340; }
+  #mestoSheet .ml { display: block; font-size: 11px; font-weight: 600; color: var(--fg-muted);
+    text-transform: uppercase; letter-spacing: .14em; margin: 12px 2px 6px; }
+  #mestoSheet input { width: 100%; background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-lg); padding: 12px 13px; color: var(--fg-strong); font-size: 16px;
+    font-weight: 600; font-family: inherit; outline: none; }
+  #mestoSheet input:focus { border-color: rgba(255,106,0,.5); }
+  #mestoSheet .mst { font-size: 13px; color: var(--fg-muted); margin: 10px 2px 0; min-height: 18px; }
+  #mestoSheet .mst.gre { color: var(--accent-label); }
+  /* red "Moja mesta" u Ja tabu */
+  #jaMesta .mrow { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--surface);
+    border: 1px solid var(--line); border-radius: var(--r-lg); padding: 11px 13px; margin-top: 8px;
+    cursor: pointer; font-family: inherit; text-align: left; -webkit-tap-highlight-color: transparent; }
+  #jaMesta .mrow:active { background: var(--fill-wash); }
+  #jaMesta .mrow .mi { width: 34px; height: 34px; border-radius: var(--r-full); flex: none; display: flex;
+    align-items: center; justify-content: center; background: rgba(255,106,0,.14); }
+  #jaMesta .mrow .mi svg { width: 17px; height: 17px; stroke: var(--accent); fill: none; stroke-width: 2; }
+  #jaMesta .mrow.prazan .mi { background: var(--fill-subtle); }
+  #jaMesta .mrow.prazan .mi svg { stroke: var(--fg-muted); }
+  #jaMesta .mrow .mt { flex: 1; min-width: 0; }
+  #jaMesta .mrow .mt b { display: block; font-size: 13px; font-weight: 700; color: var(--fg-strong); }
+  #jaMesta .mrow .mt span { display: block; font-size: 12px; color: var(--fg-muted); margin-top: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #jaMesta .mrow.prazan .mt span { color: var(--accent-label); font-weight: 600; }
+  #jaMesta .mrow .mc { flex: none; width: 16px; height: 16px; color: var(--fg-faint); }
+  #discSheet .back, #turaSheet .back, #atlasCilj .back, #mestoSheet .back { position: absolute; inset: 0; background: rgba(2,6,16,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  #discSheet .body, #turaSheet .body, #atlasCilj .body, #mestoSheet .body { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: min(560px, 100%);
     background: var(--bg); border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line);
     padding: 8px 18px calc(18px + env(safe-area-inset-bottom)); max-height: 84vh; overflow-y: auto; }
-  #discSheet .grab, #turaSheet .grab, #atlasCilj .grab { width: 38px; height: 4px; border-radius: var(--r-xs); background: var(--fill-muted); margin: 4px auto 12px; }
-  #discSheet .ttl, #turaSheet .ttl, #atlasCilj .ttl { font-size: 20px; font-weight: 800; color: var(--fg-strong); margin-bottom: 8px; }
+  #discSheet .grab, #turaSheet .grab, #atlasCilj .grab, #mestoSheet .grab { width: 38px; height: 4px; border-radius: var(--r-xs); background: var(--fill-muted); margin: 4px auto 12px; }
+  #discSheet .ttl, #turaSheet .ttl, #atlasCilj .ttl, #mestoSheet .ttl { font-size: 20px; font-weight: 800; color: var(--fg-strong); margin-bottom: 8px; }
   #discSheet .lst p, #turaSheet .lst p, #atlasCilj .lst p { font-size: 13px; line-height: 1.6; color: var(--fg-soft); margin: 0 0 11px; }
   #discSheet .lst p b, #turaSheet .lst p b, #atlasCilj .lst p b { color: var(--fg-strong); }
   #discSheet .lst .sub, #turaSheet .lst .sub, #atlasCilj .lst .sub { font-size: 13px; color: var(--fg-muted); }
   #discSheet .lst a { color: var(--accent-label); }
-  #discSheet .ok, #turaSheet .ok, #atlasCilj .ok { width: 100%; margin-top: 6px; background: linear-gradient(135deg, var(--accent), var(--orange-600)); border: 0;
+  #discSheet .ok, #turaSheet .ok, #atlasCilj .ok, #mestoSheet .ok { width: 100%; margin-top: 6px; background: linear-gradient(135deg, var(--accent), var(--orange-600)); border: 0;
     color: var(--on-accent); border-radius: var(--r-lg); padding: 14px; font: 800 16px var(--font-ui); cursor: pointer; }
-  #turaSheet .sec, #atlasCilj .sec { width: 100%; margin-top: 8px; background: transparent; border: 1px solid var(--line-strong);
+  #turaSheet .sec, #atlasCilj .sec, #mestoSheet .sec { width: 100%; margin-top: 8px; background: transparent; border: 1px solid var(--line-strong);
     color: var(--fg); border-radius: var(--r-lg); padding: 13px; font: 700 15px var(--font-ui); cursor: pointer; }
   /* sacuvane rute za offline - deli izgled sa #newsSheet */
   #offSheet { position: fixed; inset: 0; z-index: 65; }
@@ -2691,6 +2724,24 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <div class="atelo" id="atlasTelo"></div>
   </div>
   <!-- tihi dijalog za "Vodi me preko nje" kad plan vec postoji: zadrzi cilj ili izaberi novi -->
+  <!-- POSTAVI MESTO (0.9.92): Kuca i tri omiljena mesta - upisi adresu ILI pokazi na mapi -->
+  <div id="mestoSheet" hidden role="dialog" aria-modal="true" aria-label="Postavi mesto">
+    <div class="back" id="mestoBack"></div>
+    <div class="body">
+      <div class="grab"></div>
+      <div class="ttl" id="mestoTtl">Postavi mesto</div>
+      <div class="lst">
+        <label class="ml" id="mestoImeL" for="mestoIme">Ime mesta</label>
+        <input id="mestoIme" placeholder="npr. Posao, Vikendica, Kod Baja" autocomplete="off" maxlength="24">
+        <label class="ml" for="mestoAdr">Adresa</label>
+        <input id="mestoAdr" placeholder="npr. Breza 10, Beograd" autocomplete="off" enterkeyhint="search">
+        <div class="mst" id="mestoStat"></div>
+      </div>
+      <button class="ok" id="mestoNadji" type="button">Nađi adresu i sačuvaj</button>
+      <button class="sec" id="mestoNaMapi" type="button">Izaberi na mapi</button>
+      <button class="sec" id="mestoObrisi" type="button" hidden>Obriši ovo mesto</button>
+    </div>
+  </div>
   <div id="atlasCilj" hidden role="dialog" aria-modal="true" aria-label="Vodi me preko nje">
     <div class="back"></div>
     <div class="body">
@@ -2995,6 +3046,13 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
         <button id="jaNavlog" class="jlink" type="button" onclick="navExportLog()">izvezi dnevnik navigacije (za prijavu problema)</button>
         <div class="jnote">Promena teme se primenjuje odmah (app se osveži).</div>
       </div>
+    </div>
+    <!-- 0.9.92 (Boskov nalog 26.8.): Kuca i tri IMENOVANA omiljena mesta, svako se postavlja
+         upisivanjem adrese ILI pokazivanjem na mapi. Posao vise nije fiksan slot - postao je
+         jedno od tri (postojeci "Posao" se seli automatski, vidi favMigracija). -->
+    <div class="stub"><b>Moja mesta</b>
+      <div id="jaMesta" class="jset"></div>
+      <div class="jnote">Sve stoji samo na ovom telefonu. Ova mesta ti se nude u pretrazi, jednim tapom.</div>
     </div>
     <div class="stub"><b>Moj motor</b>
       <div id="jaMotorHost" class="jset"></div>
@@ -10578,8 +10636,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.91";
+const APP_VERSION = "0.9.92";
 const CHANGELOG = [
+  { v: "0.9.92", d: "26.08.2026.", stavke: [
+    "<b>Moja mesta u profilu.</b> U Ja tabu je nova sekcija: Kuća i tri omiljena mesta koja sam imenuješ (Posao, Vikendica, Kod Baja...). Svako se postavlja na dva načina - upišeš adresu ili je pokažeš nišanom na mapi. Ta mesta ti se onda nude u pretrazi, jednim tapom. Fiksni slot \"Posao\" iz jučerašnje verzije je ukinut: ono što si u njemu imao se samo preselilo u prvo omiljeno mesto pod istim imenom, ništa se ne gubi.",
+    "<b>Motor: aplikacija ti više ne bira motor umesto tebe.</b> Tvoj nalaz - \"na telefonu je uvek GS iako vozim S1000XR\". Čuvanje je oduvek radilo (izbor preživi restart, provereno); laž je bila u prikazu: sažetak je čitao padajuće spiskove, a oni bez sačuvanog profila stoje na prvom modelu iz baze, a to je BMW R 1250 GS. Izgledalo je kao tvrdnja, pa spisak nikad nisi ni otvorio. Sada dok ne izabereš piše \"nije izabran - tapni\", a čim izabereš sažetak se osveži istog trena (do sada je kasnio jedan korak).",
+    "<b>Izlaz iz izbora u Atlasu se konačno vidi.</b> Tvoje pitanje: \"šta ako greškom izaberemo?\" Tap na prazan deo mape otpušta izbor još od pretprošle verzije, ali to niko ne može da pogodi - a otkad je cela kartica dugme za \"Vodi me preko nje\", slučajan tap i košta. Kartica sada ima ✕ gore desno, meta 44 px: otpušta izbor, vraća ostale deonice u punu boju, i ostaje u Atlasu.",
+    "Ispod haube: omiljena mesta prolaze kroz istog čuvara imena kao kuća (goli kućni broj se leči iz koordinata), pokvaren zapis u skladištu ne ruši čitanje, a migracija starog \"Posla\" je bezbedna i kad se pokrene dvaput. Kuka motoSumRefresh je od ranije bila POZIVANA a nigde dodeljena - mrtav poziv, sada radi. Testova 34 u ovoj suiti."
+  ] },
   { v: "0.9.91", d: "25.08.2026.", stavke: [
     "<b>Atlas je sada početni ekran taba Rute.</b> Tap na Rute otvara mapu sa svim deonicama - odmah se vidi da su tu, bez ulazne kartice. Donja traka ostaje vidljiva u Atlasu (bila je skrivena): povuci izlog nadole i mapa je skoro cela tvoja, a četiri taba su i dalje na dohvat. Traka gore (\"‹ Atlas deonica\") i dalje vodi u listu ruta i tamo te ostavlja - dok si u listi, tab Rute te ne vraća u mapu.",
     "<b>Izabrana deonica se konačno vidi.</b> Do sada je nosila istu narandžastu kao i ostalih tristo koridora, samo malo deblju. Sada dobija cijan oreol, a ostatak izložbe se pritamni dok izbor traje. Cela kartica izabrane deonice je dugme - tap bilo gde po njoj vodi u \"Vodi me preko nje\" (radi i sa tastature).",
@@ -11194,8 +11258,15 @@ function init() {
       sel.appendChild(o);
     });
   };
-  const saveBike = () => localStorage.setItem("mr_bike", JSON.stringify(
-    { b: brandSel.value, m: modelSel.value, y: yearSel.value, tank: $("tank").value, cons: $("cons").value }));
+  const saveBike = () => {
+    localStorage.setItem("mr_bike", JSON.stringify(
+      { b: brandSel.value, m: modelSel.value, y: yearSel.value, tank: $("tank").value, cons: $("cons").value }));
+    /* 0.9.92: sazetak se osvezava ODAVDE, ne preko svog "change" slusaoca. Blok sa selektima se
+       izvrsava iz init(), a blok koji crta sazetak je IIFE koji je odradio ranije - zato je
+       njegov slusalac dolazio PRE ovog upisa i pisao PRETHODNO stanje (izmereno 26.8.: posle
+       prvog izbora je i dalje stajalo "nije izabran"). Upis je jedini trenutak istine. */
+    try { if (typeof window.motoSumRefresh === "function") window.motoSumRefresh(); } catch (e) {}
+  };
   const applySpecs = () => {
     const v = BIKES.find((b) => b[0] === brandSel.value && b[1] === modelSel.value && b[2] === yearSel.value);
     if (v) { $("tank").value = v[3]; $("cons").value = v[4]; }
@@ -11530,11 +11601,19 @@ function wxSheetOtvori(d) {
     nodes.forEach((n) => wrap.appendChild(n));
     head.parentNode.insertBefore(wrap, planBtn);
     head.addEventListener("click", () => { wrap.classList.toggle("open"); head.classList.toggle("open"); });
+    /* 0.9.92 (Boskov nalaz 26.8.: "na mom telefonu je uvek GS iako vozim S1000XR"): sazetak je
+       citao SELECTE, a oni bez sacuvanog profila stoje na prvom modelu iz baze - BMW R 1250 GS.
+       Aplikacija je time sama izabrala motor i prikazala ga kao njegov, pa spisak nikad nije ni
+       otvorio. Cuvanje je uvek radilo (provereno: izbor prezivi restart) - laz je bio u prikazu.
+       Sada sazetak cita SACUVAN profil; dok ga nema, posteno pise da izbor jos nije napravljen. */
     const sum = () => {
-      const b = document.getElementById("bikeBrand"), m = document.getElementById("bikeModel");
-      const t = [b && b.value, m && m.value].filter(Boolean).join(" ");
-      const el = document.getElementById("motoSum"); if (el) el.textContent = t || "izaberi";
+      const el = document.getElementById("motoSum"); if (!el) return;
+      let sac = null; try { sac = JSON.parse(localStorage.getItem("mr_bike") || "null"); } catch (e) {}
+      const t = sac && sac.b ? [sac.b, sac.m].filter(Boolean).join(" ") : "";
+      el.textContent = t || "nije izabran - tapni";
+      el.classList.toggle("prazno", !t);
     };
+    window.motoSumRefresh = sum;   // 0.9.92: kuka je od ranije POZIVANA (refreshBikeSelects), a nikad dodeljena - mrtav poziv
     ["bikeBrand", "bikeModel", "bikeYear"].forEach((id) => { const e = document.getElementById(id); if (e) e.addEventListener("change", sum); });
     setTimeout(sum, 1500); setTimeout(sum, 4000);
   }
@@ -11575,20 +11654,25 @@ const SCHIP_IKONE = {
   home: '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
   work: '<svg viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2"/></svg>',
   saved: '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>',
+  fav: '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M12 3l2.7 5.8 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 3.1 1.2-6.2L3 9.6l6.3-.8z"/></svg>',
 };
 function schip(k, ime, pod, kl) {
-  return '<button class="schip' + (kl ? " " + kl : "") + '" type="button" data-chipm="' + k + '">' +
-    '<span class="ci">' + SCHIP_IKONE[k] + '</span><span class="ct"><b>' + esc(ime) + "</b><span>" + esc(pod) + "</span></span></button>";
+  const ik = SCHIP_IKONE[k] || SCHIP_IKONE[kl] || SCHIP_IKONE.saved;   // "fav:0" nosi ikonu preko klase
+  return '<button class="schip' + (kl ? " " + kl : "") + '" type="button" data-chipm="' + esc(k) + '">' +
+    '<span class="ci">' + ik + '</span><span class="ct"><b>' + esc(ime) + "</b><span>" + esc(pod) + "</span></span></button>";
 }
 function renderSChips() {   // 0.9.91: red precica ispod "Izaberi na mapi" (Kuca / Posao / Sacuvano)
   const el = document.getElementById("sChips");
   if (!el) return;
-  const h = mestoCitaj("home"), w = mestoCitaj("work");
+  const h = mestoCitaj("home");
   let sv = []; try { sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]"); } catch (e) {}
-  el.innerHTML =
-    schip("home", "Kuća", h ? mestoIme(h, "sačuvana tačka") : "postavi jednom") +
-    schip("work", "Posao", w ? mestoIme(w, "sačuvana tačka") : "postavi jednom") +
-    schip("saved", "Sačuvano", sv.length ? sv.length + (sv.length === 1 ? " ruta" : " ruta") : "još ništa", "sv");
+  /* 0.9.92: fiksni slot "Posao" je ukinut - red nose Kuca i onoliko OMILJENIH koliko ih je vozac
+     postavio, sa imenima koja im je sam dao. Prazni slotovi se ne prikazuju: red precica nudi
+     ono sto postoji, a postavljanje zivi u profilu (Ja -> Moja mesta). */
+  let html = schip("home", "Kuća", h ? mestoIme(h, "sačuvana tačka") : "postavi u profilu");
+  favCitaj().forEach((m, i) => { html += schip("fav:" + i, favOznaka(m, i), mestoIme(m, "sačuvana tačka"), "fav"); });
+  html += schip("saved", "Sačuvano", sv.length ? sv.length + (sv.length === 1 ? " ruta" : " ruta") : "još ništa", "sv");
+  el.innerHTML = html;
 }
 function updateSearchStatic() {
   try {
@@ -11764,16 +11848,27 @@ function mestoSpoji(broj, nm) {   // reverz vrati ulicu bez broja -> "Breza" + "
   return new RegExp("(^|\\s)" + esc0 + "$").test(nm) ? nm : nm + " " + broj;
 }
 async function mestaZaleci() {   // jednom po pokretanju: otrovano ime ("10") -> prava adresa iz koordinata
-  for (const k of Object.keys(MESTO_KLJUC)) {
-    const m = mestoCitaj(k);
-    if (!m || m.lat == null || _imeSmisleno(m.name)) continue;
+  const izleci = async (m) => {   // vraca true kad je ime stvarno promenjeno
+    if (!m || m.lat == null || _imeSmisleno(m.name)) return false;
     const broj = m.name && jeKucniBroj(m.name) ? String(m.name).trim() : "";
     const nm = await reverseAdresa(m.lat, m.lon);
-    if (!nm) continue;   // bez mreže se ne dira ništa - sledeće pokretanje probа opet
+    if (!nm) return false;   // bez mreže se ne dira ništa - sledeće pokretanje proba opet
     m.name = mestoSpoji(broj, nm);
-    mestoUpisi(k, m);
+    return true;
+  };
+  let promena = false;
+  for (const k of Object.keys(MESTO_KLJUC)) {
+    const m = mestoCitaj(k);
+    if (await izleci(m)) { mestoUpisi(k, m); promena = true; }
+  }
+  const fav = favCitaj();   // 0.9.92: omiljena mesta idu kroz isti lek
+  let favPromena = false;
+  for (const m of fav) if (await izleci(m)) favPromena = true;
+  if (favPromena) { favUpisi(fav); promena = true; }
+  if (promena) {
     try { updateQuickLabels(); } catch (e) {}
     try { updateSearchStatic(); } catch (e) {}
+    try { jaMestaCrtaj(); } catch (e) {}
   }
 }
 async function mestoPostavi(k) {   // "postavi jednom i kreni" - upis PROLAZI kroz čuvara imena
@@ -11786,7 +11881,40 @@ async function mestoPostavi(k) {   // "postavi jednom i kreni" - upis PROLAZI kr
   try { updateSearchStatic(); } catch (e) {}
   return m;
 }
-async function mestoIzaberi(k) {   // Kuća/Posao poštuju SEARCH_MODE - isto mesto je i polazak i cilj (Google obrazac)
+/* ---- OMILJENA MESTA (0.9.92, Boskov nalog 26.8.) --------------------------
+   Tri slobodna slota koja vozac SAM imenuje ("Posao", "Vikendica", "Kod Baja"). Fiksni slot
+   "Posao" iz 0.9.91 je ukinut - njegova vrednost se seli u prvo omiljeno mesto pod tim imenom,
+   pa se nista ne gubi. Oblik zapisa je isti kao kod kuce (`name` = adresa, kroz istog cuvara
+   golog kucnog broja), plus `oznaka` = ime koje je vozac dao. */
+const FAV_KLJUC = "rmr2_fav";
+const FAV_MAX = 3;
+function favCitaj() {
+  let a = null;
+  try { a = JSON.parse(localStorage.getItem(FAV_KLJUC) || "null"); } catch (e) { a = null; }
+  return Array.isArray(a) ? a.filter((m) => m && m.lat != null).slice(0, FAV_MAX) : [];
+}
+function favUpisi(arr) {
+  try { localStorage.setItem(FAV_KLJUC, JSON.stringify((arr || []).filter((m) => m && m.lat != null).slice(0, FAV_MAX))); } catch (e) {}
+}
+function favMigracija() {   // 0.9.91 -> 0.9.92: zatecen "Posao" postaje prvo omiljeno mesto
+  try {
+    const w = JSON.parse(localStorage.getItem("rmr2_work") || "null");
+    if (!w || w.lat == null) return;
+    const fav = favCitaj();
+    if (!fav.some((m) => m.lat === w.lat && m.lon === w.lon))
+      favUpisi([{ oznaka: "Posao", name: w.name, lat: w.lat, lon: w.lon }].concat(fav));
+    localStorage.removeItem("rmr2_work");
+  } catch (e) {}
+}
+function favOznaka(m, i) { return (m && String(m.oznaka || "").trim()) || ("Mesto " + (i + 1)); }
+async function mestoIzaberi(k) {   // Kuća i omiljena poštuju SEARCH_MODE - isto mesto je i polazak i cilj (Google obrazac)
+  if (String(k).startsWith("fav:")) {   // 0.9.92: omiljeno mesto se bira iz reda prečica
+    const i = +String(k).slice(4);
+    const m = favCitaj()[i];
+    if (!m) { closeSearch(); const ja = document.querySelector('#bottomnav a[data-tab="ja"]'); if (ja) ja.click(); return; }
+    pickDestination({ n: mestoIme(m, favOznaka(m, i)), lat: m.lat, lon: m.lon });
+    return;
+  }
   let m = mestoCitaj(k);
   if (!m) {
     try { m = await mestoPostavi(k); }
@@ -11806,6 +11934,95 @@ function nasTabKlik(tab) {
   try { const a = document.querySelector('#bottomnav a[data-tab="' + tab + '"]'); if (a) a.click(); }
   finally { try { ATLAS._prebacuje = pre; } catch (e) {} }
 }
+/* ---- MOJA MESTA: Kuca + tri omiljena (0.9.92) -----------------------------
+   Do sada se kuca postavljala samo kroz `prompt()` iz pretrage, a omiljenih nije ni bilo.
+   Ovde su oba u profilu, i oba se postavljaju na DVA nacina: upisom adrese ili nisanom nad
+   mapom (isti `pickMapOtvori`, u modu "mesto"). Ime i adresa se cuvaju odvojeno: `oznaka` je
+   ime koje je vozac dao, `name` je adresa i prolazi kroz istog cuvara golog kucnog broja. */
+const MESTO_IKONE = {
+  kuca: '<svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
+  zvezda: '<svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.8 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 3.1 1.2-6.2L3 9.6l6.3-.8z"/></svg>',
+  plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+};
+const CHEV_D = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>';
+function jaMestaCrtaj() {
+  const host = document.getElementById("jaMesta");
+  if (!host) return;
+  const red = (kljuc, ikona, ime, pod, prazan) =>
+    '<button class="mrow' + (prazan ? " prazan" : "") + '" type="button" data-mesto="' + esc(kljuc) + '">' +
+    '<span class="mi">' + ikona + "</span>" +
+    '<span class="mt"><b>' + esc(ime) + "</b><span>" + esc(pod) + "</span></span>" +
+    '<span class="mc">' + CHEV_D + "</span></button>";
+  const h = mestoCitaj("home");
+  let html = red("home", MESTO_IKONE.kuca, "Kuća", h ? mestoIme(h, "sačuvana tačka") : "postavi jednom i kreni", !h);
+  const fav = favCitaj();
+  for (let i = 0; i < FAV_MAX; i++) {
+    const m = fav[i];
+    html += m
+      ? red("fav:" + i, MESTO_IKONE.zvezda, favOznaka(m, i), mestoIme(m, "sačuvana tačka"), false)
+      : red("fav:" + i, MESTO_IKONE.plus, "Omiljeno mesto " + (i + 1), "dodaj i daj mu ime", true);
+  }
+  host.innerHTML = html;
+}
+/* Sheet za postavljanje: jedan za sva mesta, pamti koje je otvoreno u MESTO_UREDJUJE. */
+let MESTO_UREDJUJE = null;
+function mestoSheetOtvori(kljuc) {
+  const el = document.getElementById("mestoSheet");
+  if (!el) return;
+  MESTO_UREDJUJE = kljuc;
+  const fav = String(kljuc).startsWith("fav:");
+  const i = fav ? +String(kljuc).slice(4) : -1;
+  const m = fav ? favCitaj()[i] : mestoCitaj(kljuc);
+  document.getElementById("mestoTtl").textContent = fav ? (m ? favOznaka(m, i) : "Novo omiljeno mesto") : "Kuća";
+  const imeL = document.getElementById("mestoImeL"), ime = document.getElementById("mestoIme");
+  imeL.hidden = !fav; ime.hidden = !fav;
+  ime.value = fav && m ? String(m.oznaka || "") : "";
+  const adr = document.getElementById("mestoAdr");
+  adr.value = m && _imeSmisleno(m.name) ? m.name : "";
+  document.getElementById("mestoStat").textContent = "";
+  document.getElementById("mestoStat").classList.remove("gre");
+  document.getElementById("mestoObrisi").hidden = !m;
+  el.hidden = false;
+  setTimeout(() => { try { (fav && !m ? ime : adr).focus(); } catch (e) {} }, 120);
+}
+function mestoSheetZatvori() {
+  const el = document.getElementById("mestoSheet");
+  if (el) el.hidden = true;
+  MESTO_UREDJUJE = null;
+}
+function mestoSacuvaj(kljuc, podatak) {   // podatak = {name, lat, lon}; ime iz sheeta ide na omiljena
+  const fav = String(kljuc).startsWith("fav:");
+  if (!fav) { mestoUpisi(kljuc, { name: podatak.name, lat: podatak.lat, lon: podatak.lon }); }
+  else {
+    const i = +String(kljuc).slice(4);
+    const arr = favCitaj();
+    const ime = String((document.getElementById("mestoIme") || {}).value || "").trim();
+    while (arr.length < i) arr.push(null);
+    arr[i] = { oznaka: ime || favOznaka(arr[i], i), name: podatak.name, lat: podatak.lat, lon: podatak.lon };
+    favUpisi(arr.filter(Boolean));
+  }
+  try { jaMestaCrtaj(); } catch (e) {}
+  try { updateQuickLabels(); } catch (e) {}
+  try { updateSearchStatic(); } catch (e) {}
+}
+async function mestoSheetNadji() {
+  const kljuc = MESTO_UREDJUJE;
+  if (!kljuc) return;
+  const q = String(document.getElementById("mestoAdr").value || "").trim();
+  const st = document.getElementById("mestoStat");
+  if (!q) { st.textContent = "Upiši adresu ili je izaberi na mapi."; st.classList.add("gre"); return; }
+  st.classList.remove("gre"); st.textContent = "Tražim…";
+  try {
+    const g = await geocode(q);
+    if (MESTO_UREDJUJE !== kljuc) return;   // sheet je u međuvremenu zatvoren ili prebačen
+    mestoSacuvaj(kljuc, { name: _imeDoteraj({ n: g.name, q }), lat: g.lat, lon: g.lon });
+    mestoSheetZatvori();
+  } catch (er) {
+    if (MESTO_UREDJUJE !== kljuc) return;
+    st.textContent = er && er.geo ? er.message : "Ne mogu da nađem tu adresu - probaj drugačiji naziv.";
+    st.classList.add("gre");
+  }
+}
 /* ---- IZABERI NA MAPI (0.9.91) --------------------------------------------
    Google obrazac "Choose on map": nišan STOJI u centru ekrana, vozač pomera mapu ispod njega
    pa potvrdi. Do sada je taj red samo savetovao dugi pritisak (shareToast), a dugi pritisak
@@ -11815,15 +12032,20 @@ function nasTabKlik(tab) {
 let PICKMAP = null;
 function pickMapOtvori(mode) {
   if (typeof map === "undefined" || !map) return;
-  PICKMAP = { mode: mode === "from" ? "from" : "to" };
+  /* 0.9.92: treci mod - "mesto:<kljuc>". Isti nisan, ali potvrda ne planira rutu nego upisuje
+     Kucu ili omiljeno mesto i vraca vozaca u profil. */
+  const zaMesto = String(mode || "").startsWith("mesto:");
+  PICKMAP = { mode: zaMesto ? String(mode) : (mode === "from" ? "from" : "to") };
+  if (zaMesto) try { mestoSheetZatvori(); } catch (e) {}
   closeSearch(true);   // izbor tačke je nastavak istog toka - Atlas namera ostaje
   try { if (typeof atlasZatvori === "function") atlasZatvori("mapa"); } catch (e) {}   // dva režima nad istom mapom se ne mešaju
   nasTabKlik("planer");   // mapa mora da se vidi - i namera "Vodi me preko nje" mora da prezivi ovaj prelazak
   document.body.classList.add("pickmap");
   const el = document.getElementById("pickMap"); if (el) el.hidden = false;
-  const t = document.getElementById("pmTitle"); if (t) t.textContent = PICKMAP.mode === "from" ? "Odakle krećeš?" : "Gde ideš?";
+  const t = document.getElementById("pmTitle");
+  if (t) t.textContent = zaMesto ? "Gde je to mesto?" : (PICKMAP.mode === "from" ? "Odakle krećeš?" : "Gde ideš?");
   const sub = document.getElementById("pmSub"); if (sub) sub.textContent = "pomeri mapu - tačka je tačno na nišanu";
-  const ok = document.getElementById("pmOk"); if (ok) { ok.disabled = false; ok.textContent = "Ovde"; }
+  const ok = document.getElementById("pmOk"); if (ok) { ok.disabled = false; ok.textContent = zaMesto ? "Ovde je" : "Ovde"; }
   try { if (map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
 }
 function pickMapZatvori() {
@@ -11841,8 +12063,16 @@ async function pickMapPotvrdi() {
   try { ime = await reverseAdresa(c.lat, c.lng); } catch (e) {}
   if (!PICKMAP || PICKMAP.mode !== mode) return;   // otkazano dok je reverz trajao - ne otimaj ekran
   pickMapZatvori();
+  const naziv = ime || ("Tačka " + c.lat.toFixed(4) + ", " + c.lng.toFixed(4));
+  if (String(mode).startsWith("mesto:")) {   // 0.9.92: nisan postavlja Kucu ili omiljeno mesto
+    const kljuc = String(mode).slice(6);
+    mestoSacuvaj(kljuc, { name: naziv, lat: c.lat, lon: c.lng });
+    const ja = document.querySelector('#bottomnav a[data-tab="ja"]'); if (ja) ja.click();
+    try { shareToast("Sačuvano: " + naziv); } catch (e) {}
+    return;
+  }
   SEARCH_MODE = mode;
-  pickDestination({ n: ime || ("Tačka " + c.lat.toFixed(4) + ", " + c.lng.toFixed(4)), lat: c.lat, lon: c.lng });
+  pickDestination({ n: naziv, lat: c.lat, lon: c.lng });
 }
 async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
   closeSearch(true);   // izabran je cilj - Atlas namera prezivljava do plan() (0.9.90)
@@ -17110,7 +17340,8 @@ function atlasKartica(d, agg) {   // JEDNA kartica za sve puteve izbora (mapa/pr
   const oc = d.ocena != null ? Math.round(d.ocena * 10) / 10 : null;
   const ocTx = oc != null ? oc.toFixed(1).replace(".", ",") : null;
   return '<div class="selcard" data-k="' + esc(d.kljuc) + '" role="button" tabindex="0" aria-label="Izabrana deonica ' + esc(atlasNaslov(d.naziv)) + ' - vodi me preko nje">' +
-    '<div class="metarow"><span class="sellbl">Izabrana deonica</span><span class="roadref">' + esc(ref) + "</span></div>" +
+    '<div class="metarow"><span class="sellbl">Izabrana deonica</span><span class="roadref">' + esc(ref) + "</span>" +
+    '<button class="selx" id="atlasSelX" type="button" aria-label="Otpusti izbor, vrati se na sve deonice">✕</button></div>' +
     "<h2>" + esc(atlasNaslov(d.naziv)) + "</h2>" +
     '<div class="statrow"><span class="akm">' + atlasKmTx(d.km) + "<small>km</small></span>" +
     (oc != null ? '<span class="arate"><span class="stars">' + atlasZvezde(oc) + '</span><span class="rnum">' + ocTx + "</span>" +
@@ -17525,6 +17756,7 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
          cela kartica izabrane deonice je dugme, ne samo traka "Vodi me preko nje". Kartica je
          od 0.9.90 nosila role="button", ali je klik padao u granu [data-k] koja preskace vec
          izabranu deonicu - pa se nista nije desavalo. */
+      if (e.target.closest("#atlasSelX")) { atlasDeselektuj(); return; }   // izlaz iz izbora ide PRE grane koja hvata celu karticu
       if (e.target.closest("#atlasVodi") || e.target.closest(".selcard")) { atlasVodiMe(); return; }
       const fb = e.target.closest("[data-fg]");
       if (fb) {
@@ -17811,6 +18043,41 @@ setTimeout(() => { try { mestaZaleci(); } catch (e) {} }, 1800);
   const ok = document.getElementById("pmOk"), ot = document.getElementById("pmOtkazi");
   if (ok) ok.addEventListener("click", () => { pickMapPotvrdi(); });
   if (ot) ot.addEventListener("click", () => { pickMapZatvori(); });
+})();
+/* MOJA MESTA (0.9.92): red u Ja tabu + sheet za postavljanje */
+(function(){
+  try { favMigracija(); } catch (e) {}   // zatecen "Posao" iz 0.9.91 -> prvo omiljeno mesto
+  try { jaMestaCrtaj(); } catch (e) {}
+  const ja = document.querySelector('#bottomnav a[data-tab="ja"]');
+  if (ja) ja.addEventListener("click", () => { try { jaMestaCrtaj(); } catch (e) {} });
+  const host = document.getElementById("jaMesta");
+  if (host) host.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-mesto]");
+    if (b) mestoSheetOtvori(b.dataset.mesto);
+  });
+  const sh = document.getElementById("mestoSheet");
+  if (!sh) return;
+  document.getElementById("mestoBack").addEventListener("click", mestoSheetZatvori);
+  document.getElementById("mestoNadji").addEventListener("click", () => { mestoSheetNadji(); });
+  document.getElementById("mestoAdr").addEventListener("keydown", (e) => { if (e.key === "Enter") mestoSheetNadji(); });
+  document.getElementById("mestoNaMapi").addEventListener("click", () => {
+    const k = MESTO_UREDJUJE;
+    if (k) pickMapOtvori("mesto:" + k);   // sheet se zatvara unutra, ime iz polja se pamti u mestoSacuvaj
+  });
+  document.getElementById("mestoObrisi").addEventListener("click", () => {
+    const k = MESTO_UREDJUJE;
+    if (!k) return;
+    if (String(k).startsWith("fav:")) {
+      const i = +String(k).slice(4), arr = favCitaj();
+      arr.splice(i, 1);
+      favUpisi(arr);
+    } else { try { localStorage.removeItem(MESTO_KLJUC[k]); } catch (e) {} }
+    mestoSheetZatvori();
+    try { jaMestaCrtaj(); } catch (e) {}
+    try { updateQuickLabels(); } catch (e) {}
+    try { updateSearchStatic(); } catch (e) {}
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !sh.hidden) mestoSheetZatvori(); });
 })();   // 0.9.82: nezavrsena voznja (iOS kill) - ponudi Sacuvaj/Odbaci kad se UI slegne
 
 /* ===== NAS KALENDAR / OUR DATE-TIME PICKER =================================
