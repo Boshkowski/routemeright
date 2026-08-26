@@ -1307,6 +1307,7 @@
     background: none; border: 0; color: var(--fg-strong); font: 800 16px var(--font-ui); letter-spacing: -.01em;
     text-align: left; padding: 4px 6px; min-height: 48px; justify-content: center; cursor: pointer; }
   #atlasBar .nazad small { display: block; font-size: 11px; font-weight: 600; color: var(--fg-muted); letter-spacing: 0; }
+  #atlasBar .nazad small.nepotpuno { color: var(--accent-label); }   /* 0.9.93: nepotpuna baza se ne krije iza sivog teksta */
   #atlasBar .abroj { flex: none; font-family: var(--font-num); font-size: 14px; font-weight: 700; color: var(--cyan); }
   #atlasBar .abroj small { font-family: var(--font-ui); font-size: 10px; font-weight: 600; letter-spacing: .14em; color: var(--fg-faint); margin-left: 4px; }
   body.atlas #atlasSheet { display: flex; flex-direction: column; position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
@@ -6508,12 +6509,21 @@ const BJP_LOSE = { "Loš": 1, "Makadam": 1 };   // motor se pominje SAMO na loš
 async function loadPutevi() {
   // memo (0.9.87 pregled): pad velikog stanje_puta se NE ponavlja na svaki poziv
   // (bjpProbano), a prolazni pad kurirane sme ponovo da proba kasnije u sesiji (bjpKurOk)
-  if (!state.bjpProbano) {
-    state.bjpProbano = 1;
+  /* 0.9.93 (Boskov nalaz 26.8.: "zasto atlas prikazuje samo 71 deonicu?"): memo je do sada
+     postavljan PRE fetch-a, pa je JEDAN prolazan pad velikog fajla (358 KB, 9 s na mobilnoj)
+     zakljucavao praznu terensku bazu do reloada. Atlas bi tada prikazao samo 71 pecenu deonicu
+     od 301 - i jos tvrdio da ih toliko ima. Sada se pamti VREME pokusaja: uspeh se pamti
+     zauvek, pad se ponavlja najvise jednom u minutu (i uvek na ulazak u Atlas, vidi
+     atlasKesPonisti). Ideja memoa ostaje - veliki fajl se ne vuce na svaki poziv. */
+  const sad = Date.now();
+  if (!state.bjp && (!state.bjpProbano || sad - state.bjpProbano > 60000)) {
+    state.bjpProbano = sad;
     try {
       const d = await fetchData("data/stanje_puta.json?v=" + APP_VERSION, { timeoutMs: 9000 });
       state.bjp = d && Array.isArray(d.deonice) ? d : null;
-    } catch { state.bjp = null; }   // bez fajla sloj prosto ne postoji
+      if (state.bjp) state.bjpProbano = Infinity;   // uspeh: vise se ne dira
+      else state.bjpKurOk = 0;                      // prazan odgovor: unija se mora presloziti
+    } catch { state.bjp = null; state.bjpKurOk = 0; }   // pad: unija se presloze kad fajl stigne
     /* OCENE (0.9.89): korisnikova poslednja ocena po deonici se preslika preko NJEGOVOG
        pogleda (prikaz + sivenje) - klonovi, fetch podaci se ne mutiraju (oceneOverlay).
        Bez ijedne ocene identitet objekta se CUVA (kartica/testovi smeju da porede referencu). */
@@ -6530,11 +6540,16 @@ async function loadPutevi() {
      ne sme da se pojavi - kartica cita state.bjp/povratnu vrednost i za bjpKur ne zna
      (iskljucenje konstrukcijom, ne filterom). Pad ucitavanja = sivenje vidi samo
      stanje_puta, ponasanje identicno 0.9.85; nikad greska prema korisniku. */
-  if (!state.bjpKurOk) {
-    let kur = null;
-    try {
+  /* Unija se preslaze i kad je kurirana vec ucitana a terenska stigla TEK SADA (0.9.93):
+     do sada je `bjpKurOk` zakljucavao uniju od 71 komada i posle uspesnog retry-ja. */
+  const terenskihUUniji = ((state.bjp && state.bjp.deonice) || []).length;
+  const unijaZaostala = state.bjpKurOk && terenskihUUniji > 0 && (state.bjpKur || []).length < terenskihUUniji;
+  if (!state.bjpKurOk || unijaZaostala) {
+    let kur = state.bjpKurSirovo || null;
+    if (!kur) try {
       const k = await fetchData("data/deonice_kurirane.json?v=" + APP_VERSION, { timeoutMs: 9000 });
       kur = k && Array.isArray(k.deonice) ? k.deonice : null;
+      state.bjpKurSirovo = kur;   // sirov spisak se pamti da retry ne vuce fajl ponovo
       state.bjpKurOk = !!kur;
     } catch { kur = null; }
     let unija = ((state.bjp && state.bjp.deonice) || []).concat(kur || []);
@@ -10636,8 +10651,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.92";
+const APP_VERSION = "0.9.93";
 const CHANGELOG = [
+  { v: "0.9.93", d: "26.08.2026.", stavke: [
+    "<b>Atlas je umeo da prikaže 71 deonicu umesto 301 - i da ćuti o tome.</b> Tvoje pitanje. Baza su dva odvojena fajla: 230 terenskih (stanje_puta, 358 KB) i 71 pečena. Ako veliki fajl jednom ne stigne na mobilnoj mreži, aplikacija ga do sada NIJE probala ponovo do restarta - a Atlas je tiho prikazivao ostatak i u traci pisao \"71 deonica\", kao da ih toliko ima. Sada: pad se ponavlja (najviše jednom u minutu, i uvek na ulazak u Atlas), unija se presloži čim terenska baza stigne, a dok je nepotpuna traka to NAROČITO KAŽE: \"deo baze nije stigao - probaj ponovo za koji trenutak\", narandžastim.",
+    "<b>Broj sačuvanih ruta više ne laže.</b> Brisanje je oduvek postojalo - u sheetu \"Sačuvane rute\" svaki red ima ✕ desno - ali je broj dolazio sa drugog mesta: iz stare liste imena polazak/cilj koja se nikad ne briše. Posle brisanja svih ruta i dalje ti je pisalo \"8 sačuvanih\". Sada broj dolazi odatle odakle i brisanje: iz paketa sa celom rutom. Nula paketa piše \"još ništa\", ne stari broj."
+  ] },
   { v: "0.9.92", d: "26.08.2026.", stavke: [
     "<b>Moja mesta u profilu.</b> U Ja tabu je nova sekcija: Kuća i tri omiljena mesta koja sam imenuješ (Posao, Vikendica, Kod Baja...). Svako se postavlja na dva načina - upišeš adresu ili je pokažeš nišanom na mapi. Ta mesta ti se onda nude u pretrazi, jednim tapom. Fiksni slot \"Posao\" iz jučerašnje verzije je ukinut: ono što si u njemu imao se samo preselilo u prvo omiljeno mesto pod istim imenom, ništa se ne gubi.",
     "<b>Motor: aplikacija ti više ne bira motor umesto tebe.</b> Tvoj nalaz - \"na telefonu je uvek GS iako vozim S1000XR\". Čuvanje je oduvek radilo (izbor preživi restart, provereno); laž je bila u prikazu: sažetak je čitao padajuće spiskove, a oni bez sačuvanog profila stoje na prvom modelu iz baze, a to je BMW R 1250 GS. Izgledalo je kao tvrdnja, pa spisak nikad nisi ni otvorio. Sada dok ne izabereš piše \"nije izabran - tapni\", a čim izabereš sažetak se osveži istog trena (do sada je kasnio jedan korak).",
@@ -11671,8 +11690,19 @@ function renderSChips() {   // 0.9.91: red precica ispod "Izaberi na mapi" (Kuca
      ono sto postoji, a postavljanje zivi u profilu (Ja -> Moja mesta). */
   let html = schip("home", "Kuća", h ? mestoIme(h, "sačuvana tačka") : "postavi u profilu");
   favCitaj().forEach((m, i) => { html += schip("fav:" + i, favOznaka(m, i), mestoIme(m, "sačuvana tačka"), "fav"); });
-  html += schip("saved", "Sačuvano", sv.length ? sv.length + (sv.length === 1 ? " ruta" : " ruta") : "još ništa", "sv");
+  html += schip("saved", "Sačuvano", "…", "sv");
   el.innerHTML = html;
+  /* 0.9.93 (Boskovo pitanje 26.8. "kako da izbrisem sacuvane rute?"): broj je do sada dolazio iz
+     `rmr2_saved` - stare liste IMENA od/do koja se nikad ne brise. Sheet "Sacuvane rute" otvara i
+     brise SASVIM DRUGU stvar: pakete sa celom rutom (IndexedDB, dugme ✕ u redu). Posle brisanja
+     svih paketa cip je i dalje pisao "8 ruta". Broj sada dolazi odatle odakle i brisanje. */
+  const cSav = () => el.querySelector('[data-chipm="saved"] .ct span');
+  try {
+    if (typeof offAll === "function") offAll().then((pk) => {
+      const c = cSav(); if (c) c.textContent = pk.length ? pk.length + " ruta" : "još ništa";
+    }).catch(() => { const c = cSav(); if (c) c.textContent = sv.length ? "proveri spisak" : "još ništa"; });
+    else { const c = cSav(); if (c) c.textContent = sv.length ? "proveri spisak" : "još ništa"; }
+  } catch (e) { const c = cSav(); if (c) c.textContent = "još ništa"; }
 }
 function updateSearchStatic() {
   try {
@@ -12221,11 +12251,13 @@ function updateQuickLabels() {
     const hb = document.querySelector('[data-quick="home"] span'); if (hb) hb.textContent = h ? mestoIme(h, "sačuvana tačka") : "postavi";
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
     const rb = document.querySelector('[data-quick="recent"] span'); if (rb) rb.textContent = rec.length ? rec[0].to : "—";   // destinacija, ne relacija (13.8.)
-    const sv = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");
-    const sb = document.querySelector('[data-quick="saved"] span'); if (sb) sb.textContent = sv.length ? sv.length + " ruta" : "—";
-    // pravi broj = paketi sa celom rutom (rade bez signala); IndexedDB je asinhron pa stize malo kasnije
+    const sb = document.querySelector('[data-quick="saved"] span'); if (sb) sb.textContent = "…";
+    /* 0.9.93: broj dolazi ISKLJUCIVO iz paketa (IndexedDB) - to je ono sto sheet prikazuje i sto
+       dugme ✕ brise. Stara lista imena (`rmr2_saved`) se nikad ne brise, pa je posle brisanja
+       svih paketa ovde i dalje stajalo "8 ruta". Nula paketa sada posteno pise "—". */
     if (sb && typeof offAll === "function")
-      offAll().then((p) => { if (p.length) sb.textContent = p.length + (p.length === 1 ? " ruta" : " ruta") + " van mreže"; }).catch(() => {});
+      offAll().then((p) => { sb.textContent = p.length ? p.length + " ruta van mreže" : "—"; }).catch(() => { sb.textContent = "—"; });
+    else if (sb) sb.textContent = "—";
   } catch (e) {}
 }
 function gpsPrefill(force) {   // polazak = trenutna lokacija: KOORDINATE ODMAH (bez cekanja imena), ime stigne naknadno
@@ -17550,7 +17582,14 @@ async function atlasOtvori() {
   if (!ATLAS.on || gen !== ATLAS._gen) return;
   ATLAS._n = baza.length;
   atlasBrojUpisi(baza.length);
-  if (sub) sub.textContent = baza.length ? "Tapni koridor na mapi za detalje" : "baza trenutno nije dostupna";
+  /* 0.9.93: broj u traci je do sada citan kao istina i kad je pola baze falilo. Terenska baza
+     (stanje_puta) i kurirana su dva odvojena fajla; kad jedan ne stigne, Atlas mora da KAZE da
+     ovo nije cela izlozba, ne da tiho prikaze ostatak. Sledeci ulazak u Atlas ionako proba opet. */
+  const nemaTerenskih = !(state.bjp && state.bjp.deonice && state.bjp.deonice.length);
+  if (sub) sub.textContent = !baza.length ? "baza trenutno nije dostupna"
+    : nemaTerenskih ? "deo baze nije stigao - probaj ponovo za koji trenutak"
+    : "Tapni koridor na mapi za detalje";
+  if (sub) sub.classList.toggle("nepotpuno", !!baza.length && nemaTerenskih);
   if (map) {
     try { atlasSloj(baza); } catch (e) {}
     try { atlasSlojeveUtisaj(); } catch (e) {}   // POI/radar/stara ruta ne mesaju se sa izlozbom
