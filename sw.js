@@ -9,7 +9,7 @@
      dolazi PMTiles paket.
    - SERVISI (prognoza, rutiranje, POI) = nikad iz kesa. Bajata prognoza je gora od nikakve;
      kad nema mreze, aplikacija koristi ono sto je snimljeno uz sacuvanu rutu. */
-const V = "rmr-v23";   /* v23: 0.9.90 Atlas deonica (rezim nad mapom iz taba Rute: sve deonice u jednoj boji, kartica sa ocenama zajednice, "Vodi me preko nje") - nova ljuska mora da padne u telefon (25.8.). v22: 0.9.89 ocene deonica (kartica u sazetku + mr_ocene overlay + prijave kanal bez koordinata) - nova ljuska mora da padne u telefon (25.8.). v21: 0.9.88 mini-runda presuda (drugi slot za pecene, mr_defRuta, "Vozi i ti" link, Povezi voznje u turu) - nova ljuska mora da padne u telefon (25.8.). v20: 0.9.87 pecena baza kuriranih deonica (unija za sivenje u loadPutevi) - nova ljuska mora da padne u telefon (25.8.). v19: 0.9.86 zaokruzi turu - ture sa etapama, dnevnik cap 30 - nova ljuska mora da padne u telefon (25.8.). v18: 0.9.85 presude 24.8. - kombinovana podrazumevana + svih 63 deonica u igri - nova ljuska mora da padne u telefon (24.8.). v17: 0.9.84 kurirano sivenje (kombinovana zna za dobre deonice iz baze zajednice) - nova ljuska mora da padne u telefon (24.8.). v16: 0.9.83 auto-pauza + pozadinski GPS most (fixKorak/rmrGpsPaket) - nova ljuska mora da padne u telefon (24.8.). v15: 0.9.82 runda 5 terenskih popravki (checkpoint voznje, nagib jedan izvor, snap trag, reroute paint-first, planner leak, ime cilja) - nova ljuska mora da padne u telefon (24.8.). v14: HUD identitet 0.9.79 - novo pismo (Saira Semi Condensed + JetBrains Mono) menja PRECACHE URL, pa stari kes koji jos drzi Archivo MORA da padne (16.8.). v13: test.html -> app.html; stari kes drzi staru ljusku pod starim imenom, MORA da padne (16.8.). v12: 0.9.78 altApply hibrid fix (16.8.). v11: 0.9.77 - pauza radar/prognoza, Druga ruta, tihe potvrde, pravne stranice (16.8.). v10: mesta_zajednice.json promenjeno (10 koordinata vraceno na prava mesta, 13.8.). v9: izbacen unos-pretpostavka. v7: preimenovani data fajlovi - stari kes mora da padne */
+const V = "rmr-v25";   /* v25: 0.9.96 - rupe u tragu se broje i javljaju (QA nalaz 100); nova ljuska MORA da padne u telefon. v24: 0.9.95 - kljuc kesa vise ne nosi upit (bez signala se servirala NAJSTARIJA kopija svakog podatka, QA nalaz 53) + noc popravki 27.8.; nova ljuska MORA da padne u telefon. v23: 0.9.90 Atlas deonica (rezim nad mapom iz taba Rute: sve deonice u jednoj boji, kartica sa ocenama zajednice, "Vodi me preko nje") - nova ljuska mora da padne u telefon (25.8.). v22: 0.9.89 ocene deonica (kartica u sazetku + mr_ocene overlay + prijave kanal bez koordinata) - nova ljuska mora da padne u telefon (25.8.). v21: 0.9.88 mini-runda presuda (drugi slot za pecene, mr_defRuta, "Vozi i ti" link, Povezi voznje u turu) - nova ljuska mora da padne u telefon (25.8.). v20: 0.9.87 pecena baza kuriranih deonica (unija za sivenje u loadPutevi) - nova ljuska mora da padne u telefon (25.8.). v19: 0.9.86 zaokruzi turu - ture sa etapama, dnevnik cap 30 - nova ljuska mora da padne u telefon (25.8.). v18: 0.9.85 presude 24.8. - kombinovana podrazumevana + svih 63 deonica u igri - nova ljuska mora da padne u telefon (24.8.). v17: 0.9.84 kurirano sivenje (kombinovana zna za dobre deonice iz baze zajednice) - nova ljuska mora da padne u telefon (24.8.). v16: 0.9.83 auto-pauza + pozadinski GPS most (fixKorak/rmrGpsPaket) - nova ljuska mora da padne u telefon (24.8.). v15: 0.9.82 runda 5 terenskih popravki (checkpoint voznje, nagib jedan izvor, snap trag, reroute paint-first, planner leak, ime cilja) - nova ljuska mora da padne u telefon (24.8.). v14: HUD identitet 0.9.79 - novo pismo (Saira Semi Condensed + JetBrains Mono) menja PRECACHE URL, pa stari kes koji jos drzi Archivo MORA da padne (16.8.). v13: test.html -> app.html; stari kes drzi staru ljusku pod starim imenom, MORA da padne (16.8.). v12: 0.9.78 altApply hibrid fix (16.8.). v11: 0.9.77 - pauza radar/prognoza, Druga ruta, tihe potvrde, pravne stranice (16.8.). v10: mesta_zajednice.json promenjeno (10 koordinata vraceno na prava mesta, 13.8.). v9: izbacen unos-pretpostavka. v7: preimenovani data fajlovi - stari kes mora da padne */
 /* PAZNJA: v11 i v12 su nastali IZMENOM DIREKTNO U JAVNOM REPOU, ne ovde - zato je
    dev bio na v10 dok je produkcija bila na v12. tools/deploy.sh sada odbija deploy
    ako je javna verzija >= ove, da se kes nikad ne vrati unazad.
@@ -62,10 +62,17 @@ self.addEventListener("activate", (e) => {
   })());
 });
 
-async function ogranici(ime, max) {
+/* 0.9.95 (QA nalaz 92): rez NIKAD ne sme da pojede PRECACHE. `ogranici` brise najstarije unose
+   prvo, a najstariji unosi u ljusci su tacno app.html, MapLibre, font i definicija stila - dakle
+   bas ono zbog cega ljuska i postoji. Zato cuvaj-lista. Najveci deo rasta je ionako nestao sa
+   kljucem bez upita (nalaz 53): jedan fajl = jedan unos. */
+const CUVAJ = new Set(PRECACHE.map((u) => new URL(u, self.location).href));
+const LJUSKA_MAX = 80;   // van precache-a: app data + sve sto runtime dovuce; jedan unos po fajlu (kljuc bez upita)
+async function ogranici(ime, max, cuvaj) {
   const c = await caches.open(ime);
   const k = await c.keys();
-  for (let i = 0; i < k.length - max; i++) await c.delete(k[i]);   // najstarije prvo
+  const rez = cuvaj ? k.filter((r) => !cuvaj.has(r.url)) : k;
+  for (let i = 0; i < rez.length - max; i++) await c.delete(rez[i]);   // najstarije prvo, precache netaknut
 }
 
 self.addEventListener("fetch", (e) => {
@@ -106,12 +113,20 @@ self.addEventListener("fetch", (e) => {
   if (req.mode === "navigate" || (istiKoren && /\.(html|json)($|\?)/.test(url.pathname + url.search))) {
     e.respondWith((async () => {
       const c = await caches.open(LJUSKA);
+      /* 0.9.95 (QA nalaz 53): kesiralo se pod PUNIM URL-om sa upitom, a app namerno menja upit na
+         osam mesta (satni kljuc za road_status, dnevni za prices, verzija+datum za mesta
+         zajednice...). U kesu je zato stajalo VISE kopija istog fajla, a rezerva `ignoreSearch`
+         po specifikaciji vraca PRVI unos po redosledu ubacivanja - dakle NAJSTARIJI. Bez signala
+         se tako servirala najstarija kopija svakog podatka. Kljuc je sada bez upita: jedan fajl,
+         jedan unos, i uvek poslednji uspesno preuzet. */
+      const kljuc = url.origin + url.pathname;
       try {
         const r = await fetch(req);
-        if (r && r.ok) c.put(req, r.clone());
+        if (r && r.ok) { await c.put(new Request(kljuc), r.clone()); ogranici(LJUSKA, LJUSKA_MAX, CUVAJ); }   // 0.9.95 (nalaz 92): rez koji NE dira precache
         return r;
       } catch (err) {
-        return (await c.match(req, { ignoreSearch: true })) ||
+        return (await c.match(kljuc)) ||
+               (await c.match(req, { ignoreSearch: true })) ||
                (await c.match("./app.html", { ignoreSearch: true })) || Response.error();
       }
     })());
