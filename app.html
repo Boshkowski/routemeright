@@ -3110,7 +3110,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
       <div class="jset">
         <a class="jlink" href="privatnost.html" target="_blank" rel="noopener" style="display:block;text-align:left">Politika privatnosti - šta ostaje na telefonu, a šta ne</a>
         <a class="jlink" href="privatnost.html#odricanje" target="_blank" rel="noopener" style="display:block;text-align:left">Odricanje odgovornosti - ti voziš, ne aplikacija</a>
-        <div class="jnote">GPS trag vožnje i dnevnik ostaju na ovom telefonu i ne čuvaju se ni na jednom serveru. Javnim servisima se u prolazu šalje samo par tačaka trenutnog traga - za ograničenje brzine dok voziš i za ime mesta u dnevniku posle vožnje. Bez naloga, bez reklama, bez alata za praćenje.</div>
+        <div class="jnote">GPS trag vožnje i dnevnik ostaju na ovom telefonu i ne čuvaju se ni na jednom serveru. Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine dok voziš, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Koji su to servisi i šta vide, piše u politici privatnosti. Bez naloga, bez reklama, bez alata za praćenje.</div>
       </div>
     </div>
     <div class="stub"><b>Izvori podataka</b>
@@ -11506,7 +11506,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.100";
+const APP_VERSION = "0.9.101";
 const CHANGELOG = [
   { v: "0.9.95", d: "27.08.2026.", stavke: [
     "<b>Gorivo i domet se više ne računaju po tuđem motoru.</b> Popravka od juče je stala na jednom ekranu: u tabu Ja je pisalo \"nije izabran\", a kartica rezultata je i dalje tvrdila \"na tvom R 1250 GS\" i balon pumpe \"pun rezervoar za R 1250 GS\" - jer su ta dva čitala padajući spisak, koji bez tvog profila stoji na prvom modelu iz baze. Sada sva tri ekrana čitaju isto, kroz jednu funkciju. Dok motor nije izabran, kartica Gorivo pošteno kaže da je račun za podrazumevani motor - jer \"nema potrebe za točenjem\" izgovoreno o tuđem motoru može da te ostavi bez goriva.",
@@ -18040,7 +18040,7 @@ async function offlineSave(route, departure) {
   /* 0.9.97 (QA nalaz 54): dvanaesta sacuvana ruta je bez ijedne reci brisala najstariju - vozac
      otvori "Sacuvano" pred put i ruta koju je cuvao pre mesec dana vise nije tu, a nigde nije
      pisalo da je ispala. Podatak se i dalje brise (plafon je stvaran), ali cutanje prestaje.
-     Koliko rutа dnevnik prima i da li ista relacija treba da PREPISE stari paket cekaju Boskovu
+     Koliko ruta dnevnik prima i da li ista relacija treba da PREPISE stari paket cekaju Boskovu
      odluku - ovo je samo prestanak cutanja. */
   const visak = svi.slice(OFF_MAX);
   for (const st of visak) await offDel(st.id);   // drzi poslednjih OFF_MAX

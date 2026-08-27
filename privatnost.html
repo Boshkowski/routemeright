@@ -49,7 +49,7 @@
 </header>
 
 <h1>Privatnost i uslovi korišćenja</h1>
-<div class="dt">Poslednja izmena: 15. avgust 2026.</div>
+<div class="dt">Poslednja izmena: 27. avgust 2026.</div>
 
 <div class="box dobro">
   <div class="kick">Ukratko</div>
@@ -81,7 +81,7 @@ tim servisima odlaze koordinate. To je neizbežno i zato piše ovde.</p>
   <tr><th>Servis</th><th>Šta mu odlazi</th><th>Zašto</th></tr>
   <tr><td>Valhalla (FOSSGIS)</td><td>polazna, ciljna i usputne tačke; tačke duž rute (za ograničenje brzine i nadmorsku visinu); ako uvezeš GPX fajl, i njegove tačke</td><td>računanje rute za motor, ograničenje brzine i visina na ruti, uvoz tvog GPX fajla</td></tr>
   <tr><td>OSRM (javni demo server)</td><td>iste tačke kao kod Valhalle</td><td>rezervni ruter kad Valhalla ne odgovori, i računanje kružnih tura</td></tr>
-  <tr><td>Open-Meteo, MET Norway</td><td>koordinate tačaka duž rute</td><td>prognoza za sat kad tuda prolaziš; rezervni izvor za nadmorsku visinu</td></tr>
+  <tr><td>Open-Meteo, MET Norway</td><td>koordinate tačaka duž rute, i <b>koordinate mesta gde si trenutno</b> - dok voziš i dok stojiš u pauzi (zaokružene na ~110 m)</td><td>prognoza za sat kad tuda prolaziš; upozorenje o nevremenu tu gde jesi; rezervni izvor za nadmorsku visinu</td></tr>
   <tr><td>OpenFreeMap</td><td>koje delove mape gledaš</td><td>prikaz mape</td></tr>
   <tr><td>AWS (javni skup podataka)</td><td>koje delove mape gledaš</td><td>reljef/teren na mapi</td></tr>
   <tr><td>Nominatim, Photon, TomTom</td><td>tekst koji upišeš u pretragu i tvoja okvirna lokacija (radi bližih rezultata)</td><td>pronalaženje mesta</td></tr>
@@ -94,17 +94,27 @@ tim servisima odlaze koordinate. To je neizbežno i zato piše ovde.</p>
 kao kod otvaranja bilo kog sajta.</p>
 
 <h3>Kad tvoj stvarni trag ipak dodirne spoljni servis</h3>
-<p>Trag vožnje se <b>čuva</b> samo na telefonu - nema naloga, ništa se ne arhivira kod nas. Ali dva trenutka u aplikaciji
-kratko <i>pitaju</i> spoljni servis nešto o mestu na kome si baš tada, umesto da se to pitanje odgovori samo iz plana rute:</p>
+<p>Trag vožnje se <b>čuva</b> samo na telefonu - nema naloga, ništa se ne arhivira kod nas. Ali aplikacija ponekad
+kratko <i>pita</i> spoljni servis nešto o mestu na kome si baš tada, umesto da to pitanje odgovori samo iz plana rute.
+Evo kada se to dešava:</p>
 <ul>
   <li>U vožnji <b>bez planirane rute</b> ("Snimi vožnju"), otprilike na svakih pola minuta do minuta, telefon pošalje
   Valhalli poslednjih desetak tvojih pozicija da sazna ograničenje brzine na putu kojim baš voziš.</li>
   <li>Čim <b>završiš bilo koju vožnju</b>, tačka gde si stvarno krenuo i gde si stvarno stao (iz traga, ne iz plana)
   šalje se Nominatimu da sazna ime tog mesta za naslov u dnevniku (npr. "Beograd → Zlatibor").</li>
+  <li>Dok voziš, <b>na oko dvadeset minuta</b>, tvoja trenutna tačka ide Open-Meteu za prognozu tu gde jesi -
+  da bi upozorenje o nevremenu važilo za mesto na kome si, a ne za plan od jutros.</li>
+  <li><b>Dok stojiš u pauzi</b>, isto pitanje ide na oko deset minuta - pauza gleda da li kiša prolazi.</li>
+  <li>Kad <b>skreneš sa rute</b>, tvoja tačka ide ruteru da izračuna novu rutu odatle. Isto i kad sam zatražiš
+  "Drugu rutu odavde".</li>
 </ul>
-<p>Oba su kratka pitanja "gde sam" na koja servis odgovori i to je to - nije upload traga niti njegovo čuvanje na tuđem
-serveru. Ceo trag, sa svim tačkama, ostaje samo u tvom telefonu; ovo su samo par tačaka, u prolazu, da bi ti prikazali
-tačan podatak.</p>
+<p><b>Ovo su svi slučajevi koje danas znamo, ali broj namerno ne pišemo.</b> Kad god aplikacija treba da zna nešto o
+mestu na kome si baš sad, to pitanje ide spoljnom servisu - a koji su to servisi i šta vide, piše u tabeli iznad.
+Broj u tekstu bi zastareo prvom sledećom funkcijom; ovo pravilo ne zastareva.</p>
+<p>Sve su to kratka pitanja "šta je ovde" na koja servis odgovori i to je to - nije upload traga niti njegovo čuvanje
+na tuđem serveru. Ceo trag, sa svim tačkama, ostaje samo u tvom telefonu.</p>
+<p><b>Jedno ublažavanje, jer je stvarno:</b> koordinate koje idu na prognozu zaokružujemo na tri decimale, što je
+oko 110 metara. Servis tako dobija kvadrat u kome si, ne tačku na kojoj stojiš.</p>
 
 <h3>Prijave zajednice</h3>
 <p>Ako sam prijaviš opasnost (šljunak, divljač, kamera, radovi), na server baze koju za to koristimo
