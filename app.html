@@ -609,6 +609,7 @@
   ul.plain li:last-child { border-bottom: none; }
   .poi-dist { color: #7c8da6; font-size: 13px; }
   .warn-li { color: var(--c-warn-fg); }
+  .na-li { color: var(--c-muted-fg); }   /* nalaz 39: "ne znam" nije upozorenje - ne sme da nosi boju upozorenja */
   .bad-li { color: var(--c-bad-fg); }
   .warn-inline { color: var(--c-warn-fg); }
 
@@ -4869,9 +4870,19 @@ async function fetchRoutes(from, to) {
     const urbStart = !!(iz && iz.kmOd > 1.2), urbEnd = !!(ul && ul.kmDo > 1.2);
     const cistoZaSivenje = !(state.vias && state.vias.length) && !isRoundTrip();   // stanice/povratno zadrzavaju stari tok (v1)
     let vijugave = [], sinteticka = false;
-    const punStil = async () => {   // pun stari tok; pad NE sme da baci vec dobijene Valhalla rute na OSRM auto-profil (review 9.8.)
-      try { return await Promise.all([ROUTE_STYLES[0], ROUTE_STYLES[1]].map((st) => valhallaRoute(from, to, st))); }
-      catch (e) { return []; }
+    /* 0.9.97 (QA nalaz 26): pad je vracao PRAZAN NIZ, a prazan niz dalje prolazi kao validan
+       rezultat - pa je vozac dobijao "tu nema vijugave rute" za pad kvote, i uz to je nestajala
+       Kombinovana (hibridnaRuta ostane bez vz). Dva odvojena greha:
+       1. Promise.all pada i kad je samo JEDAN od dva stila pao, pa se gubi i onaj koji je uspeo -
+          zato allSettled, pa se zadrzi sve sto je stiglo.
+       2. Pad se ne razlikuje od stvarnog odsustva rute - zato state.stilPao nosi trag, a crtac
+          kaze da nije uspelo umesto da tvrdi da nema. */
+    const punStil = async () => {
+      const r = await Promise.allSettled([ROUTE_STYLES[0], ROUTE_STYLES[1]].map((st) => valhallaRoute(from, to, st)));
+      const ok = r.filter((x) => x.status === "fulfilled" && x.value).map((x) => x.value);
+      state.stilPao = r.length - ok.length;   // koliko ih je otpalo - crtac odatle zna da li sme da kaze "nema"
+      if (state.stilPao) { try { navLog("stil-pao", { pao: state.stilPao, od: r.length }); } catch (e) {} }
+      return ok;
     };
     // KRITICNO (review 9.8.): "nigde deonice preko 52 km/h" NE znaci grad - Kotor-Cetinje i Uzice-Zlatibor
     // se voze ~50 km/h i to su NAJVIJUGAVIJE rute koje imamo. Grad se razlikuje po GUSTINI RASKRSNICA:
@@ -4975,8 +4986,13 @@ async function fetchRoutesOSRM(from, to) {
       cumDist.push(cumDist[i] + dist[i]);
       cumDur.push(cumDur[i] + dur[i]);
     }
+    /* 0.9.97 (QA nalaz 94): OSRM rezerva nema NIJEDNO uputstvo skretanja - polje maneuvers do
+       sada nije ni postojalo, pa je nav kartica ostajala zaglavljena na poslednjem manevru
+       Valhalla rute ili prazna, bez ijedne reci da uputstava nema. Zastavica bezManevara nosi
+       tu istinu do kartice. Prava uputstva sa OSRM-a (steps=true + prevod manevara) su posao od
+       vise dana i davala bi AUTO manevre, ne moto - a rezerva se pali samo kad Valhalla padne. */
     return { coords, cumDist, cumDur, totalDist: rt.distance, totalDur: rt.duration, label: `Ruta ${idx + 1}`,
-      tollKm: null, roughKm: 0, roughAt: [], hasFerry: false, tollSegs: [] };
+      tollKm: null, roughKm: 0, roughAt: [], hasFerry: false, tollSegs: [], maneuvers: [], bezManevara: true };
   });
 }
 
@@ -5030,7 +5046,7 @@ function rawGpxRoute(coords, label) {
     cumDist.push(cumDist[i] + d); cumDur.push(cumDur[i] + d / V);
   }
   return { coords: pts, cumDist, cumDur, totalDist: cumDist[cumDist.length - 1], totalDur: cumDur[cumDur.length - 1],
-    label, tollKm: null, roughKm: 0, roughAt: [], hasFerry: false, tollSegs: [], maneuvers: [], gpxRaw: true };
+    label, tollKm: null, roughKm: 0, roughAt: [], hasFerry: false, tollSegs: [], maneuvers: [], gpxRaw: true, bezManevara: true };   // nalaz 94: i ovde kartica mora da kaze da uputstava nema
 }
 async function importGpx(file) {
   try {
@@ -5820,6 +5836,8 @@ async function fetchMetNo(route) {
 }
 /* multi-model "presuda": ista tačka/sat kroz 3 nezavisna modela - slaganje = pouzdanost */
 const CONSENSUS_MODELS = ["icon_seamless", "gfs_seamless", "ecmwf_ifs025"];
+// nalaz 27: naslov presude imenuje modele koji su STVARNO glasali, ne zakucan broj "3"
+const MODEL_IME = { icon_seamless: "ICON", gfs_seamless: "GFS", ecmwf_ifs025: "ECMWF" };
 async function fetchConsensus(route, departure) {
   try {
     const s = route.samples;
@@ -5841,15 +5859,26 @@ function renderConsensus(route, departure) {
   if (!route.consensus) return;
   const disagree = [];
   let metCount = 0;
+  /* 0.9.97 (QA nalaz 27): recenica je tvrdila "Presuda 3 modela: slazu se - prognoza pouzdana"
+     i kad NIJEDAN model nije glasao. Uzrok: forEach je preskakao tacke bez podataka (`return`),
+     ali ih niko nije BROJAO - ako se preskoce sve, `disagree` ostane prazan i kod ide u granu
+     "slazu se" bez ijedne procitane vrednosti. Isto tako je broj "3" bio zakucan u tekst umesto
+     da se izvede iz modela koji su stvarno dali vrednost (ICON seamless ima kraci horizont, pa ih
+     cesto glasa dva), a "+ MET Norway" se palio na metCount > 0 - dakle i kad je MET pokrio
+     JEDNU tacku od devedeset. */
+  let ocenjenih = 0;                       // tacke na kojima je presuda stvarno doneta
+  const glasali = new Set();               // koji su modeli ikada dali vrednost
   route.samples.forEach((smp, i) => {
     const h = route.consensus[i];
     if (!h || !h.time) return;
     const eta = new Date(departure.getTime() + smp.durSec * 1000);
     const idx = hourIndex(h, eta);
     if (idx === null) return;   // van prognoze - preskoci umesto pogresnog zelenog (forEach callback!)
-    const vals = CONSENSUS_MODELS
-      .map((m) => (h["precipitation_" + m] ? h["precipitation_" + m][idx] : null))
-      .filter((v) => v !== null && v !== undefined);
+    const vals = [];
+    for (const m of CONSENSUS_MODELS) {
+      const v = h["precipitation_" + m] ? h["precipitation_" + m][idx] : null;
+      if (v !== null && v !== undefined) { vals.push(v); glasali.add(m); }
+    }
     // cetvrti glas: MET Norway, nezavisan provajder a ne jos jedan model iz istog izvora
     const mn = route.metno && route.metno[i];
     if (mn) {
@@ -5857,15 +5886,33 @@ function renderConsensus(route, departure) {
       if (v !== undefined) { vals.push(v); metCount++; }
     }
     if (vals.length < 2) return;
+    ocenjenih++;
     const wet = vals.filter((v) => v >= 0.2).length;
     if (wet > 0 && wet < vals.length) disagree.push(Math.round(smp.km));
   });
-  const ko = metCount ? "3 modela + MET Norway" : "3 modela (ICON · GFS · ECMWF)";
+  /* Nijedna tacka nije ocenjena: to NIJE slaganje, to je neznanje. Ista rec kao cetvrto stanje
+     presude o vremenu (nalaz iz noci 27.8.) - app kaze da ne zna, ne izmislja pouzdanost. */
+  if (!ocenjenih) {
+    el.innerHTML = `Presuda modela: <b>nemam nijedan sat</b> za vremena prolaska - za ovaj polazak ne mogu da presudim.`;
+    return;
+  }
+  const brojGlasova = glasali.size;
+  const imena = CONSENSUS_MODELS.filter((m) => glasali.has(m)).map((m) => MODEL_IME[m] || m).join(" · ");
+  /* MET se pominje tek kad je stvarno pokrio bar petinu ocenjenih tacaka - inace je jedna tacka
+     od devedeset stajala u naslovu kao ravnopravan cetvrti glas. */
+  const metVredi = metCount >= Math.max(3, Math.ceil(ocenjenih / 5));
+  const ko = brojGlasova === 1
+    ? `jednog modela (${imena})`
+    : `${brojGlasova} ${brojGlasova < 5 ? "modela" : "modela"} (${imena})` + (metVredi ? " + MET Norway" : "");
+  const delimicno = ocenjenih < route.samples.length
+    ? ` <span class="warn-inline">Presuda pokriva ${ocenjenih} od ${route.samples.length} tačaka rute.</span>` : "";
   if (!disagree.length)
-    el.innerHTML = `Presuda ${ko}: <b>slažu se</b> - prognoza pouzdana.`;
+    el.innerHTML = brojGlasova === 1
+      ? `Presuda ${ko}: nema drugog glasa da je proveri - uzmi je sa rezervom.${delimicno}`
+      : `Presuda ${ko}: <b>slažu se</b> - prognoza pouzdana.${delimicno}`;
   else
     el.innerHTML = `Presuda ${ko}: <span class="warn-inline"><b>razilaze se oko kiše</b></span> kod km ` +
-      `${disagree.slice(0, 5).join(", ")}${disagree.length > 5 ? "…" : ""} - proveri radar pred polazak.`;
+      `${disagree.slice(0, 5).join(", ")}${disagree.length > 5 ? "…" : ""} - proveri radar pred polazak.${delimicno}`;
   // pokazi kad je ukljucena fina mreza - to je razlog zasto se brojke razlikuju od "obicne" prognoze
   try {
     const finih = route.fine ? route.fine.filter(Boolean).length : 0;
@@ -8153,8 +8200,17 @@ async function renderFuel(route, assess, departure) {
       li.innerHTML = `${rIco("fuel", 15)} <b>${i + 1}. točenje</b> oko km ${t.km.toFixed(0)} (~${fmtTime(t.eta)}): ${names}`;
       best.forEach((p) => emojiMarker(p.lat, p.lon, "⛽", p.name || "Pumpa"));   // sve nadjene pumpe kod stajanja na mapu (ne samo najbliza) - iz podataka koje vec imamo
     } else {
-      li.className = "warn-li";
-      li.innerHTML = `${rIco("fuel", 15)} <b>${i + 1}. točenje</b> oko km ${t.km.toFixed(0)}: nema pumpe u krugu 12 km - natoči ranije!`;
+      /* 0.9.97 (QA nalaz 39): "nema pumpe u krugu 12 km - natoci ranije!" pisalo je i u zemljama
+         koje data/pumpe.json UOPSTE ne pokriva (baza ima RS, HR, BA, SI, ME, MK, XK), a app sam
+         nudi rute kroz RO, BG, GR, AL, AT, IT, HU. Tamo to nije nalaz nego neznanje - i to
+         opasno neznanje, jer vozaca tera da toci ranije bez razloga ili da ne veruje kartici
+         kad stvarno nema pumpe. Zemlja se cita LOKALNO (countryAtLocal), bez mreznog poziva. */
+      const zem = (typeof countryAtLocal === "function") ? countryAtLocal(t.lat, t.lon) : "";
+      const pokriveno = !zem || PUMPE_ZEMLJE.has(zem);
+      li.className = pokriveno ? "warn-li" : "na-li";
+      li.innerHTML = pokriveno
+        ? `${rIco("fuel", 15)} <b>${i + 1}. točenje</b> oko km ${t.km.toFixed(0)}: nema pumpe u krugu 12 km - natoči ranije!`
+        : `${rIco("fuel", 15)} <b>${i + 1}. točenje</b> oko km ${t.km.toFixed(0)}: nemamo bazu pumpi za ${atlasZemljaIme(zem)} - proveri usput.`;
     }
     ul.appendChild(li);
   });
@@ -8631,10 +8687,15 @@ function hazardMarker(h) {
   const d = markerBadge(HZ2ICON[h.type] || "warning", "danger");
   /* 0.9.95 (nalaz 84): prijava koju server nije primio ostaje na mapi (podatak je vozacev), ali
      ne sme da izgleda kao poslata - inace mapa tvrdi suprotno od poruke koju je upravo procitao. */
+  /* 0.9.97 (nalaz 83): i mapa mora da razlikuje zivu prijavu od istekle - inace glas cuti o njoj
+     (popravljeno u buildAhead) a pin je i dalje prikazuje kao svezu. Ne brise se nista. */
+  const istekla = !h.neposlato && !prijavaZiva(h);
   d.title = h.neposlato
     ? `${h.type} · NIJE poslato - vidiš je samo ti (klik za brisanje)`
-    : `${h.type} · prijavljeno ${new Date(h.ts).toLocaleDateString("sr-RS")} (klik za brisanje)`;
-  if (h.neposlato) d.style.opacity = ".55";
+    : istekla
+      ? `${h.type} · prijavljeno ${new Date(h.ts).toLocaleDateString("sr-RS")} - više je niko drugi ne vidi (klik za brisanje)`
+      : `${h.type} · prijavljeno ${new Date(h.ts).toLocaleDateString("sr-RS")} (klik za brisanje)`;
+  if (h.neposlato || istekla) d.style.opacity = ".55";
   const m = new maplibregl.Marker({ element: d }).setLngLat(h.v).addTo(map);
   state.catMarkers.hazard.push(m);
   if (!state.layerVis.hazard) d.style.display = "none";
@@ -8688,6 +8749,22 @@ function setPrijaveQueue(q) {
 /* baza je bez kvacica (sljunak/divljac) - klijent prevodi u oba smera */
 const TIP2DB = { "kamera": "kamera_mobilna", "šljunak": "sljunak", "divljač": "divljac" };
 const DB2TIP = { "kamera_mobilna": "kamera", "sljunak": "šljunak", "divljac": "divljač" };
+/* 0.9.97 (QA nalaz 83): lokalna prijava se do sada brisala ISKLJUCIVO rucno, pa je glas u voznji
+   najavljivao "Paznja, policija ispred" za prijavu staru mesec dana. Serverska kopija ima rok po
+   tipu i posle isteka je NIKO ne vidi - lokalna je zivela zauvek. Ova tabela je SVESNA DUPLIKACIJA
+   servera (docs/supabase-prijave.sql:23-31): ako se rok tamo promeni, ovo odluta. Manje zlo od
+   glasa koji laze. Kljuc je SQL pisanje tipa, pa se klijentski tip prvo prevede kroz TIP2DB -
+   bez toga "kamera", "sljunak" i "divljac" tiho padnu na podrazumevani rok.
+   Sam podatak se NE brise: Boskov pin ostaje na mapi dok ga on sam ne skloni. */
+const ROK_ZA_TIP = { policija: 45 * 60000, udes: 90 * 60000, kamera_mobilna: 30 * 60000, radovi: 12 * 3600000 };
+const ROK_PODRAZUMEVANI = 3 * 3600000;
+function rokZaTip(tip) {
+  const db = TIP2DB[tip] || tip;
+  return ROK_ZA_TIP[db] != null ? ROK_ZA_TIP[db] : ROK_PODRAZUMEVANI;
+}
+function prijavaZiva(h) { return !!h && (Date.now() - (h.ts || 0)) < rokZaTip(h.type); }
+// nalaz 103: serverski red (ima istice_at) - isto merilo koje feed vec koristi
+function isteklaPrijava(r) { return !!(r && r.istice_at) && new Date(r.istice_at).getTime() <= Date.now(); }
 /* moje prijave lokalno (po ID-ju): posle dopune #3 device_id vise nije javno citljiv,
    pa "tvoja prijava" i preskakanje svojih markera zive ovde */
 function mojePrijave() { const m = _zajCitaj("mr_moje_prijave", []); return Array.isArray(m) ? m : []; }
@@ -9198,7 +9275,12 @@ async function glasajPrijava(id, tuJe) {
     let dat = {}; try { dat = JSON.parse(localStorage.getItem("rmr2_glasovi") || "{}"); } catch (e) {}
     dat[id] = tuJe ? "tu" : "ne";
     try { localStorage.setItem("rmr2_glasovi", JSON.stringify(dat)); } catch (e) {}
-    shareToast(tuJe ? "Hvala - prijava produžena." : "Hvala - prijava označena da je nema.");
+    /* 0.9.97 (nalaz 103, sloj 2): "prijava produzena" je TVRDNJA O ISHODU koju app nema cime da
+       potkrepi - glasaj_v2 vraca void i u tri slucaja tiho ne uradi nista (uredjaj bez id-ja,
+       autor glasa svojoj prijavi, uredjaj koji je vec glasao). 2xx zato ne znaci da je glas
+       upisan. Sada se tvrdi samo ono sto se ZNA: da je glas poslat. Da funkcija vrati ishod
+       trazi dopunu #4 u Supabase bazi, sto pusta Bosko. */
+    shareToast(tuJe ? "Hvala, glas je poslat." : "Hvala, glas je poslat - označena je da je nema.");
     return true;
   } catch (e) { shareToast("Glas nije poslat: " + String(e.message || e)); return false; }
 }
@@ -9656,7 +9738,21 @@ function dnevnikUpisi(v) {
   /* Petlje idu DOK dnevnikStanji ima sta da preda (svaka precka nesto izbaci, pa je kraj
      garantovan); 1000 je cvrsta ograda, ne radni broj - 30 zapisa x (halving traga + smp +
      patrljak) staje daleko ispod nje. */
-  const lista = (Array.isArray(v) ? v : []).slice(0, DNEVNIK_CAP);
+  const ulaz = Array.isArray(v) ? v : [];
+  const lista = ulaz.slice(0, DNEVNIK_CAP);
+  /* 0.9.97 (QA nalaz 11): posle 30. voznje aplikacija je tiho izbacivala najstariju - sa tragom,
+     replay-em, momentima i svim. Zapis se i dalje brise (plafon je stvaran i cuva kvotu), ali se
+     to sada KAZE. Da li je 30 pravi broj i da li app pre izbacivanja treba da ponudi izvoz -
+     ceka Boskovu odluku; ovo je samo prestanak cutanja.
+     Javlja se SAMO kad je nesto stvarno ispalo zbog plafona, ne pri svakom upisu. */
+  if (ulaz.length > DNEVNIK_CAP) {
+    const pao = ulaz[DNEVNIK_CAP];
+    try { navLog("dnevnik-ispalo", { n: ulaz.length - DNEVNIK_CAP, naz: pao && pao.naz }); } catch (e) {}
+    try {
+      const kad = pao && pao.ts ? new Date(pao.ts).toLocaleDateString("sr-RS") : "";
+      tihoObavestenje(`Dnevnik prima ${DNEVNIK_CAP} vožnji - ispala je najstarija${pao && pao.naz ? ` ("${pao.naz}"${kad ? ", " + kad : ""})` : ""}.`);
+    } catch (e) {}
+  }
   for (let i = 0; i < 1000; i++) {   // velicinski gard PRE kvote: 30 zapisa sa turama ume da naraste
     let n = 0;
     try { n = JSON.stringify(lista).length; } catch (e) { break; }
@@ -10397,7 +10493,15 @@ function zajOtvoriPrijavu(r) {
       <span><b style="color:var(--fg-strong);font-size:16px">${esc(tip)}</b><br>
       <span style="color:#94a3b8;font-size:12.5px">${esc(prijavaStarost(r.created_at))}` +
       (d != null ? ` · ${d} km od tebe` : "") + (r.potvrde ? ` · potvrdilo ${r.potvrde}` : "") + `</span></span></div>` +
-    (moje.includes(r.id) || moj
+    /* 0.9.97 (QA nalaz 103, sloj 1 - gasi NAJCESCI slucaj, bez ijednog novog mreznog poziva):
+       ZAJ.rows se ucita JEDNOM pri ulasku u rezim i posle toga stoji. Prijava policije ima rok
+       45 minuta - posle toga je red i dalje na ekranu sa dugmadima, serverska funkcija azurira
+       NULA redova i vrati void bez greske, a app ispise "prijava produzena". Feed ovo vec resava
+       racunanjem po istice_at; ovde se to isto ponasanje samo primenjuje i na popup. */
+    (isteklaPrijava(r)
+      ? `<div class="zprazno" style="margin:0 0 10px">Ova prijava je istekla - više je niko ne vidi, pa se ne može ni produžiti.</div>` +
+        `<button class="hzcancel" data-z="zatvori">Zatvori</button>`
+      : moje.includes(r.id) || moj
       ? `<button class="hzcancel" data-z="zatvori">Zatvori</button>`
       : `<div class="hzgrid" style="grid-template-columns:1fr 1fr">
            <button data-z="tu" style="min-height:64px">Tu je</button>
@@ -10924,6 +11028,7 @@ async function plan() {
   state._keepScrollT0 = Date.now();
   $("results").classList.add("hidden");
   state.upoz = [];   // 0.9.95: razlozi zbog kojih ovaj plan NIJE ono sto vozac ocekuje; crtaju se jednom, posle ruta
+  state.stilPao = 0;   // nalaz 26: pad prethodnog plana ne sme da upozori na ovaj
   try {
     const roundGen = $("roundGen") && $("roundGen").checked;
     const fromQ = $("from").value.trim();
@@ -11117,6 +11222,12 @@ async function plan() {
     setStatus("Tražim pumpe i mesta za pauzu...");
     $("results").classList.remove("hidden");
     if (_pseq !== state.planSeq) return;
+    /* 0.9.97 (nalaz 26): pad poziva za vijugave stilove ide kroz POSTOJECI kanal upozorenja, ne
+       kroz novu traku. Bez ovoga je prazan spisak izgledao kao "tu nema vijugave rute", a upravo
+       je FOSSGIS kvota ono sto ga najcesce isprazni. */
+    if (state.stilPao) state.upoz.push(state.stilPao >= 2
+      ? "Ruter nije odgovorio na upit za vijugave varijante - ovo NIJE dokaz da ih nema. Pokušaj ponovo za koji trenutak."
+      : "Jedna vijugava varijanta nije stigla od rutera - spisak ispod je nepotpun, nije konačan.");
     planWarnCrtaj();   // razlozi zbog kojih ovaj plan NIJE ono sto vozac ocekuje - pre rezultata, ne posle
     await selectRoute(departure);
     setStatus("");
@@ -11395,7 +11506,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.97";
+const APP_VERSION = "0.9.98";
 const CHANGELOG = [
   { v: "0.9.95", d: "27.08.2026.", stavke: [
     "<b>Gorivo i domet se više ne računaju po tuđem motoru.</b> Popravka od juče je stala na jednom ekranu: u tabu Ja je pisalo \"nije izabran\", a kartica rezultata je i dalje tvrdila \"na tvom R 1250 GS\" i balon pumpe \"pun rezervoar za R 1250 GS\" - jer su ta dva čitala padajući spisak, koji bez tvog profila stoji na prvom modelu iz baze. Sada sva tri ekrana čitaju isto, kroz jednu funkciju. Dok motor nije izabran, kartica Gorivo pošteno kaže da je račun za podrazumevani motor - jer \"nema potrebe za točenjem\" izgovoreno o tuđem motoru može da te ostavi bez goriva.",
@@ -13609,6 +13720,12 @@ function navProject(route, lo, la, hintI) {
    uslov. Jedan trzaj GPS-a, paralelna servisna, izlaz iz tunela - i kartica bi rekla "Van rute",
    a glas bi UCUTAO 400 m pred skretanje na kome si uredno. Gore od kvara koji se popravlja. */
 const NAV_OFF_M = 40, NAV_OFF_MS = 6000;
+/* nalaz 39: koje zemlje data/pumpe.json stvarno pokriva. Van njih "nema pumpe" nije nalaz
+   nego neznanje. Izmereno iz samog fajla 27.8.: RS 1508, HR 940, BA 981, XK 614, SI 576,
+   MK 361, ME 118. Ako se baza prosiri, prosiriti i ovaj skup - inace app zacuti o zemlji
+   koju od tada pokriva. */
+const PUMPE_ZEMLJE = new Set(["RS", "HR", "BA", "SI", "ME", "MK", "XK"]);
+const ARR_BLIZU_KM = 0.15;   // nalaz 69: dolazak trazi i FIZICKU blizinu kraja geometrije, ne samo projekciju
 /* Rupa u tragu (QA nalaz 100). RUPA_M/RUPA_MS su prag za BROJANJE, RUPA_RECI_MS za zivu
    poruku. Pragovi su za sada PROCENA, ne merenje - prvi terenski snimak sa rupaN > 0 je
    prilika da se potvrde ili pomere. Zato se rupaKm/rupaMin UPISUJU u zapis i kad se ne
@@ -13855,7 +13972,9 @@ function wxLiveTick(route, curKm) {
 function buildAhead(route) {   // najave ispred: kamere sa rute + lokalne prijave (km preko najblize tacke NOVE geometrije)
   try {
     RIDE.ahead = (route._cams || []).map((c) => ({ km: c.km, txt: rIco("camera", 15) + " Kamera", say: "Kamera ispred" }));
-    const lokalne = (typeof getHazards === "function" ? getHazards() : []);
+    /* nalaz 83: glas najavljuje samo ono sto bi i server smatrao zivim. state.prijave dolaze sa
+       servera koji ih vec filtrira po isteku, pa se filtrira samo lokalna strana. */
+    const lokalne = (typeof getHazards === "function" ? getHazards() : []).filter(prijavaZiva);
     for (const h of [...lokalne, ...(state.prijave || [])]) {
       let bi = -1, bd = 1e9;
       for (let i = 0; i < route.coords.length; i += 4) {
@@ -13993,12 +14112,25 @@ function navLog(ev, data) {   // crna kutija navigacije: ring buffer, na stopRid
   } catch (e) {}
 }
 function navExportLog() {   // dnevnik navigacije u clipboard (nalepi se u poruku kad nesto zaskripi)
+  /* 0.9.97 (QA nalaz 62): dugme je UVEK javljalo "kopirano" - i kad je dnevnik prazan, i kad je
+     kopiralo dnevnik neke STARIJE voznje. Vozac koji prijavljuje problem tako posalje prazan
+     fajl ili tudju voznju, a misli da je poslao dokaz o onome sto se upravo desilo. Sad poruka
+     imenuje STA je kopirano i KOJE voznje, i prazno se ne predstavlja kao uspeh. */
   try {
     const raw = localStorage.getItem("mr_navlog");
-    const payload = raw || JSON.stringify({ app: APP_VERSION, t0: RIDE.t0 || 0, log: RIDE.log || [] });
+    const ziv = (RIDE.log && RIDE.log.length) ? { app: APP_VERSION, t0: RIDE.t0 || 0, log: RIDE.log } : null;
+    let payload = null, izvor = "", zapisa = 0, kad = "";
+    if (ziv) { payload = JSON.stringify(ziv); izvor = "tekuće vožnje"; zapisa = ziv.log.length; }
+    else if (raw) {
+      payload = raw;
+      try { const o = JSON.parse(raw); zapisa = (o.log || []).length; if (o.t0) kad = new Date(o.t0).toLocaleString("sr-RS"); } catch (e) {}
+      izvor = kad ? `poslednje snimljene vožnje (${kad})` : "poslednje snimljene vožnje";
+    }
+    if (!payload || !zapisa) { alert("Dnevnik navigacije je prazan - nema šta da se kopira.\n\nOn se puni tokom vožnje i upisuje na njenom kraju."); return; }
     const txt = "RMR-NAVLOG v" + APP_VERSION + "\n" + payload;
+    const poruka = `Kopiran je dnevnik ${izvor} - ${zapisa} ${plSrp(zapisa, "zapis", "zapisa", "zapisa")}. Nalepi ga u poruku.`;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(txt).then(() => alert("Dnevnik navigacije je kopiran - nalepi ga u poruku."),
+      navigator.clipboard.writeText(txt).then(() => alert(poruka),
         () => prompt("Kopiraj rucno:", txt.slice(0, 2000)));
     } else prompt("Kopiraj rucno:", txt.slice(0, 2000));
   } catch (e) { alert("Nema dnevnika za izvoz."); }
@@ -15493,7 +15625,32 @@ function startRide() {
     } catch (e) {}
     // dolazak
     const remM = Math.max(0, total - d);
-    if (remM < 35 && (!m || m.sr.arrive)) {
+    /* 0.9.97 (QA nalaz 69): dolazak se okidao SAMO po projektovanom rastojanju duz rute. Kad
+       projekcija promasi kod kraja (povratna ruta, ili obican prolazak paralelnom ulicom uz cilj),
+       while petlja pregura nav.next preko poslednjeg manevra, m postane undefined i uslov (!m)
+       prodje - pa vozac usred ture ostane bez navigacije i bez snimanja, a dnevnik tvrdi da je
+       uredno stigao. Sada mora i FIZICKI da bude kod cilja.
+       Meri se prema KRAJU GEOMETRIJE, ne prema state.geocode.to: na kruznoj turi je `to` tacka
+       okreta a ne kraj (rideReroute je vec tretira kao prolaznu). Kraj geometrije je tacan za oba
+       oblika ture i ne trazi geokoder.
+       JEDAN izraz za oba mesta: ista provera se koristi i dole u negaciji, da "jos 0,0 km" ne
+       pregazi "Stigao si!". Da je uslov dodat samo na jedno mesto, dva reda bi se svadjala. */
+    /* nalaz 94: ruta bez uputstava (OSRM rezerva ili sirov GPX trag). Kartica ne sme da stoji
+       prazna ni da drzi tudji manevar - kaze sta zna i sta ne zna. */
+    if (route.bezManevara) {
+      try {
+        document.getElementById("rideArr").innerHTML = arrSvg("straight");
+        document.getElementById("rideInstr").textContent = "Prati liniju - za ovu rutu nemam uputstva skretanja";
+        document.getElementById("rideThen").textContent = "";
+        document.getElementById("rideShields").innerHTML = "";
+        document.getElementById("rideStreet").textContent = route.gpxRaw ? "tvoj GPX trag" : "rezervni ruter";
+        document.getElementById("rideDist").textContent = "";
+      } catch (e) {}
+    }
+    const _kraj = route.coords && route.coords.length ? route.coords[route.coords.length - 1] : null;
+    const stigaoSad = remM < 35 && (!m || m.sr.arrive) &&
+      !!_kraj && haversine(la, lo, _kraj[1], _kraj[0]) < ARR_BLIZU_KM;
+    if (stigaoSad) {
       RIDE.arrived = true;   // dnevnik po ovoj zastavici odlucuje da li da doda "(prekinuto na X km)"
       document.getElementById("rideArr").innerHTML = arrSvg("flag");
       document.getElementById("rideInstr").textContent = "Stigao si!";
@@ -15502,13 +15659,20 @@ function startRide() {
       document.getElementById("rideThen").textContent = "";
       document.getElementById("rideRem").textContent = "";
       if (!RIDE.arrTo) RIDE.arrTo = setTimeout(stopRide, 8000);   // jednom, ne na svaki fiks - stale timeout je ubijao SLEDECU voznju
+    } else if (RIDE.arrTo) {
+      /* Pravi blokator iz nalaza 69: tajmer se palio sa if (!RIDE.arrTo) i NIKAD se nije
+         preispitivao, pa je JEDAN lazan otkucaj gasio voznju 8 s kasnije bez obzira na sve
+         sledece fikseve. Gard samo na ulaznom uslovu zato nije bio popravka. */
+      try { clearTimeout(RIDE.arrTo); } catch (e) {}
+      RIDE.arrTo = null; RIDE.arrived = false;
+      try { navLog("dolazak-opozvan", { remM: Math.round(remM) }); } catch (e) {}
     }
     // meta traka
     if (pr.offM < NAV_OFF_M) try { navProgress(d / Math.max(1, total), total); } catch (e) {}   // predjeni deo rute plavi (fallback; rAF petlja vodi glatku granicu); 0.9.82: ISTI gate kao rAF - van rute projekcija d bezi NAPRED pa je plava granica prestizala vozaca
     const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total));
     /* Na cilju NE prepisuj (11.8.): grana dolaska iznad je ocistila polje, a ovaj red ga je u istom
        otkucaju bezuslovno vracao, pa je uz "Stigao si!" pisalo "još 0,0 km". */
-    if (!(remM < 35 && (!m || m.sr.arrive))) {
+    if (!stigaoSad) {
       document.getElementById("rideRem").textContent = "još " + (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
       document.getElementById("rideEta").textContent = new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
     }
@@ -17821,7 +17985,22 @@ async function offlineSave(route, departure) {
   await offPut(paket);
   const svi = await offAll();
   svi.sort((a, b) => b.ts - a.ts);
-  for (const st of svi.slice(OFF_MAX)) await offDel(st.id);   // drzi poslednjih OFF_MAX
+  /* 0.9.97 (QA nalaz 54): dvanaesta sacuvana ruta je bez ijedne reci brisala najstariju - vozac
+     otvori "Sacuvano" pred put i ruta koju je cuvao pre mesec dana vise nije tu, a nigde nije
+     pisalo da je ispala. Podatak se i dalje brise (plafon je stvaran), ali cutanje prestaje.
+     Koliko rutа dnevnik prima i da li ista relacija treba da PREPISE stari paket cekaju Boskovu
+     odluku - ovo je samo prestanak cutanja. */
+  const visak = svi.slice(OFF_MAX);
+  for (const st of visak) await offDel(st.id);   // drzi poslednjih OFF_MAX
+  if (visak.length) {
+    try { navLog("offline-ispalo", { n: visak.length, naz: visak.map((x) => x.naz || x.id).slice(0, 3) }); } catch (e) {}
+    try {
+      const ime = visak[0].naz || "najstarija ruta";
+      tihoObavestenje(visak.length === 1
+        ? `Sačuvano je najviše ${OFF_MAX} ruta - ispala je "${ime}".`
+        : `Sačuvano je najviše ${OFF_MAX} ruta - ispalo je ${visak.length} najstarijih, među njima "${ime}".`);
+    } catch (e) {}
+  }
   return paket.id;
 }
 /* Sacekaj da mapa bude spremna za crtanje. Sacuvana ruta se otvara za desetinku sekunde,
