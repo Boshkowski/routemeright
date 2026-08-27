@@ -177,8 +177,8 @@ button,input,select{font-family:var(--f)}
 #appTop{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;z-index:6;
   display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--bd2);
   border-radius:var(--r);padding:11px 14px}
-#appTop .mk{width:28px;height:28px;flex:none;display:grid;place-items:center;color:var(--primary);
-  font-weight:900;font-size:21px;line-height:1}
+#appTop .mk{width:28px;height:28px;flex:none;display:block}
+#appTop .mk svg{display:block;width:100%;height:100%}
 #appTop .q{color:var(--muted);font-size:15px;font-weight:700}
 #appTop .v{margin-left:auto;font-family:var(--fn);font-size:10px;color:var(--faint);
   border:1px solid var(--bd);border-radius:var(--r-sm);padding:3px 6px}
@@ -256,7 +256,7 @@ body.sim .ctl{bottom:calc(96px + env(safe-area-inset-bottom)) !important}
 </head>
 <body data-mode="light">
 <div id="map"></div>
-<div id="appTop"><span class="mk">R</span><span class="q">Kuda ćeš danas?</span><span class="v">v0.9.96</span></div>
+<div id="appTop"><span class="mk"><svg viewBox="0 0 512 512" fill="none" role="img" aria-label="RouteMeRight"><path fill="#FF6A00" d="M100.8 420V92H291.3Q327.6 92 352 105.6Q376.3 119.2 388.5 142.8Q400.7 166.5 400.7 195.6Q400.7 227.1 386.1 251.7Q371.5 276.3 345.3 290.1L411.2 420H315.7L261.3 304.5H186.3V420ZM186.3 241H274.6Q292.3 241 303 229.3Q313.8 217.6 313.8 198Q313.8 185.1 309 176Q304.2 167 295.6 161.9Q287 156.9 274.6 156.9H186.3Z"/></svg></span><span class="q">Kuda ćeš danas?</span><span class="v">v0.9.96</span></div>
 <div id="appTabs" aria-hidden="true">
   <div class="on"><svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V21H3z"/></svg>Planer</div>
   <div><svg viewBox="0 0 24 24"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg>Rute</div>

@@ -1,13 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" role="img" aria-label="RouteMeRight">
-  <!-- R kao put: jedan neprekinut put sa rupom, isprekidana linija kroz sredinu -->
-  <g stroke-linecap="butt" stroke-linejoin="round">
-    <path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#c2570a" stroke-width="80"/>
-    <path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#f97316" stroke-width="66"/>
-    <path d="M170 407 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L333 421" stroke="#ffffff" stroke-width="7" stroke-dasharray="17 24"/>
-  </g>
-  <!-- start (zelena) i cilj (šahovska) tačka -->
-  <circle cx="170" cy="414" r="12" fill="#22c55e" stroke="#0f172a" stroke-width="5"/>
-  <circle cx="340" cy="430" r="13" fill="#ffffff" stroke="#c2570a" stroke-width="5"/>
-  <rect x="333" y="423" width="7" height="7" fill="#111111"/>
-  <rect x="340" y="430" width="7" height="7" fill="#111111"/>
+  <!-- Znak: slovo R, isti glif i ista boja kao u aplikaciji (HUD identitet 16.8.2026).
+       Mark: the R glyph, identical path and colour to the one the app renders. -->
+  <path fill="#FF6A00" d="M100.8 420V92H291.3Q327.6 92 352 105.6Q376.3 119.2 388.5 142.8Q400.7 166.5 400.7 195.6Q400.7 227.1 386.1 251.7Q371.5 276.3 345.3 290.1L411.2 420H315.7L261.3 304.5H186.3V420ZM186.3 241H274.6Q292.3 241 303 229.3Q313.8 217.6 313.8 198Q313.8 185.1 309 176Q304.2 167 295.6 161.9Q287 156.9 274.6 156.9H186.3Z"/>
 </svg>
