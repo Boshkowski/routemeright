@@ -14,7 +14,7 @@
   /* TOP: search + chips */
   .top{position:absolute;top:0;left:0;right:0;padding:14px 14px 8px;z-index:5}
   .search{display:flex;align-items:center;gap:11px;background:rgba(15,23,42,.92);backdrop-filter:blur(12px);
-    border:1px solid var(--line);border-radius:16px;padding:11px 14px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+    border:1px solid var(--line);border-radius:4px;padding:11px 14px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
   .search .r{width:26px;height:26px;border-radius:7px;flex:none}
   .search input{flex:1;background:none;border:none;color:var(--txt);font-size:15.5px;font-weight:600;outline:none}
   .search input::placeholder{color:var(--mut)}
@@ -29,27 +29,27 @@
 
   /* desna plutajuća dugmad */
   .fabs{position:absolute;right:14px;top:150px;display:flex;flex-direction:column;gap:10px;z-index:5}
-  .fab{width:44px;height:44px;border-radius:14px;background:rgba(15,23,42,.9);border:1px solid var(--line);
+  .fab{width:44px;height:44px;border-radius:4px;background:rgba(15,23,42,.9);border:1px solid var(--line);
     display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,.4)}
   .fab svg{width:21px;height:21px;stroke:var(--txt)}
 
   /* BOTTOM SHEET (peek) */
   .sheet{position:absolute;left:0;right:0;bottom:58px;background:rgba(15,23,42,.97);backdrop-filter:blur(16px);
-    border-radius:22px 22px 0 0;border-top:1px solid var(--line);padding:10px 16px 16px;z-index:6;
+    border-radius:4px 22px 0 0;border-top:1px solid var(--line);padding:10px 16px 16px;z-index:6;
     box-shadow:0 -10px 34px rgba(0,0,0,.45)}
   .grab{width:38px;height:4px;border-radius:2px;background:#475569;margin:2px auto 12px}
   .wx{display:flex;align-items:center;gap:10px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.28);
-    border-radius:14px;padding:11px 13px;margin-bottom:12px}
+    border-radius:4px;padding:11px 13px;margin-bottom:12px}
   .wx svg{width:22px;height:22px;stroke:var(--or);flex:none}
   .wx b{color:#fff;font-weight:800}
   .wx .t{font-size:13.5px;color:#fdba74;line-height:1.35}
   .qr{display:flex;gap:9px}
-  .q{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center}
+  .q{flex:1;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:12px 8px;text-align:center}
   .q svg{width:20px;height:20px;stroke:var(--or);margin-bottom:5px}
   .q .l{font-size:12.5px;font-weight:700;color:var(--txt)}
   .q .s{font-size:10.5px;color:var(--mut)}
   .cta{display:block;text-align:center;background:linear-gradient(135deg,var(--or),var(--or2));color:#fff;
-    border-radius:15px;padding:15px;font-size:16px;font-weight:800;margin-top:12px;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+    border-radius:4px;padding:15px;font-size:16px;font-weight:800;margin-top:12px;box-shadow:0 8px 22px rgba(0,0,0,.35)}
 
   /* BOTTOM NAV */
   .nav{position:absolute;left:0;right:0;bottom:0;height:58px;background:rgba(11,17,32,.98);border-top:1px solid var(--line);
@@ -59,7 +59,20 @@
   .nav a svg{width:22px;height:22px;stroke:var(--mut)}
   .nav a.on{color:var(--or)}
   .nav a.on svg{stroke:var(--or)}
-</style></head><body>
+
+/* ==== HUD identitet (DESIGN.md 16.8.2026) - samo preslikavanje tokena ==== */
+:root{
+  --bg:#05080B;--card:#0A1016;--raised:#0F1821;
+  --or:#FF6A00;--or2:#E85D00;--label:#FF8C3A;
+  --txt:#F2F7FA;--mut:#8CA6B4;--faint:#5A7382;
+  --cyan:#00E5FF;--ok:#3DF5A0;--warn:#FFD24A;--bad:#FF6B6B;
+  --bd:rgba(0,229,255,.16);
+  --f:"Saira Semi Condensed",Archivo,system-ui,-apple-system,sans-serif;
+  --fn:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+html,body{background:var(--bg);color:var(--txt);font-family:var(--f)}
+button,input,select,textarea{font-family:var(--f)}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet"></head><body>
 
 <div class="map">
   <svg viewBox="0 0 390 844" preserveAspectRatio="none">
@@ -75,7 +88,7 @@
 
 <div class="top">
   <div class="search">
-    <svg class="r" viewBox="0 0 512 512"><rect width="512" height="512" rx="120" fill="#1e293b"/><g fill="none" stroke-linecap="butt" stroke-linejoin="round"><path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#f97316" stroke-width="72"/><path d="M170 407 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L333 421" stroke="#fff" stroke-width="9" stroke-dasharray="18 25"/></g></svg>
+    <svg viewBox="0 0 512 512" role="img" aria-label="RouteMeRight"><rect width="512" height="512" rx="36" fill="#0A1016" stroke="rgba(0,229,255,.16)" stroke-width="6"/><text x="256" y="256" text-anchor="middle" dominant-baseline="central" font-family="Saira Semi Condensed,Archivo,sans-serif" font-weight="900" font-size="360" fill="#FF6A00">R</text></svg>
     <input placeholder="Kuda ćeš danas?" readonly>
     <div class="av">B</div>
   </div>

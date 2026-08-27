@@ -9,28 +9,28 @@
 
   .map{position:absolute;top:0;left:0;right:0;height:300px;background:radial-gradient(120% 90% at 40% 20%,#16233b,#0b1424 70%,#0a1120)}
   .map svg{position:absolute;inset:0;width:100%;height:300px}
-  .lbl{position:absolute;background:#0b1424;border:1px solid var(--line);border-radius:9px;padding:4px 8px;font-size:11px;font-weight:800;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.5)}
+  .lbl{position:absolute;background:#0b1424;border:1px solid var(--line);border-radius:3px;padding:4px 8px;font-size:11px;font-weight:800;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.5)}
   .lbl.sel{background:var(--or);border-color:var(--or)}
   .lbl small{font-weight:600;opacity:.85;font-size:10px}
   .tbar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:11px;padding:13px;z-index:5}
-  .tbar .ic{width:36px;height:36px;border-radius:11px;background:rgba(15,23,42,.9);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+  .tbar .ic{width:36px;height:36px;border-radius:4px;background:rgba(15,23,42,.9);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
   .tbar .ic svg{width:18px;height:18px;stroke:var(--txt);fill:none}
   .tbar .ttl{flex:1;font-size:16px;font-weight:800;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 
-  .sheet{position:absolute;left:0;right:0;bottom:0;top:280px;background:var(--bg);border-radius:22px 22px 0 0;border-top:1px solid var(--line);
+  .sheet{position:absolute;left:0;right:0;bottom:0;top:280px;background:var(--bg);border-radius:4px 22px 0 0;border-top:1px solid var(--line);
     box-shadow:0 -10px 30px rgba(0,0,0,.5);display:flex;flex-direction:column}
   .grab{width:38px;height:4px;border-radius:2px;background:#475569;margin:8px auto 10px;flex:none}
   .scroll{flex:1;overflow:hidden;padding:0 16px}
 
   .tabs{display:flex;gap:8px;margin-bottom:14px}
-  .tab{flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 6px;font-size:13px;font-weight:800;color:var(--txt)}
+  .tab{flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:9px 6px;font-size:13px;font-weight:800;color:var(--txt)}
   .tab .s{display:block;font-size:10px;color:var(--mut);font-weight:600;margin-top:2px}
   .tab.on{border-color:var(--or);background:rgba(249,115,22,.12)}
   .tab.on .n{color:var(--or)}
 
   /* hero: vreme + težina */
   .hero{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
-  .hx{border-radius:14px;padding:12px 13px;border:1px solid var(--line)}
+  .hx{border-radius:4px;padding:12px 13px;border:1px solid var(--line)}
   .hx .k{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
   .hx .v{font-size:19px;font-weight:900;display:flex;align-items:center;gap:8px;line-height:1}
   .hx .v svg{width:19px;height:19px;fill:none}
@@ -42,7 +42,7 @@
 
   /* metrike red */
   .mrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-  .m{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 8px;text-align:center}
+  .m{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:9px 8px;text-align:center}
   .m .k{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em;font-weight:700}
   .m .v{font-size:15px;font-weight:900;color:#fff;margin-top:3px;font-variant-numeric:tabular-nums}
   .m .v small{font-size:10px;color:var(--mut);font-weight:600}
@@ -52,7 +52,7 @@
   .sect .more svg{width:13px;height:13px;stroke:var(--or);fill:none}
 
   /* profil visine */
-  .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 14px;margin-bottom:13px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:13px 14px;margin-bottom:13px}
   .elev svg{width:100%;height:74px;display:block}
   .elev .st{display:flex;gap:16px;margin-top:9px}
   .elev .st div{font-size:12px;color:var(--mut);font-weight:600}
@@ -65,7 +65,7 @@
   .curv .sev{margin-left:auto;text-align:right;font-size:11.5px;color:#fca5a5;font-weight:800}
   .curv .sev span{display:block;color:var(--mut);font-weight:600;font-size:10.5px}
   .lr{display:flex;gap:9px}
-  .lr .b{flex:1;background:#0f172a;border:1px solid var(--line);border-radius:11px;padding:9px 11px;display:flex;align-items:center;gap:9px}
+  .lr .b{flex:1;background:#0f172a;border:1px solid var(--line);border-radius:4px;padding:9px 11px;display:flex;align-items:center;gap:9px}
   .lr .b svg{width:22px;height:22px;stroke:var(--or);fill:none}
   .lr .b .n{font-size:17px;font-weight:900;color:#fff;line-height:1}
   .lr .b .l{font-size:10.5px;color:var(--mut);font-weight:700;margin-top:1px}
@@ -85,10 +85,23 @@
 
   /* sticky CTA */
   .cta{flex:none;display:flex;gap:9px;padding:11px 16px calc(16px);border-top:1px solid var(--line);background:var(--bg)}
-  .b2{flex:1;border-radius:13px;padding:13px;text-align:center;font-size:14.5px;font-weight:800;border:1px solid var(--line);background:var(--card);color:var(--txt);display:flex;align-items:center;justify-content:center;gap:7px}
+  .b2{flex:1;border-radius:4px;padding:13px;text-align:center;font-size:14.5px;font-weight:800;border:1px solid var(--line);background:var(--card);color:var(--txt);display:flex;align-items:center;justify-content:center;gap:7px}
   .b2 svg{width:16px;height:16px;stroke:currentColor;fill:none}
   .b2.p{flex:1.5;background:linear-gradient(135deg,var(--or),var(--or2));color:#fff;border:none;box-shadow:0 8px 20px rgba(249,115,22,.3)}
-</style></head><body>
+
+/* ==== HUD identitet (DESIGN.md 16.8.2026) - samo preslikavanje tokena ==== */
+:root{
+  --bg:#05080B;--card:#0A1016;--raised:#0F1821;
+  --or:#FF6A00;--or2:#E85D00;--label:#FF8C3A;
+  --txt:#F2F7FA;--mut:#8CA6B4;--faint:#5A7382;
+  --cyan:#00E5FF;--ok:#3DF5A0;--warn:#FFD24A;--bad:#FF6B6B;
+  --bd:rgba(0,229,255,.16);
+  --f:"Saira Semi Condensed",Archivo,system-ui,-apple-system,sans-serif;
+  --fn:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+html,body{background:var(--bg);color:var(--txt);font-family:var(--f)}
+button,input,select,textarea{font-family:var(--f)}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet"></head><body>
 
 <div class="map">
   <svg viewBox="0 0 390 300" preserveAspectRatio="none">

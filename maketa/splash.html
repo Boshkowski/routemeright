@@ -15,27 +15,29 @@
   .pitch{color:#cbd5e1;font-size:16px;line-height:1.5;margin-top:20px;max-width:320px}
   .pitch b{color:#fff}
   .cta{position:absolute;left:28px;right:28px;bottom:56px}
-  .cta a{display:block;text-align:center;text-decoration:none;border-radius:17px;padding:17px;font-size:17px;font-weight:800}
+  .cta a{display:block;text-align:center;text-decoration:none;border-radius:4px;padding:17px;font-size:17px;font-weight:800}
   .cta .p{background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;box-shadow:0 12px 30px rgba(249,115,22,.4)}
   .cta .s{color:#94a3b8;font-size:14px;padding-top:16px}
-</style></head><body>
+
+/* ==== HUD identitet (DESIGN.md 16.8.2026) - samo preslikavanje tokena ==== */
+:root{
+  --bg:#05080B;--card:#0A1016;--raised:#0F1821;
+  --or:#FF6A00;--or2:#E85D00;--label:#FF8C3A;
+  --txt:#F2F7FA;--mut:#8CA6B4;--faint:#5A7382;
+  --cyan:#00E5FF;--ok:#3DF5A0;--warn:#FFD24A;--bad:#FF6B6B;
+  --bd:rgba(0,229,255,.16);
+  --f:"Saira Semi Condensed",Archivo,system-ui,-apple-system,sans-serif;
+  --fn:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+html,body{background:var(--bg);color:var(--txt);font-family:var(--f)}
+button,input,select,textarea{font-family:var(--f)}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet"></head><body>
 <div class="topo"><svg viewBox="0 0 390 844" fill="none" stroke="#4a5f8a" stroke-width="1.4">
   <circle cx="90" cy="120" r="80"/><circle cx="90" cy="120" r="130"/><circle cx="90" cy="120" r="185"/>
   <circle cx="320" cy="700" r="70"/><circle cx="320" cy="700" r="120"/><circle cx="320" cy="700" r="175"/>
 </svg></div>
 <div class="wrap">
-  <svg class="logo" viewBox="0 0 512 512">
-    <defs><radialGradient id="g" cx="50%" cy="30%" r="90%"><stop offset="0%" stop-color="#2a3a5c"/><stop offset="100%" stop-color="#0b1120"/></radialGradient></defs>
-    <rect width="512" height="512" fill="url(#g)"/>
-    <g fill="none" stroke-linecap="butt" stroke-linejoin="round">
-      <path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#c2570a" stroke-width="80"/>
-      <path d="M170 414 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L340 430" stroke="#f97316" stroke-width="66"/>
-      <path d="M170 407 V206 Q170 161 215 161 H274 A81 81 0 0 1 274 323 L333 421" stroke="#fff" stroke-width="7" stroke-dasharray="17 24"/>
-    </g>
-    <circle cx="170" cy="414" r="12" fill="#22c55e" stroke="#0f172a" stroke-width="5"/>
-    <circle cx="340" cy="430" r="13" fill="#fff" stroke="#c2570a" stroke-width="5"/>
-    <rect x="333" y="423" width="7" height="7" fill="#111"/><rect x="340" y="430" width="7" height="7" fill="#111"/>
-  </svg>
+  <svg viewBox="0 0 512 512" role="img" aria-label="RouteMeRight"><rect width="512" height="512" rx="36" fill="#0A1016" stroke="rgba(0,229,255,.16)" stroke-width="6"/><text x="256" y="256" text-anchor="middle" dominant-baseline="central" font-family="Saira Semi Condensed,Archivo,sans-serif" font-weight="900" font-size="360" fill="#FF6A00">R</text></svg>
   <h1>Route<b>Me</b>Right</h1>
   <div class="tag">Pametna ruta za motor</div>
   <p class="pitch">Zna <b>vreme na svakom kilometru</b> tvoje vožnje - pa ti kaže <b>kad da kreneš</b> i gde da sačekaš da kiša prođe.</p>

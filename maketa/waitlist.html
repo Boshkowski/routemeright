@@ -12,7 +12,7 @@
   .wrap{position:relative;padding:30px 22px 26px;display:flex;flex-direction:column;min-height:844px}
 
   .brand{display:flex;align-items:center;gap:10px;margin-bottom:auto}
-  .brand .mk{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--or),var(--or2));
+  .brand .mk{width:34px;height:34px;border-radius:4px;background:linear-gradient(135deg,var(--or),var(--or2));
     display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(249,115,22,.35)}
   .brand .mk svg{width:20px;height:20px}
   .brand .wm{font-size:16px;font-weight:900;color:#fff;letter-spacing:-.01em}
@@ -28,9 +28,9 @@
   .lead b{color:#fff}
 
   /* forma */
-  .form{background:rgba(30,41,59,.6);border:1px solid var(--line);border-radius:20px;padding:18px 17px;
+  .form{background:rgba(30,41,59,.6);border:1px solid var(--line);border-radius:4px;padding:18px 17px;
     backdrop-filter:blur(6px);box-shadow:0 16px 40px rgba(0,0,0,.35)}
-  .fld{display:flex;align-items:center;gap:10px;background:#0f172a;border:1px solid var(--line);border-radius:13px;
+  .fld{display:flex;align-items:center;gap:10px;background:#0f172a;border:1px solid var(--line);border-radius:4px;
     padding:13px 14px;margin-bottom:11px}
   .fld svg{width:18px;height:18px;stroke:var(--mut);fill:none;flex:none}
   .fld input,.fld select{flex:1;background:none;border:none;outline:none;color:var(--txt);font-size:15px;font-weight:600;font-family:inherit}
@@ -39,7 +39,7 @@
   .fld.opt{opacity:.95}
   .fld .chev{margin-left:auto;width:16px;height:16px;stroke:var(--mut)}
   .cta{width:100%;border:none;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,var(--or),var(--or2));
-    color:#fff;font-size:16px;font-weight:800;padding:15px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:9px;
+    color:#fff;font-size:16px;font-weight:800;padding:15px;border-radius:4px;display:flex;align-items:center;justify-content:center;gap:9px;
     box-shadow:0 10px 26px rgba(249,115,22,.36);margin-top:3px}
   .cta svg{width:18px;height:18px;stroke:#fff;fill:none}
   .fine{font-size:11.5px;color:var(--mut);font-weight:600;text-align:center;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px}
@@ -67,7 +67,20 @@
   .done p b{color:#fff}
   .done .pos{display:inline-block;margin-top:16px;background:rgba(249,115,22,.14);border:1px solid rgba(249,115,22,.35);
     color:#fdba74;font-size:12.5px;font-weight:800;padding:7px 14px;border-radius:999px}
-</style></head>
+
+/* ==== HUD identitet (DESIGN.md 16.8.2026) - samo preslikavanje tokena ==== */
+:root{
+  --bg:#05080B;--card:#0A1016;--raised:#0F1821;
+  --or:#FF6A00;--or2:#E85D00;--label:#FF8C3A;
+  --txt:#F2F7FA;--mut:#8CA6B4;--faint:#5A7382;
+  --cyan:#00E5FF;--ok:#3DF5A0;--warn:#FFD24A;--bad:#FF6B6B;
+  --bd:rgba(0,229,255,.16);
+  --f:"Saira Semi Condensed",Archivo,system-ui,-apple-system,sans-serif;
+  --fn:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+html,body{background:var(--bg);color:var(--txt);font-family:var(--f)}
+button,input,select,textarea{font-family:var(--f)}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet"></head>
 <body>
 <div class="topo"><svg viewBox="0 0 390 844" fill="none" stroke="#4a5f8a" stroke-width="1.3">
   <circle cx="80" cy="90" r="70"/><circle cx="80" cy="90" r="120"/><circle cx="80" cy="90" r="175"/>

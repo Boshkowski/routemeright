@@ -11,7 +11,7 @@
   .map svg{position:absolute;inset:0;width:100%;height:100%}
 
   /* nav kartica (2/3 navigacija + traka obavestenja) */
-  .nav{position:absolute;top:14px;left:12px;right:12px;background:#166534;border-radius:18px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);z-index:5}
+  .nav{position:absolute;top:14px;left:12px;right:12px;background:#166534;border-radius:4px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5);z-index:5}
   .nmain{padding:12px 14px 9px;display:flex;align-items:center;gap:12px;color:#fff}
   .nmain .arr{font-size:0;flex:none}
   .nmain .arr svg{width:40px;height:40px;stroke:#fff;fill:none}
@@ -19,13 +19,13 @@
   .nmain .st{font-size:14px;font-weight:600;opacity:.95;margin-top:1px}
   .nmain .ln{font-size:12px;font-weight:600;opacity:.8;margin-top:3px;display:flex;align-items:center;gap:5px}
   .nmain .ln svg{width:14px;height:14px;stroke:#fff}
-  .then{margin-left:auto;align-self:flex-start;background:rgba(0,0,0,.28);color:#d9fbe5;border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;white-space:nowrap}
+  .then{margin-left:auto;align-self:flex-start;background:rgba(0,0,0,.28);color:#d9fbe5;border-radius:3px;padding:3px 8px;font-size:11px;font-weight:700;white-space:nowrap}
   .wx{background:rgba(153,27,27,.9);color:#fee2e2;padding:7px 14px;font-size:12.5px;font-weight:600;line-height:1.3;border-top:1px solid rgba(239,68,68,.5);display:flex;align-items:center;gap:8px}
   .wx svg{width:16px;height:16px;stroke:#fee2e2;flex:none}
 
   /* desna dugmad */
   .fabs{position:absolute;right:14px;bottom:150px;display:flex;flex-direction:column;gap:10px;z-index:5}
-  .fab{width:44px;height:44px;border-radius:14px;background:rgba(15,23,42,.9);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+  .fab{width:44px;height:44px;border-radius:4px;background:rgba(15,23,42,.9);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
   .fab svg{width:20px;height:20px;stroke:var(--txt)}
   .fab .needle{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent}
   .fab .nn{border-bottom:12px solid #ef4444}.fab .ns{border-top:12px solid #cbd5e1;margin-top:-2px}
@@ -37,16 +37,29 @@
 
   /* donja traka */
   .bar{position:absolute;left:0;right:0;bottom:0;padding:12px 14px 22px;display:flex;align-items:center;gap:10px;z-index:5}
-  .pill{background:rgba(15,23,42,.94);border:1px solid var(--line);border-radius:16px;padding:9px 13px;display:flex;align-items:center;gap:11px}
+  .pill{background:rgba(15,23,42,.94);border:1px solid var(--line);border-radius:4px;padding:9px 13px;display:flex;align-items:center;gap:11px}
   .pill .v{font-size:26px;font-weight:900;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
   .pill .u{font-size:11px;color:var(--mut);margin-top:2px}
   .limit{width:38px;height:38px;border-radius:50%;background:#fff;border:5px solid #dc2626;color:#111;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center}
-  .rep{flex:1;background:linear-gradient(135deg,var(--or),var(--or2));border-radius:16px;color:#fff;padding:14px;font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 22px rgba(249,115,22,.35)}
+  .rep{flex:1;background:linear-gradient(135deg,var(--or),var(--or2));border-radius:4px;color:#fff;padding:14px;font-size:17px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 22px rgba(249,115,22,.35)}
   .rep svg{width:19px;height:19px;stroke:#fff}
-  .eta{background:rgba(15,23,42,.94);border:1px solid var(--line);border-radius:16px;padding:9px 12px;text-align:center}
+  .eta{background:rgba(15,23,42,.94);border:1px solid var(--line);border-radius:4px;padding:9px 12px;text-align:center}
   .eta .t{font-size:18px;font-weight:900;color:#fff;line-height:1.1;font-variant-numeric:tabular-nums}
   .eta .d{font-size:11px;color:var(--mut);margin-top:2px}
-</style></head><body>
+
+/* ==== HUD identitet (DESIGN.md 16.8.2026) - samo preslikavanje tokena ==== */
+:root{
+  --bg:#05080B;--card:#0A1016;--raised:#0F1821;
+  --or:#FF6A00;--or2:#E85D00;--label:#FF8C3A;
+  --txt:#F2F7FA;--mut:#8CA6B4;--faint:#5A7382;
+  --cyan:#00E5FF;--ok:#3DF5A0;--warn:#FFD24A;--bad:#FF6B6B;
+  --bd:rgba(0,229,255,.16);
+  --f:"Saira Semi Condensed",Archivo,system-ui,-apple-system,sans-serif;
+  --fn:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+html,body{background:var(--bg);color:var(--txt);font-family:var(--f)}
+button,input,select,textarea{font-family:var(--f)}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet"></head><body>
 
 <div class="map">
   <svg viewBox="0 0 390 844" preserveAspectRatio="none">

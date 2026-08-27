@@ -21,7 +21,7 @@
 
   /* poeni traka */
   .pts{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(249,115,22,.18),rgba(234,88,12,.08));
-    border:1px solid rgba(249,115,22,.4);border-radius:18px;padding:15px 17px;margin-bottom:14px}
+    border:1px solid rgba(249,115,22,.4);border-radius:4px;padding:15px 17px;margin-bottom:14px}
   .pts .big{font-size:34px;font-weight:900;color:var(--or);line-height:1;font-variant-numeric:tabular-nums}
   .pts .lab{font-size:13px;font-weight:700;color:#fed7aa}
   .pts .lab small{display:block;color:var(--mut);font-weight:600;font-size:11.5px;margin-top:2px}
@@ -33,12 +33,12 @@
 
   /* metrike */
   .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:14px}
-  .m{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px}
+  .m{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:12px}
   .m .k{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:6px}
   .m .v{font-size:21px;font-weight:800;color:#fff;line-height:1;font-variant-numeric:tabular-nums}
   .m .v small{font-size:12px;color:var(--mut);font-weight:600}
   .m.lean{grid-column:span 3;background:rgba(56,189,248,.09);border-color:rgba(56,189,248,.32);display:flex;align-items:center;gap:14px}
-  .m.lean .bikewrap{width:52px;height:52px;border-radius:14px;background:rgba(56,189,248,.14);display:flex;align-items:center;justify-content:center;flex:none}
+  .m.lean .bikewrap{width:52px;height:52px;border-radius:4px;background:rgba(56,189,248,.14);display:flex;align-items:center;justify-content:center;flex:none}
   .m.lean .bikewrap svg{width:30px;height:30px}
   .m.lean .v{color:var(--cy);font-size:26px}
   .m.lean .tap{margin-left:auto;display:flex;align-items:center;gap:5px;color:var(--cy);font-size:12px;font-weight:800}
@@ -49,7 +49,7 @@
   .ach .h{font-size:12px;font-weight:800;color:var(--txt);text-transform:uppercase;letter-spacing:.06em;margin-bottom:9px;display:flex;align-items:center;gap:7px}
   .ach .h span{color:var(--or)}
   .badges{display:flex;gap:10px}
-  .bd{flex:1;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:12px 8px;text-align:center}
+  .bd{flex:1;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:12px 8px;text-align:center}
   .bd.new{border-color:rgba(249,115,22,.5);background:rgba(249,115,22,.08)}
   .bd .ic{width:42px;height:42px;border-radius:50%;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;background:rgba(249,115,22,.16)}
   .bd .ic svg{width:23px;height:23px;stroke:var(--or);fill:none}
@@ -57,10 +57,23 @@
   .bd .ds{font-size:10px;color:var(--mut);font-weight:600;margin-top:2px}
 
   .btns{display:flex;gap:10px}
-  .b{flex:1;border-radius:15px;padding:15px;text-align:center;font-size:15px;font-weight:800;border:1px solid var(--line);background:var(--card);color:var(--txt);display:flex;align-items:center;justify-content:center;gap:8px}
+  .b{flex:1;border-radius:4px;padding:15px;text-align:center;font-size:15px;font-weight:800;border:1px solid var(--line);background:var(--card);color:var(--txt);display:flex;align-items:center;justify-content:center;gap:8px}
   .b svg{width:18px;height:18px;stroke:currentColor}
   .b.p{background:linear-gradient(135deg,var(--or),var(--or2));color:#fff;border:none;box-shadow:0 8px 20px rgba(249,115,22,.3)}
-</style></head><body>
+
+/* ==== HUD identitet (DESIGN.md 16.8.2026) - samo preslikavanje tokena ==== */
+:root{
+  --bg:#05080B;--card:#0A1016;--raised:#0F1821;
+  --or:#FF6A00;--or2:#E85D00;--label:#FF8C3A;
+  --txt:#F2F7FA;--mut:#8CA6B4;--faint:#5A7382;
+  --cyan:#00E5FF;--ok:#3DF5A0;--warn:#FFD24A;--bad:#FF6B6B;
+  --bd:rgba(0,229,255,.16);
+  --f:"Saira Semi Condensed",Archivo,system-ui,-apple-system,sans-serif;
+  --fn:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+html,body{background:var(--bg);color:var(--txt);font-family:var(--f)}
+button,input,select,textarea{font-family:var(--f)}
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Saira+Semi+Condensed:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet"></head><body>
 <div class="scroll">
   <div class="map">
     <svg viewBox="0 0 390 264" preserveAspectRatio="none">
