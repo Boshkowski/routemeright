@@ -11627,6 +11627,18 @@ async function loadBikes() {
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
 const APP_VERSION = "0.9.102";
 const CHANGELOG = [
+  { v: "0.9.102", d: "27.08.2026.", stavke: [
+    "<b>Prekidači u Slojevima sada stvarno gase ono što piše.</b> Isključiš \"Pumpe\", a 5.098 pumpi ostane na mapi - gasili su samo pinove uz rutu, ne i tepih. Isto za hranu (31.242 lokala) i mesta zajednice. Ono što se vidi po otvaranju se NE menja: sve ostaje uključeno kao i do sada.",
+    "<b>Pretraga više ne seče rezultate po tački na kojoj si možda bio jutros.</b> Kad aplikacija ne zna gde si - lokacija isključena ili poslednji signal stariji od 15 minuta - bliži rezultat i dalje ide više, ali niko se ne izbacuje iz liste.",
+    "<b>Traka trenutaka bira po retkosti, kako je i obećavala.</b> Uzimala je prvih pet redom kojim su dodati, pa je na dobroj turi lični rekord ispadao zbog trećeg mesta koje si samo prošao. Sada: rekord, pa ocenjene deonice, pa kafana kod koje si stao, pa mesto koje si prošao.",
+    "<b>Kartica \"Stanje na putevima\" i planer sude radove po istom pravilu.</b> Deonica je mogla tiho da ispadne iz Kombinovane zbog zapisa koji kartica odbija da prikaže - gledaš karticu bez ijednog upozorenja, a ruta se u međuvremenu promenila.",
+    "<b>Polje \"Kreni u\" odbija datum koji prognoza ne pokriva.</b> Moglo se zadati polazak za mesec dana, a prognoza dopire do šesnaest - pa je zelena presuda stajala nad nula sati podataka.",
+    "<b>Kombinovana nestaje kad ne može kroz tvoju stanicu.</b> Stanica u prvih ili poslednjih 3 km nije postajala šav, pa je sašivena ruta mogla prosto da je obiđe - a Kombinovana je podrazumevana kartica.",
+    "<b>Vinjeta stoji odvojeno pored ukupnog</b>, jer se kupuje na 7 ili 10 dana i pokriva i povratak, a mi računamo jedan smer. Gde iznos nije proveren (Mađarska, Češka, Slovačka, Švajcarska) piše da ga nemamo - umesto procene koja izgleda kao cifra.",
+    "<b>Tvoja ocena se raspoznaje od ocene zajednice</b>, a beleška koju napišeš uz nju sada ti se vraća - do sada je nije video niko, ni ti. Polje to i kaže pre nego što počneš da pišeš.",
+    "<b>Kad ocena bude trajno odbijena, saznaš to odmah</b> - i tačno šta znači: ostaje sačuvana kod tebe, ali je zajednica neće videti.",
+    "<b>Atlas više ne obećava poene za ocenjivanje</b> dok bodovanje deonica nije uključeno. Poziv na ocenjivanje ostaje.",
+  ] },
   { v: "0.9.101", d: "27.08.2026.", stavke: [
     "<b>Pauza više ne drži knjige zaključane dok voziš.</b> Izlaz iz pauze je do sada tražio samo brzinu preko 15 km/h - pa ako posle semafora puziš kroz gužvu ili selo ispod tog praga, pauza ostaje, a sa njom i zamrznuti kilometri. Sada se priznaje i <b>odmak od 150 metara</b> od mesta gde si stao: 12 km/h uz 200 m odmaka jeste vožnja, ista brzina bez odmaka (guranje motora po pumpi) nije. Isto pravilo važi i kad je ekran bio zaključan - inače bi ista vožnja imala dva ishoda.",
     "<b>Ručna pauza se sada gasi sama.</b> Tvoja odluka: posle <b>dva minuta neprekidne vožnje</b> aplikacija nastavi snimanje i kaže ti to. Prag je namerno stroži nego kod auto-pauze, jer si je ti svesno uključio - jedan prolazak kroz parking je ne poništava, a brojač kreće iz početka čim staneš.",
