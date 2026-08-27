@@ -16,6 +16,16 @@ CAP = "{urn:oasis:names:tc:emergency:cap:1.2}"
 LEVEL_SR = {"yellow": "zuto", "orange": "narandzasto", "red": "crveno"}
 
 
+def _utc16(s):
+    """CAP vreme -> "YYYY-MM-DDTHH:MMZ" u UTC; neprepoznato ostaje odseceno kao pre."""
+    if not s:
+        return ""
+    try:
+        return datetime.fromisoformat(s).astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
+    except ValueError:
+        return s[:16]
+
+
 def fetch_meteoalarm(country_code="RS", only_active=True, timeout=20):
     """Vraca listu stavki {type,title,detail,region} za datu zemlju."""
     slug = COUNTRY_SLUGS[country_code.upper()]
@@ -50,7 +60,10 @@ def fetch_meteoalarm(country_code="RS", only_active=True, timeout=20):
         onset = txt("onset") or txt("effective")
         detail = "nivo: " + level + " | pojava: " + phenomenon
         if onset or expires:
-            detail += " | vazi: " + onset[:16] + " do " + expires[:16]
+            # 0.9.91: vreme ide sa izricitom oznakom zone. Ranije je "[:16]" odsecalo "+00:00",
+            # pa je app cinilo da su to LOKALNI sati - i upozorenje koje vazi od ponoci je
+            # izgledalo kao da vazi od 22 h. Sada je zona u samom zapisu, pa nema nagadjanja.
+            detail += " | vazi: " + _utc16(onset) + " do " + _utc16(expires)
         items.append({
             "type": "meteo-upozorenje",
             "title": title or event,

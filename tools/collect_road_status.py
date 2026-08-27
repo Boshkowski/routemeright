@@ -26,19 +26,27 @@ METEO_COUNTRIES = ["RS", "HR", "SI", "BA", "ME", "MK", "BG", "RO", "GR"]  # AL n
 MAX_ITEMS = 40
 
 def run_adapter(path):
-    """Exec adapter u izolovanom namespace-u i pozovi njegovu fetch* funkciju."""
+    """Exec adapter u izolovanom namespace-u i pozovi njegovu fetch* funkciju.
+
+    0.9.95 (QA nalaz 93): vraca (stavke, nepotpuno). `nepotpuno` je spisak kategorija koje
+    adapter NIJE uspeo da povuce, iako poziv nije bacio izuzetak - do sada je takav delimican
+    pad zavrsavao kao `ok: true` i cela kategorija (npr. granicni prelazi) je nestajala bez
+    traga. Adapter ga ostavlja u svom namespace-u pod imenom NEPOTPUNO."""
     ns = {"__name__": "adapter"}   # __main__ guard se ne pali
     with open(path, encoding="utf-8") as f:
         exec(compile(f.read(), path, "exec"), ns)
+    def _pale():
+        v = ns.get("NEPOTPUNO")
+        return [str(x)[:60] for x in v] if isinstance(v, (list, tuple)) else []
     for name in ("fetch_items", "fetch_hak_items", "fetch_bihamk",
                  "fetch_mk_road_items", "fetch_bg_border_items", "fetch_greece_traffic", "fetch"):
         if callable(ns.get(name)):
             try:
-                return ns[name]()
+                return ns[name](), _pale()
             except TypeError:
                 break   # funkcija trazi argumente = pomocna, ne ulazna tacka (npr. ro.py fetch(url))
     if isinstance(ns.get("items"), list) and ns["items"]:  # top-level items lista (si.py, ro.py)
-        return ns["items"]
+        return ns["items"], _pale()
     raise RuntimeError("adapter nema fetch funkciju ni items listu")
 
 def izdvoj_granice(items, cc):
@@ -63,19 +71,53 @@ def izdvoj_granice(items, cc):
     return gr
 
 def norm(items):
+    """Vrati (stavke, koliko_je_odseceno).
+
+    0.9.97 (QA nalaz 56): rez na MAX_ITEMS sece po redosledu fida, ne po vaznosti - zatvoren put
+    ume tiho da ispadne, a kartica se predstavlja kao pun spisak. Broj odsecenih se od sada UPISUJE
+    u fajl da bi moglo da se MERI koliko se stvarno gubi. Namerno se vozacu NE prikazuje (Boskova
+    odluka ceka): posle sortiranja se gube samo radovi, nikad zatvaranja, a stotinak zapisa koje ne
+    moze da poveze sa svojom rutom su sum.
+    """
     out = []
     # granicni prelazi se izdvajaju posebno pa ne trose mesto u limitu
     obicni = [it for it in items if not (isinstance(it, dict) and it.get("border"))]
+    odseceno = max(0, len(obicni) - MAX_ITEMS)
     for it in obicni[:MAX_ITEMS]:
         if not isinstance(it, dict):
             continue
-        out.append({
+        zap = {
             "type": str(it.get("type", "info"))[:40],
             "title": str(it.get("title", ""))[:160],
             "detail": str(it.get("detail", ""))[:300],
             "region": str(it.get("region", ""))[:80],
-        })
-    return out
+        }
+        # GEOGRAFIJA (19.8.): do sada je norm() spljostavao svaku stavku na 4 stringa, pa je
+        # aplikacija radove mogla da poredi SAMO po oznaci puta - a D8 je cela jadranska
+        # magistrala, pa su radovi kod Opatije iskakali na ruti Murter-Sibenik. Izvor (HAK)
+        # salje koordinatu za svaki dogadjaj; ovde je samo propustamo dalje.
+        try:
+            la, lo = it.get("lat"), it.get("lon")
+            if la is not None and lo is not None:
+                zap["lat"], zap["lon"] = round(float(la), 5), round(float(lo), 5)
+        except (TypeError, ValueError):
+            pass
+        ln = it.get("coords")
+        if isinstance(ln, list) and len(ln) >= 2:
+            # deonica: [[lon,lat],...] - isti oblik kao deonice[].coords u stanje_puta.json.
+            # Prorediemo na najvise 40 tacaka: dovoljno za "koliko je daleko od rute", a fajl
+            # ostaje mali (robot ga osvezava 5x dnevno).
+            korak = max(1, len(ln) // 40)
+            tanko = []
+            for p in ln[::korak]:
+                try:
+                    tanko.append([round(float(p[0]), 5), round(float(p[1]), 5)])
+                except (TypeError, ValueError, IndexError):
+                    pass
+            if len(tanko) >= 2:
+                zap["coords"] = tanko
+        out.append(zap)
+    return out, odseceno
 
 def load_prev():
     """Prethodni rezultat - da pad jednog izvora ne obrise ono sto smo vec znali."""
@@ -95,12 +137,19 @@ def main():
         last_err = None
         for pokusaj in (1, 2, 3):   # izvori drzava umeju da budu spori iz tudje mreze
             try:
-                sirovo = run_adapter(os.path.join(ADAPTERS, fname))
-                entry["items"] = norm(sirovo)
+                sirovo, nepotpuno = run_adapter(os.path.join(ADAPTERS, fname))
+                entry["items"], odseceno = norm(sirovo)
+                if odseceno:
+                    entry["odseceno"] = odseceno   # nalaz 56: merljivo u fajlu, nevidljivo vozacu
                 result["borders"].extend(izdvoj_granice(sirovo, code))   # granice u poseban kljuc
                 entry["ok"] = True
                 entry["fetched"] = now_iso
+                # 0.9.95 (nalaz 93): ok ostaje True (ostale kategorije JESU stigle), ali se
+                # upisuje spisak onoga sto nije - inace app nema nacin ni da posteno cuti.
+                if nepotpuno:
+                    entry["nepotpuno"] = nepotpuno
                 print(f"[OK ] {code} {name}: {len(entry['items'])} stavki"
+                      + (f", NEPOTPUNO: {', '.join(nepotpuno)}" if nepotpuno else "")
                       + (f" (iz {pokusaj}. pokusaja)" if pokusaj > 1 else ""))
                 break
             except Exception as e:

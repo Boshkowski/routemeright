@@ -42,10 +42,16 @@ def _clean(s):
     return html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", s or ""))).strip()
 
 def fetch_hak_items():
+    # 0.9.95 (QA nalaz 93): kategorija koja padne se do sada tiho preskakala, a kolektor je
+    # svejedno upisivao ok: true jer poziv nije bacio izuzetak. Zivo 26.8.: granicni-prijelazi
+    # vracaju None u sva 4 pokusaja, a fajl kaze HR ok: true, 40 stavki - pa aplikacija nije
+    # imala nacin ni da posteno cuti. Sada adapter prijavi STA mu je otpalo, kroz NEPOTPUNO.
     items = []
+    pale = []
     for key, typ in CATS.items():
         resp = _get(BASE + key)
         if not resp:      # kategorija trenutno u refresh prozoru - preskoci
+            pale.append(key)
             continue
         for grp in resp["data"].get("EventGroups") or []:
             for ev in grp.get("Events") or []:
@@ -73,11 +79,27 @@ def fetch_hak_items():
                     detail = _clean(ev.get("Description") or ev.get("Details") or
                                     ev.get("LocationDescription"))
                     road = ev.get("Road") or grp.get("GroupID") or ""
-                    items.append({
+                    zap = {
                         "type": typ + (" (" + kind + ")" if kind else ""),
                         "title": (road + " - " + kind).strip(" -"),
                         "detail": detail[:300],
-                        "region": road or (ev.get("Region") or "HR")})
+                        "region": road or (ev.get("Region") or "HR")}
+                    # KOORDINATA (19.8.): HAK je salje za svaki dogadjaj, a mi smo je do sada
+                    # cuvali samo za granicne prelaze (gore) i bacali za radove - pa je
+                    # aplikacija radove mogla da veze za rutu samo preko oznake puta.
+                    # Provereno na zivom feedu: 23/23 dogadjaja ima CoordinateX/Y, 6 i
+                    # CoordinateList (deonicu) u obliku [[lon,lat],...].
+                    try:
+                        lo, la = ev.get("CoordinateX"), ev.get("CoordinateY")
+                        if lo not in (None, "") and la not in (None, ""):
+                            zap["lon"], zap["lat"] = float(lo), float(la)
+                    except (TypeError, ValueError):
+                        pass
+                    ln = ev.get("CoordinateList")
+                    if isinstance(ln, list) and len(ln) >= 2:
+                        zap["coords"] = ln
+                    items.append(zap)
+    globals()["NEPOTPUNO"] = pale   # kolektor ovo cita iz namespace-a adaptera
     return items
 
 if __name__ == "__main__":
