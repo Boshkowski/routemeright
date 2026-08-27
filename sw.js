@@ -9,7 +9,7 @@
      dolazi PMTiles paket.
    - SERVISI (prognoza, rutiranje, POI) = nikad iz kesa. Bajata prognoza je gora od nikakve;
      kad nema mreze, aplikacija koristi ono sto je snimljeno uz sacuvanu rutu. */
-const V = "rmr-v25";   /* v25: 0.9.96 - rupe u tragu se broje i javljaju (QA nalaz 100); nova ljuska MORA da padne u telefon. v24: 0.9.95 - kljuc kesa vise ne nosi upit (bez signala se servirala NAJSTARIJA kopija svakog podatka, QA nalaz 53) + noc popravki 27.8.; nova ljuska MORA da padne u telefon. v23: 0.9.90 Atlas deonica (rezim nad mapom iz taba Rute: sve deonice u jednoj boji, kartica sa ocenama zajednice, "Vodi me preko nje") - nova ljuska mora da padne u telefon (25.8.). v22: 0.9.89 ocene deonica (kartica u sazetku + mr_ocene overlay + prijave kanal bez koordinata) - nova ljuska mora da padne u telefon (25.8.). v21: 0.9.88 mini-runda presuda (drugi slot za pecene, mr_defRuta, "Vozi i ti" link, Povezi voznje u turu) - nova ljuska mora da padne u telefon (25.8.). v20: 0.9.87 pecena baza kuriranih deonica (unija za sivenje u loadPutevi) - nova ljuska mora da padne u telefon (25.8.). v19: 0.9.86 zaokruzi turu - ture sa etapama, dnevnik cap 30 - nova ljuska mora da padne u telefon (25.8.). v18: 0.9.85 presude 24.8. - kombinovana podrazumevana + svih 63 deonica u igri - nova ljuska mora da padne u telefon (24.8.). v17: 0.9.84 kurirano sivenje (kombinovana zna za dobre deonice iz baze zajednice) - nova ljuska mora da padne u telefon (24.8.). v16: 0.9.83 auto-pauza + pozadinski GPS most (fixKorak/rmrGpsPaket) - nova ljuska mora da padne u telefon (24.8.). v15: 0.9.82 runda 5 terenskih popravki (checkpoint voznje, nagib jedan izvor, snap trag, reroute paint-first, planner leak, ime cilja) - nova ljuska mora da padne u telefon (24.8.). v14: HUD identitet 0.9.79 - novo pismo (Saira Semi Condensed + JetBrains Mono) menja PRECACHE URL, pa stari kes koji jos drzi Archivo MORA da padne (16.8.). v13: test.html -> app.html; stari kes drzi staru ljusku pod starim imenom, MORA da padne (16.8.). v12: 0.9.78 altApply hibrid fix (16.8.). v11: 0.9.77 - pauza radar/prognoza, Druga ruta, tihe potvrde, pravne stranice (16.8.). v10: mesta_zajednice.json promenjeno (10 koordinata vraceno na prava mesta, 13.8.). v9: izbacen unos-pretpostavka. v7: preimenovani data fajlovi - stari kes mora da padne */
+const V = "rmr-v26";   /* v26: 0.9.97 - plocice i teren vise NE nose verziju u imenu kesa (nalaz 85: svaki apdejt je brisao mapu, pa je prva voznja bez signala bila bez podloge) + pozadinski paket ne laze nativni sloj (nalaz 99). OVAJ activate JOS JEDNOM brise stari rmr-v25-plocice - ime nosi verziju, drugacije se ne moze - i to je POSLEDNJI put. v25: 0.9.96 - rupe u tragu se broje i javljaju (QA nalaz 100); nova ljuska MORA da padne u telefon. v24: 0.9.95 - kljuc kesa vise ne nosi upit (bez signala se servirala NAJSTARIJA kopija svakog podatka, QA nalaz 53) + noc popravki 27.8.; nova ljuska MORA da padne u telefon. v23: 0.9.90 Atlas deonica (rezim nad mapom iz taba Rute: sve deonice u jednoj boji, kartica sa ocenama zajednice, "Vodi me preko nje") - nova ljuska mora da padne u telefon (25.8.). v22: 0.9.89 ocene deonica (kartica u sazetku + mr_ocene overlay + prijave kanal bez koordinata) - nova ljuska mora da padne u telefon (25.8.). v21: 0.9.88 mini-runda presuda (drugi slot za pecene, mr_defRuta, "Vozi i ti" link, Povezi voznje u turu) - nova ljuska mora da padne u telefon (25.8.). v20: 0.9.87 pecena baza kuriranih deonica (unija za sivenje u loadPutevi) - nova ljuska mora da padne u telefon (25.8.). v19: 0.9.86 zaokruzi turu - ture sa etapama, dnevnik cap 30 - nova ljuska mora da padne u telefon (25.8.). v18: 0.9.85 presude 24.8. - kombinovana podrazumevana + svih 63 deonica u igri - nova ljuska mora da padne u telefon (24.8.). v17: 0.9.84 kurirano sivenje (kombinovana zna za dobre deonice iz baze zajednice) - nova ljuska mora da padne u telefon (24.8.). v16: 0.9.83 auto-pauza + pozadinski GPS most (fixKorak/rmrGpsPaket) - nova ljuska mora da padne u telefon (24.8.). v15: 0.9.82 runda 5 terenskih popravki (checkpoint voznje, nagib jedan izvor, snap trag, reroute paint-first, planner leak, ime cilja) - nova ljuska mora da padne u telefon (24.8.). v14: HUD identitet 0.9.79 - novo pismo (Saira Semi Condensed + JetBrains Mono) menja PRECACHE URL, pa stari kes koji jos drzi Archivo MORA da padne (16.8.). v13: test.html -> app.html; stari kes drzi staru ljusku pod starim imenom, MORA da padne (16.8.). v12: 0.9.78 altApply hibrid fix (16.8.). v11: 0.9.77 - pauza radar/prognoza, Druga ruta, tihe potvrde, pravne stranice (16.8.). v10: mesta_zajednice.json promenjeno (10 koordinata vraceno na prava mesta, 13.8.). v9: izbacen unos-pretpostavka. v7: preimenovani data fajlovi - stari kes mora da padne */
 /* PAZNJA: v11 i v12 su nastali IZMENOM DIREKTNO U JAVNOM REPOU, ne ovde - zato je
    dev bio na v10 dok je produkcija bila na v12. tools/deploy.sh sada odbija deploy
    ako je javna verzija >= ove, da se kes nikad ne vrati unazad.
@@ -17,8 +17,20 @@ const V = "rmr-v25";   /* v25: 0.9.96 - rupe u tragu se broje i javljaju (QA nal
    v10 while production ran v12. tools/deploy.sh now refuses to deploy if the public
    version is >= this one, so the cache can never move backwards. */
 const LJUSKA = V + "-ljuska";
-const PLOCICE = V + "-plocice";
-const PLOCICA_MAX = 2500;
+/* 0.9.96 (QA nalaz 85): ime kesa plocica je nosilo VERZIJU, pa je svako podizanje ljuske brisalo
+   sve plocice - a plocice nemaju nikakve veze sa verzijom aplikacije, adresirane su po z/x/y.
+   Posledica: prva voznja bez signala posle svakog apdejta = obojena podloga bez puteva i imena,
+   bas ono zbog cega app na putu i postoji. Sada im ime ne nosi V i activate ih preskace.
+
+   DEM (teren) dobija SVOJ kes sa malim plafonom, jer je izmereno 27.8. na zivim izvorima:
+   podloga z12 ~40 KB, DEM terrarium z12 ~106 KB, z10 ~136 KB - dakle 2,5x do 3,4x veci, a
+   3D senka brda je ukras: bez signala vozacu treba PUT. Plafoni drze ukupan kes oko 115 MB
+   (2000 x 40 KB + 300 x 120 KB). To je bitno jer iOS kvotu origina resava izbacivanjem CELOG
+   skladista sajta - a tu zive i IndexedDB paketi sacuvanih ruta. */
+const PLOCICE = "rmr-plocice";
+const DEM = "rmr-dem";
+const PLOCICA_MAX = 2000;   // ~80 MB podloge = ceo Balkan na z12
+const DEM_MAX = 300;        // ~36 MB terena
 
 /* MapLibre i font MORAJU u precache: oni se ucitavaju iz <head>, dakle PRE nego sto
    service worker uopste postane aktivan, pa ih inace ne bi uhvatio ni na jednom otvaranju. */
@@ -44,8 +56,13 @@ const PRECACHE = [
   "https://tiles.openfreemap.org/sprites/ofm_f384/ofm@2x.png",
 ];
 const LJUSKA_HOST = /^(unpkg\.com|fonts\.googleapis\.com|fonts\.gstatic\.com)$/;
-const PLOCICA_HOST = /^(tiles\.openfreemap\.org|.*\.basemaps\.cartocdn\.com|tilecache\.rainviewer\.com|s3\.amazonaws\.com|elevation-tiles-prod\.s3\.amazonaws\.com)$/;
-const SERVIS_HOST = /(open-meteo\.com|met\.no|valhalla|overpass|nominatim|photon|router\.project-osrm\.org|supabase|rainviewer\.com\/public)/;
+const PLOCICA_HOST = /^(tiles\.openfreemap\.org|.*\.basemaps\.cartocdn\.com|s3\.amazonaws\.com|elevation-tiles-prod\.s3\.amazonaws\.com)$/;
+const DEM_HOST = /^(elevation-tiles-prod\.s3\.amazonaws\.com|s3\.amazonaws\.com)$/;
+/* Radar je izbacen iz kesa plocica (nalaz 85): okvir nosi vremensku oznaku u URL-u, pa se
+   NIKAD ne trazi drugi put - samo je punio kes i po FIFO pravilu izbacivao podlogu koja
+   vozacu stvarno treba. Uz to je ziv podatak, tacno ono sto ovaj fajl zove "servis".
+   Grana servisa se testira PRE grane plocica, pa siri obrazac stvarno odvodi radar odavde. */
+const SERVIS_HOST = /(open-meteo\.com|met\.no|valhalla|overpass|nominatim|photon|router\.project-osrm\.org|supabase|rainviewer\.com)/;
 
 self.addEventListener("install", (e) => {
   e.waitUntil((async () => {
@@ -57,7 +74,7 @@ self.addEventListener("install", (e) => {
 
 self.addEventListener("activate", (e) => {
   e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (!k.startsWith(V)) await caches.delete(k);
+    for (const k of await caches.keys()) if (k !== PLOCICE && k !== DEM && !k.startsWith(V)) await caches.delete(k);   // nalaz 85: plocice i teren prezivljavaju apdejt
     await self.clients.claim();
   })());
 });
@@ -90,14 +107,17 @@ self.addEventListener("fetch", (e) => {
   // plocice mape: prvo kes (brzo i radi offline za vec gledane krajeve), pa mreza
   if (PLOCICA_HOST.test(url.host)) {
     e.respondWith((async () => {
-      const c = await caches.open(PLOCICE);
+      const jeDem = DEM_HOST.test(url.host);
+      const kesIme = jeDem ? DEM : PLOCICE;
+      const kesMax = jeDem ? DEM_MAX : PLOCICA_MAX;
+      const c = await caches.open(kesIme);
       // caches.match gleda SVE kesove: definicija stila i sprajtovi su u precache-u (ljuska),
       // a plocice u svom kesu - bez ovoga se stil nikad ne nadje i mapa ostaje prazna
       const iz = (await c.match(req)) || (await caches.match(req));
       if (iz) return iz;
       try {
         const r = await fetch(req);
-        if (r && r.ok) { c.put(req, r.clone()); ogranici(PLOCICE, PLOCICA_MAX); }
+        if (r && r.ok) { c.put(req, r.clone()); ogranici(kesIme, kesMax); }
         return r;
       } catch (err) {
         return iz || Response.error();

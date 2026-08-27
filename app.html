@@ -11395,7 +11395,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.96";
+const APP_VERSION = "0.9.97";
 const CHANGELOG = [
   { v: "0.9.95", d: "27.08.2026.", stavke: [
     "<b>Gorivo i domet se više ne računaju po tuđem motoru.</b> Popravka od juče je stala na jednom ekranu: u tabu Ja je pisalo \"nije izabran\", a kartica rezultata je i dalje tvrdila \"na tvom R 1250 GS\" i balon pumpe \"pun rezervoar za R 1250 GS\" - jer su ta dva čitala padajući spisak, koji bez tvog profila stoji na prvom modelu iz baze. Sada sva tri ekrana čitaju isto, kroz jednu funkciju. Dok motor nije izabran, kartica Gorivo pošteno kaže da je račun za podrazumevani motor - jer \"nema potrebe za točenjem\" izgovoreno o tuđem motoru može da te ostavi bez goriva.",
@@ -14549,6 +14549,12 @@ function pauzaWxNastavak(trajalaMs) {
 const PAUZA_AUTO_MS = 180000;       // T1: stajanje >= 3 min = tiha auto-pauza
 const PAUZA_SVEZ_MS = 4000;         // svezina fiksa za svaku odluku (model: leanMotion gard na ustajali fiks)
 const PAUZA_RESUME_KMH = 15;        // auto-nastavak tek preko 15 km/h (guranje motora po pumpi nije voznja)
+/* 0.9.96 (nalaz 99): skener nastavka u POZADINSKOM paketu je trazio acc < 80, a ridePauzaUdji
+   je nativni kolektor sam prebacio na kCLLocationAccuracyHundredMeters - dakle upravo profil
+   koji legitimno pravi grube fikseve. Pauza je zato ostajala zaglavljena nad sopstvenim
+   podesavanjem. Dva uzastopna fiksa preko 15 km/h na 100 m tacnosti JESU dokaz da se vozi.
+   Prag u fixKorak (acc < 80) se NAMERNO ne dira - odometar i maksimalna brzina ostaju strogi. */
+const PAUZA_POZ_ACC = 150;
 const PAUZA_GLAS_KMH = 10;          // 0.9.95: prag "stvarno vozi" - glas i reroute u pauzi rade samo iznad njega
 const PAUZA_REKAL_MS = 180000;      // pauza >= 3 min -> parcijalni reset nagiba + nula na dokazanom pravcu
 const PAUZA_IDLE_MS = 4 * 3600e3;   // auto-pauza >= 4 h -> pitanje "zavrsiti i sacuvati?"
@@ -14985,7 +14991,7 @@ function rmrGpsPaket(fixes) {
     if (RIDE.paused && RIDE.pauseAuto) {
       for (let i = 0; i + 1 < batch.length; i++) {
         const a = batch[i], b = batch[i + 1];
-        if (a.ts > (RIDE.lastFixTs || 0) && a.acc < 80 && b.acc < 80
+        if (a.ts > (RIDE.lastFixTs || 0) && a.acc < PAUZA_POZ_ACC && b.acc < PAUZA_POZ_ACC
             && a.efK != null && a.efK > PAUZA_RESUME_KMH && b.efK != null && b.efK > PAUZA_RESUME_KMH) {
           ridePauzaIzadji(true, a.ts);
           break;
@@ -15008,12 +15014,17 @@ function rmrGpsPaket(fixes) {
       }
       stojiOd = null; stojiPoz = null;
     };
+    let nijePreuzet = false;   // nalaz 99: paket koji nije obradjen ne sme da se prijavi kao preuzet
     const obradi = () => {
       try {
         const kraj = Math.min(batch.length, i0 + 500);
         for (; i0 < kraj; i0++) {
           const f = batch[i0];
-          if (RIDE.paused) break;   // pauza (ziva ili iz T2): fiksevi pauze se ne knjize, kao ni uzivo
+          /* 0.9.96 (QA nalaz 99): fiksevi pauze se ne knjize - ali dok se ovde samo pucalo iz
+             petlje, funkcija je nize svejedno vracala "ok". Nativni sloj na "ok" pozove
+             potvrdiSlanje() i OBRISE .sending fajl, pa sati pozadinske voznje nestanu sa diska
+             trajno, a vozac za to vreme gleda ekran na kome pise "Pauza". */
+          if (RIDE.paused) { nijePreuzet = i0 < batch.length; break; }
           if (f.ts <= (RIDE.lastFixTs || 0)) continue;   // vec pokriveno zivim watch-om
           fixKorak({ coords: { latitude: f.la, longitude: f.lo, speed: f.spd, accuracy: f.acc, heading: null } }, f.ts, true);
           n++; zadnji = f;
@@ -15037,11 +15048,17 @@ function rmrGpsPaket(fixes) {
         }
         try { rideAltStanje(); } catch (e) {}   // DOM jednom posle petlje, ne po fiksu (review #20)
         try { navLog("gps-paket", { n: fixes.length, obradjeno: n }); } catch (e) {}
+        if (nijePreuzet) { try { navLog("gps-paket-u-pauzi", { n: fixes.length, obradjeno: n }); } catch (e) {} }
         try { pauzaAutoTick(Date.now()); } catch (e) {}   // JEDNA ziva procena sa konacnim stanjem (pumpa: stoji i dalje -> pauza)
         try { voznjaCkp(true); } catch (e) {}             // obogaceno stanje odmah u kontrolnu tacku
       } catch (e) { try { navLog("gps-paket-greska", { m: String((e && e.message) || e) }); } catch (e2) {} }
     };
     obradi();
+    /* Prvi talas obradi() tece SINHRONO, pa je zastavica ovde vec tacna: RIDE.paused se unutar
+       petlje ne moze promeniti (fixKorak ne zove pauzaAutoTick). Na "nije" AppDelegate NE zove
+       potvrdiSlanje - bafer ostaje na disku i isti fiksevi dolaze na sledecem povratku u
+       prednji plan, kad pauza vise ne stoji. */
+    if (nijePreuzet) return "nije";
     return "ok";   // paket je PREUZET (dug rep se dovrsava u talasima)
   } catch (e) {
     try { navLog("gps-paket-greska", { m: String((e && e.message) || e) }); } catch (e2) {}
