@@ -11506,7 +11506,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.99";
+const APP_VERSION = "0.9.100";
 const CHANGELOG = [
   { v: "0.9.95", d: "27.08.2026.", stavke: [
     "<b>Gorivo i domet se više ne računaju po tuđem motoru.</b> Popravka od juče je stala na jednom ekranu: u tabu Ja je pisalo \"nije izabran\", a kartica rezultata je i dalje tvrdila \"na tvom R 1250 GS\" i balon pumpe \"pun rezervoar za R 1250 GS\" - jer su ta dva čitala padajući spisak, koji bez tvog profila stoji na prvom modelu iz baze. Sada sva tri ekrana čitaju isto, kroz jednu funkciju. Dok motor nije izabran, kartica Gorivo pošteno kaže da je račun za podrazumevani motor - jer \"nema potrebe za točenjem\" izgovoreno o tuđem motoru može da te ostavi bez goriva.",
@@ -14689,6 +14689,8 @@ const PAUZA_RESUME_KMH = 15;        // auto-nastavak tek preko 15 km/h (guranje 
    Prag u fixKorak (acc < 80) se NAMERNO ne dira - odometar i maksimalna brzina ostaju strogi. */
 const PAUZA_POZ_ACC = 150;
 const PAUZA_GLAS_KMH = 10;          // 0.9.95: prag "stvarno vozi" - glas i reroute u pauzi rade samo iznad njega
+const PAUZA_ODMAK_KM = 0.15;        // 0.9.100 (nalazi 105, 73): 150 m od mesta pauze JESTE voznja, ma koliko sporo
+const PAUZA_RUCNA_MS = 120000;      // ...ali rucnu pauzu (svestan cin) gasi tek istrajna voznja: 2 min
 const PAUZA_REKAL_MS = 180000;      // pauza >= 3 min -> parcijalni reset nagiba + nula na dokazanom pravcu
 const PAUZA_IDLE_MS = 4 * 3600e3;   // auto-pauza >= 4 h -> pitanje "zavrsiti i sacuvati?"
 const PAUZA_HAOS_DPS = 120;         // T3: prag rotacionog haosa (deg/s magnitude)
@@ -14721,6 +14723,7 @@ function ridePauzaUdji(tiho, razlog) {   // ulaz u pauzu: rucni (dugme) i tihi (
     RIDE.pauzeNa = (RIDE.pauzeNa || []).concat([(RIDE.pos && RIDE.pos.lo != null) ? [RIDE.pos.lo, RIDE.pos.la, 0] : [null, null, 0]]);
     RIDE._pauzaIdx = RIDE.pauzeNa.length - 1;
   } catch (e) {}
+  RIDE._rucniKretOd = 0;   // nalaz 73: svaka nova pauza pocinje bez nasledjenog brojaca voznje
   document.body.classList.add("ridepaused");
   if (pb) { pb.innerHTML = RIDE_PLAY_SVG; pb.classList.add("on"); }
   try { document.getElementById("rideInstr").textContent = "Pauza"; document.getElementById("rideDist").textContent = ""; } catch (e) {}
@@ -14741,14 +14744,22 @@ function ridePauzaIzadji(tiho, krajTs) {   // izlaz iz pauze; krajTs (opciono) =
   const pb = document.getElementById("ridePause");
   const jeAuto = !!RIDE.pauseAuto, razlogP = RIDE._pauzaRazlog;
   RIDE.paused = false;
-  RIDE._kretOd = 0; RIDE._kretRek = false; RIDE._pNavPrev = 0;   // 0.9.95: opomena i takt pauziranog navodjenja se resetuju
+  RIDE._kretOd = 0; RIDE._kretRek = false; RIDE._pNavPrev = 0; RIDE._rucniKretOd = 0;   // 0.9.95/0.9.100: opomena, takt pauziranog navodjenja i brojac istrajne voznje se resetuju
   const _kraj = krajTs || Date.now();
   // klamp (review #7): zidni sat ume da se resinhronizuje - pauza nikad negativna, nikad preko 24 h
   const _ovaPauza = Math.max(0, Math.min(_kraj - (RIDE.pauseT0 || _kraj), 24 * 3600e3));
   /* KRATKA AUTO-PAUZA SE RETROAKTIVNO BRISE (review #3): zakljucan telefon na semaforu (T2) ili
      kratak predah ne sme da ostavi NIKAKAV trag - ni u pauseMs ni u pauzeNa. Rucna pauza je
      covekov svestan cin i uvek ostaje zabelezena. */
-  const _brisi = jeAuto && _ovaPauza < PAUZA_AUTO_MS;
+  /* 0.9.100 (QA nalaz 75, Boskova odluka 27.8. "spusti na 3"): pomoc u aplikaciji obecava TRI
+     minuta, a kod je trazio sest. Nije bio jedan prag nego dva u nizu: u pauzu se ulazi tek posle
+     PAUZA_AUTO_MS stajanja (14713), a pauza se MERI od tog trenutka - pa je brisanje kraceg od
+     PAUZA_AUTO_MS znacilo 3 + 3 = 6 minuta ukupnog stajanja. Zato aplikacija u istom trenutku
+     kaze "Nastavljamo, pauza od 2 minuta" i tu pauzu obrise.
+     Sada se meri UKUPNO stajanje (od _stajeOd, ako ga ima), pa petominutno stajanje ostane u
+     dnevniku i dobije pin na mapi. Rucna pauza je i dalje covekov svestan cin i NIKAD se ne brise. */
+  const _stajanjeUk = (jeAuto && RIDE._stajeOd) ? Math.max(0, Math.min(_kraj - RIDE._stajeOd, 24 * 3600e3)) : _ovaPauza;
+  const _brisi = jeAuto && _stajanjeUk < PAUZA_AUTO_MS;
   try {   // upis/brisanje ISKLJUCIVO preko indeksa ove pauze (review #4)
     const pz = RIDE.pauzeNa, idx = RIDE._pauzaIdx;
     const vazi = pz && idx != null && idx >= 0 && idx < pz.length;
@@ -14855,12 +14866,31 @@ function pauzaAutoTick(now) {
   // u pauzi: kontrolna tacka na ~2 min - redovni pisci (voznjaCkp u fix handlerima) su ispod
   // paused early-return-a, pa bi iOS kill u kafani inace odneo sve od ulaska u pauzu
   if (!RIDE._pauzaCkpT || now - RIDE._pauzaCkpT >= 120000) { RIDE._pauzaCkpT = now; try { voznjaCkp(true); } catch (e) {} }
-  // auto-nastavak: SAMO auto-pauza (rucnu gasi samo dugme), SAMO svez fiks preko 15 km/h - i to
-  // DVA uzastopna precizna (acc<80) fiksa (review #6): GPS rasejanje u kafani ne sme da prekine pauzu
-  if (RIDE.pauseAuto && RIDE.lastFixTs && now - RIDE.lastFixTs < PAUZA_SVEZ_MS
-      && (RIDE.spdKmh || 0) > PAUZA_RESUME_KMH && (RIDE._resumeCnt || 0) >= 2) {
+  /* AUTO-nastavak. Svez fiks + DVA uzastopna precizna (review #6) - GPS rasejanje u kafani ne sme
+     da prekine pauzu. Od 0.9.100 dokaz voznje je "preko 15 km/h ILI odmakao 150 m od mesta pauze"
+     (nalaz 105): puzenje kroz selo na 12 km/h je i dalje voznja. Brojac _resumeCnt vodi
+     pauzaFixTick, gde oba uslova i zive. */
+  const _voziDokazano = RIDE.lastFixTs && now - RIDE.lastFixTs < PAUZA_SVEZ_MS && (RIDE._resumeCnt || 0) >= 2;
+  if (RIDE.pauseAuto && _voziDokazano) {
     ridePauzaIzadji(true);
     return;
+  }
+  /* RUCNA pauza (QA nalaz 73, Boskova odluka 27.8.: "rucna pauza treba automatski da se ugasi").
+     Ovo MENJA pravilo od 6.8. po kome ju je gasilo iskljucivo dugme. Prag je namerno strozi nego
+     kod auto-pauze: covek ju je SVESNO ukljucio, pa jedan prolazak kroz parking ne sme da je
+     ponisti - trazi se DVE MINUTE neprekidne dokazane voznje. Nastavak se KAZE, ne desava se
+     tiho: do sada je aplikacija imala stotine dokaza da vozis i o tome cutala. */
+  if (!RIDE.pauseAuto && _voziDokazano) {
+    if (!RIDE._rucniKretOd) RIDE._rucniKretOd = now;
+    if (now - RIDE._rucniKretOd >= PAUZA_RUCNA_MS) {
+      RIDE._rucniKretOd = 0;
+      try { navLog("pauza-rucna-auto-nastavak", { ms: PAUZA_RUCNA_MS }); } catch (e) {}
+      ridePauzaIzadji(true);
+      try { tihoObavestenje("Vozio si dva minuta, pa sam sam nastavio snimanje - pauza je zatvorena."); } catch (e) {}
+      return;
+    }
+  } else if (RIDE._rucniKretOd) {
+    RIDE._rucniKretOd = 0;   // stao si - brojac istrajne voznje krece iz pocetka
   }
   /* 0.9.95: OPOMENA. Otkad navodjenje radi i u pauzi, kartica izgleda potpuno normalno - a
      kilometri i vreme se ne broje. Glasan kvar (app cuti) ne sme da postane tih kvar (app izgleda
@@ -14904,8 +14934,17 @@ function pauzaFixTick(p, tsMs) {
   const la = p.coords.latitude, lo = p.coords.longitude;
   RIDE.lastFixTs = tsMs;
   const spdK = fixBrzina(p, lo, la, tsMs);
-  // dva uzastopna PRECIZNA fiksa preko praga = stvaran polazak (review #6); sve drugo nulira brojac
-  if ((p.coords.accuracy || 0) < 80 && spdK > PAUZA_RESUME_KMH) RIDE._resumeCnt = (RIDE._resumeCnt || 0) + 1;
+  /* 0.9.100 (QA nalaz 105, Boskova odluka (c) + nalaz 73 "rucna pauza treba automatski da se
+     ugasi"): izlaz je do sada trazio SAMO brzinu preko 15 km/h. Ako posle semafora puzis kroz
+     guzvu ili selo ispod tog praga, pauza ostaje - a sa njom i zamrznute knjige, kilometrima.
+     Zato se pored brzine priznaje i ODMAK od mesta pauze. Mesto vec postoji: ridePauzaUdji ga
+     upisuje u RIDE.pauzeNa[RIDE._pauzaIdx]. 150 m nije guranje motora po platou pumpe.
+     Postojeca histereza od DVA uzastopna precizna fiksa ostaje netaknuta - jedan trzaj GPS-a ne
+     gasi pauzu. */
+  const _p0 = (RIDE.pauzeNa && RIDE._pauzaIdx != null) ? RIDE.pauzeNa[RIDE._pauzaIdx] : null;
+  const _odmakao = !!(_p0 && _p0[0] != null && haversine(_p0[1], _p0[0], la, lo) > PAUZA_ODMAK_KM);
+  if ((p.coords.accuracy || 0) < 80 && (spdK > PAUZA_RESUME_KMH || (_odmakao && spdK > ALT_STOJI_KMH)))
+    RIDE._resumeCnt = (RIDE._resumeCnt || 0) + 1;
   else RIDE._resumeCnt = 0;
   RIDE.lastFixObj = { lo, la, ts: tsMs };
   pauzaAutoTick(tsMs);
@@ -15162,8 +15201,12 @@ function rmrGpsPaket(fixes) {
           fixKorak({ coords: { latitude: f.la, longitude: f.lo, speed: f.spd, accuracy: f.acc, heading: null } }, f.ts, true);
           n++; zadnji = f;
           if (f.efK != null && f.acc < 80) {   // detekcija pozadinskog stajanja - ista dva-fiksa histereza kao resume
+            /* 0.9.100 (nalaz 105): ISTO pravilo kao uzivo - "preko 15 km/h ILI odmakao 150 m od
+               mesta stajanja". Bez ovoga bi ista voznja imala DVA ishoda zavisno od toga da li je
+               ekran bio upaljen ili u dzepu: uzivo bi pauza pukla na odmaku, a u replay-u ne. */
+            const _odm = stojiPoz && haversine(stojiPoz.la, stojiPoz.lo, f.la, f.lo) > PAUZA_ODMAK_KM;
             if (f.efK < ALT_STOJI_KMH) { if (stojiOd == null) { stojiOd = f.ts; stojiPoz = f; } pokretCnt = 0; }
-            else if (f.efK > PAUZA_RESUME_KMH) { pokretCnt++; if (pokretCnt === 1) pokretTs = f.ts; if (pokretCnt >= 2) { gapKraj(pokretTs); pokretCnt = 0; } }
+            else if (f.efK > PAUZA_RESUME_KMH || (_odm && f.efK > ALT_STOJI_KMH)) { pokretCnt++; if (pokretCnt === 1) pokretTs = f.ts; if (pokretCnt >= 2) { gapKraj(pokretTs); pokretCnt = 0; } }
             else pokretCnt = 0;
           }
         }
