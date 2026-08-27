@@ -11506,7 +11506,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.98";
+const APP_VERSION = "0.9.99";
 const CHANGELOG = [
   { v: "0.9.95", d: "27.08.2026.", stavke: [
     "<b>Gorivo i domet se više ne računaju po tuđem motoru.</b> Popravka od juče je stala na jednom ekranu: u tabu Ja je pisalo \"nije izabran\", a kartica rezultata je i dalje tvrdila \"na tvom R 1250 GS\" i balon pumpe \"pun rezervoar za R 1250 GS\" - jer su ta dva čitala padajući spisak, koji bez tvog profila stoji na prvom modelu iz baze. Sada sva tri ekrana čitaju isto, kroz jednu funkciju. Dok motor nije izabran, kartica Gorivo pošteno kaže da je račun za podrazumevani motor - jer \"nema potrebe za točenjem\" izgovoreno o tuđem motoru može da te ostavi bez goriva.",
@@ -13726,6 +13726,7 @@ const NAV_OFF_M = 40, NAV_OFF_MS = 6000;
    koju od tada pokriva. */
 const PUMPE_ZEMLJE = new Set(["RS", "HR", "BA", "SI", "ME", "MK", "XK"]);
 const ARR_BLIZU_KM = 0.15;   // nalaz 69: dolazak trazi i FIZICKU blizinu kraja geometrije, ne samo projekciju
+const ARR_DALEKO_KM = 0.4;   // ...a opoziv trazi jasnu udaljenost - inace bi trzaj GPS-a ubio tajmer BAS pri dolasku
 /* Rupa u tragu (QA nalaz 100). RUPA_M/RUPA_MS su prag za BROJANJE, RUPA_RECI_MS za zivu
    poruku. Pragovi su za sada PROCENA, ne merenje - prvi terenski snimak sa rupaN > 0 je
    prilika da se potvrde ili pomere. Zato se rupaKm/rupaMin UPISUJU u zapis i kad se ne
@@ -15637,7 +15638,11 @@ function startRide() {
        pregazi "Stigao si!". Da je uslov dodat samo na jedno mesto, dva reda bi se svadjala. */
     /* nalaz 94: ruta bez uputstava (OSRM rezerva ili sirov GPX trag). Kartica ne sme da stoji
        prazna ni da drzi tudji manevar - kaze sta zna i sta ne zna. */
-    if (route.bezManevara) {
+    /* Ovaj blok je PETI pisac #rideInstr u istom rukovaocu, i pise POSLE gejta za van-rute
+       (~15589) i POSLE GPX poruke "Vrati se na trag". Bez ovog uslova bi na svakom otkucaju
+       pregazio obe - tacno onaj kvar zbog kog je nalaz 32 i postojao. "Stigao si!" se pise
+       ISPOD ovog bloka pa on legitimno pobedjuje. */
+    if (route.bezManevara && !vanRute && !RIDE._gpxOffAt) {
       try {
         document.getElementById("rideArr").innerHTML = arrSvg("straight");
         document.getElementById("rideInstr").textContent = "Prati liniju - za ovu rutu nemam uputstva skretanja";
@@ -15659,13 +15664,17 @@ function startRide() {
       document.getElementById("rideThen").textContent = "";
       document.getElementById("rideRem").textContent = "";
       if (!RIDE.arrTo) RIDE.arrTo = setTimeout(stopRide, 8000);   // jednom, ne na svaki fiks - stale timeout je ubijao SLEDECU voznju
-    } else if (RIDE.arrTo) {
+    } else if (RIDE.arrTo && (!_kraj || haversine(la, lo, _kraj[1], _kraj[0]) > ARR_DALEKO_KM)) {
       /* Pravi blokator iz nalaza 69: tajmer se palio sa if (!RIDE.arrTo) i NIKAD se nije
          preispitivao, pa je JEDAN lazan otkucaj gasio voznju 8 s kasnije bez obzira na sve
-         sledece fikseve. Gard samo na ulaznom uslovu zato nije bio popravka. */
+         sledece fikseve. Gard samo na ulaznom uslovu zato nije bio popravka.
+         HISTEREZA (obavezna): opoziv NE SME da deli prag sa naoruzavanjem. Da deli, jedan trzaj
+         GPS-a preko 150 m u tih 8 sekundi ubio bi tajmer BAS DOK vozac stvarno stize - voznja se
+         ne bi ugasila, a dnevnik bi je zapisao kao "(prekinuto)". Zato se opoziva tek kad si
+         nedvosmisleno DALEKO (400 m), ne cim izadjes iz kruga dolaska. */
       try { clearTimeout(RIDE.arrTo); } catch (e) {}
       RIDE.arrTo = null; RIDE.arrived = false;
-      try { navLog("dolazak-opozvan", { remM: Math.round(remM) }); } catch (e) {}
+      try { navLog("dolazak-opozvan", { remM: Math.round(remM), odKraja: _kraj ? Math.round(haversine(la, lo, _kraj[1], _kraj[0]) * 1000) : null }); } catch (e) {}
     }
     // meta traka
     if (pr.offM < NAV_OFF_M) try { navProgress(d / Math.max(1, total), total); } catch (e) {}   // predjeni deo rute plavi (fallback; rAF petlja vodi glatku granicu); 0.9.82: ISTI gate kao rAF - van rute projekcija d bezi NAPRED pa je plava granica prestizala vozaca
