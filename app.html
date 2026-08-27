@@ -2465,7 +2465,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
         <button id="qAdv" type="button" aria-label="Još opcija"><svg viewBox="0 0 24 24" stroke-width="2" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>Još</button>
       </div>
       <button id="qFrom" type="button">Odakle krećeš? · dodirni da upišeš polazak</button>
-      <input id="qWhen" type="datetime-local" aria-label="Vreme polaska ili dolaska">
+      <input id="qWhen" type="datetime-local" aria-label="Vreme polaska ili dolaska">   <!-- max: WX_HORIZONT_DANA, postavlja se u JS-u (nalaz 96) -->
     </div>
     <h1><svg width="30" height="30" viewBox="0 0 512 512" style="vertical-align:-7px;margin-right:9px;border-radius:var(--r-sm)"><rect width="512" height="512" rx="112" fill="var(--bg-sunken)"/><path fill="#FF6A00" d="M100.8 420V92H291.3Q327.6 92 352 105.6Q376.3 119.2 388.5 142.8Q400.7 166.5 400.7 195.6Q400.7 227.1 386.1 251.7Q371.5 276.3 345.3 290.1L411.2 420H315.7L261.3 304.5H186.3V420ZM186.3 241H274.6Q292.3 241 303 229.3Q313.8 217.6 313.8 198Q313.8 185.1 309 176Q304.2 167 295.6 161.9Q287 156.9 274.6 156.9H186.3Z"/></svg>Route<span class="moto">Me</span>Right</h1>
     <div class="sub">Kuda ćeš danas? Reci od-do, a mi računamo <b style="color:#e2e8f0;font-weight:700">vreme za sat kad tuda prolaziš</b>, trošak za baš tvoj motor i najlepšu rutu.</div>
@@ -2476,7 +2476,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
         <option value="depart">Polazak u</option>
         <option value="arrive">Stigni do</option>
       </select></div>
-      <div style="flex:1.6"><input id="depart" type="datetime-local"></div>
+      <div style="flex:1.6"><input id="depart" type="datetime-local"></div>   <!-- max: WX_HORIZONT_DANA (nalaz 96) -->
     </div>
     <label class="chk"><input type="checkbox" id="roundTrip"> Povratno putovanje - vrati me na polaznu tačku</label>
     <label class="chk"><input type="checkbox" id="roundGen"> Kružna tura - napravi mi krug zadate dužine iz mog grada</label>
@@ -3876,6 +3876,9 @@ async function geoPhoton(q) { const r = await geoPhotonRaw(q, 1); return r.lengt
 async function geoPhotonSugg(q, n) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SIRE klase - mesta, ulice, adrese, POI.
   const adr = !!_geoAdresa(q);   // upit sa kucnim brojem se rangira po blizini, ne po znacaju mesta
   const ref = geoRef();                //  Ovde covek BIRA OCIMA iz liste (sub red nosi grad+daljinu), pa fuzzy promasaj ne odvede nikud;
+  /* nalaz 106: BIAS ostaje i kad je referenca ustajala (blizi rezultat ide vise - to je 6.8.
+     resilo Temisvar bug). Tvrde granice ispod se gase: nista se ne IZBACUJE iz liste. */
+  const _refSvez = !(ref && ref.sveze === false);
   const bias = ref && ref.lat != null ? `&lat=${ref.lat.toFixed(4)}&lon=${ref.lon.toFixed(4)}` : "";   //  auto-izbor i dalje ide SAMO kroz Enter kaskadu sa svojim cuvarima.
   try {
     const j = await fetchJSON(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}${bias}&zoom=11&location_bias_scale=0.5&limit=10&lang=default`, { timeoutMs: 6000, retries: 0 });
@@ -3893,11 +3896,15 @@ async function geoPhotonSugg(q, n) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SI
     /* 900 km: Alpi i Grcka ostaju u predlozima, drugi kraj sveta ne (review 9.8.). Ali ADRESA
        (upit sa kucnim brojem) je mesna stvar - tu je granica 300 km, inace se u listu popne
        "broj 3" iz druge zupanije (Boskov nalaz 19.8.). */
-    }).filter((x) => x.name && (x.d == null || x.d < (adr ? 300 : 900)));
+    /* 0.9.102 (QA nalaz 106, Boskova odluka 27.8.): kad referenca NIJE sveza (lokacija iskljucena
+       ili poslednji fiks stariji od 15 min), daljina se meri od mesta na kome si mozda bio jutros.
+       Tada BIAS ostaje - blizi rezultat i dalje ide vise, jer je bas to 6.8. resilo Temisvar bug -
+       ali tvrde granice se gase: nista se ne IZBACUJE iz liste, i "~X km" se ne pise jer bi lagalo. */
+    }).filter((x) => x.name && (!_refSvez || x.d == null || x.d < (adr ? 300 : 900)));
     scored.sort((a, b) => b.bod - a.bod || (a.d == null ? 9e9 : a.d) - (b.d == null ? 9e9 : b.d));
     /* Kod adrese: kad IMA pogodaka u blizini, daleki se ne nude uopste (Boskovih "209 km!").
        Uslovno, ne fiksno - ako blizu nema niceg, lista ostaje kakva jeste umesto da bude prazna. */
-    const blizu = adr && scored.some((x) => x.d != null && x.d < 100)
+    const blizu = _refSvez && adr && scored.some((x) => x.d != null && x.d < 100)
       ? scored.filter((x) => x.d == null || x.d < 150) : scored;
     return blizu.slice(0, n || 6);
   } catch (e) { return []; }
@@ -4195,7 +4202,12 @@ async function geocode(q) {
       if (ttN && haversine(ref.lat, ref.lon, ttN.lat, ttN.lon) < dBest * 0.5) return ttN;
     }
   }
-  if (ref && ref.lat != null && !/,/.test(qq)) {   // mali POI na drugom kraju sveta = sumnjivo (zaselak Stivale u Italiji!)
+  /* 0.9.102 (QA nalaz 106, Boskova odluka 27.8.): kad aplikacija NE ZNA gde si - lokacija
+     iskljucena, ili poslednji fiks stariji od 15 minuta (`ref.sveze === false`) - stara tacka
+     vise nikoga ne IZBACUJE iz liste. Bias (rangiranje) ostaje, jer je bas on 6.8. resio
+     Temisvar bug i ne dira se; tvrda granica od 600 km odlazi, jer meri daljinu od mesta na kome
+     si mozda bio jutros. Poruka "~X km odavde" bi uz ustajalu tacku bila izmisljen broj. */
+  if (ref && ref.lat != null && ref.sveze !== false && !/,/.test(qq)) {   // mali POI na drugom kraju sveta = sumnjivo (zaselak Stivale u Italiji!)
     const dKm = haversine(ref.lat, ref.lon, +best.lat, +best.lon);
     const settlement = _geoCls(best) === "place" && ["city", "town"].includes(best.addresstype);
     // 6.8. RUPA ZATVORENA: raniji "3+ reci = izricit" bypass bi "Moto Bike Shop" ODVEO U TEMISVAR bez pitanja.
@@ -4343,7 +4355,12 @@ function kuriraniKandidati(vij, brza, bjp, radovi) {
   // da se veze za 15 km deonice, pa ne iskljucuje (isti princip kao kartica: bez provere nema tvrdnje).
   const jeRad = (t) => { const s = nfc(t).toLowerCase();
     return s.indexOf("radov") >= 0 || s.indexOf("roadwork") >= 0 || s === "delo" || s.indexOf("zatvaranje") >= 0 || s.indexOf("closure") >= 0; };
+  /* nalaz 88: ISTI sud kao kartica. Bez ovoga je zapis koji kartica odbija (teretna zabrana,
+     arhiva starija od pola godine) i dalje mogao da izbaci deonicu iz Kombinovane - tiho, i bez
+     ijedne reci na kartici koju vozac gleda. */
+  const _sadRad = Date.now();
   const radoviGeo = (Array.isArray(radovi) ? radovi : []).filter((it) => it && jeRad(it.type)
+    && _radRelevantan(it, _sadRad)
     && ((it.lat != null && it.lon != null) || (Array.isArray(it.coords) && it.coords.length >= 2)));
   const out = [];
   for (const d of bjp.deonice) {
@@ -4605,6 +4622,33 @@ async function hibridnaRuta(from, to, vij, brza) {
     for (const kd of kandidati) {
       const prag = kd.atlas ? Math.max(0.6, bjpPokrivenost(vij, kd.koord) - 0.05) : 0.6;
       if (bjpPokrivenost(hyb, kd.koord) < prag) throw new Error(`kurirana deonica nije odvezena: ${kd.ime}`);
+    }
+    /* 0.9.102 (QA nalaz 95, Boskova odluka 27.8.: kartica NESTANE): isto merilo koje vec stiti
+       kurirane deonice, sada i za ono sto je vozac SAM trazio. Stanica u prvih ili poslednjih
+       3 km ne postaje sav, pa je sasivena ruta moze prosto obici - a Kombinovana je podrazumevana
+       kartica, dakle ona koju ce najverovatnije voziti. Bolje da je nema nego da tiho preskoci
+       hotel u kome je rezervisao.
+       Neme tacke (Atlas, krug, legendarne) su namerno izuzete: one nisu obecanje vozacu nego
+       sredstvo da ruter stvarno prodje deonicu - njih vec sudi pokrivenost iznad. */
+    /* ⚠ Atlas svoje KRAJEVE salje kao t:"stop" ("Ulaz"/"Izlaz"), pa se po tipu ne razlikuju od
+       vozacevih stanica. Njih vec sudi prag pokrivenosti iznad (i to strozi), a leze po
+       konstrukciji na samoj deonici - zato se ovde preskacu. Bez ovog izuzetka Kombinovana bi
+       nestajala na SVAKOJ Atlas relaciji. */
+    const _uzAtlas = (v) => {
+      const ac = state.atlasCoords;
+      if (!Array.isArray(ac) || ac.length < 2) return false;
+      const korak = Math.max(1, Math.floor(ac.length / 200));
+      for (let i = 0; i < ac.length; i += korak) if (haversine(v[1], v[0], ac[i][1], ac[i][0]) <= 0.25) return true;
+      return false;
+    };
+    for (const st of (stanice || [])) {
+      if (!st || st.t !== "stop" || !st.v) continue;   // neme tacke sudi pokrivenost iznad
+      if (_uzAtlas(st.v)) continue;                    // Atlasov kraj, ne tvoja stanica
+      let bl = null;
+      try { bl = navProject(hyb, st.v[0], st.v[1]); } catch (e) {}
+      if (!bl || bl.offM > STANICA_MAX_M) {
+        throw new Error(`stanica nije na ruti: ${st.ime || "usputna"}`);
+      }
     }
     return hyb;
   };
@@ -5140,6 +5184,11 @@ const FUEL_PRICES = { RS: 1.69, HR: 1.54, BA: 1.42, ME: 1.64, SI: 1.52, MK: 1.48
 const TOLL_MOTO = { RS: 0.025, HR: 0.044, ME: 0.04, MK: 0.025, BA: 0.03, GR: 0.04, IT: 0.08, FR: 0.06, RO: 0, BG: 0 };   // GR/IT/RO/BG po zvanicnim cenovnicima 2026 (istrazeno 6.8.)
 const VIGNETTE = { SI: "moto vinjeta 7d = 8 €", AT: "moto vinjeta 10d = 5,10 €", HU: "moto D1M vinjeta 10d ≈ 15 €",
   RO: "motocikli NE plaćaju rovinjetu", BG: "motocikli NE plaćaju e-vinjetu", CZ: "vinjeta", SK: "vinjeta", CH: "vinjeta ~44 €" };
+/* nalaz 97: koje su vinjete PROVERENE. Rezervne vrednosti nose isto stanje kao data/prices.json
+   na dan 27.8. - inace bi pri padu fajla RO i BG, koji motorima uopste NE naplacuju, dobili
+   poruku "vinjeta obavezna, iznos nemamo": laz u suprotnom smeru od one koja se popravlja.
+   HU i CH imaju iznos u tekstu ali `verified: null` u fajlu - njihova cifra se NE prikazuje. */
+const VIGNETTE_OK = { SI: true, AT: true, RO: true, BG: true, HU: false, CZ: false, SK: false, CH: false };
 let PRICES_META = null;
 const PRICE_VERIFIED = { fuel: {}, toll: {} };
 let pricesPromise = null, pricesTried = 0;
@@ -5158,7 +5207,15 @@ function loadPrices() {
       PRICES_META = p.meta;
       for (const [cc, o] of Object.entries(p.fuel || {})) { FUEL_PRICES[cc] = o.eur; PRICE_VERIFIED.fuel[cc] = !!o.verified; }
       for (const [cc, o] of Object.entries(p.tollMotoPerKm || {})) { TOLL_MOTO[cc] = o.eur; PRICE_VERIFIED.toll[cc] = !!o.verified; }
-      for (const [cc, o] of Object.entries(p.vignette || {})) VIGNETTE[cc] = o.text;
+      /* 0.9.102 (QA nalaz 97): pored teksta se cuva i to DA LI je iznos proveren. Bez toga bi
+         "moto D1M vinjeta 10 dana ≈ 15 €" (HU, verified: null) i "vinjeta ~44 €" (CH) izasli kao
+         cifra - a to je isti greh kao izmisljene konstante na pecenim koridorima. Merilo je polje
+         `verified` u samom fajlu, ne spisak zemalja u kodu: kad se cenovnik proveri, broj se
+         pojavi sam. */
+      for (const [cc, o] of Object.entries(p.vignette || {})) {
+        VIGNETTE[cc] = o.text;
+        VIGNETTE_OK[cc] = !!o.verified;
+      }
     } catch { PRICES_META = null; /* rezervne vrednosti iznad; meta se izricito nulira da bi se pad VIDEO */ }
   })();
   return pricesPromise;
@@ -5325,10 +5382,24 @@ async function renderCost(route) {
     html += `<br>Putarina (moto klasa): ${route.tollKm.toFixed(0)} km naplate ≈ <b>${tollCost.toFixed(0)} €</b>` +
       (tollProcena.size ? ` <span class="poi-dist">(~procena za ${[...tollProcena].join(", ")})</span>` : "");
   } else html += `<br>Putarina: nepoznata (rezervni ruter)`;
+  /* 0.9.102 (QA nalaz 97, Boskova odluka 27.8.): vinjeta stoji ODVOJENO pored ukupnog, ne u zbiru -
+     jer se kupuje na 7 ili 10 dana i pokriva i povratak, a mi racunamo jedan smer. Sabrati je u
+     "ukupno u jednom smeru" znacilo bi naplatiti povratak koji nismo racunali.
+     Zemlja bez PROVERENOG iznosa ne dobija cifru nego priznanje - vidi VIGNETTE_OK. */
   const vign = spans ? [...new Set(spans.map((s) => s.cc).filter((c) => VIGNETTE[c]))] : [];
-  if (vign.length) html += `<br><span class="warn-inline">+ ${vign.map((c) => `${c}: ${VIGNETTE[c]}`).join(" · ")}</span>`;
-  if (tollCost !== null)
-    html += `<br>Ukupno: ≈ <b>${(fuelCost + tollCost).toFixed(0)} €</b> u jednom smeru${vign.length ? " + vinjete" : ""}`;
+  const vignSaCifrom = vign.filter((c) => VIGNETTE_OK[c]);
+  const vignBezCifre = vign.filter((c) => !VIGNETTE_OK[c]);
+  if (vign.length) {
+    html += `<br><span class="warn-inline">+ ` +
+      vignSaCifrom.map((c) => `${c}: ${VIGNETTE[c]}`).join(" · ") +
+      (vignSaCifrom.length && vignBezCifre.length ? " · " : "") +
+      vignBezCifre.map((c) => `${c}: vinjeta obavezna, iznos nemamo`).join(" · ") +
+      `</span>`;
+  }
+  if (tollCost !== null) {
+    html += `<br>Ukupno: ≈ <b>${(fuelCost + tollCost).toFixed(0)} €</b> u jednom smeru`;
+    if (vign.length) html += `<span class="poi-dist"> + vinjete odvojeno (važe i za povratak)</span>`;
+  }
   route._fuelCost = fuelCost; route._tollCost = tollCost;   // za mobilni hero (Faza 3)
   try { renderResultHero(route); } catch (e) {}   // osveži hero čim su brojke tu (ne oslanjaj se na Promise.all)
   if (PRICES_META) {
@@ -6078,6 +6149,23 @@ function groupZones(assess) {
    i presuda je ispisivala zeleno "Suvo i mirno celim putem" nad rutom o kojoj ne znamo nista
    (najveca klasa QA nalaza od 26.8.). Ovde stoji JEDNO merilo pokrivenosti koje citaju svi
    potrosaci presude, da se cetvrto stanje "ne znam" ne bi na svakom ekranu iznova izmisljalo. */
+/* 0.9.102 (QA nalaz 96, Boskova odluka 27.8.: max = danas + 16 dana): polje "Kreni u" primalo je
+   BILO KOJI datum, pa je vozac mogao da zada polazak za mesec dana - a prognoza dotle ne dopire.
+   Rezultat je bila zelena presuda nad nula sati podataka. Sada polje samo odbija datum koji
+   aplikacija ne moze da zna; ono sto JESTE pokriveno i dalje se sudi normalno.
+   16 dana je horizont Open-Meteo modela koje citamo (ICON/GFS/ECMWF seamless). */
+const WX_HORIZONT_DANA = 16;
+function wxPostaviMax() {
+  try {
+    const d = new Date(Date.now() + WX_HORIZONT_DANA * 86400000);
+    const pad = (n) => String(n).padStart(2, "0");
+    const maxV = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T23:59`;
+    for (const id of ["qWhen", "depart"]) {
+      const el = document.getElementById(id);
+      if (el) { el.max = maxV; el.title = `Prognoza dopire do ${WX_HORIZONT_DANA} dana unapred`; }
+    }
+  } catch (e) {}
+}
 const WX_DOVOLJNO = 0.6;   // ispod ovoga se ocena voznje uopste ne daje (prag koji rideScore nosi od pocetka)
 function wxCover(assess) {
   const a = Array.isArray(assess) ? assess.filter(Boolean) : [];
@@ -6586,6 +6674,17 @@ function _radDatum(it) {   // datum koji zapis SAM nosi ("26.4.2023.", "2025-04-
   if (m) { const d = new Date(+m[1], +m[2] - 1, +m[3]).getTime(); return isFinite(d) ? d : null; }
   return null;
 }
+/* 0.9.102 (QA nalaz 88): kartica "Stanje na putevima" i planer su iste radove sudili po
+   RAZLICITIM pravilima. Kartica ima tri kapije (teretno, starije od pola godine, dokazano daleko),
+   planer nijednu osim geometrije - pa je deonica mogla tiho da ispadne iz Kombinovane zbog zapisa
+   koji kartica ODBIJA da prikaze: vozac vidi karticu bez ijednog upozorenja, a ruta se promenila.
+   Jedan sud, dva pozivaoca - pravila vise ne mogu da se raziđu. */
+function _radRelevantan(it, sad) {
+  if (!it) return false;
+  if (_radTeretno(it)) return false;   // zabrana po nosivosti - motor prolazi
+  if (_radStaro(it, sad)) return false;   // arhiva, ne stanje na putu
+  return true;
+}
 function _radStaro(it, sad) {
   const d = _radDatum(it);
   return d != null && (sad - d) > RAD_STARO_DANA * 86400000;
@@ -6772,8 +6871,7 @@ async function renderRoadStatus(route) {
     for (const it of c.items) {
       const ref = _tekstNosiRef(it.title + " " + (it.detail || ""), refovi);
       if (!ref) continue;
-      if (_radTeretno(it)) continue;    // kapija 1: zabrana po nosivosti - motor prolazi
-      if (_radStaro(it, sad)) continue; // kapija 2: zapis stariji od pola godine je arhiva
+      if (!_radRelevantan(it, sad)) continue;   // kapije 1 i 2 kroz JEDAN sud koji deli sa planerom
       const dKm = _radKmOdRute(it, route);
       if (dKm != null && dKm > RAD_BLIZU_KM) continue;   // dokazano daleko - ne prikazuj
       if (dKm == null) { neznano.push({ ...it, cc, ref }); continue; }   // kapija 3: tiha linija na dnu
@@ -7033,6 +7131,9 @@ async function renderStanjePuta(route) {
       `<span class="note" style="color:#cbd5e1">${esc(d.naziv)}</span>` +
       (mot ? `<br><span class="note" style="color:#fca5a5">${esc(mot)}</span>` : "") +
       (d.napomena ? `<br><span class="note">"${esc(d.napomena)}"</span>` : "") +
+      /* nalaz 37: tvoja beleska uz ocenu se do sada nije vracala NIKOME - ni tebi. Sada je vidis,
+         i pise ti ko je jos vidi: niko. Kanal podataka se ne menja, beleska i dalje ide samo u bazu. */
+      (d.mojaBeleska ? `<br><span class="note">"${esc(d.mojaBeleska)}" <small>- tvoja beleška, vidiš je samo ti</small></span>` : "") +
       `</span></div>`;
   }).join("");
   const vozaca = new Set(na.map((d) => d.autor).filter(Boolean)).size;
@@ -7392,7 +7493,9 @@ function restoraniSlojFilter() {
   if (!map || !map.getLayer("restTacka")) return;
   // 13.8.: uvek vidljivi (minzoom 10 + collision drze red). 0.9.90 (C5/D2): dok Atlas traje sloj
   // je utisan - i kad se restorani ucitaju TEK u Atlasu (lenjih ~3,5 s), ovde se odmah gase.
-  map.setLayoutProperty("restTacka", "visibility", atlasTiho() ? "none" : "visible");
+  // 0.9.102 (nalaz 78): i prekidac "Hrana i pauze" ga stvarno gasi - do sada je gasio samo pinove
+  // uz rutu, dok je tepih od 31.242 lokala ostajao.
+  map.setLayoutProperty("restTacka", "visibility", (atlasTiho() || !state.layerVis.food) ? "none" : "visible");
 }
 /* ---------------- "Nadji mi pumpu / hranu" - akcija bocnih dugmadi (13.8., Boskova vizija) ----------------
    Sa rutom (planiranje ili voznja): do 3 kandidata NAPRED uz rutu (blizu trase, ispred tebe),
@@ -7504,7 +7607,13 @@ async function poiNadji(vrsta) {
 }
 function pumpeSlojFilter() {
   if (!map || !map.getLayer("pumpeTacka")) return;
-  map.setLayoutProperty("pumpeTacka", "visibility", atlasTiho() ? "none" : "visible");   // 13.8.: uvek vidljive (minzoom 9); 0.9.90: utisane dok Atlas traje
+  /* 0.9.102 (QA nalaz 78, Boskova odluka 27.8. = (a) prekidac gasi CEO tepih): do sada je
+     prekidac "Pumpe" gasio samo PINOVE uz rutu, dok je tepih od 5.098 pumpi ostajao na mapi -
+     dugme koje ne radi ono sto pise gore je od dugmeta kog nema.
+     ⚠ Podrazumevano stanje se NE menja: loadLayerVis svaku kategoriju pusta na 1, pa POI ostaju
+     vidljivi po otvaranju (Boskova vizija mape od 0.9.74). Menja se samo sta prekidac RADI. */
+  const gasi = atlasTiho() || !state.layerVis.fuel;   // 13.8.: uvek vidljive (minzoom 9); 0.9.90: utisane dok Atlas traje
+  map.setLayoutProperty("pumpeTacka", "visibility", gasi ? "none" : "visible");
 }
 function mestaSlojFilter() {
   if (!map || !map.getLayer("mestaTacka")) return;
@@ -7513,7 +7622,7 @@ function mestaSlojFilter() {
   const f = ["all", ["!", ["has", "point_count"]]];
   if (vecNaRuti.length) f.push(["!", ["in", ["get", "i"], ["literal", vecNaRuti]]]);
   map.setFilter("mestaTacka", f);
-  const nema = mestaAktivneKat().length === 0 || atlasTiho();   // 0.9.90: Atlas utisava tepih mesta preko istog vlasnika (bez razlaza sa applyLayerVis)
+  const nema = mestaAktivneKat().length === 0 || atlasTiho() || !state.layerVis.mesto;   // 0.9.90: Atlas utisava tepih; 0.9.102 (nalaz 78): i prekidac "Mesta zajednice" ga stvarno gasi
   for (const id of ["mestaKlaster", "mestaKlasterBroj", "mestaTacka"])
     if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", nema ? "none" : "visible");
 }
@@ -8971,6 +9080,7 @@ function oceneOverlay(deonice, lista) {
     if (o.asfalt) n.asfalt = o.asfalt;
     if (o.saobracaj) n.saobracaj = o.saobracaj;
     if (o.utisak) n.ocena = o.utisak;
+    if (o.beleska) n.mojaBeleska = o.beleska;   // nalaz 37: beleska je isla na server i NIJE se vracala nikome, ni autoru
     const dt = new Date(Number.isFinite(o.ts) ? o.ts : Date.now());   // (pregled #13) pokvaren ts nikad ne sme dati mg [NaN, NaN]
     n.mg = [dt.getFullYear(), dt.getMonth() + 1];
     n.azurirano = "tvoja ocena";   // kartica pise starost posteno - ovo JESTE svezije od baze, ali je licno
@@ -9048,7 +9158,14 @@ function posaljiOcenu(o) {
     catch (e) {
       // otrovan red (trajna 4xx koja NIJE 404 ni anti-spam) se ne cuva - isto pravilo kao flush (#5)
       const st = e && e.status;
-      if (st != null && st >= 400 && st < 500 && st !== 404 && !/Polako|limit/i.test(String(e.message || e))) return;
+      if (st != null && st >= 400 && st < 500 && st !== 404 && !/Polako|limit/i.test(String(e.message || e))) {
+        /* 0.9.102 (QA nalaz 38): ovo je JEDINI od tri puta gubitka ocene na kome je covek jos pred
+           ekranom - i jedini gde se moze reci. Tvrdnja je proverljivo tacna: ocenaSacuvaj je vec
+           prosao, pa ocena stvarno ostaje u lokalnom overlay-u i vidi se na kartici deonice.
+           Sto se NE tvrdi: da ce ikada stici na server. */
+        try { shareToast("Ocena nije prihvaćena - ostaje sačuvana kod tebe, ali je zajednica neće videti."); } catch (e2) {}
+        return;
+      }
     }
     try { if (_flushing) await _flushing; } catch (e) {}   // (pregled #3) dopuna reda tek POSLE zivog flusha - bez ukrstenih upisa
     setPrijaveQueue([...prijaveQueue(), row]);   // pad slanja: TIHO ceka u redu (i 404 dok backend semu ne dobije)
@@ -9113,7 +9230,9 @@ function oceneKarticaRender() {
       `<span class="olab">Saobraćaj</span>` + ["Slab", "Srednji", "Jak"].map((v) => chip(v)).join("") + `</div>` +
     `<div class="ogrp" data-p="utisak" role="radiogroup" aria-label="Utisak 1 do 5">` +
       `<span class="olab">Utisak</span>` + [1, 2, 3, 4, 5].map((v) => chip(v, " ostar")).join("") + `</div>` +
-    `<input class="obel" type="text" maxlength="${OCENE_BELESKA_MAX}" placeholder="Beleška (nije obavezno)">` +
+    /* nalaz 37: polje mora da kaze KO belesku vidi. Isla je na server i nije se prikazivala nikome -
+       ni drugom vozacu, ni autoru - a vozac je razumno mogao da misli da pise zajednici. */
+    `<input class="obel" type="text" maxlength="${OCENE_BELESKA_MAX}" placeholder="Beleška - vidiš je samo ti">` +
     `</div>`).join("") +
     `<div class="obtns"><button type="button" id="rsOceneSacuvaj">Sačuvaj</button><button type="button" id="rsOceneSkip">Preskoči</button></div>`;
   /* (pregled #9) render je idempotentan sa PODACIMA: vec izabrani cipovi i beleska se vracaju
@@ -11506,7 +11625,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.101";
+const APP_VERSION = "0.9.102";
 const CHANGELOG = [
   { v: "0.9.101", d: "27.08.2026.", stavke: [
     "<b>Pauza više ne drži knjige zaključane dok voziš.</b> Izlaz iz pauze je do sada tražio samo brzinu preko 15 km/h - pa ako posle semafora puziš kroz gužvu ili selo ispod tog praga, pauza ostaje, a sa njom i zamrznuti kilometri. Sada se priznaje i <b>odmak od 150 metara</b> od mesta gde si stao: 12 km/h uz 200 m odmaka jeste vožnja, ista brzina bez odmaka (guranje motora po pumpi) nije. Isto pravilo važi i kad je ekran bio zaključan - inače bi ista vožnja imala dva ishoda.",
@@ -12126,6 +12245,7 @@ function initVerBadge() {
 }
 function init() {
   loadLayerVis();
+  try { wxPostaviMax(); } catch (e) {}   // nalaz 96: polje odbija datum koji prognoza ne pokriva
   initVerBadge();
   $("roundTrip").onchange = () => { if (state.routes.length) plan(); };
   $("roundGen").onchange = () => {
@@ -13750,6 +13870,7 @@ function navProject(route, lo, la, hintI) {
    uslov. Jedan trzaj GPS-a, paralelna servisna, izlaz iz tunela - i kartica bi rekla "Van rute",
    a glas bi UCUTAO 400 m pred skretanje na kome si uredno. Gore od kvara koji se popravlja. */
 const NAV_OFF_M = 40, NAV_OFF_MS = 6000;
+const STANICA_MAX_M = 300;   // nalaz 95: dalje od ovoga sasivena ruta stanicu nije dodirnula, nego obisla
 /* nalaz 39: koje zemlje data/pumpe.json stvarno pokriva. Van njih "nema pumpe" nije nalaz
    nego neznanje. Izmereno iz samog fajla 27.8.: RS 1508, HR 940, BA 981, XK 614, SI 576,
    MK 361, ME 118. Ako se baza prosiri, prosiriti i ovaj skup - inace app zacuti o zemlji
@@ -16451,37 +16572,49 @@ async function sumMaketa(s, pts, svez) {
   // 3) kandidati po RETKOSTI; svaki nosi km, boju i (ako postoji) doslovan citat
   const kand = [];
   const kratko = (txt, n) => { const t = String(txt || "").trim(); return t.length > n ? t.slice(0, n - 1).trimEnd() + "…" : t; };
-  if (losa) kand.push({ km: losa._km, c: losa._c, boja: "#FF6A00",
+  if (losa) kand.push({ r: 1, km: losa._km, c: losa._c, boja: "#FF6A00",
     b: `${losa.naziv}, ${losa.asfalt === "Makadam" ? "makadam" : "loš asfalt"}`, q: kratko(losa.napomena, 90) });
-  if (best) kand.push({ km: best._km, c: best._c, boja: "#16a34a", b: best.naziv, q: kratko(best.napomena, 90) });
+  if (best) kand.push({ r: 1, km: best._km, c: best._c, boja: "#16a34a", b: best.naziv, q: kratko(best.napomena, 90) });
   for (const k of kafane) kand.push(k.stao
-    ? { km: k.t.km, c: k.t.c, boja: "#FF6A00", b: `Stao si kod ${k.e.name}`, q: kratko(k.e.details, 90) }
-    : { km: k.t.km, c: k.t.c, boja: "#22c55e", b: `Prošao si ${k.e.name}`, pod: kratko(k.e.details, 70) });
-  for (const o of ostala) kand.push({ km: o.t.km, c: o.t.c, boja: "#38bdf8", b: `Prošao si ${o.e.name}`, pod: kratko(o.e.details, 70) });
+    ? { r: 2, km: k.t.km, c: k.t.c, boja: "#FF6A00", b: `Stao si kod ${k.e.name}`, q: kratko(k.e.details, 90) }
+    : { r: 3, km: k.t.km, c: k.t.c, boja: "#22c55e", b: `Prošao si ${k.e.name}`, pod: kratko(k.e.details, 70) });
+  for (const o of ostala) kand.push({ r: 3, km: o.t.km, c: o.t.c, boja: "#38bdf8", b: `Prošao si ${o.e.name}`, pod: kratko(o.e.details, 70) });
   const lnMom = (s.momLnL && s.momLnR) ? ((s.momLnL[2] || 0) >= (s.momLnR[2] || 0) ? s.momLnL : s.momLnR) : (s.momLnL || s.momLnR);
   // 0.9.82: bez cross-side fallback-a (Math.max(lnL,lnR) je umeo da pokaze DESNI max na LEVOM mestu) - momenat bez ugla se izostavlja
   if (lnMom && lnMom[2] && imaTrag) {
     const t = sumKmTacke(pts, cum, lnMom[1], lnMom[0]);
-    kand.push({ km: t.km, c: [lnMom[0], lnMom[1]], boja: "#38bdf8",
+    kand.push({ r: 4, km: t.km, c: [lnMom[0], lnMom[1]], boja: "#38bdf8",
       b: `Legao ${lnMom[2]}° ${lnMom === s.momLnR ? "udesno" : "ulevo"}`, pod: "najdublje na celoj turi" });
   }
   // tura: prozor najvijugavije NIKAD preko sava dve etape (0.9.86 review)
   const b3 = imaTrag ? best3kmSeg((s.tragSeg && s.tragSeg.length) ? s.tragSeg : [pts]) : null;
-  if (b3) kand.push({ km: cum[b3.a], c: [pts[b3.a][0], pts[b3.a][1]], boja: "#FF6A00",
+  if (b3) kand.push({ r: 4, km: cum[b3.a], c: [pts[b3.a][0], pts[b3.a][1]], boja: "#FF6A00",
     b: "Najvijugavija tri kilometra", pod: "plavi oreol na mapi" });
   const prvaPauza = pz.filter((p) => !kodKafane.has(p)).sort((a, b) => (b[2] || 0) - (a[2] || 0))[0];
   if (prvaPauza && imaTrag) {
     const t = sumKmTacke(pts, cum, prvaPauza[1], prvaPauza[0]);
-    kand.push({ km: t.km, c: [prvaPauza[0], prvaPauza[1]], boja: "#22d3ee", b: `Pauza ${prvaPauza[2]} min`, pod: "ovde si stao" });
+    kand.push({ r: 4, km: t.km, c: [prvaPauza[0], prvaPauza[1]], boja: "#22d3ee", b: `Pauza ${prvaPauza[2]} min`, pod: "ovde si stao" });
   }
   // rekord samo za SVEZU voznju - stari zapis bi tvrdio rekord u odnosu na danasnju istoriju
-  if (svez) try { const r = licniRekord(s); if (r) kand.push({ km: null, boja: "#eab308", b: r, pod: "lični rekord" }); } catch (e) {}
+  if (svez) try { const r = licniRekord(s); if (r) kand.push({ r: 0, km: null, boja: "#eab308", b: r, pod: "lični rekord" }); } catch (e) {}
   try {
     const ag = _zajCitaj("mr_poeni", null);
     if (ag && ag.voznje > 1) kand.push({ km: null, kmx: "UKUPNO", boja: "#94a3b8",
       b: `Tvoja ${ag.voznje}. vožnja`, pod: `${(ag.km || 0).toLocaleString("sr-RS")} km ukupno provozano`, kraj: true });   // broj je iz DOZIVOTNOG agregata, dnevnik je odsecen na 30 (nalaz 12)
   } catch (e) {}
-  const tren = kand.slice(0, 5).sort((a, b) => (a.kraj ? 1 : 0) - (b.kraj ? 1 : 0) || (a.km ?? 9e9) - (b.km ?? 9e9));
+  /* 0.9.102 (QA nalaz 34, Boskova odluka 27.8.): traka je uzimala prvih pet REDOM KOJIM SU DODATI,
+     a maketa i komentar tvrde "po retkosti" - pa je na dobroj turi licni rekord ispadao zbog treceg
+     mesta koje si samo prosao. Sada svaki kandidat nosi ocenu retkosti `r` (manje = redje) i seče
+     se TEK POSLE sortiranja po njoj:
+       0 licni rekord · 1 ocenjene deonice · 2 kafana kod koje si STAO · 3 mesto koje si prosao
+       4 nagib / najvijugavija 3 km / pauza
+     Zavrsni red ("Tvoja N. voznja") je izuzet iz takmicenja - on je POTPIS trake, ne trenutak, pa
+     ide van sečenja i uvek ostaje poslednji. */
+  const zavrsni = kand.filter((x) => x.kraj);
+  const uIgri = kand.filter((x) => !x.kraj)
+    .sort((a, b) => (a.r ?? 9) - (b.r ?? 9) || (a.km ?? 9e9) - (b.km ?? 9e9))
+    .slice(0, 5);
+  const tren = uIgri.sort((a, b) => (a.km ?? 9e9) - (b.km ?? 9e9)).concat(zavrsni);
   // 4) REČENICA: najbolja deonica > najteža deonica > najdublji nagib; bez podatka nema rečenice
   let prica = null;
   if (best) {
@@ -18808,7 +18941,11 @@ function atlasOcenaRed(agg) {   // jedan red istine o zajednici: agregat ili pos
     return '<span class="lab">Ocene zajednice</span>' + (prosek ? '<span class="avg">' + prosek + '</span>' : "") +
       '<span class="cnt">' + atlasOcenaBrojRec(brPrikaz) + esc(kad) + '</span>';
   }
-  return '<span class="lab">Ocene zajednice</span><span class="prvi">Još bez ocene - budi prvi i osvoji dodatne poene.</span>';
+  /* 0.9.102 (QA nalaz 13, Boskova odluka 27.8.: "resicemo bodovanje kasnije, zapisano je u To Do"):
+     kartica je obecavala poene za ocenjivanje, a bodovanje deonica (+30/+120/+60) jos NIJE ozizeno -
+     dakle nagradu koja se ne isplacuje. Poziv na ocenjivanje ostaje, obecanje odlazi.
+     ⚠ OVO SE VRACA cim bodovanje profunkcionise - tekst je Boskov, samo je privremeno tacan. */
+  return '<span class="lab">Ocene zajednice</span><span class="prvi">Još bez ocene - provozaj je, pa je oceni na kraju vožnje.</span>';
 }
 function atlasAggIz(d) {   // iz kesa, SAMO dok je svez; undefined = jos se ne zna (crta se "...")
   const c = state._oceneAgg;
@@ -18874,7 +19011,11 @@ function atlasKartica(d, agg) {   // JEDNA kartica za sve puteve izbora (mapa/pr
     '<div class="statrow"><span class="akm">' + atlasKmTx(d.km) + "<small>km</small></span>" +
     (oc != null && ocenaPrava(d)
       ? '<span class="arate"><span class="stars">' + atlasZvezde(oc) + '</span><span class="rnum">' + ocTx + "</span>" +
-        (ATLAS_OCENA_REC[Math.round(oc)] ? '<span class="rword">' + ATLAS_OCENA_REC[Math.round(oc)] + "</span>" : "") + "</span>"
+        /* 0.9.102 (QA nalaz 35): tvoj tap posle voznje postajao je zvezdica same deonice, bez ijedne
+           reci da je to TVOJA ocena - pa se nije razlikovala od ocene zajednice. Isti span .rword,
+           bez ijednog novog CSS pravila. */
+        (d.azurirano === "tvoja ocena" ? '<span class="rword">tvoja ocena</span>'
+          : ATLAS_OCENA_REC[Math.round(oc)] ? '<span class="rword">' + ATLAS_OCENA_REC[Math.round(oc)] + "</span>" : "") + "</span>"
       : '<span class="anemaoc">Nedovoljno ocena za realnu ocenu</span>') + "</div>" +
     '<div class="achips">' + atlasCipovi(d) + "</div>" +
     '<div class="urate" id="atlasUrate" aria-live="polite">' + (agg === undefined
