@@ -11863,8 +11863,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.104";
+const APP_VERSION = "0.9.105";
 const CHANGELOG = [
+  { v: "0.9.105", d: "30.08.2026.", stavke: [
+    "<b>Pitanja pre vožnje sada ostavljaju trag.</b> Prijavio si da ti je delovalo kao da ne možeš da klikneš na pitanje \"Nastavljaš turu?\". Nisam uspeo da to reprodukujem - izmerio sam da su oba dugmeta pogodiva u svih osam stanja ekrana - ali sam našao goru stvar: <b>nijedan od ta dva dijaloga nije ostavljao nikakav zapis</b>, pa se ni ne može dokazati šta se desilo. Sada se beleži kad je pitanje postavljeno, šta si odgovorio i koliko je stajalo otvoreno, i to preživljava start sledeće vožnje i restart aplikacije.",
+    "<b>Izvoz dnevnika više ne kaže \"prazno\" kad ima šta da pošalje.</b> Zapisi o dijalozima se dešavaju pre vožnje, pa su padali na proveru koja gleda samo dnevnik vožnje - a baš oni su jedini dokaz za ovakvu prijavu.",
+  ] },
   { v: "0.9.104", d: "30.08.2026.", stavke: [
     "<b>Pretraga po imenu zna šta voziš.</b> Ukucaš \"dogma\" i prvi ponuđeni red je bio <b>bravar</b> u Baba Višnjinoj, a Enter uzima prvi red. Bodovanje predloga nije imalo pojam o tome šta motociklista traži, pa su bravar, frizer, kancelarija i pešačka staza nosili iste bodove kao pab. Sada kafane, pumpe, vidikovci, konaci i kampovi idu gore, a ono što sigurno ne tražiš pada. Izmereno na pravom odgovoru servisa: Dogma Brewery Central je sa četvrtog mesta došla na prvo, bravar sa prvog na četvrto.",
     "<b>Kad su prva dva reda podjednako dobra, Enter više ne bira umesto tebe.</b> Isto pravilo koje je danas rešilo \"Breza 10\": lista je već na ekranu, traži se tap.",
@@ -14688,6 +14692,23 @@ function navLog(ev, data) {   // crna kutija navigacije: ring buffer, na stopRid
     if (RIDE.log.length > NAVLOG_MAX) RIDE.log.splice(0, RIDE.log.length - NAVLOG_MAX);
   } catch (e) {}
 }
+/* DIJALOZI (30.8.2026, Boskov nalaz "delovalo je da nisam mogao da kliknem"). navLog pise SAMO u
+   RIDE.log, a taj se prazni na svakom startu voznje (`RIDE.log = []`) i u localStorage stize tek
+   iz stopRide. Zapis o dijalogu koji se pojavi PRE voznje bi tako nestao bas u slucaju zbog kog
+   je i pisan. Zato dijalozi idu u svoje malo, trajno skladiste koje preziva i start i restart. */
+const DIJALOG_KEY = "mr_dijalog";
+const DIJALOG_MAX = 20;
+function dijalogLog(ev, data) {
+  try { navLog(ev, data); } catch (e) {}
+  try {
+    let a = [];
+    try { a = JSON.parse(localStorage.getItem(DIJALOG_KEY) || "[]"); } catch (e) { a = []; }
+    if (!Array.isArray(a)) a = [];
+    a.push({ t: Date.now(), ev, ...(data || {}) });
+    if (a.length > DIJALOG_MAX) a = a.slice(-DIJALOG_MAX);
+    localStorage.setItem(DIJALOG_KEY, JSON.stringify(a));
+  } catch (e) {}   // puna kvota ne sme da obori tok koji dijalog prati
+}
 function navExportLog() {   // dnevnik navigacije u clipboard (nalepi se u poruku kad nesto zaskripi)
   /* 0.9.97 (QA nalaz 62): dugme je UVEK javljalo "kopirano" - i kad je dnevnik prazan, i kad je
      kopiralo dnevnik neke STARIJE voznje. Vozac koji prijavljuje problem tako posalje prazan
@@ -14703,9 +14724,26 @@ function navExportLog() {   // dnevnik navigacije u clipboard (nalepi se u poruk
       try { const o = JSON.parse(raw); zapisa = (o.log || []).length; if (o.t0) kad = new Date(o.t0).toLocaleString("sr-RS"); } catch (e) {}
       izvor = kad ? `poslednje snimljene vožnje (${kad})` : "poslednje snimljene vožnje";
     }
-    if (!payload || !zapisa) { alert("Dnevnik navigacije je prazan - nema šta da se kopira.\n\nOn se puni tokom vožnje i upisuje na njenom kraju."); return; }
-    const txt = "RMR-NAVLOG v" + APP_VERSION + "\n" + payload;
-    const poruka = `Kopiran je dnevnik ${izvor} - ${zapisa} ${plSrp(zapisa, "zapis", "zapisa", "zapisa")}. Nalepi ga u poruku.`;
+    /* 30.8.: prazan dnevnik voznje vise ne znaci "nema sta da se posalje". Prijava tipa "dijalog
+       nije reagovao" desava se PRE voznje, pa je jedini dokaz bas spisak dijaloga - a on je do
+       sada padao na ovu kapiju i vozac bi dobio "prazno je". */
+    let _dijSirovo = "";
+    try { const dr = localStorage.getItem(DIJALOG_KEY); if (dr && dr !== "[]") _dijSirovo = dr; } catch (e) {}
+    if ((!payload || !zapisa) && !_dijSirovo) { alert("Dnevnik navigacije je prazan - nema šta da se kopira.\n\nOn se puni tokom vožnje i upisuje na njenom kraju."); return; }
+    if (!payload || !zapisa) {   // nema voznje, ali IMA dijaloga - to se salje
+      const t2 = "RMR-NAVLOG v" + APP_VERSION + "\n(bez zapisa vožnje)\nRMR-DIJALOZI\n" + _dijSirovo;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t2).then(() => alert("Nema zapisa vožnje, ali su kopirani zapisi o dijalozima. Nalepi ih u poruku."),
+          () => prompt("Kopiraj rucno:", t2.slice(0, 2000)));
+      } else prompt("Kopiraj rucno:", t2.slice(0, 2000));
+      return;
+    }
+    /* Dijalozi idu UZ dnevnik (30.8.): oni se desavaju pre voznje, pa ih RIDE.log ne zadrzi.
+       Bez njih se prijava "nisam mogao da kliknem" ne moze dokazati ni opovrgnuti. */
+    let dij = "";
+    try { const dr = localStorage.getItem(DIJALOG_KEY); if (dr && dr !== "[]") dij = "\nRMR-DIJALOZI\n" + dr; } catch (e) {}
+    const txt = "RMR-NAVLOG v" + APP_VERSION + "\n" + payload + dij;
+    const poruka = `Kopiran je dnevnik ${izvor} - ${zapisa} ${plSrp(zapisa, "zapis", "zapisa", "zapisa")}${dij ? " (i zapisi o dijalozima)" : ""}. Nalepi ga u poruku.`;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(txt).then(() => alert(poruka),
         () => prompt("Kopiraj rucno:", txt.slice(0, 2000)));
@@ -15124,6 +15162,7 @@ function turaPitaj(nastavi) {
     if (!el._vez) {
       el._vez = true;
       const odgovori = (ts) => {
+        try { dijalogLog("tura-pitanje-odgovor", { odg: ts ? "nastavi" : "nova", msOtvoren: el._otv ? Date.now() - el._otv : null }); } catch (e2) {}
         el.hidden = true;
         RIDE._turaOdgovoreno = true; RIDE._turaNastavi = ts;
         const f = el._nastavi; el._nastavi = null;
@@ -15136,9 +15175,18 @@ function turaPitaj(nastavi) {
       /* Tap na pozadinu = ODUSTANI OD CELOG STARTA (standardni dismiss gest, review 0.9.86):
          nista se ne pokrece, covek tapne Kreni ponovo kad bude spreman. Odgovore Nastavi/Nova
          nose ISKLJUCIVO dva dugmeta. */
-      if (bk) bk.addEventListener("click", () => { el.hidden = true; el._nastavi = null; turaPromptPonisti(); });
+      if (bk) bk.addEventListener("click", () => {
+        try { dijalogLog("tura-pitanje-odustao", { msOtvoren: el._otv ? Date.now() - el._otv : null }); } catch (e2) {}
+        el.hidden = true; el._nastavi = null; turaPromptPonisti();
+      });
     }
     el._ts = z.ts; el._nastavi = nastavi; el.hidden = false;
+    /* 30.8. (Boskov nalaz "delovalo je da nisam mogao da kliknem"): dijalog do sada nije ostavljao
+       NIJEDAN trag - ni da je prikazan, ni da je odgovoren. Zato se ni ovaj nalaz ne moze dokazati
+       iz njegovih podataka. Sada: prikaz, odgovor i odustajanje idu u crnu kutiju, sa vremenom
+       koliko je stajao otvoren. Ako se ponovi, izvoz dnevnika navigacije ce reci sta se desilo. */
+    el._otv = Date.now();
+    try { dijalogLog("tura-pitanje", { telo: document.body.className.slice(0, 60) }); } catch (e2) {}
     return false;
   } catch (e) { return true; }
 }
@@ -16580,7 +16628,15 @@ function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne 
     try { navLog("oporavak-odbacen", { snap: Math.round(snap.trkM || 0), ukupno: Math.round(RIDE.trkM || 0) }); } catch (e) {}
     obrisi(); ocisti(); return;
   }
+  /* 30.8. (Boskov nalaz "delovalo je da nisam mogao da kliknem"): ovo je JEDINI dijalog u ovom
+     toku koji nije nas - nativni confirm crta iOS, mi ga ne kontrolisemo, a zove se iz tajmera
+     900 ms po pokretanju, dakle dok splash jos ume da bude gore. Do sada nije ostavljao nijedan
+     trag, pa se nije moglo znati ni da li je uopste prikazan. Sada se belezi kad je postavljen,
+     sta je odgovoreno i koliko je stajao - ako se ponovi, izvoz dnevnika navigacije to kaze. */
+  try { dijalogLog("oporavak-pitanje", { km: Math.round(RIDE.trkM || 0), trajMin: Math.round(trajMs / 60000) }); } catch (e) {}
+  const _pitT = Date.now();
   const hoce = confirm("Imaš nezavršenu vožnju (" + km + " km, " + traj + ") - aplikacija je bila prekinuta u toku snimanja.\n\nOK = sačuvaj u dnevnik · Otkaži = odbaci");
+  try { dijalogLog("oporavak-odgovor", { odg: hoce ? "sacuvaj" : "odbaci", ms: Date.now() - _pitT }); } catch (e) {}
   if (!hoce) { obrisi(); ocisti(); return; }
   RIDE.t0 = Date.now() - trajMs;   // dijalog je stajao otvoren - to vreme ne sme u dnevnik (zabeleziVoznju racuna min iz Date.now() - RIDE.t0)
   let sacuvano = false;
