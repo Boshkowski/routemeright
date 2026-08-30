@@ -3945,6 +3945,34 @@ async function geoOverpass(q) {   // POI po imenu u krugu 30 km (OSM objekti koj
    Svetog Kriza 3" u Rovinju (209 km) stajala uz crkve na 6-31 km - a kucni broj je mesna stvar,
    niko ne trazi broj 3 dve zupanije dalje. Za upite sa brojem zato ide strmija skala po daljini,
    a klasa mesta (koja adresu ionako ne opisuje) se ne racuna. */
+/* TEREN 30.8.2026 (Boskov nalaz "dogma"): bodovanje predloga nije imalo pojam o tome STA vozac
+   motora trazi. Izmereno nad pravim odgovorom Photona (tools/fixtures/photon-dogma.json): za
+   upit "dogma" servis vraca bravara u Baba Visnjinoj, beogradski pab "Догма", pivaru Dogma
+   Brewery Central, frizera u Wroclawu, kancelariju u Moskvi i pesacku stazu u Vasingtonu - a
+   svi su nosili ISTE bodove, pa je redosled odlucila proizvoljna lista servisa. Prvi red je bio
+   bravar, a Enter uzima prvi red. Ovi spiskovi ne pokusavaju da budu potpuni: samo razdvajaju
+   ono sto motociklista MOZE da poseti od onoga sto sigurno ne trazi. */
+const POI_KORISNO = new Set(["pub", "bar", "cafe", "restaurant", "fast_food", "biergarten", "ice_cream",
+  "fuel", "charging_station", "hotel", "motel", "guest_house", "hostel", "camp_site", "caravan_site",
+  "viewpoint", "attraction", "museum", "picnic_site", "spring", "toilets", "parking", "motorcycle",
+  "motorcycle_parts", "motorcycle_repair", "marketplace", "castle", "monument", "ruins", "artwork"]);
+const POI_BESKORISNO = new Set(["locksmith", "hairdresser", "dentist", "doctors", "lawyer", "accountant",
+  "insurance", "estate_agent", "company", "government", "tailor", "laundry", "dry_cleaning", "copyshop",
+  "funeral_directors", "employment_agency", "newspaper", "it", "advertising_agency", "path", "footway",
+  "cycleway", "steps", "track", "kindergarten", "school", "childcare", "veterinary", "optician"]);
+function _phTip(key, val) {   // doprinos TIPA mesta; gradovi se ne diraju - njih boduje grana za `place`
+  const k = String(key || "").toLowerCase(), v = String(val || "").toLowerCase();
+  if (!k && !v) return 0;
+  if (k === "place" || k === "boundary") return 0;
+  if (POI_KORISNO.has(v)) return 2;
+  if (POI_BESKORISNO.has(v)) return -3;
+  return 0;
+}
+const PH_TIE_EPS = 0.5;
+function suggNeresen(lista) {   // vrh je NERESEN - isto pravilo koje je resilo "Breza 10" (30.8.)
+  if (!Array.isArray(lista) || lista.length < 2) return false;
+  return Math.abs((lista[0].bod || 0) - (lista[1].bod || 0)) < PH_TIE_EPS;
+}
 function _phBod(p, q, d, adr) {   // 10.8.: znacaj mesta i tacno ime, pa tek onda daljina
   const nm = _geoFold(p.name || ""), qq = _geoFold(q || "");
   const key = (p.osm_key || "").toLowerCase(), val = (p.osm_value || "").toLowerCase();
@@ -3952,8 +3980,9 @@ function _phBod(p, q, d, adr) {   // 10.8.: znacaj mesta i tacno ime, pa tek ond
   if (adr) {
     if (nm && qq && nm === qq) s += 1;
     if (d != null) s += d < 15 ? 4 : d < 40 ? 3 : d < 100 ? 1.5 : d < 200 ? -1 : -4;
-    return s;
+    return s;   // adresa se rangira po BLIZINI - tip mesta tu ne igra (ulica nema tip)
   }
+  s += _phTip(key, val);
   if (key === "place") {
     if (val === "city") s += 4;
     else if (val === "town") s += 2.5;
@@ -3961,7 +3990,11 @@ function _phBod(p, q, d, adr) {   // 10.8.: znacaj mesta i tacno ime, pa tek ond
     else if (val === "hamlet" || val === "isolated_dwelling" || val === "farm" || val === "locality") s -= 1;
   }
   if (nm && qq) { if (nm === qq) s += 3; else if (nm.startsWith(qq)) s += 1; }
-  if (d != null) s += d < 30 ? 2 : d < 100 ? 1.2 : d < 200 ? 0.6 : d < 400 ? 0 : -1.5;
+  /* Daljina: kazna za drugi kraj Evrope je pojacana (30.8.). Kad je referenca ustajala, tvrde
+     granice se po Boskovoj odluci od 27.8. (nalaz 106) GASE i nista se ne izbacuje iz liste -
+     zato rangiranje mora samo da odradi posao koji je ranije radilo izbacivanje. Antverpen na
+     1.387 km je inace zauzimao mesto pravoj beogradskoj pivari. */
+  if (d != null) s += d < 30 ? 2 : d < 100 ? 1.2 : d < 200 ? 0.6 : d < 400 ? 0 : d < 900 ? -3 : -6;
   return s;
 }
 async function geoPhotonRaw(q, n) {   // Photon (komoot): fuzzy POI pretraga - nalazi "Motor Bike Shop" za "Moto Bike Shop".
@@ -4320,13 +4353,25 @@ async function geocode(q) {
   const ref = geoRef();
   // POI daleko od korisnika a fuzzy varijanta postoji BLIZU? ("Moto Bike Shop": Nominatim zna samo Temisvar ~120 km,
   // Photon nadje "Motor Bike Shop" na Vracaru ~8 km - blizi pogodak pobedjuje, 6.8.)
-  if (ref && ref.lat != null && !/,/.test(qq) && !/\d/.test(qq) && ["amenity", "tourism", "leisure", "shop"].includes(_geoCls(best))) {
+  /* TEREN 30.8.2026 ("DOGMA BREWERY" i "dogma"): ova kapija je gledala samo cetiri klase i samo
+     daljinu preko 25 km, pa je propustala oba prava slucaja.
+     - "Dogma Brewery": Nominatim vraca tri pivare u SAO PAULU pod klasom `craft` - nije bila na
+       spisku od cetiri, pa se kapija nije ni otvorila. Izmereno.
+     - "dogma": Nominatim vraca BRAVARA u Baba Visnjinoj. Klasa `shop` jeste na spisku, ali je
+       bravar u Beogradu - blizu je, pa daljina ne moze da ga obori.
+     Sada kapija vazi za sve sto nije naselje, i pali se i kad je TIP pobednika nesto sto
+     motociklista sigurno ne trazi (bravar, frizer, kancelarija, pesacka staza). */
+  const _bestBesk = POI_BESKORISNO.has(String(best.type || "").toLowerCase());
+  if (ref && ref.lat != null && !/,/.test(qq) && !/\d/.test(qq) && _geoCls(best) !== "place") {
     const dBest = haversine(ref.lat, ref.lon, +best.lat, +best.lon);
-    if (dBest > 25) {
+    if (dBest > 25 || _bestBesk) {
       const phN = await geoPhoton(qq);
-      if (phN && haversine(ref.lat, ref.lon, phN.lat, phN.lon) < dBest * 0.5) return phN;
+      const phD = phN ? haversine(ref.lat, ref.lon, phN.lat, phN.lon) : null;
+      // beskoristan tip gubi i od podjednako dalekog, samo ako je novi kandidat u dometu voznje
+      if (phN && (phD < dBest * 0.5 || (_bestBesk && phD < 150))) return phN;
       const ttN = await geoTomTom(qq);   // i komercijalna baza sme da ponudi blizeg
-      if (ttN && haversine(ref.lat, ref.lon, ttN.lat, ttN.lon) < dBest * 0.5) return ttN;
+      const ttD = ttN ? haversine(ref.lat, ref.lon, ttN.lat, ttN.lon) : null;
+      if (ttN && (ttD < dBest * 0.5 || (_bestBesk && ttD < 150))) return ttN;
     }
   }
   /* 0.9.102 (QA nalaz 106, Boskova odluka 27.8.): kad aplikacija NE ZNA gde si - lokacija
@@ -11818,8 +11863,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.103";
+const APP_VERSION = "0.9.104";
 const CHANGELOG = [
+  { v: "0.9.104", d: "30.08.2026.", stavke: [
+    "<b>Pretraga po imenu zna šta voziš.</b> Ukucaš \"dogma\" i prvi ponuđeni red je bio <b>bravar</b> u Baba Višnjinoj, a Enter uzima prvi red. Bodovanje predloga nije imalo pojam o tome šta motociklista traži, pa su bravar, frizer, kancelarija i pešačka staza nosili iste bodove kao pab. Sada kafane, pumpe, vidikovci, konaci i kampovi idu gore, a ono što sigurno ne tražiš pada. Izmereno na pravom odgovoru servisa: Dogma Brewery Central je sa četvrtog mesta došla na prvo, bravar sa prvog na četvrto.",
+    "<b>Kad su prva dva reda podjednako dobra, Enter više ne bira umesto tebe.</b> Isto pravilo koje je danas rešilo \"Breza 10\": lista je već na ekranu, traži se tap.",
+    "<b>Polja Odakle i Kuda idu kroz isti lanac kao pretraga.</b> Enter u njima je pitao drugi servis, koji za \"Dogma Brewery\" vraća tri pivare u <b>São Paulu</b>. Sada završi u Beogradu, tamo gde i treba.",
+    "<b>Rezultat na drugom kraju Evrope više ne zauzima mesto domaćem.</b> Antverpen na 1.387 km je stajao ispred prave beogradske pivare.",
+  ] },
   { v: "0.9.103", d: "30.08.2026.", stavke: [
     "<b>Aplikacija ti kaže kad voziš staro izdanje.</b> Vozio si 0.9.99 dok je uživo bilo 0.9.102, i prijavio kvarove od kojih su neki već bili zatvoreni - a nije postojao nijedan način da to saznaš. Aplikacija u telefonu se ne može sama ažurirati, pa sada pita sajt i, ako je starija, to piše na oznaci verzije: <b>v0.9.99 → 0.9.102</b>.",
     "<b>Nagib se posle pauze vraća.</b> Svaka pauza duža od tri minuta tražila je novu nulu na \"dokazanom pravcu\", a taj uslov meri i naginjanje oko uzdužne ose - osu na kojoj motor nikad ne miruje. Blaga krivina na 90 km/h je već 1,7 puta preko praga, pa se pravac u stvarnoj vožnji nikad nije pronašao i kolona nagiba je nestajala do kraja vožnje. Prag ostaje strog, ali sada ima rok: posle 90 sekundi vožnje vraća se podešavanje od pre pauze. I gašenje se više ne dešava nemo.",
@@ -13056,7 +13107,8 @@ function scheduleNetSugg(q) {   // FAZA 1 typeahead (9.8., Google princip "biras
          imao signal". Broj ostaje isti - menja se od cega je merena. */
       const _r = geoRef();
       const _odKoga = (_r && _r.sveze === false) ? " od poslednje poznate pozicije" : "";
-      const net = (ph || []).map((p) => ({ n: p.name, lat: p.lat, lon: p.lon,
+      // `bod` se prenosi da bi Enter mogao da vidi da li je vrh neresen (30.8.)
+      const net = (ph || []).map((p) => ({ n: p.name, lat: p.lat, lon: p.lon, bod: p.bod,
           sub: (p.d != null ? "~" + (p.d < 1 ? "manje od 1" : Math.round(p.d)) + " km" + _odKoga + (p.sub ? " · " : "") : "") + (p.sub || "") }))
         .filter((x) => { const f = SFOLD(x.n); if (!x.n || seen.has(f)) return false; seen.add(f); return true; })
         .slice(0, 6);
@@ -13574,6 +13626,13 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
        adresni lanac zna pravu ulicu. Sve ostalo i dalje uzima prvi red onako kako ga oko vidi. */
     const adr = !!_geoAdresa(si.value.trim());
     if (!adr) {
+      /* TEREN 30.8. ("dogma"): kad su prva dva reda izjednacena, Enter je birao prvi - a prvi je
+         bio bravar. Isto pravilo koje je istog dana resilo "Breza 10": neresen vrh se NE
+         razresava cutke, nego se trazi tap. Lista je vec na ekranu, samo se kaze zasto. */
+      if (!sg._jak && suggNeresen(sg._net || [])) {
+        try { tihoObavestenje("Ima više jednako dobrih - izaberi iz liste."); } catch (e2) {}
+        return;
+      }
       if (!sg._jak && (sg._net || []).length) { const nh0 = sg._net[0]; pickDestination({ n: nh0.n, lat: nh0.lat, lon: nh0.lon, sub: nh0.sub, q: si.value.trim() }); return; }
       if (hits.length) { pickDestination({ ...hits[0], q: si.value.trim() }); return; }
     }
