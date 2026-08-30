@@ -756,9 +756,24 @@
   /* popup na markerima - tamna verzija */
   .maplibregl-popup-content {
     background: var(--c-card) !important; color: var(--c-fg) !important; border-radius: var(--r-sm) !important;
-    padding: 9px 12px !important; font: 400 13px/1.5 var(--font-ui) !important;
+    /* desni jastuk od 46 px = dugme 44 + 2 razmaka, da naslov ("NIS Petrol") ne prolazi ispod ✕;
+       min-height 26 px + 9 + 9 = 44, pa ni jednoredni oblacic nije nizi od dugmeta u njemu */
+    padding: 9px 46px 9px 12px !important; min-height: 26px !important; font: 400 13px/1.5 var(--font-ui) !important;
     box-shadow: var(--shadow-md) !important;
   }
+  /* TEREN 27.8.2026 (Boskov nalaz 9): "kad klikneš NIS Petrol, nema X da se izađe - neće prvi
+     poriv biti da se klikne sa strane nego tu da se klikne X". Fabricki MapLibre ✕ je go button
+     bez sirine, visine i boje (~20x18 px, crn na tamnoj kartici) - nevidljiv i nepogodljiv
+     rukavicom. Meta 44 px, isti obrazac kao ✕ na kartici u Atlasu (0.9.92). */
+  .maplibregl-popup-close-button {
+    width: 44px !important; height: 44px !important; padding: 0 !important;
+    display: flex !important; align-items: center; justify-content: center;
+    background: none !important; border: 0 !important; border-radius: 0 var(--r-sm) 0 0 !important;
+    font: 400 19px/1 var(--font-ui) !important; color: var(--fg-muted) !important;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .maplibregl-popup-close-button:hover { background: none !important; }   /* gasi fabricki rgb(0 0 0/5%) */
+  .maplibregl-popup-close-button:active { color: var(--fg-strong) !important; }
   .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: var(--c-card) !important; }
   .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: var(--c-card) !important; }
   .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: var(--c-card) !important; }
@@ -1489,6 +1504,17 @@
   #mestoSheet input:focus { border-color: rgba(255,106,0,.5); }
   #mestoSheet .mst { font-size: 13px; color: var(--fg-muted); margin: 10px 2px 0; min-height: 18px; }
   #mestoSheet .mst.gre { color: var(--accent-label); }
+  /* Izbor izmedju jednako dobrih adresa (30.8., teren 27.8.): pet ulica Breza sa brojem 10.
+     Meta 52 px jer se bira u rukavicama, i naselje je KRUPNIJE od daljine - daljina je pomocna,
+     a ne presuda (Cerak 113 km, Kaludjerica 120 km od Race). */
+  #mestoSheet .mkand { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 0; }
+  #mestoSheet .mkand .mk { display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+    width: 100%; min-height: 52px; padding: 8px 12px; text-align: left; cursor: pointer;
+    background: var(--surface-veil); border: 1px solid var(--line-strong); border-radius: var(--r-sm);
+    color: var(--fg); font: 400 14px var(--font-ui); -webkit-tap-highlight-color: transparent; }
+  #mestoSheet .mkand .mk b { font-size: 15px; color: var(--fg-strong); }
+  #mestoSheet .mkand .mk span { font-size: 12px; color: var(--fg-muted); }
+  #mestoSheet .mkand .mk:active { border-color: var(--accent); }
   /* red "Moja mesta" u Ja tabu */
   #jaMesta .mrow { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--surface);
     border: 1px solid var(--line); border-radius: var(--r-lg); padding: 11px 13px; margin-top: 8px;
@@ -1596,6 +1622,11 @@
 
     #rideBarBottom .pill .ln .v { font-size: 28px; }   /* isti broj kao brzina - nagib je ravnopravan podatak */
     #rideBarBottom .pill.lact .ln .v { color: var(--accent); }
+    /* Re-kalibracija posle pauze (30.8., teren 27.8.): kolona OSTAJE na mestu, prigusena, sa
+       tackom umesto broja. Do sada je nestajala bez reci i to je sa sedista izgledalo kao
+       pokvaren senzor - tako je i prijavljeno. */
+    #rideBarBottom .pill.lcal .ln { display: flex; opacity: .45; }
+    #rideBarBottom .pill.lcal .ln .v { color: var(--fg-muted); }
     /* (#rideSum stilovi su na top-levelu, van media bloka - review 5.8. nasao da bi na desktopu
        markup bez baznog display:none ispao vidljiv u toku dokumenta) */
     #rideBarBottom .alt { flex: none; width: 46px; height: 46px; border-radius: 50%; align-self: center;
@@ -1648,6 +1679,9 @@
       padding: 5px 9px; border-radius: 999px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     body.riding #verBadge, body.searching #verBadge { display: none; }
     body.qplan.planning #verBadge { bottom: calc(142px + env(safe-area-inset-bottom)); }   /* iznad usidrene CTA trake (7.8.) */
+    /* teren 27.8.: bedz koji zna da vozi stariji build to i pokazuje (v0.9.99 -> 0.9.102).
+       Bez treptanja i bez crvenog - ovo nije opasnost, nego cinjenica koju treba videti. */
+    #verBadge.stara { border-color: rgba(255,255,255,.55); color: var(--fg-strong); }
     #newsSheet { position: fixed; inset: 0; z-index: 65; }
     #newsSheet .back { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
     #newsSheet .body { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bg);
@@ -1968,6 +2002,10 @@
   #rideSum .rrnum { display: flex; gap: 12px; font: 600 13px var(--font-ui); color: var(--fg-muted);
     font-variant-numeric: tabular-nums; margin-top: 1px; }
   #rideSum .rrnum b { color: var(--fg-strong); font-size: 13px; margin-left: auto; }
+  /* izlaz iz replaya, meta 44 px kao i svuda gde se dira rukavicom (30.8.) */
+  #rideSum .rrx { width: 44px; height: 44px; flex: none; padding: 0; display: flex; align-items: center; justify-content: center;
+    background: none; border: 0; color: var(--fg-muted); font: 400 19px/1 var(--font-ui); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #rideSum .rrx:active { color: var(--fg-strong); }
   #rideSum.peek.replaying .card { transform: translate(-50%, calc(100% - 196px)); }
   @media (max-height: 520px) { #rideSum.peek.replaying .card { transform: translateY(calc(100% - 196px)); } }
   #rideSum.peek { pointer-events: none; }
@@ -1987,6 +2025,30 @@
     background: var(--surface-raised); border: 1px solid var(--line-strong); border-bottom: none; border-radius: var(--r-sheet) var(--r-sheet) 0 0;
     padding: 0 0 calc(16px + env(safe-area-inset-bottom));
     box-shadow: var(--shadow-up); animation: sumIn .32s cubic-bezier(.23,1,.32,1); }
+  /* TEREN 27.8.2026 (Boskov nalaz 2): "opet ona pilula i scroll koji blokira sve ono dole".
+     Izmereno pre popravke na 390x844 sa safe-area 34 px: pun list ostavlja 0 od 92 px donjeg
+     menija kliktabilno, spusten 18 px - i to odsecenu ivicu ikonice, ispod minimuma od 44 px.
+     #panel (bottom: 56px + safe-area) i .tabscreen su tu konvenciju nosili od pocetka; sazetak
+     je bio JEDINI donji list u fajlu sa `bottom: 0`. overflow:hidden ide UZ nju - bez njega
+     spusteni list i dalje prelazi 44 px preko trake, jer visi ispod svoje kutije.
+     Samo PORTRET: u landscape-u je meni levi rail, a kartica desna kolona (2262) - tamo se ne
+     sudaraju, pa se ne dira. */
+  @media (max-width: 900px) and (min-height: 521px) {
+    /* Rezervacija je TACNA visina menija (58 + max(safe-area, 8)), ne 56 px koliko nosi #panel:
+       sa 56 px je merenjem ostajalo 56 od 66 px kliktabilno, dakle gornjih 10 px trake je i
+       dalje bilo pokriveno. Meni i rezervacija moraju da citaju isti broj. */
+    #rideSum { bottom: calc(58px + max(env(safe-area-inset-bottom), 8px)); overflow: hidden; }
+    #rideSum .card { padding-bottom: 16px; }   /* safe-area jastuk sada nosi meni ispod, kartica bi ga duplirala */
+  }
+  /* Izlaz koji postoji PRE skrola: "Gotovo" stoji na dnu sadrzaja od ~1150 px, pa je posle prave
+     voznje bio nedostizan bez skrolovanja. Meta 44 px zbog rukavica, isti obrazac kao ✕ na
+     kartici u Atlasu (0.9.92). */
+  #rideSum .rshead { position: relative; }
+  #rideSum .rsx { position: absolute; top: 4px; right: 8px; width: 44px; height: 44px; padding: 0;
+    display: flex; align-items: center; justify-content: center; background: none; border: 0;
+    color: var(--fg-muted); font: 400 19px/1 var(--font-ui); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #rideSum .rsx:active { color: var(--fg-strong); }
+  #rideSum .rshead .rel, #rideSum .rshead .dt { padding-right: 48px; }   /* naslov ne prolazi ispod ✕ */
   #rideSum .grab { width: 44px; height: 4px; border-radius: var(--r-xs); background: var(--fill-strong); margin: 10px auto 0; }
   #rideSum [hidden] { display: none !important; }   /* display:flex na blokovima ne sme da pregazi hidden atribut */
   @media (prefers-reduced-motion: reduce) { #rideSum .card { animation: none; } }
@@ -2774,6 +2836,9 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
         <label class="ml" for="mestoAdr">Adresa</label>
         <input id="mestoAdr" placeholder="npr. Breza 10, Beograd" autocomplete="off" enterkeyhint="search">
         <div class="mst" id="mestoStat"></div>
+        <!-- 30.8. (teren 27.8.): kad geokoder vrati vise jednako dobrih adresa (pet ulica Breza
+             sa brojem 10), izbor se NE pravi cutke - vozac bira, uz naselje i daljinu -->
+        <div class="mkand" id="mestoKand" hidden></div>
       </div>
       <button class="ok" id="mestoNadji" type="button">Nađi adresu i sačuvaj</button>
       <button class="sec" id="mestoNaMapi" type="button">Izaberi na mapi</button>
@@ -2892,6 +2957,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <div class="rsmap" id="rsMap" hidden><span class="chip">Vožnja završena</span></div>
     <h3 id="rsKick">Vožnja završena</h3>
     <div class="rshead">
+      <button class="rsx" id="rsX" type="button" aria-label="Zatvori sažetak">✕</button>
       <div class="rel" id="rsRel">Vožnja</div>
       <div class="dt" id="rsPoi" hidden></div>
       <div class="dt" id="rsDt"></div>
@@ -2907,6 +2973,9 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
         <input type="range" id="rrSlider" min="0" max="1000" value="0" step="1" aria-label="Trenutak vožnje">
         <div class="rrnum"><span id="rrTime">0:00</span><span id="rrKm">0 km</span><b id="rrSpd">0 km/h</b><span id="rrLean" hidden>0°</span></div>
       </div>
+      <!-- 30.8. (teren 27.8., nalaz 3): izlaz iz replaya. Simulator u maketi ga ima (#simExit),
+           traka u sazetku ga nikad nije dobila - jedini izlaz je bio podici ceo list pa "Gotovo". -->
+      <button class="rrx" id="rrX" type="button" aria-label="Izađi iz replaya">✕</button>
     </div>
     <div class="rspark" id="rsSpark" hidden></div>
     <!-- TURA (0.9.86): etape po danima; tap otvara sazetak etape (svaki dan cuva svoje brojke i replay) -->
@@ -3786,11 +3855,54 @@ function geoName(x, q) {   // ime rezultata: POI ime > "Ulica broj" > naselje - 
   return lat1(parts[0]) || q;
 }
 const _geoCls = (x) => x.class || x.category || "";   // json format ima "class", jsonv2 "category" - uhvaceno zivim testom 6.8.
-function geoPick(j, q) {   // bodovanje umesto "place pre svega": POI upit bira POI, adresa adresu, blizina korisniku pobedjuje
-  if (!j || !j.length) return null;
+/* TEREN 27.8.2026 (Boskovi nalazi 4-6, "Breza 10"). U Srbiji postoji PET ulica Breza sa brojem
+   10. Za upit sa gradom prve dve - Kaludjerica i Cerak Vinogradi - imaju BIT-IDENTICAN
+   importance, isti place_rank, obe nose kucni broj i obe su ~115 km od mesta odakle se pitalo.
+   Bodovanje ih po konstrukciji ne moze razlikovati, a Array.prototype.sort je stabilan: pobedila
+   je ona koju je servis slucajno naveo prvu. Ta tacka je zatim upisana u profil i svaki ekran ju
+   je posle verovao na rec, jer se u redu pise ono sto je VOZAC otkucao ("Breza 10") - isto za
+   sve tri kuce. Snimljen odgovor stoji u tools/fixtures/geo-breza10-beograd.json.
+   Prag je u bodovima iste skale koju racuna `score` ispod; importance ulazi mnozen sa 6, pa je
+   0,25 razlika manja od svakog smislenog signala i hvata samo prave nerezene rezultate. */
+const GEO_TIE_EPS = 0.25;
+function _geoNaselje(x) {
+  /* Naselje koje RAZLIKUJE dve iste adrese u istom gradu. Jedan nivo nije dovoljan: izmereno na
+     pravom odgovoru, Kaludjerica nosi village="Kaluđerica" a Cerak nosi quarter="Cerak Vinogradi"
+     uz suburb="Beograd (Čukarica)" - po jednom polju bi ispalo "Kaluđerica" i "Beograd (Čukarica)",
+     pa vozac iz drugog reda ne bi prepoznao svoju kucu. Zato sitniji pa krupniji nivo, spojeni. */
+  const a = (x && x.address) || {};
+  const sitno = a.quarter || a.neighbourhood || a.hamlet || "";
+  const krupno = a.village || a.town || a.suburb || a.city_district || a.municipality || a.city || "";
+  return [sitno, krupno].filter((v, i, n) => v && n.indexOf(v) === i).join(", ");
+}
+function geoPickList(j, q) {   // rangirana lista + da li je vrh NERESEN (tada se ne sme birati cutke)
+  if (!j || !j.length) return { lista: [], tie: false };
   const ref = geoRef();
   const looksAddr = /\d/.test(q);
-  const score = (x) => {
+  const bod = (x) => _geoBod(x, looksAddr, ref);
+  const lista = j.slice().sort((a, b) => bod(b) - bod(a));
+  const tie = lista.length > 1 && Math.abs(bod(lista[0]) - bod(lista[1])) < GEO_TIE_EPS;
+  return { lista, tie };
+}
+/* Oznake sacuvanih mesta nikad ne smeju da odu geokoderu: izmereno, rec "Kuća" na Nominatimu
+   vraca restoran u Valjevu, Kucu cveca na Topcideru i Belu kucu u Vasingtonu (koja prolazi i
+   kroz cuvar od 600 km, jer klasa "office" nije u listi). Ista klasa kao bug "Moja lokacija"
+   od 6.8., koji je resen tvrdom kapijom - ova je fali. */
+function jeOznakaMesta(q) {
+  const s = String(q || "").trim().toLowerCase().replace(/ć/g, "c").replace(/č/g, "c");
+  if (!s) return false;
+  if (s === "kuca" || s === "posao") return true;
+  try { return favCitaj().some((f) => f && String(f.oznaka || "").trim().toLowerCase().replace(/ć/g, "c").replace(/č/g, "c") === s); }
+  catch (e) { return false; }
+}
+function mestoPodnaslov(m) {   // naselje uz sacuvano mesto - bez njega dve razlicite kuce izgledaju isto
+  return m && m.mesto ? String(m.mesto) : "";
+}
+function geoPick(j, q) {   // bodovanje umesto "place pre svega": POI upit bira POI, adresa adresu, blizina korisniku pobedjuje
+  return geoPickList(j, q).lista[0] || null;
+}
+function _geoBod(x, looksAddr, ref) {   // izdvojeno iz geoPick da geoPickList i geoPick sude PO ISTOM merilu
+  {
     let s = 0;
     const c = _geoCls(x);
     if (looksAddr && (x.addresstype === "house" || c === "building" || (x.address && x.address.house_number))) s += 2;
@@ -3810,8 +3922,7 @@ function geoPick(j, q) {   // bodovanje umesto "place pre svega": POI upit bira 
       s += dKm < 30 ? 2 : dKm < 150 ? 1 : dKm > 600 ? -2 : 0;
     }
     return s;
-  };
-  return j.slice().sort((a, b) => score(b) - score(a))[0];
+  }
 }
 async function geoOverpass(q) {   // POI po imenu u krugu 30 km (OSM objekti koje Nominatim search ne rangira)
   const ref = geoRef();
@@ -4121,11 +4232,19 @@ async function geoAdresaNadji(q) {   // ceo lanac; null = nista, pa pozivalac id
     try { j = await geoStruct(a.br ? v + " " + a.br : v, a.grad); } catch (e) {}
     if (!j || !j.length) { saBrojem = false; try { j = await geoStruct(v, a.grad); } catch (e) {} }
     if (j && j.length) {
-      const best = geoPick(j, q);
+      /* 30.8. (teren 27.8., "Breza 10"): pored pobednika se sada vraca i NASELJE, i - kad je vrh
+         neresen - spisak kandidata. Ime se i dalje NE dira (na njemu stoje precice i dedupe),
+         dodaju se nova polja, isto kao sto je 0.9.95 dodao `tacnost`. Pozivalac koji samo planira
+         rutu ponasa se kao i pre; pozivalac koji ZAUVEK upisuje mesto u profil mora da pita. */
+      const { lista, tie } = geoPickList(j, q);
+      const best = lista[0];
       if (best) {
         const imaBroj = !!(saBrojem && best.address && best.address.house_number);
-        return { lat: +best.lat, lon: +best.lon, name: geoName(best, q),
-          tacnost: imaBroj ? "broj" : "ulica", trazenBroj: a.br || null };
+        const kand = tie ? lista.slice(0, 5).map((x) => ({
+          lat: +x.lat, lon: +x.lon, name: geoName(x, q), mesto: _geoNaselje(x),
+        })) : null;
+        return { lat: +best.lat, lon: +best.lon, name: geoName(best, q), mesto: _geoNaselje(best),
+          kandidati: kand, tacnost: imaBroj ? "broj" : "ulica", trazenBroj: a.br || null };
       }
     }
   }
@@ -4143,6 +4262,14 @@ async function geocode(q) {
   if (/^moja lokacija/i.test(qq)) {   // odbrana u dubinu: literal NIKAD ne ide na geokoder (6.8. bug)
     try { gpsPrefill(true); } catch (e) {}
     const err = new Error('"Moja lokacija" nije ime mesta - koristi se tvoja GPS pozicija. Sačekaj par sekundi da je uhvatim pa probaj opet.');
+    err.geo = true; throw err;
+  }
+  /* Ista klasa, druga rec (30.8., teren 27.8.): oznaka sacuvanog mesta nije adresa. Izmereno -
+     "Kuća" na Nominatimu vraca restoran u Valjevu, Kucu cveca na Topcideru i Belu kucu u
+     Vasingtonu. Ako je oznaka stigla dovde, znaci da je negde uzvodno izgubljena koordinata,
+     pa se to KAZE umesto da se odveze bilo gde. */
+  if (jeOznakaMesta(qq)) {
+    const err = new Error('"' + qq + '" je ime tvog sačuvanog mesta, ne adresa. Otvori ga u tabu Ja pa mu postavi tačku.');
     err.geo = true; throw err;
   }
   const edHit = geoEditorial(qq);
@@ -6575,7 +6702,12 @@ function clearMap() {
 }
 const CAT_LABELS = { fuel: "Pumpa", food: "Hrana / restoran", camp: "Kamp", cam: "Fiksna kamera za brzinu", pause: "Predlog pauze", work: "Radovi na putu" };
 function markerPopup(html) {
-  return new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "300px" }).setHTML(html);
+  /* closeButton je od prvog dana (v1.1, komit b4ea93f) bio false: oblacic je bio zamisljen kao
+     NATPIS koji objasnjava pin, a ne kartica sa kojom se radi. Razuman izbor za mis, nikad
+     preispitan za palac u rukavici - dvanaest oblacica se zatvaralo samo tapom sa strane, a
+     cetiri od njih (pumpe, mesta, restorani, kafane) nisu vezana za marker pa ih ni ponovni
+     tap na pin nije zatvarao. Teren 27.8., nalaz 9. */
+  return new maplibregl.Popup({ offset: 14, closeButton: true, maxWidth: "300px" }).setHTML(html);
 }
 function emojiMarker(lat, lon, emoji, title) {
   if (!map) return;
@@ -8430,8 +8562,9 @@ async function renderFood(route, assess, departure) {
       try {
         if (state._bjbPop) state._bjbPop.remove();
         map.flyTo({ center: [lon, lat], zoom: 13.5, duration: 700 });
-        state._bjbPop = new maplibregl.Popup({ offset: 12, closeButton: true }).setLngLat([lon, lat])
-          .setHTML(`<b>${esc(row.dataset.name)}</b>`).addTo(map);
+        /* kroz istu fabriku kao ostalih dvanaest (30.8.): bio je jedini sopstveni konstruktor,
+           pa je i jedini imao ✕ - ali nestilizovan, crn na tamnoj kartici i nevidljiv */
+        state._bjbPop = markerPopup(`<b>${esc(row.dataset.name)}</b>`).setLngLat([lon, lat]).addTo(map);
       } catch (e2) {}
     });
     ul.appendChild(li);
@@ -10789,7 +10922,19 @@ function openOptsSheet() {
   _optsAnchors = items.map((el) => ({ el, parent: el.parentNode, next: el.nextSibling }));
   for (const el of items) host.appendChild(el);
   sh.querySelector(".lsback").addEventListener("click", closeOptsSheet);
-  sh.querySelector("#optsApply").addEventListener("click", () => { closeOptsSheet(); plan(); });
+  /* TEREN 27.8. (Boskov nalaz 8, treci sloj: "iako imam primeni moram da idem dodaj"). "Primeni"
+     je radilo samo closeOptsSheet + plan i NIKAD nije citalo polje "dodaj destinaciju" - jedini
+     citac je sivo "+ Dodaj". Ukucan tekst se tiho bacao, a polje se vracalo u #panel gde se na
+     telefonu i ne vidi. Sada veliko narandzasto dugme prvo preuzme ono sto je vozac upisao. */
+  sh.querySelector("#optsApply").addEventListener("click", async () => {
+    const si = document.getElementById("stopInput");
+    if (si && String(si.value || "").trim()) {
+      const dodaj = document.getElementById("addStopBtn");
+      try { if (dodaj && dodaj.onclick) await dodaj.onclick(); } catch (e) {}
+      if (String(si.value || "").trim()) return;   // geokod pao - poruka je vec na ekranu, ne zatvaraj i ne baci unos
+    }
+    closeOptsSheet(); plan();
+  });
   /* 11.8.: red "Izmeni stanice" na vrhu lista - nas ekvivalent Google-ovog ⋯ -> Edit stops. */
   const izm = document.createElement("button");
   izm.type = "button"; izm.id = "optsStops"; izm.textContent = "Izmeni stanice i redosled";
@@ -10982,15 +11127,63 @@ async function renderRoadworks(route) {
     `${works.length > 6 ? "…" : ""}) - <span class="warn-inline">mogući zastoji ili obilasci</span>`;
   works.slice(0, 12).forEach((w) => emojiMarker(w.lat, w.lon, "🚧", `Radovi${w.name ? " · " + w.name : ""} · km ${w.km.toFixed(0)}`));
 }
-function renderFamousSuggestion() {
+/* TEREN 27.8.2026 (Boskov nalaz 7): "Debelo brdo se radi i makadam je - zašto je ponuđeno?"
+   Aplikacija je imala pravilo "samo asfalt" u RUTERU (valhallaRoute salje exclude_unpaved), ali
+   ne i u PREPORUCIVACU: jedina kapija pre ponude bila je merenje vazdusne linije od 60 km u
+   famousVariant. A koridorske tacke ulaze kao `through` vije, pa ih ruter MORA dodirnuti - vija
+   na makadamu ponistava zastavicu.
+   Pritom je odgovor stajao u nasem sopstvenom paketu: data/stanje_puta.json nosi 230 terenskih
+   ocena vozaca, a za tu relaciju pise "Valjevo - Bajina Bašta, asfalt: Loš, put i leti ima
+   rizle". Ponuda je nikad nije pogledala. Jos gore stoji jastrebac: dodiruje deonicu cija
+   napomena kaze "Put za izbegavanje iako navigacija navodi. Deo je makadam."
+   3 km: koridorske tacke su rucno ukucane i nisu snap-ovane na put (izmereno, jedna tacka
+   Debelog brda stoji 2,11 km od terenske trase), pa uzi prag promasuje bas one koje trazimo. */
+const KORIDOR_BLIZU_KM = 3;
+function koridorTerenska(f, baza) {   // najgora terenska ocena podloge duz koridora, ili null
+  if (!f || !f.wps || !baza || !baza.deonice) return null;
+  const rang = (a) => (/makadam/i.test(a) ? 3 : /loš|los/i.test(a) ? 2 : 1);
+  let naj = null;
+  for (const d of baza.deonice) {
+    if (!d.coords || !d.coords.length || !d.asfalt) continue;
+    let pogodaka = 0;
+    for (const w of f.wps) {
+      for (const c of d.coords) {
+        if (Math.abs(c[1] - w[1]) > 0.05 || Math.abs(c[0] - w[0]) > 0.07) continue;   // jeftina predselekcija
+        if (haversine(w[1], w[0], c[1], c[0]) <= KORIDOR_BLIZU_KM) { pogodaka++; break; }
+      }
+    }
+    /* JEDNA tacka je dovoljna, i to je merenjem ispravljeno: jastrebac ima samo jednu tacku na
+       0,62 km od makadamske deonice (ostale dve su 13 i 29 km daleko), a bas ta tacka ide ruteru
+       kao `through` vija koju MORA da dodirne. Prag od dve tacke bi propustio bas one koridore
+       zbog kojih ovo i postoji. */
+    if (pogodaka < 1) continue;
+    if (!naj || rang(d.asfalt) > rang(naj.asfalt)) naj = d;
+  }
+  return naj;
+}
+function koridorNapomena(t) {
+  /* Sta se sme reci o koridoru. Makadam gasi ponudu (aplikacija je za asfaltnu voznju motorom);
+     "Loš" NIJE zabrana nego podatak - vozac odlucuje sam, ali mora da ga vidi, sa datumom jer
+     ocena stari; bez ijedne terenske deonice se ne tvrdi nista, nego se prizna da ne znamo. */
+  if (!t) return { nudi: true, tekst: "Podloga nije proverena - nemamo ocenu sa terena za ovaj koridor." };
+  if (/makadam/i.test(t.asfalt)) return { nudi: false, tekst: "" };
+  const kad = Array.isArray(t.mg) && t.mg.length >= 2 ? ` (${t.mg[1]}/${t.mg[0]})` : "";
+  if (/loš|los/i.test(t.asfalt)) return { nudi: true, tekst: `Terenska ocena vozača: asfalt ${t.asfalt}${kad}.` };
+  return { nudi: true, tekst: `Terenska ocena vozača: asfalt ${t.asfalt}${kad}.` };
+}
+async function renderFamousSuggestion() {
   const box = $("suggestions");
+  const baza = await loadPutevi().catch(() => null);   // 230 terenskih ocena koje app VEC nosi u paketu
   for (const f of FAMOUS_ROUTES) {
     if (state.famousApplied === f.id) continue;
     const vias = famousVariant(f, state.geocode.from, state.geocode.to);
     if (!vias || !vias.length) continue;
+    const nap = koridorNapomena(baza ? koridorTerenska(f, baza) : null);
+    if (!nap.nudi) continue;   // makadam se motociklisti ne preporucuje, ma koliko lepo izgledao
     const d = document.createElement("div");
     d.className = "sugg";
-    d.innerHTML = `U koridoru je <b>${f.name}</b> - ${f.desc}. `;
+    d.innerHTML = `U koridoru je <b>${esc(f.name)}</b> - ${esc(f.desc)}. ` +
+      (nap.tekst ? `<span class="note">${esc(nap.tekst)}</span> ` : "");
     const b = document.createElement("button");
     b.textContent = "Vozi baš tuda";
     b.style.cssText = "margin-left:6px;padding:4px 10px;border-radius:var(--r-xs);border:none;background:#0891b2;color:#fff;cursor:pointer;font-size:12.5px";
@@ -11099,7 +11292,7 @@ async function selectRoute(departure) {
   if (_seq !== state.planSeq) return;   // R13v2: ustajala generacija ne sme da pokrene batch (sinhroni prolozi brisu tudji DOM)
   try { await renderSuggestions(route, assess, departure, zones); } catch (e) {}
   if (_seq !== state.planSeq) return;
-  try { renderFamousSuggestion(); } catch (e) {}
+  try { renderFamousSuggestion().catch(() => {}); } catch (e) {}   // async od 30.8. (ukrstanje sa terenskim ocenama) - odbijeno obecanje se ne sme izgubiti
   await Promise.allSettled([renderCost(route), renderFuel(route, assess, departure), renderFood(route, assess, departure),
     renderDifficulty(route), renderCameras(route), renderRoadworks(route), renderRoadStatus(route), renderStanjePuta(route),
     (async () => {
@@ -11625,8 +11818,20 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.102";
+const APP_VERSION = "0.9.103";
 const CHANGELOG = [
+  { v: "0.9.103", d: "30.08.2026.", stavke: [
+    "<b>Aplikacija ti kaže kad voziš staro izdanje.</b> Vozio si 0.9.99 dok je uživo bilo 0.9.102, i prijavio kvarove od kojih su neki već bili zatvoreni - a nije postojao nijedan način da to saznaš. Aplikacija u telefonu se ne može sama ažurirati, pa sada pita sajt i, ako je starija, to piše na oznaci verzije: <b>v0.9.99 → 0.9.102</b>.",
+    "<b>Nagib se posle pauze vraća.</b> Svaka pauza duža od tri minuta tražila je novu nulu na \"dokazanom pravcu\", a taj uslov meri i naginjanje oko uzdužne ose - osu na kojoj motor nikad ne miruje. Blaga krivina na 90 km/h je već 1,7 puta preko praga, pa se pravac u stvarnoj vožnji nikad nije pronašao i kolona nagiba je nestajala do kraja vožnje. Prag ostaje strog, ali sada ima rok: posle 90 sekundi vožnje vraća se podešavanje od pre pauze. I gašenje se više ne dešava nemo.",
+    "<b>Sažetak vožnje više ne pojede donji meni.</b> Izmereno: pun list je ostavljao <b>nula</b> upotrebljivih piksela na Planeru, Rutama i Zajednici, a i spušten je pokrivao traku. Sada list staje iznad menija, a ✕ u zaglavlju daje izlaz i pre skrolovanja kroz ceo sažetak.",
+    "<b>Kuća više ne završava u pogrešnom naselju.</b> U Srbiji postoji pet ulica Breza sa brojem 10; dve od njih geokoder rangira <b>identično</b>, pa je aplikacija ćutke birala onu koju je servis slučajno naveo prvu - i tako te slala u Kaluđericu umesto na Cerak. Sada, kad ima više jednako dobrih adresa, biraš ti: sa naseljem i daljinom uz svaku. Naselje se pamti i piše uz mesto, pa se dve iste adrese više ne mogu pomešati.",
+    "<b>Čuvanje mesta više ne čeka mrežu.</b> Tap na \"Ovde je\" upisivao je tačku tek pošto stigne adresa - do petnaest sekundi kasnije - a svaki izlaz u međuvremenu gutao ju je bez ijedne reči. Sada se tačka upiše odmah, a ime i naselje se dopišu kad stignu.",
+    "<b>\"Primeni\" u planeru sada uzima ono što si upisao.</b> Polje za destinaciju čitalo je samo sivo \"+ Dodaj\", pa je tekst tiho nestajao. I poruka o grešci više ne stoji iza lista, gde je niko nije video.",
+    "<b>Koridori se proveravaju kroz ocene sa terena pre nego što ti se ponude.</b> Aplikacija je nudila Debelo brdo iako u sopstvenom paketu nosi ocenu vozača \"asfalt: Loš, put i leti ima rizle\", a nudila je i Jastrebac, za koji naša baza doslovno kaže \"put za izbegavanje iako navigacija navodi, deo je makadam\". Sada: makadam se ne nudi, loš asfalt se nudi ali sa ocenom i datumom, a koridor o kome nemamo terenski podatak to i kaže.",
+    "<b>Oblačić na mapi ima ✕.</b> Trinaest oblačića zatvaralo se samo tapom sa strane. Meta je 44 px, kao i svuda gde se aplikacija dira rukavicom.",
+    "<b>Replay ima izlaz.</b> Iz trake replaya se izlazilo samo podizanjem celog sažetka.",
+    "<b>Oznake sačuvanih mesta više ne idu geokoderu.</b> Reč \"Kuća\" kao pretraga vraća restoran u Valjevu, Kuću cveća i Belu kuću u Vašingtonu. Sada aplikacija kaže da je to ime tvog mesta, a ne adresa.",
+  ] },
   { v: "0.9.102", d: "27.08.2026.", stavke: [
     "<b>Prekidači u Slojevima sada stvarno gase ono što piše.</b> Isključiš \"Pumpe\", a 5.098 pumpi ostane na mapi - gasili su samo pinove uz rutu, ne i tepih. Isto za hranu (31.242 lokala) i mesta zajednice. Ono što se vidi po otvaranju se NE menja: sve ostaje uključeno kao i do sada.",
     "<b>Pretraga više ne seče rezultate po tački na kojoj si možda bio jutros.</b> Kad aplikacija ne zna gde si - lokacija isključena ili poslednji signal stariji od 15 minuta - bliži rezultat i dalje ide više, ali niko se ne izbacuje iz liste.",
@@ -12238,15 +12443,62 @@ const CHANGELOG = [
     "<b>Aplikacija na telefonu</b>: iPhone i Android, sa našim logom.",
   ] },
 ];
+/* ---------- provera verzije (teren 27.8.2026) ----------
+   Bosko je vozio 0.9.99 dok je uzivo bilo 0.9.102, i prijavio devet kvarova od kojih su neki
+   vec bili zatvoreni. Nativna ljuska NAMERNO ne registruje service worker (dole je iskljucen
+   `capacitor` protokol), pa se ne moze sama azurirati - build je jedini put do telefona. A
+   aplikacija sajt nikad nije pitala "ima li novije", pa je stara verzija mogla da se vozi
+   mesecima a da to niko ne zna. Sada pita, i ako je njena starija - kaze to na bedzu koji
+   vozacu ionako stoji pred ocima. Jedan red, bez podsetnika. */
+function verzijaUporedi(a, b) {   // -1 = a starije, 0 = isto, 1 = a novije; djubre NIKAD nije novije
+  const raz = (v) => {
+    if (typeof v !== "string") return null;
+    const d = v.trim().split(".");
+    return d.length && d.every((x) => /^\d+$/.test(x)) ? d.map(Number) : null;
+  };
+  const A = raz(a), B = raz(b);
+  if (!A) return B ? -1 : 0;
+  if (!B) return 1;
+  for (let i = 0; i < Math.max(A.length, B.length); i++) {   // "1.0" i "1.0.0" su ista verzija
+    const x = A[i] || 0, y = B[i] || 0;
+    if (x !== y) return x > y ? 1 : -1;
+  }
+  return 0;
+}
+function verBadgeTekst() {   // poruka imenuje OBE verzije - "novija postoji" bez brojeva ne znaci nista
+  return state.novaVerzija ? "v" + APP_VERSION + " → " + state.novaVerzija : "v" + APP_VERSION;
+}
+async function verzijaProveri() {
+  try {
+    /* Kljuc protiv kesa je SAT, a ne sopstvena verzija: sa "?v=" bi stara aplikacija zauvek
+       citala svoju kesiranu kopiju i nikad ne bi saznala da postoji novija. */
+    const d = await fetchData("data/verzija.json?t=" + new Date().toISOString().slice(0, 13), { timeoutMs: 5000, retries: 0 });
+    const ziva = d && typeof d.v === "string" ? d.v.trim() : "";
+    if (!ziva || verzijaUporedi(ziva, APP_VERSION) <= 0) return null;   // isto ili starije uzivo = nijedna rec
+    state.novaVerzija = ziva;
+    try {
+      const b = document.getElementById("verBadge");
+      if (b) { b.textContent = verBadgeTekst(); b.classList.add("stara"); }
+    } catch (e) {}
+    return ziva;
+  } catch (e) { return null; }   // pad mreze nije poruka
+}
 function initVerBadge() {
   const b = document.getElementById("verBadge");
   if (!b) return;
   /* Bez reci "TEST" (11.8.): stranac je citao "ne veruj ovome na putu" bas dok procenjuje da li da
      ti veruje. Verzija ostaje vidljiva jer je nama potrebna za proveru sta je stvarno na telefonu. */
-  b.textContent = "v" + APP_VERSION;
+  b.textContent = verBadgeTekst();
+  setTimeout(() => { verzijaProveri(); }, 4000);   // posle mape i podataka - provera verzije nikad ne kasni vozaca
   const sheet = document.getElementById("newsSheet"), lst = document.getElementById("newsList");
   b.onclick = () => {
-    lst.innerHTML = CHANGELOG.map((c) =>
+    /* Kad je uzivo novija verzija, to stoji PRE spiska - inace vozac cita "sta je novo" o
+       izdanju koje uopste ne vozi. Spisak ispod je i dalje njegov, ne onaj sa sajta. */
+    const zaglavlje = state.novaVerzija
+      ? `<div><div class="v">Voziš v${APP_VERSION}<small>uživo je v${state.novaVerzija}</small></div>` +
+        `<ul><li>Ovo izdanje na tvom telefonu <b>nije poslednje</b>. Spisak ispod se odnosi na v${APP_VERSION}.</li></ul></div>`
+      : "";
+    lst.innerHTML = zaglavlje + CHANGELOG.map((c) =>
       `<div><div class="v">v${c.v}<small>${c.d}</small></div><ul>` +
       c.stavke.map((s) => `<li>${s}</li>`).join("") + "</ul></div>").join("");
     sheet.hidden = false;
@@ -12448,8 +12700,15 @@ function init() {
       state.vias.push({ t: "stop", v: [g.lon, g.lat], name: g.name });
       $("stopInput").value = "";
       renderViaChips();
+      try { tihoObavestenje("Dodato: " + g.name); } catch (e) {}   // potvrda PRE preracunavanja (obrazac .lp-add)
       if (state.routes.length) plan();
-    } catch (err) { setStatus(err.message, true); }
+    } catch (err) {
+      /* 30.8. (teren 27.8.): greska je isla u #status, a on stoji u #panel sa z-index 10 dok je
+         list "Jos opcija" na 62 - poruka je bila dokazivo iza lista i vozac je nikad nije video.
+         Toast ide iznad svega, pa "nije se dodalo" prestaje da bude cutanje. */
+      setStatus(err.message, true);
+      try { tihoObavestenje(err.message); } catch (e) {}
+    }
   };
   $("stopInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("addStopBtn").onclick(); });
 
@@ -12932,6 +13191,20 @@ async function reverseAdresa(lat, lon) {   // "Breza 10" iz koordinata; geoName 
     return _imeSmisleno(n) ? n : "";
   } catch (e) { return ""; }
 }
+async function reverseMesto(lat, lon) {
+  /* Ime I naselje iz JEDNOG reverznog poziva (30.8.). Dva odvojena poziva bi udvostrucila
+     saobracaj ka Nominatimu, a on je 1 req/s po IP-u i mobilne mreze dele IP kroz CGNAT. */
+  try {
+    const j = await geoFetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&zoom=18&format=json&addressdetails=1&namedetails=1&accept-language=hr,sr-Latn,en`, 7000);
+    const n = geoName(j || {}, "");
+    return { name: _imeSmisleno(n) ? n : "", mesto: _geoNaselje(j || {}) };
+  } catch (e) { return { name: "", mesto: "" }; }
+}
+function mestoCitajBilo(kljuc) {   // "home" ili "fav:i" - jedan citac za oba oblika skladista
+  if (!String(kljuc).startsWith("fav:")) return mestoCitaj(kljuc);
+  const i = +String(kljuc).slice(4);
+  return favCitaj()[i] || null;
+}
 const KUCNI_BROJ_NA_KRAJU = /\s\d+[a-z]?([/-]\d+[a-z]?)?$/i;
 function mestoSpoji(broj, nm) {   // reverz vrati ulicu bez broja -> "Breza" + "10" = "Breza 10"
   if (!broj) return nm;
@@ -13048,13 +13321,17 @@ function jaMestaCrtaj() {
     '<span class="mi">' + ikona + "</span>" +
     '<span class="mt"><b>' + esc(ime) + "</b><span>" + esc(pod) + "</span></span>" +
     '<span class="mc">' + CHEV_D + "</span></button>";
+  /* 30.8. (teren 27.8.): uz adresu ide i NASELJE. Do sada je red pisao ono sto je vozac otkucao
+     ("Breza 10") isto za Kaludjericu, Cerak i Zlatibor - ekran mu fizicki nije mogao pokazati
+     koju je kucu sacuvao. Stara mesta nemaju to polje i tada se ne izmislja nista. */
+  const sPod = (m, podr) => { const n = mestoPodnaslov(m); const a = mestoIme(m, podr); return n ? a + " · " + n : a; };
   const h = mestoCitaj("home");
-  let html = red("home", MESTO_IKONE.kuca, "Kuća", h ? mestoIme(h, "sačuvana tačka") : "postavi jednom i kreni", !h);
+  let html = red("home", MESTO_IKONE.kuca, "Kuća", h ? sPod(h, "sačuvana tačka") : "postavi jednom i kreni", !h);
   const fav = favCitaj();
   for (let i = 0; i < FAV_MAX; i++) {
     const m = fav[i];
     html += m
-      ? red("fav:" + i, MESTO_IKONE.zvezda, favOznaka(m, i), mestoIme(m, "sačuvana tačka"), false)
+      ? red("fav:" + i, MESTO_IKONE.zvezda, favOznaka(m, i), sPod(m, "sačuvana tačka"), false)
       : red("fav:" + i, MESTO_IKONE.plus, "Omiljeno mesto " + (i + 1), "dodaj i daj mu ime", true);
   }
   host.innerHTML = html;
@@ -13087,18 +13364,46 @@ function mestoSheetZatvori() {
 }
 function mestoSacuvaj(kljuc, podatak) {   // podatak = {name, lat, lon}; ime iz sheeta ide na omiljena
   const fav = String(kljuc).startsWith("fav:");
-  if (!fav) { mestoUpisi(kljuc, { name: podatak.name, lat: podatak.lat, lon: podatak.lon }); }
+  // `mesto` (naselje) od 30.8.: bez njega dve razlicite kuce na istoj adresi izgledaju isto
+  if (!fav) { mestoUpisi(kljuc, { name: podatak.name, lat: podatak.lat, lon: podatak.lon, mesto: podatak.mesto || "" }); }
   else {
     const i = +String(kljuc).slice(4);
     const arr = favCitaj();
     const ime = String((document.getElementById("mestoIme") || {}).value || "").trim();
     while (arr.length < i) arr.push(null);
-    arr[i] = { oznaka: ime || favOznaka(arr[i], i), name: podatak.name, lat: podatak.lat, lon: podatak.lon };
+    arr[i] = { oznaka: ime || favOznaka(arr[i], i), name: podatak.name, lat: podatak.lat, lon: podatak.lon, mesto: podatak.mesto || "" };
     favUpisi(arr.filter(Boolean));
   }
   try { jaMestaCrtaj(); } catch (e) {}
   try { updateQuickLabels(); } catch (e) {}
   try { updateSearchStatic(); } catch (e) {}
+}
+function mestoKandSakrij() {
+  const k = document.getElementById("mestoKand");
+  if (k) { k.hidden = true; k.innerHTML = ""; }
+}
+function mestoKandPrikazi(kljuc, q, kand) {
+  /* Kandidati sa NASELJEM i daljinom od tebe. Daljina je pomocna, ne presuda: Cerak je 113 km a
+     Kaludjerica 120 km od Race, pa bi svako razresavanje po daljini opet bilo pogadjanje. */
+  const k = document.getElementById("mestoKand");
+  if (!k) return;
+  const ref = geoRef();
+  k.innerHTML = kand.map((c, i) => {
+    const d = ref && ref.lat != null ? Math.round(haversine(ref.lat, ref.lon, c.lat, c.lon)) : null;
+    return `<button class="mk" type="button" data-i="${i}">` +
+      `<b>${esc(c.mesto || c.name)}</b>` +
+      (d != null ? `<span>${d} km odavde</span>` : "") + `</button>`;
+  }).join("");
+  k.hidden = false;
+  k.querySelectorAll(".mk").forEach((b) => {
+    b.addEventListener("click", () => {
+      if (MESTO_UREDJUJE !== kljuc) return;
+      const c = kand[+b.dataset.i];
+      mestoSacuvaj(kljuc, { name: _imeDoteraj({ n: c.name, q }), lat: c.lat, lon: c.lon, mesto: c.mesto || "" });
+      mestoKandSakrij();
+      mestoSheetZatvori();
+    });
+  });
 }
 async function mestoSheetNadji() {
   const kljuc = MESTO_UREDJUJE;
@@ -13107,10 +13412,19 @@ async function mestoSheetNadji() {
   const st = document.getElementById("mestoStat");
   if (!q) { st.textContent = "Upiši adresu ili je izaberi na mapi."; st.classList.add("gre"); return; }
   st.classList.remove("gre"); st.textContent = "Tražim…";
+  mestoKandSakrij();
   try {
     const g = await geocode(q);
     if (MESTO_UREDJUJE !== kljuc) return;   // sheet je u međuvremenu zatvoren ili prebačen
-    mestoSacuvaj(kljuc, { name: _imeDoteraj({ n: g.name, q }), lat: g.lat, lon: g.lon });
+    /* TEREN 27.8. (Boskovi nalazi 4-6): kad je vrh NERESEN, mesto se ne upisuje cutke. Ovo se
+       upisuje u profil i zivi mesecima - jedan tihi pogodak je Boska poslao u Kaludjericu, pa
+       je aplikacija svaki put racunala rutu do tudje kuce a u redu pisala njegovu adresu. */
+    if (g.kandidati && g.kandidati.length > 1) {
+      st.textContent = "Ima ih " + g.kandidati.length + " sa tim imenom - izaberi svoju:";
+      mestoKandPrikazi(kljuc, q, g.kandidati);
+      return;
+    }
+    mestoSacuvaj(kljuc, { name: _imeDoteraj({ n: g.name, q }), lat: g.lat, lon: g.lon, mesto: g.mesto || "" });
     mestoSheetZatvori();
   } catch (er) {
     if (MESTO_UREDJUJE !== kljuc) return;
@@ -13152,6 +13466,34 @@ async function pickMapPotvrdi() {
   if (!PICKMAP || typeof map === "undefined" || !map) return;
   const mode = PICKMAP.mode;
   const c = map.getCenter();
+  /* TEREN 27.8. (Boskov nalaz 8: "dodam ali ne doda se ili nekako zabaguje pa se ne sačuva").
+     Koordinate su poznate OVDE, ali se do 30.8. upisivalo tek POSLE `await reverseAdresa`. Taj
+     poziv stoji u serijalizovanom redu sa obaveznom pauzom od 1,1 s i dva pokusaja po 7 s - u
+     terenu od par sekundi do ~15 s, a ekran je za to vreme izgledao zamrznuto. Svaki izlaz u tom
+     prozoru (tap na Otkazi, aplikacija u pozadinu, iOS uspava WebView) padao je na cuvar ispod i
+     mesto je NESTAJALO bez ijedne reci. Izmereno izvrsavanjem pravog koda: rmr2_home = undefined.
+     Sada: upisi prvo, ime posle. Sloj koji lecI takvo ime vec postoji (_imeKoordinata, mestaZaleci). */
+  const upisiMesto = String(mode).startsWith("mesto:");
+  const kljucMesto = upisiMesto ? String(mode).slice(6) : null;
+  if (upisiMesto) {
+    const privremeno = "Tačka " + c.lat.toFixed(4) + ", " + c.lng.toFixed(4);
+    mestoSacuvaj(kljucMesto, { name: privremeno, lat: c.lat, lon: c.lng, mesto: "" });
+    pickMapZatvori();
+    const ja = document.querySelector('#bottomnav a[data-tab="ja"]'); if (ja) ja.click();
+    try { shareToast("Sačuvano - tražim adresu…"); } catch (e) {}
+    /* Ime i naselje stizu naknadno i dopisuju se NAD vec upisanom tackom. Ako mreza padne,
+       ostaje posteno "Tačka 44.7470, 20.4218" - a to je i dalje TACNA kuca, sto je bila poenta. */
+    try {
+      const r = await reverseMesto(c.lat, c.lng);
+      const sad = mestoCitajBilo(kljucMesto);
+      // dopisuj SAMO ako tacka u medjuvremenu nije promenjena (vozac je mogao da postavi drugu)
+      if (sad && Math.abs(sad.lat - c.lat) < 1e-6 && Math.abs(sad.lon - c.lng) < 1e-6 && (r.name || r.mesto)) {
+        mestoSacuvaj(kljucMesto, { name: r.name || sad.name, lat: c.lat, lon: c.lng, mesto: r.mesto || "" });
+        try { shareToast("Sačuvano: " + (r.name || sad.name)); } catch (e) {}
+      }
+    } catch (e) {}
+    return;
+  }
   const ok = document.getElementById("pmOk"); if (ok) ok.disabled = true;
   const sub = document.getElementById("pmSub"); if (sub) sub.textContent = "tražim adresu…";
   let ime = "";
@@ -13159,13 +13501,6 @@ async function pickMapPotvrdi() {
   if (!PICKMAP || PICKMAP.mode !== mode) return;   // otkazano dok je reverz trajao - ne otimaj ekran
   pickMapZatvori();
   const naziv = ime || ("Tačka " + c.lat.toFixed(4) + ", " + c.lng.toFixed(4));
-  if (String(mode).startsWith("mesto:")) {   // 0.9.92: nisan postavlja Kucu ili omiljeno mesto
-    const kljuc = String(mode).slice(6);
-    mestoSacuvaj(kljuc, { name: naziv, lat: c.lat, lon: c.lng });
-    const ja = document.querySelector('#bottomnav a[data-tab="ja"]'); if (ja) ja.click();
-    try { shareToast("Sačuvano: " + naziv); } catch (e) {}
-    return;
-  }
   SEARCH_MODE = mode;
   pickDestination({ n: naziv, lat: c.lat, lon: c.lng });
 }
@@ -13364,7 +13699,10 @@ const LEAN = { on: false, uB: null, rB: null, fB: null, uB0: null, cal: [], buf:
 function leanReset() { LEAN.on = false; LEAN.uB = null; LEAN.rB = null; LEAN.fB = null; LEAN.uB0 = null;
   LEAN.cal = []; LEAN.buf = []; LEAN.u = null; LEAN.cur = 0; LEAN.maxL = 0; LEAN.maxR = 0; LEAN.momL = null; LEAN.momR = null;
   LEAN.kinEma = 0; LEAN.kinV = null; LEAN.strT = 0; LEAN.crvT = 0; LEAN.dir = 0; LEAN.dirW = 0; LEAN.suppressUntil = 0; LEAN.hold = [];
-  LEAN.rekal = false; LEAN.rekalOk = false; LEAN.rekalStrT = 0; LEAN.rekalV = null; LEAN.rekalMirT = 0; LEAN.rekalGyro = false; }
+  LEAN.rekal = false; LEAN.rekalOk = false; LEAN.rekalStrT = 0; LEAN.rekalV = null; LEAN.rekalMirT = 0; LEAN.rekalGyro = false;
+  /* Rezervna kopija okvira i rok NE smeju da prezive kraj voznje: sledeca voznja bi nasledila
+     nulu sa tudjeg nosaca (ili sa istog, ali drugacije namestenog). 30.8. */
+  LEAN._uBSave = null; LEAN._uB0Save = null; LEAN._fBSave = null; LEAN._rBSave = null; LEAN.rekalRok = 0; }
 /* Matematika: NE koristimo beta/gamma direktno (telefon skoro uspravan na nosacu = gimbal
    singularitet, gamma preskace). Kvaternion (W3C ZXY) -> vektor "svetsko gore" u frame-u
    telefona; roll = ugao tog vektora u ravni desno/gore MOTORA. Kalibracija na "Kreni" hvata
@@ -13391,10 +13729,24 @@ function leanTick(e) {
     /* Posle duge pauze (LEAN.rekal) uzorci smeju da se skupljaju SAMO na dokazanom pravcu
        (leanRekalTick postavlja rekalOk): "kalibracija u pokretu" van pravca bi upisala pogresnu
        nulu koju pull-to-zero posle sidri zauvek. Bez pravca nagib POSTENO ostaje ugasen (0.9.83). */
-    if (LEAN.rekal && !LEAN.rekalOk && !LEAN.rekalGyro) {
-      /* Uredjaj BEZ rotationRate (review #10): leanRekalTick tada nikad ne kuca, pa bi nagib ostao
-         mrtav do kraja voznje. Rezervni uslov = originalna kalibracija sa Kreni: svez fiks i
-         mirovanje (<1 km/h) drzano ~3 s - telefon je tad na nosacu, nula je validna. */
+    if (LEAN.rekal) {
+      /* ROK re-kalibracije (30.8., teren 27.8.): kapija za dokazan pravac meri magnitudu rotacije
+         pa se u stvarnoj voznji kroz krivine nikad ne otvori. Rok krece od prvog dokaza da se
+         STVARNO vozi - inace bi istekao dok motor stoji pred kafanom i vratio okvir bez ijednog
+         predjenog metra. Kad istekne, okvir od pre pauze se vraca umesto da nagib ostane mrtav. */
+      const nowRok = Date.now();
+      if (!LEAN.rekalRok && RIDE.lastFixTs && nowRok - RIDE.lastFixTs < PAUZA_SVEZ_MS && (RIDE.spdKmh || 0) > 25) LEAN.rekalRok = nowRok + LEAN_REKAL_ROK_MS;
+      if (LEAN.rekalRok && nowRok > LEAN.rekalRok && LEAN._uBSave) { leanRekalVrati(nowRok); return; }
+    }
+    /* Rezervni uslov = originalna kalibracija sa Kreni: svez fiks i mirovanje (<1 km/h) drzano
+       ~3 s - telefon je tad na nosacu, nula je validna. Uveden za uredjaje BEZ rotationRate
+       (review #10), gde leanRekalTick nikad ne kuca. 30.8.: vise se ne gasi cim se ziroskop
+       jednom javi (~16 ms na iPhoneu je razoruzavalo rezervu ZAUVEK, pa je stajanje posle pauze
+       ostajalo bez nagiba iako je mirovanje ORIGINALNI uslov). Sada vazi i kad je ziroskop ziv,
+       ali samo ako i ON kaze da se miruje - to je strogo VISE dokaza, nikad manje. */
+    const gyroMiran = LEAN.rekalGyro && LEAN.rekalV &&
+      Math.hypot(LEAN.rekalV[0], LEAN.rekalV[1], LEAN.rekalV[2]) * Math.PI / 180 < 0.015;
+    if (LEAN.rekal && !LEAN.rekalOk && (!LEAN.rekalGyro || gyroMiran)) {
       const nowMir = Date.now();
       const svezMir = RIDE.lastFixTs && nowMir - RIDE.lastFixTs < PAUZA_SVEZ_MS;
       if (svezMir && (RIDE.spdKmh || 0) < 1) {
@@ -13409,8 +13761,10 @@ function leanTick(e) {
       LEAN.uB0 = LEAN.uB;
       const fr = _lFrame(LEAN.uB); LEAN.fB = fr.fB; LEAN.rB = fr.rB;
       LEAN.on = true;
-      LEAN.rekal = false; LEAN.rekalOk = false; LEAN.rekalStrT = 0; LEAN.rekalV = null; LEAN.rekalMirT = 0;   // re-kalibracija (ako je tekla) je zavrsena
-      try { if (localStorage.getItem("rmr2_leanui") !== "0") document.querySelector("#rideBarBottom .pill").classList.add("lon"); } catch (er) {}   // senzor ziv - pokazi uz brzinu (sem ako je zivi prikaz iskljucen u Ja)
+      const _bioRekal = LEAN.rekal;
+      LEAN.rekal = false; LEAN.rekalOk = false; LEAN.rekalStrT = 0; LEAN.rekalV = null; LEAN.rekalMirT = 0; LEAN.rekalRok = 0;   // re-kalibracija (ako je tekla) je zavrsena
+      if (_bioRekal) { try { navLog("lean-rekal-ok", { msCekanja: LEAN.rekalRok ? 0 : undefined }); } catch (er) {} }
+      try { const pl = document.querySelector("#rideBarBottom .pill"); if (pl) { pl.classList.remove("lcal"); if (localStorage.getItem("rmr2_leanui") !== "0") pl.classList.add("lon"); } } catch (er) {}   // senzor ziv - pokazi uz brzinu (sem ako je zivi prikaz iskljucen u Ja)
     }
     return;
   }
@@ -14855,6 +15209,13 @@ const PAUZA_GLAS_KMH = 10;          // 0.9.95: prag "stvarno vozi" - glas i rero
 const PAUZA_ODMAK_KM = 0.15;        // 0.9.100 (nalazi 105, 73): 150 m od mesta pauze JESTE voznja, ma koliko sporo
 const PAUZA_RUCNA_MS = 120000;      // ...ali rucnu pauzu (svestan cin) gasi tek istrajna voznja: 2 min
 const PAUZA_REKAL_MS = 180000;      // pauza >= 3 min -> parcijalni reset nagiba + nula na dokazanom pravcu
+/* 30.8.2026 (teren 27.8., Boskov nalaz 1: "posle pauze nije izbacivao nagib"). Kapija za novu
+   nulu meri MAGNITUDU rotacije, dakle i naginjanje oko uzduzne ose - osu na kojoj motor nikad
+   ne miruje. Blaga krivina R=1000 m na 90 km/h daje odrzan yaw od 1,4 st/s, sto je 1,7 puta
+   preko kapije od 0,86 st/s: dokazan pravac se u stvarnoj voznji nikad ne pronadje i nagib
+   ostaje mrtav do kraja. Kapija se NE labavi (pogresna nula je gora od odsutne), nego dobija
+   ROK: posle 90 s stvarne voznje vraca se okvir od PRE pauze, koji je i tada bio validan. */
+const LEAN_REKAL_ROK_MS = 90000;
 const PAUZA_IDLE_MS = 4 * 3600e3;   // auto-pauza >= 4 h -> pitanje "zavrsiti i sacuvati?"
 const PAUZA_HAOS_DPS = 120;         // T3: prag rotacionog haosa (deg/s magnitude)
 const PAUZA_HAOS_MS = 1800;         // T3: haos mora da traje ~2 s (kratak trzaj nosaca nije hvatanje telefona)
@@ -14968,11 +15329,39 @@ function pauzaLeanRekal() {
      nula sme da se upise tek na dokazanom pravcu (>25 km/h bez skretanja 3 s - tamo je roll ~0 po
      fizici), pa "kalibracija u pokretu" ne moze da upise otrovanu nulu. Do tada nagib POSTENO cuti:
      leanTick bez uB ne meri, leanMotion bez on ne meri - nista ne pise u max dok LEAN.on ne ozivi. */
+  /* 30.8. (teren 27.8.): stara nula se vise NE baca, nego se cuva u stranu. Ako se za
+     LEAN_REKAL_ROK_MS stvarne voznje ne nadje dokazan pravac, vraca se ovaj okvir - telefon je
+     na nosacu bio i pre pauze i skoro uvek jos jeste, a pull-to-zero ce ga dalje doterati sam. */
+  LEAN._uBSave = LEAN.uB; LEAN._uB0Save = LEAN.uB0; LEAN._fBSave = LEAN.fB; LEAN._rBSave = LEAN.rB;
+  LEAN.rekalRok = 0;
   LEAN.uB = null; LEAN.uB0 = null; LEAN.fB = null; LEAN.rB = null;
   LEAN.cal = []; LEAN.buf = []; LEAN.on = false;
   LEAN.rekal = true; LEAN.rekalOk = false; LEAN.rekalStrT = 0; LEAN.rekalV = null; LEAN.rekalMirT = 0; LEAN.rekalGyro = false;
   LEAN.suppressUntil = Date.now() + 3000;
-  try { const pl = document.querySelector("#rideBarBottom .pill"); if (pl) pl.classList.remove("lon", "lact"); } catch (e) {}
+  /* Kolona nagiba se do sada NEMO praznila: klasa `lon` je padala i broj je fizicki nestajao sa
+     trake. Sa sedista to izgleda identicno kao pokvaren senzor, i tako je i prijavljeno. Sada
+     ostaje na mestu, prigusena, sa tackom umesto broja - vidi se da aplikacija radi na tome. */
+  try {
+    const pl = document.querySelector("#rideBarBottom .pill");
+    if (pl) { pl.classList.remove("lact"); pl.classList.add("lcal"); }
+    const el = document.getElementById("rideLean"); if (el) el.textContent = "·";
+  } catch (e) {}
+  try { navLog("lean-rekal-start", { razlog: RIDE._pauzaRazlog || "pauza" }); } catch (e) {}
+  try { tihoObavestenje("Nagib se ponovo podešava posle pauze."); } catch (e) {}
+}
+function leanRekalVrati(now) {
+  /* Rok istekao: umesto da nagib ostane mrtav do kraja voznje, vraca se okvir od pre pauze.
+     Maksimumi i njihova mesta se NE diraju - oni su statistika voznje, ne kalibracija. */
+  LEAN.uB = LEAN._uBSave; LEAN.uB0 = LEAN._uB0Save; LEAN.fB = LEAN._fBSave; LEAN.rB = LEAN._rBSave;
+  LEAN.cal = []; LEAN.buf = []; LEAN.on = true;
+  LEAN.rekal = false; LEAN.rekalOk = false; LEAN.rekalStrT = 0; LEAN.rekalV = null; LEAN.rekalMirT = 0; LEAN.rekalGyro = false;
+  LEAN.rekalRok = 0; LEAN.suppressUntil = now + 1000;
+  try {
+    const pl = document.querySelector("#rideBarBottom .pill");
+    if (pl) { pl.classList.remove("lcal"); if (localStorage.getItem("rmr2_leanui") !== "0") pl.classList.add("lon"); }
+  } catch (e) {}
+  try { navLog("lean-rekal-istekao", { msCekanja: LEAN_REKAL_ROK_MS }); } catch (e) {}
+  try { tihoObavestenje("Nagib se meri dalje, sa podešavanjem od pre pauze."); } catch (e) {}
 }
 function leanRekalTick(rr, now) {
   /* Dokazan pravac za re-kalibraciju: >25 km/h (svez fiks) i EMA rotacije ~0 drzano 3 s - iste
@@ -16775,6 +17164,15 @@ function sumReplayInit(s, pts) {
   if (!box._wired) {   // elementi su staticni - handleri se vezuju jednom, podaci zive u RRPL
     box._wired = true;
     document.getElementById("rrPlay").addEventListener("click", (e) => { e.stopPropagation(); RRPL.on ? sumReplayPauza() : sumReplayPlay(); });
+    /* Izlaz iz replaya (30.8., teren 27.8.): gasi petlju i marker i vraca sazetak u pun list -
+       isto sto simulator u maketi radi na kraju. stopPropagation jer je kartica u peek rezimu
+       sama po sebi dugme za podizanje. */
+    document.getElementById("rrX").addEventListener("click", (e) => {
+      e.stopPropagation();
+      try { sumReplayStop(); } catch (er) {}
+      const el = document.getElementById("rideSum");
+      if (el) el.classList.remove("peek", "replaying");
+    });
     const sl = document.getElementById("rrSlider");
     sl.addEventListener("input", (e) => { e.stopPropagation();
       RRPL.drag = true; RRPL.t = (+sl.value / 1000) * RRPL.dur;
@@ -17558,6 +17956,9 @@ async function stplPodeli(kind) {
   const skupiSum = () => { const cd0 = el.querySelector(".card"); if (cd0) cd0.style.transform = ""; el.classList.add("peek"); };
   const vratiSum = () => { el.classList.remove("peek"); };
   document.getElementById("rsClose").addEventListener("click", zatvoriSum);
+  /* ✕ u zaglavlju (30.8., teren 27.8.): isti izlaz kao "Gotovo", ali dostupan PRE skrola.
+     stopPropagation jer je cela kartica u peek rezimu dugme za podizanje (0.9.91). */
+  document.getElementById("rsX").addEventListener("click", (e) => { e.stopPropagation(); zatvoriSum(); });
   el.querySelector(".card").addEventListener("click", (e) => {   // tap na skupljenu traku vraca ceo sazetak
     if (e.target.closest("[data-go],[data-i]")) return;   // tap na brojku ILI trenutak trake skuplja sazetak namerno - ne vracaj ga odmah
     if (el.classList.contains("peek")) { e.stopPropagation(); vratiSum(); }
@@ -19780,7 +20181,14 @@ setTimeout(() => { try { mestaZaleci(); } catch (e) {} }, 1800);
   document.getElementById("mestoAdr").addEventListener("keydown", (e) => { if (e.key === "Enter") mestoSheetNadji(); });
   document.getElementById("mestoNaMapi").addEventListener("click", () => {
     const k = MESTO_UREDJUJE;
-    if (k) pickMapOtvori("mesto:" + k);   // sheet se zatvara unutra, ime iz polja se pamti u mestoSacuvaj
+    if (!k) return;
+    /* TEREN 27.8. (Boskov nalaz 8, drugi sloj): u istom listu stoje "Nađi adresu i sačuvaj"
+       (jedini koji upisuje adresu) i "Izaberi na mapi", koji je adresu iz polja BACAO bez traga -
+       mestoSacuvaj za Kucu nikad ne cita #mestoAdr. Vozac je upisao "Breza 10, Cerak", tapnuo
+       drugo dugme, i njegov unos je nestao. Cutanje se gasi: kaze se sta ce se desiti. */
+    const adr = String((document.getElementById("mestoAdr") || {}).value || "").trim();
+    if (adr) { try { tihoObavestenje("Upisanu adresu ne koristim - postavi nišan tačno na svoje mesto."); } catch (e) {} }
+    pickMapOtvori("mesto:" + k);   // sheet se zatvara unutra, ime mesta iz #mestoIme pamti mestoSacuvaj
   });
   document.getElementById("mestoObrisi").addEventListener("click", () => {
     const k = MESTO_UREDJUJE;
