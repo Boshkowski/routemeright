@@ -1338,6 +1338,13 @@
     text-align: left; padding: 4px 6px; min-height: 48px; justify-content: center; cursor: pointer; }
   #atlasBar .nazad small { display: block; font-size: 11px; font-weight: 600; color: var(--fg-muted); letter-spacing: 0; }
   #atlasBar .nazad small.nepotpuno { color: var(--accent-label); }   /* 0.9.93: nepotpuna baza se ne krije iza sivog teksta */
+  /* Uvoz GPX-a u traci Atlasa (31.8.): meta 44 px kao i svuda gde se dira rukavicom. Samo ikonica -
+     traka vec nosi naslov i broj deonica, pa bi tekst na 390 px gurnuo broj u drugi red. */
+  #atlasBar .agpx { flex: none; width: 44px; height: 44px; padding: 0; display: flex; align-items: center; justify-content: center;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-sm); cursor: pointer;
+    -webkit-tap-highlight-color: transparent; }
+  #atlasBar .agpx svg { width: 17px; height: 17px; stroke: var(--accent); fill: none; }
+  #atlasBar .agpx:active { border-color: var(--accent); }
   #atlasEntry .atx .an.nepotpuno { color: var(--accent-label); }      /* 0.9.95: isto vazi i za broj na ulaznoj kartici */
   #atlasBar .abroj { flex: none; font-family: var(--font-num); font-size: 14px; font-weight: 700; color: var(--cyan); }
   #atlasBar .abroj small { font-family: var(--font-ui); font-size: 10px; font-weight: 600; letter-spacing: .14em; color: var(--fg-faint); margin-left: 4px; }
@@ -1783,12 +1790,17 @@
     #rideEtaRow { display: none; }
     body.riding #rideEtaRow { display: block; position: fixed; left: 12px; z-index: 40;
       bottom: calc(84px + env(safe-area-inset-bottom)); max-width: calc(100% - 92px); }
-    #rideEtaRow .eta { display: inline-flex; align-items: baseline; gap: 8px;
+    /* Razmaci su stegnuti 31.8. da tri broja stanu na 390 px: najgori slucaj sa minutima
+       ("4 h 59 min · 388 km · 22:30") trazio je 305 px, a red ima 298. Izmereno, ne procenjeno. */
+    #rideEtaRow .eta { display: inline-flex; align-items: baseline; gap: 6px;
       background: var(--bg-veil); border: 1px solid var(--line); border-radius: var(--r-lg);
-      padding: 7px 13px; box-shadow: var(--shadow-md); }
+      padding: 7px 11px; box-shadow: var(--shadow-md); }
     #rideEtaRow .eta .d { font-size: 20px; font-weight: 800; color: var(--cyan); line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; }
     #rideEtaRow .eta .t { font-size: 16px; font-weight: 800; color: var(--cyan); font-variant-numeric: tabular-nums; white-space: nowrap; }
-    #rideEtaRow .eta .t::before { content: "·"; margin-right: 9px; color: var(--fg-faint); }
+    #rideEtaRow .eta .t::before { content: "·"; margin-right: 7px; color: var(--fg-faint); }
+    /* Prazno polje ne sme da ostavi separator koji visi (31.8.): u slobodnoj voznji nema sata
+       dolaska, pa bi red zavrsavao tackom bez broja iza nje. */
+    #rideEtaRow .eta .t:empty { display: none; }
     body.riding #homeChrome, body.riding #homeSheet { display: none !important; }
     body.riding #bottomnav, body.riding #screen-rute, body.riding #screen-zajednica, body.riding #screen-ja { display: none !important; }   /* u voznji: samo mapa i nav kontrole */
     body.riding .maplibregl-user-location-dot, body.riding .maplibregl-user-location-accuracy-circle { display: none !important; }
@@ -2818,6 +2830,12 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
   <div id="atlasBar">
     <button class="nazad" id="atlasNazad" type="button">‹ Atlas deonica<small id="atlasBarSub">učitavam deonice...</small></button>
     <span class="abroj"><span id="atlasBroj">&nbsp;</span><small>deonica</small></span>
+    <!-- 31.8.2026 (Boskov nalaz): "Uvezi GPX" je od 0.9.90 zavrsio IZA Atlasa - tab Rute vise ne
+         otvara listu nego mapu, a dugme je ostalo u zaglavlju liste. Nije obrisano, postalo je
+         nevidljivo. Sada stoji i ovde, pa je dostupno iz oba ekrana taba Rute. -->
+    <button class="agpx" id="atlasGpx" type="button" aria-label="Uvezi GPX rutu" title="Uvezi GPX">
+      <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+    </button>
   </div>
   <div id="atlasSheet" role="region" aria-label="Atlas deonica - izlog i pretraga">
     <div class="grab" id="atlasGrab" role="separator" aria-label="Povuci da razviješ ili skupiš izlog" tabindex="0"></div>
@@ -2950,7 +2968,10 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
   </div>
   <!-- ETA i preostali km su svoj red IZNAD dugmadi: u donjoj traci ih je na telefonu od 390 px
        gnjecilo na 33 px, pa se u voznji nisu ni videli (Boskov nalaz sa puta 10.8.) -->
-  <div id="rideEtaRow"><div class="eta"><div class="d" id="rideRem">-</div><div class="t" id="rideEta">-</div></div></div>
+  <!-- 31.8.2026 (Boskov zahtev): PREOSTALO VREME je glavni broj, kao kod Google-a. Kilometri i sat
+       dolaska ostaju uz njega, manji. U slobodnoj voznji nema odredista pa nema ni preostalog
+       vremena - tada prvo mesto zauzima proteklo vreme, da red nikad ne pocne separatorom. -->
+  <div id="rideEtaRow"><div class="eta"><div class="d" id="rideRemT">-</div><div class="t" id="rideRem">-</div><div class="t" id="rideEta">-</div></div></div>
   <div id="rideRoad"></div>
   <div id="rideSum" role="dialog" aria-label="Sažetak vožnje"><div class="card">
     <div class="grab"></div>
@@ -3766,6 +3787,20 @@ function wxIco(txt, level, size) { return rIco(wxKey(txt, level), size || 15); }
 function fmtDur(sec) {
   const h = Math.floor(sec / 3600), m = Math.round((sec % 3600) / 60);
   return h > 0 ? `${h} h ${String(m).padStart(2, "0")} min` : `${m} min`;
+}
+function fmtPreostalo(ms) {
+  /* Preostalo vreme u voznji (31.8.2026, Boskov zahtev). NIJE isto sto i fmtDur: taj pise
+     "1 h 05 min" jer stoji u planeru gde se brojevi porede po koloni. Ovde broj stoji sam na
+     mapi i cita se u pokretu, pa vodeca nula smeta a poslednji minut ne sme da se zaokruzi
+     na nulu i izgleda kao da si stigao. */
+  const min = Math.max(0, Math.round(ms / 60000));
+  if (min < 1) return "manje od 1 min";
+  const h = Math.floor(min / 60), m = min % 60;
+  /* Od pet sati navise minut se ne pise. Dva razloga, oba stvarna: na 390 px red "12 h 5 min ·
+     1.234 km · 08:45" trazi 324 px a ima 298 (izmereno), i sam podatak je lazna preciznost -
+     posle pet sati voznje minut zavisi od pauza, goriva i vremena, ne od nase procene. */
+  if (h >= 5) return h + " h";
+  return h ? (m ? h + " h " + m + " min" : h + " h") : min + " min";
 }
 /* srpska mnozina: plSrp(2,"tačka","tačke","tačaka") -> "tačke" (11-14 izuzetak) */
 function plSrp(n, jed, mala, velika) {
@@ -11863,8 +11898,13 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.105";
+const APP_VERSION = "0.9.106";
 const CHANGELOG = [
+  { v: "0.9.106", d: "31.08.2026.", stavke: [
+    "<b>Koliko još voziš do cilja.</b> Traka u vožnji je pokazivala kilometre i sat dolaska, ali ne i preostalo vreme - a taj broj se sve vreme računao, iz njega je nastajao sat dolaska. Sada stoji prvi: <b>1 h 23 min · 90 km · 20:45</b>. Od pet sati naviše minut se ne piše, jer posle toliko vožnje zavisi od pauza i goriva, ne od naše procene.",
+    "<b>Izlog u Atlasu se više ne može zaglaviti ispod ekrana.</b> Kad si ga povukao skroz nadole i pustio prst pored ručke, list je ostajao tamo gde ga je prst ostavio - ručka bi završila ispod donje ivice i nije bilo čime da ga vratiš. Prevlačenje je sada ograničeno i nadole, a kraj pokreta se hvata i kad otpuštanje ne stigne do ručke.",
+    "<b>\"Uvezi GPX\" se vratio na vidno mesto.</b> Od izdanja sa Atlasom tab Rute otvara mapu, a dugme je ostalo u zaglavlju liste - dakle jedan korak iza. Sada stoji i u traci Atlasa, pa je dostupno iz oba ekrana.",
+  ] },
   { v: "0.9.105", d: "30.08.2026.", stavke: [
     "<b>Pitanja pre vožnje sada ostavljaju trag.</b> Prijavio si da ti je delovalo kao da ne možeš da klikneš na pitanje \"Nastavljaš turu?\". Nisam uspeo da to reprodukujem - izmerio sam da su oba dugmeta pogodiva u svih osam stanja ekrana - ali sam našao goru stvar: <b>nijedan od ta dva dijaloga nije ostavljao nikakav zapis</b>, pa se ni ne može dokazati šta se desilo. Sada se beleži kad je pitanje postavljeno, šta si odgovorio i koliko je stajalo otvoreno, i to preživljava start sledeće vožnje i restart aplikacije.",
     "<b>Izvoz dnevnika više ne kaže \"prazno\" kad ima šta da pošalje.</b> Zapisi o dijalozima se dešavaju pre vožnje, pa su padali na proveru koja gleda samo dnevnik vožnje - a baš oni su jedini dokaz za ovakvu prijavu.",
@@ -15683,9 +15723,17 @@ function pauzaNavTick(p, tsMs, route) {
   const remM = Math.max(0, total - d);
   try {
     if (pr.offM < NAV_OFF_M) navProgress(d / Math.max(1, total), total);
-    document.getElementById("rideRem").textContent = "još " + (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
+    /* 31.8.2026 (Boskov zahtev: "Google ima i koliko jos sati vozimo"). Sekunde do cilja su se
+       VEC racunale - iz njih je nastajao sat dolaska - ali se broj nikad nije pokazao. Sada je
+       on glavni, a kilometri i sat dolaska stoje uz njega. */
+    const preostMs = route.totalDur * 1000 * (remM / Math.max(1, total));
+    /* Redosled upisa NIJE kozmetika: ceo blok deli jedan try, pa greska u prvom redu proguta i
+       sve ispod njega. Nov podatak zato ide POSLEDNJI - da ne moze da obori kilometre, sat
+       dolaska i brzinu, koji su vazniji. Uhvaceno testom P1 istog dana. */
+    document.getElementById("rideRem").textContent = (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
+    document.getElementById("rideRemT").textContent = fmtPreostalo(preostMs);
     document.getElementById("rideEta").textContent =
-      new Date(Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total))).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+      new Date(Date.now() + preostMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
     document.getElementById("rideKmh").textContent = Math.round(spdK);
   } catch (e) {}
   try { drawRoadLabel(route, d, lo, la); } catch (e) {}
@@ -15978,8 +16026,9 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
     RIDE.aheadKm = null; RIDE.aheadHideAt = 0;
   } catch (e) {}
   document.getElementById("rideKmh").textContent = "0";
-  document.getElementById("rideEta").textContent = "0 min";
+  document.getElementById("rideRemT").textContent = "0 min";
   document.getElementById("rideRem").textContent = "0,0 km";
+  document.getElementById("rideEta").textContent = "";
   const _rx = document.getElementById("rideX"); if (_rx) { _rx.innerHTML = RIDE_STOP_SVG; _rx.classList.remove("arm"); }
   const _re = document.getElementById("rideEnd"); if (_re) { _re.classList.remove("arm"); const _rs = _re.querySelector("span"); if (_rs) _rs.textContent = "Završi"; }
   rideLock();
@@ -16038,8 +16087,11 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
        nastavka skocio za celu duzinu pauze odjednom - posle 40 min sa 1:10 na 1:50. Poruka pauze
        izricito obecava da vreme miruje, pa je skok bio i lazan i zbunjujuc. */
     const elMs = Date.now() - RIDE.t0 - (RIDE.pauseMs || 0), mm = Math.floor(Math.max(0, elMs) / 60000), hh = Math.floor(mm / 60);   // desna pilula: proteklo vreme + km
-    document.getElementById("rideEta").textContent = hh ? hh + ":" + String(mm % 60).padStart(2, "0") : mm + " min";
+    /* Slobodna voznja nema odrediste, pa nema ni preostalog vremena. Proteklo ide na PRVO mesto
+       (31.8.) - inace bi red poceo separatorom "·", jer ga `.t::before` nosi bezuslovno. */
+    document.getElementById("rideRemT").textContent = hh ? hh + ":" + String(mm % 60).padStart(2, "0") : mm + " min";
     document.getElementById("rideRem").textContent = ((RIDE.trkM || 0) / 1000).toFixed(1).replace(".", ",") + " km";
+    document.getElementById("rideEta").textContent = "";
     RIDE.lastPos = [lo, la, (p.coords.heading != null && !isNaN(p.coords.heading) && p.coords.speed > 1) ? p.coords.heading : null];
     try {   // kamera: blago pracenje (nema rute za look-ahead) - postuje slobodnu kameru korisnika
       if (Date.now() > (RIDE.freeCamUntil || 0)) {
@@ -16186,8 +16238,9 @@ function startRide() {
     RIDE.aheadKm = null; RIDE.aheadHideAt = 0;
   } catch (e) {}
   document.getElementById("rideKmh").textContent = "0";
-  document.getElementById("rideEta").textContent = "-";
-  document.getElementById("rideRem").textContent = "-";
+  document.getElementById("rideRemT").textContent = "-";
+  document.getElementById("rideRem").textContent = "";
+  document.getElementById("rideEta").textContent = "";
   const _rx = document.getElementById("rideX"); if (_rx) { _rx.innerHTML = RIDE_STOP_SVG; _rx.classList.remove("arm"); }
   const _re = document.getElementById("rideEnd"); if (_re) { _re.classList.remove("arm"); const _rs = _re.querySelector("span"); if (_rs) _rs.textContent = "Završi"; }
   rideLock();
@@ -16364,7 +16417,9 @@ function startRide() {
       document.getElementById("rideDist").textContent = "";
       document.getElementById("rideStreet").textContent = (state.geocode && state.geocode.to && state.geocode.to.name) || "";
       document.getElementById("rideThen").textContent = "";
+      document.getElementById("rideRemT").textContent = "";   // uz "Stigao si!" nema ni preostalog vremena (31.8.)
       document.getElementById("rideRem").textContent = "";
+      document.getElementById("rideEta").textContent = "";
       if (!RIDE.arrTo) RIDE.arrTo = setTimeout(stopRide, 8000);   // jednom, ne na svaki fiks - stale timeout je ubijao SLEDECU voznju
     } else if (RIDE.arrTo && (!_kraj || haversine(la, lo, _kraj[1], _kraj[0]) > ARR_DALEKO_KM)) {
       /* Pravi blokator iz nalaza 69: tajmer se palio sa if (!RIDE.arrTo) i NIKAD se nije
@@ -16384,7 +16439,8 @@ function startRide() {
     /* Na cilju NE prepisuj (11.8.): grana dolaska iznad je ocistila polje, a ovaj red ga je u istom
        otkucaju bezuslovno vracao, pa je uz "Stigao si!" pisalo "još 0,0 km". */
     if (!stigaoSad) {
-      document.getElementById("rideRem").textContent = "još " + (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
+      document.getElementById("rideRemT").textContent = fmtPreostalo(etaMs - Date.now());   // 31.8.: preostalo vreme je glavni broj
+      document.getElementById("rideRem").textContent = (remM / 1000).toFixed(remM < 10000 ? 1 : 0).replace(".", ",") + " km";
       document.getElementById("rideEta").textContent = new Date(etaMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
     }
     try {   // najave ispred (kamera / prijava zajednice)
@@ -19936,6 +19992,9 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
   if (en) en.addEventListener("click", () => { atlasOtvori(); });
   const nz = document.getElementById("atlasNazad");
   if (nz) nz.addEventListener("click", () => atlasZatvori("rute"));
+  /* Isti skriveni <input type=file> koji koristi dugme u listi Ruta - jedan tok uvoza, dva ulaza (31.8.) */
+  const agpx = document.getElementById("atlasGpx");
+  if (agpx) agpx.addEventListener("click", () => { const gf = document.getElementById("gpxFile"); if (gf) { gf.value = ""; gf.click(); } });
   const sh = document.getElementById("atlasSheet"), gb = document.getElementById("atlasGrab");
   /* G2: sheet se STVARNO prevlaci (pointermove), ne samo tapka. Tri stanja: peek (traka),
      otvoren (58dvh) i pun (88dvh) - puna lista od 301 reda u 58dvh je bila tesna. Prst vodi
@@ -19965,7 +20024,14 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
       vuce = true;
       sh.style.transition = "none";
       const baza = pre === "peek" ? Math.max(0, h0 - 108) : 0;   // peek je vec spusten za (visina - 108)
-      sh.style.transform = "translateY(" + Math.max(-40, baza + dy) + "px)";
+      /* DONJA GRANICA (31.8.2026, Boskov nalaz "spustim meni do dole pa ne mogu da ga podignem"):
+         prevlacenje je do sada bilo ograniceno SAMO nagore, pa je sheet mogao da ode ceo ispod
+         ivice ekrana. Ako otpustanje tada ne stigne do rucke (izgubljen pointer capture, prst
+         podignut van nje, sistemski prekid), inline transform ostaje i RUCKA JE VAN EKRANA -
+         nema je cime uhvatiti nazad. Izmereno: translateY(640px), rucka na y=937 pri ekranu 844.
+         Dalje od peek pozicije nema smisla ni vuci - peek je najnize stanje. */
+      const dno = Math.max(0, h0 - 108);
+      sh.style.transform = "translateY(" + Math.min(dno, Math.max(-40, baza + dy)) + "px)";
     });
     gb.addEventListener("pointerup", (e) => {
       if (y0 == null) return;
@@ -19978,6 +20044,19 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
       atlasStanje(ATLAS_STANJA[Math.max(0, Math.min(ATLAS_STANJA.length - 1, i))]);
     });
     gb.addEventListener("pointercancel", () => { kraj(); atlasStanje(pre); });   // sistemski prekid: nista se ne menja
+    /* Drugi sloj odbrane (31.8.): kraj gesta se hvata i na PROZORU, ne samo na rucki. Kad
+       setPointerCapture ne uspe - a on je od pocetka bio u try/catch koji cuti - otpustanje
+       stigne na drugi element i rukovaoci iznad se nikad ne pozovu. Bez ovoga sheet ostaje
+       zarobljen tamo gde ga je prst ostavio. */
+    const zavrsiIzvan = () => {
+      if (y0 == null) return;
+      const bio = pre;
+      kraj();
+      atlasStanje(bio);   // ne pogadja se namera - vraca se stanje od pre gesta
+    };
+    window.addEventListener("pointerup", zavrsiIzvan);
+    window.addEventListener("pointercancel", zavrsiIzvan);
+    window.addEventListener("blur", zavrsiIzvan);
   }
   const telo = document.getElementById("atlasTelo");
   if (telo) {
