@@ -2021,6 +2021,12 @@
   #rideSum .rrnum { display: flex; gap: 12px; font: 600 13px var(--font-ui); color: var(--fg-muted);
     font-variant-numeric: tabular-nums; margin-top: 1px; }
   #rideSum .rrnum b { color: var(--fg-strong); font-size: 13px; margin-left: auto; }
+  /* Natpis trenutka na kome replay zastane (1.9.). Stoji u traci, ne preko mape - tamo vec stoje
+     pinovi sa istim brojevima, pa bi se udvajalo i zaklanjalo trag. */
+  #rideSum .rrtren { flex: none; max-width: 132px; padding: 4px 9px; border-radius: var(--r-sm);
+    background: rgba(255,106,0,.14); border: 1px solid rgba(255,106,0,.45);
+    font: 700 11px/1.25 var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--accent-label); }
+  #rideSum .rrtren small { display: block; font-size: 13px; font-weight: 800; letter-spacing: 0; text-transform: none; color: var(--fg-strong); }
   /* izlaz iz replaya, meta 44 px kao i svuda gde se dira rukavicom (30.8.) */
   #rideSum .rrx { width: 44px; height: 44px; flex: none; padding: 0; display: flex; align-items: center; justify-content: center;
     background: none; border: 0; color: var(--fg-muted); font: 400 19px/1 var(--font-ui); cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -3001,6 +3007,8 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
         <input type="range" id="rrSlider" min="0" max="1000" value="0" step="1" aria-label="Trenutak vožnje">
         <div class="rrnum"><span id="rrTime">0:00</span><span id="rrKm">0 km</span><b id="rrSpd">0 km/h</b><span id="rrLean" hidden>0°</span></div>
       </div>
+      <!-- 1.9.2026: natpis trenutka na kome replay zastane (max nagib, najbrze, pauza) -->
+      <div class="rrtren" id="rrTren" hidden></div>
       <!-- 30.8. (teren 27.8., nalaz 3): izlaz iz replaya. Simulator u maketi ga ima (#simExit),
            traka u sazetku ga nikad nije dobila - jedini izlaz je bio podici ceo list pa "Gotovo". -->
       <button class="rrx" id="rrX" type="button" aria-label="Izađi iz replaya">✕</button>
@@ -11943,8 +11951,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.108";
+const APP_VERSION = "0.9.109";
 const CHANGELOG = [
+  { v: "0.9.109", d: "01.09.2026.", stavke: [
+    "<b>Replay je sada vožnja iz prvog lica.</b> Kamera stoji iza strelice, nagnuta, i okreće se sa pravcem - umesto ravnog pogleda odozgo. Kurs se gladi, pa se ne trza na oštrim skretanjima.",
+    "<b>I zastaje tamo gde se nešto desilo.</b> Na najdubljem nagibu levo, najdubljem desno, najbržoj tački i na svakoj pauzi replay stane na sekundu i po, priđe bliže i napiše šta gledaš. Dok stoji, vreme vožnje miruje - inače bi zastanak pojeo deo puta.",
+    "<b>Posle izlaza mapa je tačno kakva je bila.</b> Nagib i okret se pamte pre nego što ih replay preuzme i vraćaju se na kraju.",
+    "Trenutak se pokaže najviše jednom, a dva bliska se spajaju u jedan - premotavanje unazad više ne pretvara vožnju u niz zastajanja.",
+  ] },
   { v: "0.9.108", d: "01.09.2026.", stavke: [
     "<b>Brojka u vožnji se sada menja prstom: brzina, visina, temperatura.</b> Tap ili prevlačenje levo-desno, i izbor ostaje zapamćen do sledeće vožnje. Visina dolazi sa GPS-a i zato je zaokružena na metar - telefon je vertikalno slab, pa se taj broj nigde ne koristi za račun, samo za čitanje. Temperatura dolazi iz žive prognoze na mestu gde jesi. Ono što nemamo piše <b>-</b>, a ne izmišljenu nulu: bez rute nema temperature, a poneki uređaj ne da visinu.",
   ] },
@@ -17331,8 +17345,71 @@ function sumReplayStop() {
   try { if (RRPL.mk) { RRPL.mk.remove(); RRPL.mk = null; } } catch (e) {}
   const el = document.getElementById("rideSum");
   if (el) el.classList.remove("replaying");
+  RRPL.stao = null; RRPL.brgG = null;
+  try { rrTrenPrikazi(null); } catch (e) {}
+  try {   // kamera nazad tacno kakva je bila pre replaya
+    if (RRPL.kam && map) { map.easeTo({ center: RRPL.kam.c, zoom: RRPL.kam.z, bearing: RRPL.kam.b, pitch: RRPL.kam.p, duration: 420 }); }
+  } catch (e) {}
+  RRPL.kam = null;
   const pb = document.getElementById("rrPlay");
   if (pb) pb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg>';
+}
+/* TRENUCI NA KOJIMA REPLAY ZASTAJE (1.9.2026, Boskov zahtev: "u tom 3D prikazu da se zastane na
+   kratko i pokaze gde je bio nagib levo gde desno, gde najveca brzina gde pauza").
+   Podaci vec postoje u zapisu voznje - momL/momR (ugao i mesto), momBrz i pauzeNa. Ovde se samo
+   prevode iz MESTA u VREME replaya: najbliza tacka traga daje kilometar, a vremenska linija
+   uzoraka daje trenutak. Bez uzoraka se pada na ravnomernu raspodelu po trajanju. */
+const RRPL_STAJ_MS = 1700;
+function _rrKmZaTacku(lo, la) {
+  const p = RRPL.pts, c = RRPL.cum;
+  if (!p || !c) return null;
+  let naj = 0, najD = 1e18;
+  for (let i = 0; i < p.length; i++) {
+    const dx = (p[i][0] - lo) * Math.cos(la * Math.PI / 180), dy = p[i][1] - la;
+    const d2 = dx * dx + dy * dy;
+    if (d2 < najD) { najD = d2; naj = i; }
+  }
+  return c[naj];
+}
+function _rrVremeZaKm(km) {
+  const tl = RRPL.tl;
+  if (!tl) return RRPL.dur * (km / Math.max(0.001, RRPL.kmUk));
+  for (let i = 1; i < tl.d.length; i++) {
+    const k0 = tl.d[i - 1] * RRPL.skala, k1 = tl.d[i] * RRPL.skala;
+    if (km <= k1) { const f = k1 > k0 ? (km - k0) / (k1 - k0) : 0; return tl.t[i - 1] + (tl.t[i] - tl.t[i - 1]) * f; }
+  }
+  return RRPL.dur;
+}
+function sumReplayTrenuci(s) {
+  const out = [];
+  const dodaj = (m, naslov, vred) => {
+    if (!m || m.length < 2 || m[0] == null || m[1] == null) return;
+    const km = _rrKmZaTacku(+m[0], +m[1]);
+    if (km == null) return;
+    out.push({ t: _rrVremeZaKm(km), naslov, vred });
+  };
+  try {
+    dodaj(s.momL, "Max levo", (s.momL && s.momL[2] != null ? Math.round(s.momL[2]) : Math.round(s.lnL || 0)) + "°");
+    dodaj(s.momR, "Max desno", (s.momR && s.momR[2] != null ? Math.round(s.momR[2]) : Math.round(s.lnR || 0)) + "°");
+    dodaj(s.momBrz, "Najbrže", Math.round((s.momBrz && s.momBrz[2] != null ? s.momBrz[2] : s.maxK) || 0) + " km/h");
+    for (const pz of (s.pauz || s.pauzeNa || [])) {
+      if (!Array.isArray(pz)) continue;
+      const min = pz[2] != null ? Math.round(pz[2] / 60000) || Math.round(pz[2]) : null;
+      dodaj(pz, "Pauza", min != null && min > 0 ? min + " min" : "");
+    }
+  } catch (e) {}
+  out.sort((a, b) => a.t - b.t);
+  /* Dva trenutka blize od dve sekunde bi napravila dvostruko zastajanje na istom mestu. */
+  const cist = [];
+  for (const x of out) if (!cist.length || x.t - cist[cist.length - 1].t > 2) cist.push(x);
+  return cist;
+}
+function rrTrenPrikazi(tr) {
+  const el = document.getElementById("rrTren");
+  if (!el) return;
+  if (!tr) { el.hidden = true; el.innerHTML = ""; return; }
+  el.innerHTML = esc(tr.naslov) + (tr.vred ? "<small>" + esc(tr.vred) + "</small>" : "");
+  el.hidden = false;
 }
 function sumReplayPoz(simT) {   // trenutak -> {km, lo, la, brg, v, ln}
   const tl = RRPL.tl;
@@ -17365,7 +17442,21 @@ function sumReplayCrtaj(simT) {
     RRPL.mk = new maplibregl.Marker({ element: el, rotationAlignment: "map", pitchAlignment: "map" }).setLngLat([z.lo, z.la]).addTo(map);
   } else RRPL.mk.setLngLat([z.lo, z.la]);
   try { RRPL.mk.setRotation(z.brg); } catch (e) {}
-  if (RRPL.on && !RRPL.rm) { try { map.jumpTo({ center: [z.lo, z.la] }); } catch (e) {} }   // kamera prati (sem reduced-motion)
+  /* 3D kamera (1.9.2026, Boskov zahtev "pravi 3D prikaz vožnje kao iz makete i demo-a"): kamera
+     stoji iza strelice, nagnuta, i okrece se sa pravcem voznje. Kurs se gladi jer sirov azimut
+     izmedju dve tacke traga ume da poskoci na ostrom skretanju i kamera bi se trzala.
+     Uz `prefers-reduced-motion` ostaje ravan pogled, bez nagiba i bez rotacije. */
+  if (RRPL.on) {
+    try {
+      if (RRPL.rm) map.jumpTo({ center: [z.lo, z.la] });
+      else {
+        const pr = RRPL.brgG == null ? z.brg : RRPL.brgG;
+        let dd = ((z.brg - pr + 540) % 360) - 180;          // najkraci put oko kruga
+        RRPL.brgG = (pr + dd * 0.18 + 360) % 360;           // EMA po uglu
+        map.jumpTo({ center: [z.lo, z.la], bearing: RRPL.brgG, pitch: RRPL.stao ? 52 : 60, zoom: RRPL.stao ? 17 : 16.4 });
+      }
+    } catch (e) {}
+  }
   if ((RRPL.frame++ & 3) === 0) {   // brojevi i slajder na svaki 4. kadar - dovoljno, jeftinije
     const mm = Math.floor(simT / 60), hh = Math.floor(mm / 60);
     document.getElementById("rrTime").textContent = hh ? hh + ":" + String(mm % 60).padStart(2, "0") : mm + ":" + String(Math.floor(simT % 60)).padStart(2, "0");
@@ -17382,6 +17473,22 @@ function sumReplayTick(ts) {
   if (!RRPL.on) return;
   const dt = RRPL.lastTs ? Math.min(0.1, (ts - RRPL.lastTs) / 1000) : 0;
   RRPL.lastTs = ts;
+  /* ZASTANAK NA TRENUTKU (1.9.): dok stoji, vreme replaya se NE pomera - inace bi zastanak
+     progutao deo voznje i marker bi posle skocio unapred. Zastaje se najvise jednom po trenutku
+     (`vidjeni`), pa premotavanje unazad ne pretvara vracanje u niz zastanaka. */
+  if (RRPL.stao) {
+    if (ts - RRPL.staoTs < RRPL_STAJ_MS) { sumReplayCrtaj(RRPL.t); RRPL.raf = requestAnimationFrame(sumReplayTick); return; }
+    RRPL.stao = null; rrTrenPrikazi(null);
+  } else if (RRPL.stani && RRPL.stani.length) {
+    for (const tr of RRPL.stani) {
+      if (tr._bio || tr.t > RRPL.t || tr.t < RRPL.t - 3) continue;
+      tr._bio = true; RRPL.stao = tr; RRPL.staoTs = ts;
+      rrTrenPrikazi(tr);
+      sumReplayCrtaj(RRPL.t);
+      RRPL.raf = requestAnimationFrame(sumReplayTick);
+      return;
+    }
+  }
   RRPL.t = Math.min(RRPL.dur, RRPL.t + dt * RRPL.speed);
   sumReplayCrtaj(RRPL.t);
   if (RRPL.t >= RRPL.dur) { sumReplayPauza(); return; }   // kraj: stani, marker ostaje na cilju
@@ -17400,7 +17507,10 @@ function sumReplayPlay() {
   el.classList.add("peek", "replaying");   // mapa je heroj, kartica = niska traka sa kontrolama
   const pb = document.getElementById("rrPlay");
   if (pb) pb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
-  try { if (map.getZoom() > 13.5) map.jumpTo({ zoom: 12 }); } catch (e) {}   // da se kretanje VIDI, ne juri
+  /* Kamera se PAMTI pre nego sto je replay preuzme (1.9.): posle izlaza sazetak mora da izgleda
+     tacno kao pre - inace ostane nagnut i okrenut, a vozac to nije trazio. */
+  try { if (!RRPL.kam) RRPL.kam = { c: map.getCenter(), z: map.getZoom(), b: map.getBearing(), p: map.getPitch() }; } catch (e) {}
+  if (RRPL.rm) { try { if (map.getZoom() > 13.5) map.jumpTo({ zoom: 12 }); } catch (e) {} }   // bez animacije: stari, ravan pogled
   RRPL.raf = requestAnimationFrame(sumReplayTick);
 }
 function sumReplayInit(s, pts) {
@@ -17428,6 +17538,9 @@ function sumReplayInit(s, pts) {
   if (!RRPL.tl) RRPL.dur = Math.max(60, (s.mov || s.min || 1) * 60);   // bez uzoraka: ravnomerno po trajanju
   RRPL.speed = Math.max(1, RRPL.dur / 40);   // cela voznja ~40 s
   RRPL.t = 0; RRPL.frame = 0;
+  RRPL.stao = null; RRPL.brgG = null; RRPL.kam = null;
+  RRPL.stani = sumReplayTrenuci(s);   // 1.9.: zastanci na max nagibu, najbrzoj tacki i pauzama
+  try { rrTrenPrikazi(null); } catch (er) {}
   box.hidden = false;
   if (!box._wired) {   // elementi su staticni - handleri se vezuju jednom, podaci zive u RRPL
     box._wired = true;
