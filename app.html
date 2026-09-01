@@ -1350,9 +1350,12 @@
   #atlasBar .abroj small { font-family: var(--font-ui); font-size: 10px; font-weight: 600; letter-spacing: .14em; color: var(--fg-faint); margin-left: 4px; }
   body.atlas #atlasSheet { display: flex; flex-direction: column; position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
     background: var(--bg); border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line-strong);
-    box-shadow: var(--shadow-up); max-height: 58dvh;
+    box-shadow: var(--shadow-up); max-height: 28dvh;
     transition: transform 300ms cubic-bezier(.23,1,.32,1), max-height 260ms cubic-bezier(.23,1,.32,1);
     padding-bottom: env(safe-area-inset-bottom); }
+  /* 1.9.2026 (Boskov nalaz): izlog je zauzimao 58dvh, pa je mapa - koja je ovde ceo smisao ekrana -
+     bila tanka traka na vrhu. Sada je obrnuto: mapa dobija oko dve trecine, izlog donju trecinu,
+     a tri stanja ostaju ista (traka / trecina / 88dvh kad se povuce gore). */
   body.atlas #atlasSheet.peek { transform: translateY(calc(100% - 108px)); }
   body.atlas #atlasSheet.pun { max-height: 88dvh; }   /* trece stanje: puna lista od 301 reda u 58dvh je bila tesna */
   /* rucka je jedina povrsina koja se prevlaci - browser ne sme da joj otme vertikalni gest */
@@ -11898,8 +11901,12 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.106";
+const APP_VERSION = "0.9.107";
 const CHANGELOG = [
+  { v: "0.9.107", d: "01.09.2026.", stavke: [
+    "<b>Sledeća vožnja kreće odakle jesi, ne odakle si krenuo prošli put.</b> Posle vožnje Cerak - Novi Beograd, polje polaska je i dalje držalo Novi Beograd, pa je sledeća ruta računata iz tačke na kojoj si bio pre sat vremena. Kraj vožnje sada briše to polje i traži svež signal - kao u Google mapama. Ono što posle sam upišeš ostaje netaknuto.",
+    "<b>Atlas: mapa je dobila dve trećine ekrana.</b> Izlog deonica je zauzimao više od pola, pa je mapa - koja je ovde ceo smisao ekrana - bila tanka traka na vrhu. Sada mapa 64 odsto, izlog donja trećina, a i dalje se povlači gore do pune liste ili spušta u traku.",
+  ] },
   { v: "0.9.106", d: "31.08.2026.", stavke: [
     "<b>Koliko još voziš do cilja.</b> Traka u vožnji je pokazivala kilometre i sat dolaska, ali ne i preostalo vreme - a taj broj se sve vreme računao, iz njega je nastajao sat dolaska. Sada stoji prvi: <b>1 h 23 min · 90 km · 20:45</b>. Od pet sati naviše minut se ne piše, jer posle toliko vožnje zavisi od pauza i goriva, ne od naše procene.",
     "<b>Izlog u Atlasu se više ne može zaglaviti ispod ekrana.</b> Kad si ga povukao skroz nadole i pustio prst pored ručke, list je ostajao tamo gde ga je prst ostavio - ručka bi završila ispod donje ivice i nije bilo čime da ga vratiš. Prevlačenje je sada ograničeno i nadole, a kraj pokreta se hvata i kad otpuštanje ne stigne do ručke.",
@@ -13789,6 +13796,21 @@ function gpsPrefill(force) {   // polazak = trenutna lokacija: KOORDINATE ODMAH 
     } catch (e) {}
     try { if (window.qplanFromOk) qplanFromOk(); } catch (e) {}
   }, () => { try { if (window.qplanNeedFrom) qplanNeedFrom(); } catch (e) {} }, { maximumAge: 60000, timeout: 8000 });
+}
+function polazakNaMojuLokaciju() {
+  /* TEREN 1.9.2026 (Boskov nalaz, i to ne prvi put): "voziš Cerak - NBGD, pa hoćeš sledeću
+     NBGD - Dorćol... ostane sačuvana početna tačka a ne moja tačna lokacija. Rekao sam 100 puta
+     KAO GOOGLE MAPS." Uzrok: gpsPrefill puni polje SAMO ako je prazno (`!force && f.value.trim()`),
+     a posle voznje u njemu stoji polazak PROSLE voznje. Google svaku novu pretragu pravca pocinje
+     od tvoje lokacije; mi smo pocinjali od mesta sa kog si krenuo pre sat vremena.
+     Zato: kraj voznje BRISE polje i trazi svez fiks. Ono sto vozac posle sam upise ostaje - ovo
+     se zove samo na kraju voznje, ne dok planira. */
+  try {
+    const f = document.getElementById("from");
+    if (f) f.value = "";
+    state.fromOverride = null;   // stara tacna koordinata prosle voznje ne sme da prezivi
+    gpsPrefill(true);
+  } catch (e) {}
 }
 const RIDE = { watch: null, nav: null, lock: null, lastFix: 0, offCount: 0, lastReroute: 0, lastSpeak: 0 };
 /* ---- NAGIB (lean angle) ----
@@ -16737,6 +16759,7 @@ function stopRide() {
   try { if (RIDE.marker) { RIDE.marker.remove(); RIDE.marker = null; } } catch (e) {}
   try { document.getElementById("rideRoad").classList.remove("on"); altClose(); } catch (e) {}
   try { if (map && map.getSource("terr") && !map.getTerrain()) map.setTerrain({ source: "terr", exaggeration: 1.2 }); } catch (e) {}
+  try { polazakNaMojuLokaciju(); } catch (e) {}   // 1.9.: sledeca voznja krece ODAVDE, ne sa polaska prosle
   if (state.routes && state.routes.length) {   // nazad na REZULTATE (izbor varijanti), ne na pocetni
     document.body.classList.add("planning");
     if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e) {} }   // 0.9.82: posle voznje kompakt planer, ne stari formular
