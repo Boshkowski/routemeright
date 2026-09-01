@@ -1627,6 +1627,10 @@
     #rideBarBottom .pill.over { border-color: rgba(239,68,68,.85); }
     #rideBarBottom .pill.over .v { color: var(--bad-fg); }
     /* Nagib uzivo: pojavi se tek kad senzor radi (LEAN.on), narandzast kad se stvarno naginje */
+    /* Celija sa kliznom brojkom (1.9.): tap i prevlacenje menjaju sta se gleda. touch-action:
+       pan-y da vodoravno prevlacenje ne otme browser, a meta je cela celija - u rukavicama se
+       ne gadja slovo. */
+    #rideBarBottom .pill .mtr { touch-action: pan-y; cursor: pointer; -webkit-tap-highlight-color: transparent; min-width: 58px; }
     #rideBarBottom .pill .ln { display: none; margin-left: 11px; padding-left: 11px; border-left: 1px solid var(--line-strong); text-align: center; }
     #rideBarBottom .pill.lon .ln { display: flex; }   /* flex, ne block: kolona sa brojem i oznakom kao kod brzine */
 
@@ -2963,7 +2967,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <div class="then" id="rideThen"></div>
   </div>
   <div id="rideBarBottom">
-    <div class="pill"><div><div class="v" id="rideKmh">0</div><div class="u">km/h</div></div><div class="ln"><div class="v" id="rideLean">0°</div><div class="u">nagib</div></div><div class="lim" id="rideLim"><span></span></div></div>
+    <div class="pill"><div class="mtr" id="rideMetrika" role="button" tabindex="0" aria-label="Promeni brojku"><div class="v" id="rideKmh">0</div><div class="u" id="rideKmhU">km/h</div></div><div class="ln"><div class="v" id="rideLean">0°</div><div class="u">nagib</div></div><div class="lim" id="rideLim"><span></span></div></div>
     <button class="rep" id="rideRep"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v6"/><path d="M9 10h6"/></svg>Prijavi</button>
     <button class="alt" id="rideAlt" aria-label="Druga ruta"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 20V9a5 5 0 015-5h6"/><path d="M12 7l3-3-3-3"/><path d="M20 20v-5a5 5 0 00-5-5h-3"/></svg></button>
     <button class="alt" id="ridePause" aria-label="Pauza"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10 5v14M14 5v14"/></svg></button>
@@ -3804,6 +3808,44 @@ function fmtPreostalo(ms) {
      posle pet sati voznje minut zavisi od pauza, goriva i vremena, ne od nase procene. */
   if (h >= 5) return h + " h";
   return h ? (m ? h + " h " + m + " min" : h + " h") : min + " min";
+}
+/* KLIZNE BROJKE U VOZNJI (1.9.2026, Boskov zahtev: "taj deo brzina da se slajduje pa da bude
+   brzina, visina, i jos nesto"). Treca je TEMPERATURA - jedina od kandidata koja je i ziva i
+   bezbednosno korisna (hladnoca, poledica); domet goriva se racuna samo u planeru, ne u voznji.
+   Tap ili prevlacenje menja brojku; izbor prezivljava restart. Nedostupan podatak se NE izmislja
+   nego se pise "-" i jedinica ostaje, da vozac vidi STA gleda a ne samo prazninu. */
+const METRIKE = ["brzina", "visina", "temp"];
+const METRIKA_KEY = "rmr2_metrika";
+function metrikaIdx() {
+  try { const i = METRIKE.indexOf(localStorage.getItem(METRIKA_KEY) || "brzina"); return i < 0 ? 0 : i; }
+  catch (e) { return 0; }
+}
+function metrikaVrednost(koja) {
+  if (koja === "visina") {
+    const a = RIDE.alt;
+    return { v: (a == null || !isFinite(a)) ? "-" : String(Math.round(a)), u: "m" };
+  }
+  if (koja === "temp") {
+    const t = RIDE.wxTemp;
+    return { v: (t == null || !isFinite(t)) ? "-" : String(Math.round(t)), u: "°C" };
+  }
+  const sp = RIDE.spdKmh;
+  return { v: (sp == null || !isFinite(sp)) ? "0" : String(Math.round(sp)), u: "km/h" };
+}
+function metrikaCrtaj() {
+  try {
+    const { v, u } = metrikaVrednost(METRIKE[metrikaIdx()]);
+    const ev = document.getElementById("rideKmh"), eu = document.getElementById("rideKmhU");
+    if (ev) ev.textContent = v;
+    if (eu) eu.textContent = u;
+  } catch (e) {}
+}
+function metrikaSledeca(smer) {
+  try {
+    const i = (metrikaIdx() + (smer || 1) + METRIKE.length) % METRIKE.length;
+    localStorage.setItem(METRIKA_KEY, METRIKE[i]);
+  } catch (e) {}
+  metrikaCrtaj();
 }
 /* srpska mnozina: plSrp(2,"tačka","tačke","tačaka") -> "tačke" (11-14 izuzetak) */
 function plSrp(n, jed, mala, velika) {
@@ -11901,8 +11943,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.107";
+const APP_VERSION = "0.9.108";
 const CHANGELOG = [
+  { v: "0.9.108", d: "01.09.2026.", stavke: [
+    "<b>Brojka u vožnji se sada menja prstom: brzina, visina, temperatura.</b> Tap ili prevlačenje levo-desno, i izbor ostaje zapamćen do sledeće vožnje. Visina dolazi sa GPS-a i zato je zaokružena na metar - telefon je vertikalno slab, pa se taj broj nigde ne koristi za račun, samo za čitanje. Temperatura dolazi iz žive prognoze na mestu gde jesi. Ono što nemamo piše <b>-</b>, a ne izmišljenu nulu: bez rute nema temperature, a poneki uređaj ne da visinu.",
+  ] },
   { v: "0.9.107", d: "01.09.2026.", stavke: [
     "<b>Sledeća vožnja kreće odakle jesi, ne odakle si krenuo prošli put.</b> Posle vožnje Cerak - Novi Beograd, polje polaska je i dalje držalo Novi Beograd, pa je sledeća ruta računata iz tačke na kojoj si bio pre sat vremena. Kraj vožnje sada briše to polje i traži svež signal - kao u Google mapama. Ono što posle sam upišeš ostaje netaknuto.",
     "<b>Atlas: mapa je dobila dve trećine ekrana.</b> Izlog deonica je zauzimao više od pola, pa je mapa - koja je ovde ceo smisao ekrana - bila tanka traka na vrhu. Sada mapa 64 odsto, izlog donja trećina, a i dalje se povlači gore do pune liste ili spušta u traku.",
@@ -12585,6 +12630,23 @@ async function verzijaProveri() {
     return ziva;
   } catch (e) { return null; }   // pad mreze nije poruka
 }
+(function () {   // klizne brojke: tap menja sledecu, vodoravno prevlacenje bira smer (1.9.2026)
+  const el = document.getElementById("rideMetrika");
+  if (!el) return;
+  let x0 = null, y0 = null, vukao = false;
+  el.addEventListener("pointerdown", (e) => { x0 = e.clientX; y0 = e.clientY; vukao = false; });
+  el.addEventListener("pointermove", (e) => {
+    if (x0 == null) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    if (!vukao && Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy)) { vukao = true; metrikaSledeca(dx < 0 ? 1 : -1); }
+  });
+  const kraj = () => { x0 = null; y0 = null; };
+  el.addEventListener("pointerup", (e) => { if (x0 != null && !vukao) metrikaSledeca(1); kraj(); });
+  el.addEventListener("pointercancel", kraj);
+  window.addEventListener("pointerup", kraj);   // ista pouka kao Atlas izlog: gest se zavrsava i van elementa
+  el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); metrikaSledeca(1); } });
+  try { metrikaCrtaj(); } catch (e) {}
+})();
 function initVerBadge() {
   const b = document.getElementById("verBadge");
   if (!b) return;
@@ -14586,6 +14648,13 @@ function wxLiveTick(route, curKm) {
   let r;
   try { r = wxLiveCalc(route, curKm, now); } catch (e) { return; }
   RIDE.wx = r.assess;
+  /* Ziva temperatura za traku (1.9.): uzima se tacka najbliza mestu na kome si sada. Bez rute
+     nema prognoze pa ni temperature - celija tada posteno pise "-". */
+  try {
+    let naj = null, najD = 1e9;
+    for (const a2 of (r.assess || [])) { const d2 = Math.abs((a2.km || 0) - curKm); if (d2 < najD) { najD = d2; naj = a2; } }
+    RIDE.wxTemp = naj && naj.temp != null && isFinite(naj.temp) ? naj.temp : null;
+  } catch (e) { RIDE.wxTemp = null; }
   /* 0.9.95 (QA nalaz 70): ziv racun je vec postojao i njegov rezultat se BACAO - RIDE.wx se
      nigde nije citao, a crvena traka nevremena je citala state._zones, koji se puni SAMO u
      planeru i u voznji se nikad ne preracunava. Na ekranu su zato stajale dve tvrdnje o vremenu
@@ -15653,6 +15722,11 @@ function pauzaFixTick(p, tsMs) {
   /* Fiks U TOKU pauze: kilometraza/trag/statistika MIRUJU (obecanje pauze), ali se brzina i
      svezina fiksa prate - bez toga auto-nastavak ne bi imao od cega da vidi da si krenuo. */
   const la = p.coords.latitude, lo = p.coords.longitude;
+  /* Visina (1.9.2026): GPS je jedini ZIV izvor - DEM imamo samo duz izracunate rute, a slobodna
+     voznja je nema. Vertikalna tacnost telefona je slaba (obicno 10-30 m), pa se broj prikazuje
+     zaokruzen na metar i NIKAD se ne koristi ni za jedan racun - samo za citanje na traci.
+     Kad ga uredjaj ne da, ostaje null i celija pise "-" umesto izmisljene nule. */
+  RIDE.alt = (p.coords.altitude != null && isFinite(p.coords.altitude)) ? p.coords.altitude : null;
   RIDE.lastFixTs = tsMs;
   const spdK = fixBrzina(p, lo, la, tsMs);
   /* 0.9.100 (QA nalaz 105, Boskova odluka (c) + nalaz 73 "rucna pauza treba automatski da se
@@ -15756,7 +15830,7 @@ function pauzaNavTick(p, tsMs, route) {
     document.getElementById("rideRemT").textContent = fmtPreostalo(preostMs);
     document.getElementById("rideEta").textContent =
       new Date(Date.now() + preostMs).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
-    document.getElementById("rideKmh").textContent = Math.round(spdK);
+    metrikaCrtaj();
   } catch (e) {}
   try { drawRoadLabel(route, d, lo, la); } catch (e) {}
   try {
@@ -16047,7 +16121,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
     if (_ah) { _ah.classList.remove("on"); _ah.innerHTML = ""; }
     RIDE.aheadKm = null; RIDE.aheadHideAt = 0;
   } catch (e) {}
-  document.getElementById("rideKmh").textContent = "0";
+  metrikaCrtaj();
   document.getElementById("rideRemT").textContent = "0 min";
   document.getElementById("rideRem").textContent = "0,0 km";
   document.getElementById("rideEta").textContent = "";
@@ -16090,7 +16164,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
       reverseName(la, lo, 14).then((nm) => { if (nm && RIDE.freeRide) RIDE.freeNaz = "Slobodna vožnja · " + nm; }).catch(() => {});
     }
     document.getElementById("rideInstr").textContent = "Snimam vožnju";
-    document.getElementById("rideKmh").textContent = Math.round(spdK);
+    metrikaCrtaj();
     try {   // ograničenje i u slobodnoj vožnji (13.8.) - iz repa traga, ne iz rute koje nema
       freeLimitTick(lo, la);
       const _fl = freeLimitVal(lo, la);   // 0.9.95: mrtav broj se ne prikazuje i ne odlucuje (nalaz 33)
@@ -16259,7 +16333,7 @@ function startRide() {
     if (_ah) { _ah.classList.remove("on"); _ah.innerHTML = ""; }
     RIDE.aheadKm = null; RIDE.aheadHideAt = 0;
   } catch (e) {}
-  document.getElementById("rideKmh").textContent = "0";
+  metrikaCrtaj();
   document.getElementById("rideRemT").textContent = "-";
   document.getElementById("rideRem").textContent = "";
   document.getElementById("rideEta").textContent = "";
@@ -16484,7 +16558,7 @@ function startRide() {
       }
       wxLiveTick(route, curKm);   // ziva prognoza: preracun na 30 s (bez poziva), sveze brojke na 20 min
     } catch (e) {}
-    document.getElementById("rideKmh").textContent = Math.round(spdK);   // brzina je izracunata na vrhu ticka (radi i kad GPS ne da speed - prikaz 5.8. ostajao na "0")
+    metrikaCrtaj();   // brzina je izracunata na vrhu ticka (radi i kad GPS ne da speed - prikaz 5.8. ostajao na "0"); 1.9.: celija ume i visinu i temperaturu
     /* 0.9.83: max/movMs/uzorci sada zive u fixKorak (deljeno sa replay-em) - stari blok ovde je uklonjen.
        0.9.82 lekcija i dalje vazi: momente nagiba pise ISKLJUCIVO gard u leanTick/leanMotion. */
     try { voznjaCkp(); } catch (e) {}   // kontrolna tacka: iOS kill vise ne odnosi voznju (0.9.82)
