@@ -2011,22 +2011,31 @@
   body.sumopen #routePill, body.sumopen #homeSheet, body.sumopen #homeChrome { display: none !important; }
   /* Spustanje sazetka ga vise ne gasi nego skuplja u traku - trag voznje ostaje na mapi. */
   /* Replay voznje (13.8.): dok ide, kartica je niska traka preko mape - trag i marker su heroj */
-  #rideSum .rsreplay { display: flex; align-items: center; gap: 12px; margin: 12px 20px 0; padding: 10px 12px;
+  #rideSum .rsreplay { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 20px 0; padding: 10px 12px;
     background: var(--surface-veil); border: 1px solid var(--line); border-radius: var(--r-lg); }
   #rideSum #rrPlay { width: 46px; height: 46px; border-radius: 50%; border: 0; cursor: pointer; flex: none;
     background: linear-gradient(135deg,var(--accent),var(--orange-600)); color: var(--on-accent); display: flex; align-items: center; justify-content: center; }
   #rideSum #rrPlay svg { width: 22px; height: 22px; }
-  #rideSum .rrmid { flex: 1; min-width: 0; }
+  #rideSum .rrmid { flex: 1 1 90px; min-width: 60px; }   /* klizac uzima ostatak PRVOG reda */
   #rideSum #rrSlider { width: 100%; accent-color: var(--accent); height: 26px; margin: 0; }
-  #rideSum .rrnum { display: flex; gap: 12px; font: 600 13px var(--font-ui); color: var(--fg-muted);
-    font-variant-numeric: tabular-nums; margin-top: 1px; }
-  #rideSum .rrnum b { color: var(--fg-strong); font-size: 13px; margin-left: auto; }
+  /* Brojke su svoj red preko cele sirine (1.9.): ranije su delile red sa tri dugmeta na 390 px
+     i doslovno se crtale jedna preko druge. `min-width: 0` na svakoj sprecava da duga vrednost
+     gura ostale van reda. */
+  #rideSum .rrnum { flex: 1 1 100%; display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px; font: 600 13px var(--font-ui); color: var(--fg-muted);
+    font-variant-numeric: tabular-nums; padding-top: 2px; }
+  #rideSum .rrnum { flex-wrap: wrap; }
+  #rideSum .rrnum > * { min-width: 0; white-space: nowrap; }
+  /* Natpis trenutka uzima SVOJ red kad se pojavi: sa pet stavki u jednom redu je na 390 px
+     ispadao iz trake (izmereno 1.9.). */
+  #rideSum .rrnum .rrtren { flex: 1 1 100%; text-align: center; margin-top: 4px; }
+  #rideSum .rrnum b { color: var(--fg-strong); font-size: 13px; }
   /* Natpis trenutka na kome replay zastane (1.9.). Stoji u traci, ne preko mape - tamo vec stoje
      pinovi sa istim brojevima, pa bi se udvajalo i zaklanjalo trag. */
-  #rideSum .rrtren { flex: none; max-width: 132px; padding: 4px 9px; border-radius: var(--r-sm);
-    background: rgba(255,106,0,.14); border: 1px solid rgba(255,106,0,.45);
-    font: 700 11px/1.25 var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--accent-label); }
-  #rideSum .rrtren small { display: block; font-size: 13px; font-weight: 800; letter-spacing: 0; text-transform: none; color: var(--fg-strong); }
+  #rideSum .rrtren { flex: none; padding: 2px 8px; border-radius: var(--r-xs);
+    background: rgba(255,106,0,.16); border: 1px solid rgba(255,106,0,.5);
+    font: 700 11px/1.5 var(--font-ui); letter-spacing: .04em; text-transform: uppercase; color: var(--accent-label); }
+  #rideSum .rrtren small { font-size: 12px; font-weight: 800; letter-spacing: 0; text-transform: none; color: var(--fg-strong); margin-left: 6px; }
   /* Prekidac 3D/ravno (1.9.2026). Do sada je `prefers-reduced-motion` gasio 3D u celini i bez
      reci - vozac sa ukljucenim "Reduce Motion" u iOS-u dobije ravan pogled i ne zna zasto.
      Sada je izbor vidljiv i njegov; sistemsko podesavanje samo bira POCETNO stanje. */
@@ -2043,8 +2052,10 @@
   #rideSum .rrx { width: 44px; height: 44px; flex: none; padding: 0; display: flex; align-items: center; justify-content: center;
     background: none; border: 0; color: var(--fg-muted); font: 400 19px/1 var(--font-ui); cursor: pointer; -webkit-tap-highlight-color: transparent; }
   #rideSum .rrx:active { color: var(--fg-strong); }
-  #rideSum.peek.replaying .card { transform: translate(-50%, calc(100% - 196px)); }
-  @media (max-height: 520px) { #rideSum.peek.replaying .card { transform: translateY(calc(100% - 196px)); } }
+  /* 232 umesto 196 (1.9.): traka replaya je od dva reda i sa natpisom trenutka visoka 189 px;
+     sa 196 joj je kraj bio odsecen. Izmereno, ne procenjeno. */
+  #rideSum.peek.replaying .card { transform: translate(-50%, calc(100% - 244px)); }
+  @media (max-height: 520px) { #rideSum.peek.replaying .card { transform: translateY(calc(100% - 244px)); } }
   #rideSum.peek { pointer-events: none; }
   #rideSum.peek .card { transform: translate(-50%, calc(100% - 74px)); pointer-events: auto;
     transition: transform 300ms cubic-bezier(.23,1,.32,1); cursor: pointer; }
@@ -3015,16 +3026,20 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <!-- Replay voznje (13.8., Boskov zahtev "kao u demou"): marker putuje tragom po VREMENU voznje -->
     <div class="rsreplay" id="rsReplay" hidden>
       <button id="rrPlay" type="button" aria-label="Pusti replay"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg></button>
+      <!-- 1.9.2026 (Boskov nalaz "prenatrpano, 20 10 nesto"): klizac i dugmad su PRVI red, brojke
+           SVOJ red ispod. Ranije su brojke delile red sa tri dugmeta na 390 px, pa su se "2D" i
+           "10°" doslovno crtali jedno preko drugog. -->
       <div class="rrmid">
         <input type="range" id="rrSlider" min="0" max="1000" value="0" step="1" aria-label="Trenutak vožnje">
-        <div class="rrnum"><span id="rrTime">0:00</span><span id="rrKm">0 km</span><b id="rrSpd">0 km/h</b><span id="rrLean" hidden>0°</span></div>
       </div>
-      <!-- 1.9.2026: natpis trenutka na kome replay zastane (max nagib, najbrze, pauza) -->
-      <div class="rrtren" id="rrTren" hidden></div>
       <button class="rr3d" id="rr3d" type="button" aria-label="3D ili ravan pogled">3D</button>
       <button class="rrvid" id="rrVideo" type="button" aria-label="Napravi video">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M15 10l4.5-2.6v9.2L15 14"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>
       </button>
+      <div class="rrnum">
+        <span id="rrTime">0:00</span><span id="rrKm">0 km</span><b id="rrSpd">0 km/h</b><span id="rrLean" hidden>0°</span>
+        <span class="rrtren" id="rrTren" hidden></span>
+      </div>
       <!-- 30.8. (teren 27.8., nalaz 3): izlaz iz replaya. Simulator u maketi ga ima (#simExit),
            traka u sazetku ga nikad nije dobila - jedini izlaz je bio podici ceo list pa "Gotovo". -->
       <button class="rrx" id="rrX" type="button" aria-label="Izađi iz replaya">✕</button>
@@ -11967,8 +11982,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.112";
+const APP_VERSION = "0.9.113";
 const CHANGELOG = [
+  { v: "0.9.113", d: "01.09.2026.", stavke: [
+    "<b>Dugme za video je pucalo na svakoj vožnji sa pauzom.</b> Poruka \"number is not iterable\" koju si video na ekranu bila je prava greška: čitao sam ukupan broj minuta pauze kao da je spisak mesta. Ista greška je u replayu bila progutana, pa zastanci na pauzama nikad nisu ni radili - a niko to nije primetio jer nije bilo poruke. Sada rade, i minuti su minuti (pauza od 12 min više ne piše \"1 min\").",
+    "<b>Traka replaya više nije nagurana.</b> Klizač i dugmad su prvi red, brojke svoj red ispod, a natpis trenutka svoj. Na 390 px se \"2D\" i \"10°\" doslovno crtalo jedno preko drugog.",
+    "<b>Spušten sažetak se sada povlači nagore.</b> Do sada je jedini način da se vrati bio tap. Gest je dvosmeran, kako i treba.",
+    "<b>Oznake vrhunaca na mapi se vide i u 3D-u.</b> Bile su providne i sitne, pa su se nad svetlijom 3D mapom gubile: sada puna podloga, deblji prsten i krupniji tekst.",
+  ] },
   { v: "0.9.112", d: "01.09.2026.", stavke: [
     "<b>3D pogled je sada tvoj izbor, sa prekidačem u traci replaya.</b> Ako ti je u iOS podešavanjima uključeno \"Reduce Motion\", aplikacija je do sada ćutke gasila 3D i ostavljala ravan pogled odozgo - bez ijedne reči zašto. Sada to podešavanje bira samo početno stanje, a dugme <b>3D / 2D</b> ima poslednju reč i pamti se.",
     "<b>Ravan pogled je sada stvarno ravan.</b> Pri prelazu iz 3D mapa je ostajala nakrivljena, jer petlja replaya vraća samo položaj a ne i nagib.",
@@ -17107,14 +17128,21 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
     /* Vrhunci voznje su bili goli krugovi sa brojem, pa se nisu razlikovali od ostalih tacaka
        na tragu (Boskov nalaz: "ne mogu da vidim gde sam imao max nagib levo"). Sada svaki nosi
        i natpis sta je, a nagib levo i desno su DVE tacke - ne jedna zajednicka. */
+    /* 1.9.2026 (Boskov nalaz): "ne vidi se lepo, nekako je transparentno, ne moze da bude
+       transparentno u 3D-u nego mora da se vidi." Pinovi su bili providni (alfa .9 i .95) i
+       sitni (natpis 9 px), pa su se nad svetlijom 3D mapom sa zgradama gubili. Sada: PUNA
+       podloga bez providnosti, deblji prsten u boji trenutka, krupniji tekst i jaca senka sa
+       tankim svetlim obrubom - tako se odvajaju i od tamne i od svetle podloge. */
     const pin = (c, broj, natpis, boja) => {
       const el = document.createElement("div");
-      el.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer";
-      el.innerHTML = `<div style="min-width:34px;height:34px;padding:0 6px;border-radius:999px;background:rgba(10,16,30,.95);` +
-        `border:2.5px solid ${boja};display:flex;align-items:center;justify-content:center;` +
-        `font:900 12px var(--font-num);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.65)">${broj}</div>` +
-        `<div style="font:800 9px var(--font-ui);letter-spacing:.14em;color:${boja};` +
-        `background:rgba(10,16,30,.9);padding:2px 5px;border-radius:var(--r-xs);white-space:nowrap">${natpis}</div>`;
+      el.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer";
+      el.innerHTML = `<div style="min-width:40px;height:40px;padding:0 9px;border-radius:999px;background:#070c16;` +
+        `border:3px solid ${boja};display:flex;align-items:center;justify-content:center;` +
+        `font:900 15px var(--font-num);color:#fff;` +
+        `box-shadow:0 4px 14px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.14)">${broj}</div>` +
+        `<div style="font:800 11px var(--font-ui);letter-spacing:.1em;color:#fff;` +
+        `background:${boja};padding:3px 8px;border-radius:var(--r-xs);white-space:nowrap;` +
+        `box-shadow:0 3px 10px rgba(0,0,0,.7)">${natpis}</div>`;
       SUMMARK.push(new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat([c[0], c[1]]).addTo(map));
     };
     // broj na pinu = ugao ZABELEZEN NA TOM MESTU (momLn*[2]); od 0.9.82 je po konstrukciji jednak plocici
@@ -17126,7 +17154,7 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
     if (s.momBrz && s.maxK) pin(s.momBrz, s.maxK + " km/h", "NAJBRŽE", "#ef4444");
     // gde si stajao (11.8.): brojka "pauza" u sazetku vodi ovde, pa mora imati sta da pokaze.
     // Kratki predasi ispod 3 min se ne pinuju - semafor i benzinska nisu ista prica.
-    (s.pauzeNa || []).filter((p) => p && p[2] >= 3).slice(0, 4)
+    (s.pauzeNa || []).filter((p) => p && p[2] >= 3).slice(0, 3)   // 1.9.: tri umesto cetiri - manje gomilanja natpisa
       .forEach((p) => pin(p, p[2] + " min", "PAUZA", "#22d3ee"));
     const b = pts.reduce((bb, c) => bb.extend([c[0], c[1]]), new maplibregl.LngLatBounds([pts[0][0], pts[0][1]], [pts[0][0], pts[0][1]]));
     const ls = window.matchMedia && window.matchMedia("(max-height: 520px)").matches;
@@ -17429,9 +17457,13 @@ function sumReplayTrenuci(s) {
     dodaj(s.momL, "Max levo", (s.momL && s.momL[2] != null ? Math.round(s.momL[2]) : Math.round(s.lnL || 0)) + "°");
     dodaj(s.momR, "Max desno", (s.momR && s.momR[2] != null ? Math.round(s.momR[2]) : Math.round(s.lnR || 0)) + "°");
     dodaj(s.momBrz, "Najbrže", Math.round((s.momBrz && s.momBrz[2] != null ? s.momBrz[2] : s.maxK) || 0) + " km/h");
-    for (const pz of (s.pauz || s.pauzeNa || [])) {
+    /* ⚠ 1.9.2026, ISPRAVKA: polje se zove `pauzeNa` i nosi [lon, lat, MINUTI]. `s.pauz` je BROJ
+       (ukupno minuta pauze) - petlja preko njega baca "number is not iterable". Ovde je greska
+       bila progutana spoljnim try/catch pa se nije videla, ali su zastanci na pauzama tiho
+       nestajali; u izvozu videa je ista greska iskocila vozacu na ekran. */
+    for (const pz of (Array.isArray(s.pauzeNa) ? s.pauzeNa : [])) {
       if (!Array.isArray(pz)) continue;
-      const min = pz[2] != null ? Math.round(pz[2] / 60000) || Math.round(pz[2]) : null;
+      const min = pz[2] != null && isFinite(pz[2]) ? Math.round(pz[2]) : null;   // MINUTI, ne milisekunde
       dodaj(pz, "Pauza", min != null && min > 0 ? min + " min" : "");
     }
   } catch (e) {}
@@ -18378,7 +18410,13 @@ async function vozVideo(s, naStanje) {
     dodaj(s.momL, "Max levo", (s.momL && s.momL[2] != null ? Math.round(s.momL[2]) : Math.round(s.lnL || 0)) + "°");
     dodaj(s.momR, "Max desno", (s.momR && s.momR[2] != null ? Math.round(s.momR[2]) : Math.round(s.lnR || 0)) + "°");
     dodaj(s.momBrz, "Najbrže", Math.round((s.momBrz && s.momBrz[2] != null ? s.momBrz[2] : s.maxK) || 0) + " km/h");
-    for (const pz of (s.pauz || [])) if (Array.isArray(pz)) dodaj(pz, "Pauza", pz[2] != null ? (Math.round(pz[2] / 60000) || 1) + " min" : "");
+    /* ⚠ isto kao gore: `pauzeNa`, i treci clan su MINUTI. Ovo je bilo "number is not iterable"
+       koje je 1.9. iskocilo Bosku na ekran kad je pritisnuo dugme za video. */
+    for (const pz of (Array.isArray(s.pauzeNa) ? s.pauzeNa : [])) {
+      if (!Array.isArray(pz)) continue;
+      const min = pz[2] != null && isFinite(pz[2]) ? Math.round(pz[2]) : null;
+      dodaj(pz, "Pauza", min != null && min > 0 ? min + " min" : "");
+    }
     trenuci.sort((a2, b2) => a2.p - b2.p);
 
     const ukupnoMs = VID.sek * 1000, stajMs = 1300;
@@ -18606,12 +18644,39 @@ async function stplPodeli(kind) {
     // skocila na pola ekrana udesno tokom prevlacenja. Landscape varijanta ima transform:none, pa tamo ide cist Y.
     const bezX = () => window.matchMedia && window.matchMedia("(max-height: 520px)").matches;
     const xform = (dy) => !dy ? "" : (bezX() ? "translateY(" + dy + "px)" : "translate(-50%, " + dy + "px)");
-    const start = (e) => { dg = { y0: e.clientY, moved: 0 }; cd.classList.add("dragging"); try { e.target.setPointerCapture(e.pointerId); } catch (er) {} };
-    const move = (e) => { if (!dg) return; const dy = Math.max(0, e.clientY - dg.y0); dg.moved = dy; cd.style.transform = xform(dy); };
-    const end = () => { if (!dg) return; const dy = dg.moved; dg = null; cd.classList.remove("dragging"); if (dy > 130) skupiSum(); else cd.style.transform = ""; };
-    [el.querySelector(".grab"), document.getElementById("rsKick")].forEach((z) => { if (!z) return;
+    /* 1.9.2026 (Boskov nalaz): "kad se svuce dole summary, jedini nacin da se podigne opet gore
+       je ako se klikne, a intuitivno je da se ako se skrolovalo dole, skroluje i gore."
+       Tacno - prevlacenje je do sada islo SAMO nadole (`Math.max(0, ...)`) i umelo samo da
+       skupi. Sada je gest dvosmeran: iz spustenog stanja povlacenje NAVISE vraca sazetak.
+       U peek rezimu kartica vec nosi CSS pomeraj (visina - 74 px), pa se inline transform mora
+       RACUNATI od njega - inace bi na prvi pomeraj skocila na vrh ekrana. */
+    const peekOff = () => Math.max(0, (cd.getBoundingClientRect().height || 0) - 74);
+    const start = (e) => {
+      dg = { y0: e.clientY, moved: 0, peek: el.classList.contains("peek"), baza: el.classList.contains("peek") ? peekOff() : 0 };
+      cd.classList.add("dragging");
+      try { e.target.setPointerCapture(e.pointerId); } catch (er) {}
+    };
+    const move = (e) => {
+      if (!dg) return;
+      let dy = e.clientY - dg.y0;
+      dy = dg.peek ? Math.min(0, Math.max(-(dg.baza + 40), dy)) : Math.max(0, dy);   // spusten: samo navise; podignut: samo nadole
+      dg.moved = dy;
+      cd.style.transform = xform(dg.baza + dy);
+    };
+    const end = () => {
+      if (!dg) return;
+      const { moved, peek } = dg; dg = null;
+      cd.classList.remove("dragging");
+      cd.style.transform = "";
+      if (peek) { if (moved < -60) vratiSum(); }        // povuceno navise = pun sazetak
+      else if (moved > 130) skupiSum();
+    };
+    [el.querySelector(".grab"), document.getElementById("rsKick"), el.querySelector(".rshead")].forEach((z) => { if (!z) return;
       z.addEventListener("pointerdown", start); z.addEventListener("pointermove", move);
       z.addEventListener("pointerup", end); z.addEventListener("pointercancel", end);
+      /* Ista pouka kao Atlas izlog (31.8.): gest se zavrsava i kad otpustanje ne stigne do
+         elementa - inace kartica ostane zarobljena tamo gde ju je prst ostavio. */
+      window.addEventListener("pointerup", () => { if (dg) { dg = null; cd.classList.remove("dragging"); cd.style.transform = ""; } });
     });
   }
   const gx = document.getElementById("rsGpx");
