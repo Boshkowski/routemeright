@@ -2027,6 +2027,11 @@
     background: rgba(255,106,0,.14); border: 1px solid rgba(255,106,0,.45);
     font: 700 11px/1.25 var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--accent-label); }
   #rideSum .rrtren small { display: block; font-size: 13px; font-weight: 800; letter-spacing: 0; text-transform: none; color: var(--fg-strong); }
+  #rideSum .rrvid { width: 44px; height: 44px; flex: none; padding: 0; display: flex; align-items: center; justify-content: center;
+    background: none; border: 0; color: var(--accent); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #rideSum .rrvid svg { width: 21px; height: 21px; stroke: currentColor; }
+  #rideSum .rrvid:disabled { opacity: .45; }
+  #rideSum .rrvid:active { color: var(--fg-strong); }
   /* izlaz iz replaya, meta 44 px kao i svuda gde se dira rukavicom (30.8.) */
   #rideSum .rrx { width: 44px; height: 44px; flex: none; padding: 0; display: flex; align-items: center; justify-content: center;
     background: none; border: 0; color: var(--fg-muted); font: 400 19px/1 var(--font-ui); cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -3009,6 +3014,9 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
       </div>
       <!-- 1.9.2026: natpis trenutka na kome replay zastane (max nagib, najbrze, pauza) -->
       <div class="rrtren" id="rrTren" hidden></div>
+      <button class="rrvid" id="rrVideo" type="button" aria-label="Napravi video">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M15 10l4.5-2.6v9.2L15 14"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>
+      </button>
       <!-- 30.8. (teren 27.8., nalaz 3): izlaz iz replaya. Simulator u maketi ga ima (#simExit),
            traka u sazetku ga nikad nije dobila - jedini izlaz je bio podici ceo list pa "Gotovo". -->
       <button class="rrx" id="rrX" type="button" aria-label="Izađi iz replaya">✕</button>
@@ -11951,8 +11959,13 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.109";
+const APP_VERSION = "0.9.110";
 const CHANGELOG = [
+  { v: "0.9.110", d: "01.09.2026.", stavke: [
+    "<b>Replay se može izvesti kao video.</b> Dugme sa kamerom u traci replaya pravi uspravan snimak 1080x1920 - vožnja iz prvog lica, sa strelicom, brzinom, kilometrima i zastancima na najdubljem nagibu, najbržoj tački i pauzama. Kad je gotov, otvara se deljenje: Fotografije, poruke, Instagram, šta god.",
+    "<b>Ovo je pisano tek pošto je izmereno na tvom telefonu</b>, ne pre: iPhone 14 daje 59,8 kadrova u sekundi dok snima mapu koja se kreće, i podržava mp4. Da nije prošlo, ne bih ga ni pravio.",
+    "<b>Živa mapa nije dirana.</b> Snimak nastaje na zasebnoj, nevidljivoj mapi - da navigacija ne plati ni jedan kadar zbog funkcije koja se koristi jednom posle vožnje. Kompozit se crta najviše 30 puta u sekundi, taman koliko snimak i traži.",
+  ] },
   { v: "0.9.109", d: "01.09.2026.", stavke: [
     "<b>Replay je sada vožnja iz prvog lica.</b> Kamera stoji iza strelice, nagnuta, i okreće se sa pravcem - umesto ravnog pogleda odozgo. Kurs se gladi, pa se ne trza na oštrim skretanjima.",
     "<b>I zastaje tamo gde se nešto desilo.</b> Na najdubljem nagibu levo, najdubljem desno, najbržoj tački i na svakoj pauzi replay stane na sekundu i po, priđe bliže i napiše šta gledaš. Dok stoji, vreme vožnje miruje - inače bi zastanak pojeo deo puta.",
@@ -17539,6 +17552,7 @@ function sumReplayInit(s, pts) {
   RRPL.speed = Math.max(1, RRPL.dur / 40);   // cela voznja ~40 s
   RRPL.t = 0; RRPL.frame = 0;
   RRPL.stao = null; RRPL.brgG = null; RRPL.kam = null;
+  RRPL.sum = s;                       // 1.9.: izvoz videa snima BAS ovu voznju
   RRPL.stani = sumReplayTrenuci(s);   // 1.9.: zastanci na max nagibu, najbrzoj tacki i pauzama
   try { rrTrenPrikazi(null); } catch (er) {}
   box.hidden = false;
@@ -17548,6 +17562,33 @@ function sumReplayInit(s, pts) {
     /* Izlaz iz replaya (30.8., teren 27.8.): gasi petlju i marker i vraca sazetak u pun list -
        isto sto simulator u maketi radi na kraju. stopPropagation jer je kartica u peek rezimu
        sama po sebi dugme za podizanje. */
+    document.getElementById("rrVideo").addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const b2 = document.getElementById("rrVideo");
+      if (b2.disabled) return;
+      const s2 = RRPL.sum;
+      if (!s2) { try { shareToast("Nema vožnje za snimanje."); } catch (er) {} return; }
+      b2.disabled = true;
+      try { sumReplayPauza(); } catch (er) {}
+      const rec = (t) => { try { shareToast("Pravim video - " + t + "…"); } catch (er) {} };
+      rec("pripremam");
+      try {
+        const r = await vozVideo(s2, rec);
+        const ext = /mp4/.test(r.tip) ? "mp4" : "webm";
+        const ime = "routemeright-" + (new Date().toISOString().slice(0, 10)) + "." + ext;
+        const file = new File([r.blob], ime, { type: r.tip });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file] });
+        } else {   // desktop / bez deljenja fajlova: preuzimanje
+          const u = URL.createObjectURL(r.blob);
+          const a2 = document.createElement("a"); a2.href = u; a2.download = ime; a2.click();
+          setTimeout(() => URL.revokeObjectURL(u), 4000);
+        }
+        try { navLog("video-izvoz", { kb: Math.round(r.blob.size / 1024), kadrova: r.kadrova, sek: Math.round(r.sek) }); } catch (er) {}
+      } catch (err) {
+        try { shareToast(err && err.message ? err.message : "Video nije napravljen."); } catch (er) {}
+      } finally { b2.disabled = false; }
+    });
     document.getElementById("rrX").addEventListener("click", (e) => {
       e.stopPropagation();
       try { sumReplayStop(); } catch (er) {}
@@ -18182,6 +18223,179 @@ function fotoStanje(dataUrl) {
     fb.classList.remove("has");
     if (x) x.hidden = true;
   }
+}
+/* ================= IZVOZ REPLAYA KAO VIDEO (1.9.2026, Boskov zahtev) =================
+   "Cak i da moze taj video da se izveze i sacuva."
+   Izmereno na Boskovom iPhone 14 / iOS 18.7 PRE nego sto je pisano: MediaRecorder postoji,
+   video/mp4 je podrzan, captureStream nad WebGL platnom radi, mapa isporucuje 59,8 kadrova u
+   sekundi DOK snimanje traje, i iz pet sekundi izadje 4,3 MB mp4. Tek posle tog merenja je
+   izvoz uopste pocet.
+
+   Arhitektura: NE dira se ziva mapa. Ona je namerno bez `preserveDrawingBuffer` (cena po
+   performansama u navigaciji), pa se njeno platno ne moze uhvatiti. Umesto toga se pravi
+   VANEKRANSKA mapa - isti obrazac koji deljene slike vec koriste - i snima se KOMPOZITNO
+   platno 1080x1920: kadar mape plus strelica, brojke i natpis trenutka. Tako video ima HUD,
+   a navigacija ne placa nista. */
+const VID = { W: 1080, H: 1920, fps: 30, sek: 24 };
+function _vidHud(x, s, z, tr, napredak) {
+  const W = VID.W, H = VID.H;
+  x.save();
+  // donja zavesa, da brojke imaju podlogu bez obzira na mapu ispod
+  const g = x.createLinearGradient(0, H - 560, 0, H);
+  g.addColorStop(0, "rgba(5,8,11,0)"); g.addColorStop(.45, "rgba(5,8,11,.72)"); g.addColorStop(1, "rgba(5,8,11,.94)");
+  x.fillStyle = g; x.fillRect(0, H - 560, W, 560);
+  // traka napretka
+  x.fillStyle = "rgba(255,255,255,.18)"; x.fillRect(64, H - 96, W - 128, 6);
+  x.fillStyle = "#FF6A00"; x.fillRect(64, H - 96, (W - 128) * Math.max(0, Math.min(1, napredak)), 6);
+  // brojke
+  x.textAlign = "left"; x.fillStyle = "#e6edf3";
+  x.font = "800 108px ui-sans-serif,system-ui,sans-serif";
+  x.fillText(String(z.v != null ? Math.round(z.v) : 0), 64, H - 190);
+  x.font = "600 34px ui-sans-serif,system-ui,sans-serif"; x.fillStyle = "#8fa3b8";
+  x.fillText("km/h", 64, H - 146);
+  x.textAlign = "right"; x.fillStyle = "#e6edf3";
+  x.font = "800 88px ui-sans-serif,system-ui,sans-serif";
+  x.fillText(z.km.toFixed(1).replace(".", ",") , W - 64, H - 190);
+  x.font = "600 34px ui-sans-serif,system-ui,sans-serif"; x.fillStyle = "#8fa3b8";
+  x.fillText("km", W - 64, H - 146);
+  // natpis trenutka
+  if (tr) {
+    const tekst = tr.naslov.toUpperCase(), vred = tr.vred || "";
+    x.textAlign = "center";
+    x.font = "800 40px ui-sans-serif,system-ui,sans-serif";
+    const sirina = Math.max(x.measureText(tekst).width, x.measureText(vred).width) + 96;
+    x.fillStyle = "rgba(255,106,0,.16)"; x.strokeStyle = "rgba(255,106,0,.7)"; x.lineWidth = 3;
+    x.beginPath(); x.roundRect((W - sirina) / 2, H - 470, sirina, vred ? 168 : 104, 26); x.fill(); x.stroke();
+    x.fillStyle = "#ff9a4d"; x.font = "700 34px ui-sans-serif,system-ui,sans-serif";
+    x.fillText(tekst, W / 2, H - 412);
+    if (vred) { x.fillStyle = "#e6edf3"; x.font = "800 62px ui-sans-serif,system-ui,sans-serif"; x.fillText(vred, W / 2, H - 340); }
+  }
+  // naslov voznje i potpis
+  x.textAlign = "left"; x.fillStyle = "rgba(230,237,243,.92)";
+  x.font = "800 44px ui-sans-serif,system-ui,sans-serif";
+  x.fillText(String(s.naz || "Vožnja").slice(0, 26), 64, 148);
+  x.fillStyle = "rgba(255,106,0,.95)"; x.font = "800 28px ui-sans-serif,system-ui,sans-serif";
+  x.fillText("ROUTEMERIGHT", 64, 196);
+  x.restore();
+}
+function _vidStrelica(x, W, H, brg) {   // strelica vozaca u sredini kadra, okrenuta po kursu
+  x.save();
+  x.translate(W / 2, H * 0.52);
+  x.rotate(0);   // kamera se okrece, strelica gleda uvek napred
+  x.shadowColor = "rgba(0,0,0,.75)"; x.shadowBlur = 18;
+  x.beginPath(); x.moveTo(0, -46); x.lineTo(32, 40); x.lineTo(0, 22); x.lineTo(-32, 40); x.closePath();
+  x.fillStyle = "#38bdf8"; x.fill();
+  x.lineWidth = 4; x.strokeStyle = "#05080B"; x.stroke();
+  x.restore();
+}
+async function vozVideo(s, naStanje) {
+  if (typeof MediaRecorder === "undefined") throw new Error("Ovaj uređaj ne ume da snima video iz aplikacije.");
+  const segs = tragSegmenti(s).filter((g) => g && g.length > 1);
+  const pts = segs.flat();
+  if (pts.length < 3) throw new Error("Vožnja nema GPS trag.");
+  const cum = sumCum(pts), kmUk = cum[cum.length - 1];
+  const div = document.createElement("div");
+  div.style.cssText = "position:fixed;left:-3000px;top:0;width:" + (VID.W / 2) + "px;height:" + (VID.H / 2) + "px;";
+  document.body.appendChild(div);
+  let m = null, rec = null, url = null;
+  try {
+    naStanje && naStanje("pripremam mapu");
+    m = new maplibregl.Map({ container: div, style: "https://tiles.openfreemap.org/styles/positron",
+      center: pts[0], zoom: 16, pitch: 60, attributionControl: false, interactive: false,
+      pixelRatio: 2, preserveDrawingBuffer: true, fadeDuration: 0 });
+    m.once("styledata", () => stplDarkify(m));
+    await new Promise((res) => { const t = setTimeout(res, 12000); m.on("load", () => { clearTimeout(t); res(); }); });
+    stplDarkify(m);
+    m.addSource("v", { type: "geojson", data: { type: "Feature", geometry: { type: "MultiLineString", coordinates: segs } } });
+    m.addLayer({ id: "vc", type: "line", source: "v", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "rgba(6,11,22,.65)", "line-width": 12 } });
+    m.addLayer({ id: "vl", type: "line", source: "v", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#FF6A00", "line-width": 6 } });
+    await new Promise((res) => { const t = setTimeout(res, 8000); m.once("idle", () => { clearTimeout(t); res(); }); });
+
+    const cv = document.createElement("canvas"); cv.width = VID.W; cv.height = VID.H;
+    const x = cv.getContext("2d");
+    const stream = cv.captureStream(VID.fps);
+    const tip = ["video/mp4", "video/mp4;codecs=avc1", "video/webm;codecs=h264", "video/webm"].find((t) => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t));
+    if (!tip) throw new Error("Uređaj ne podržava nijedan format snimka.");
+    const delovi = [];
+    rec = new MediaRecorder(stream, { mimeType: tip, videoBitsPerSecond: 4500000 });
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) delovi.push(e.data); };
+    const gotov = new Promise((res) => { rec.onstop = res; });
+    rec.start(300);
+
+    /* Trenuci se racunaju iz ISTIH podataka kao u replayu na ekranu, da video i sazetak ne
+       pricaju dve price. Prevod mesto -> napredak ide preko kumulativnog puta. */
+    const trenuci = [];
+    const dodaj = (mm, naslov, vred) => {
+      if (!mm || mm[0] == null || mm[1] == null) return;
+      let naj = 0, najD = 1e18;
+      for (let i = 0; i < pts.length; i++) {
+        const dx = (pts[i][0] - +mm[0]) * Math.cos(+mm[1] * Math.PI / 180), dy = pts[i][1] - +mm[1];
+        const d2 = dx * dx + dy * dy; if (d2 < najD) { najD = d2; naj = i; }
+      }
+      trenuci.push({ p: cum[naj] / Math.max(0.001, kmUk), naslov, vred });
+    };
+    dodaj(s.momL, "Max levo", (s.momL && s.momL[2] != null ? Math.round(s.momL[2]) : Math.round(s.lnL || 0)) + "°");
+    dodaj(s.momR, "Max desno", (s.momR && s.momR[2] != null ? Math.round(s.momR[2]) : Math.round(s.lnR || 0)) + "°");
+    dodaj(s.momBrz, "Najbrže", Math.round((s.momBrz && s.momBrz[2] != null ? s.momBrz[2] : s.maxK) || 0) + " km/h");
+    for (const pz of (s.pauz || [])) if (Array.isArray(pz)) dodaj(pz, "Pauza", pz[2] != null ? (Math.round(pz[2] / 60000) || 1) + " min" : "");
+    trenuci.sort((a2, b2) => a2.p - b2.p);
+
+    const ukupnoMs = VID.sek * 1000, stajMs = 1300;
+    const t0 = performance.now();
+    let napredak = 0, brgG = null, stao = null, staoOd = 0, kadrova = 0;
+    await new Promise((res) => {
+      let zadnjiKadar = 0;
+      const korak = () => {
+        const sada = performance.now();
+        /* Kompozit se crta najvise VID.fps puta u sekundi. Bez ove brane petlja radi na 60, a
+           snima se 30 - duplo crtanja platna 1080x1920 koje niko ne vidi. Na telefonu to znaci
+           bespotrebnu toplotu i throttling bas dok se snima. */
+        if (sada - zadnjiKadar < 1000 / VID.fps - 1) { requestAnimationFrame(korak); return; }
+        zadnjiKadar = sada;
+        if (stao && sada - staoOd > stajMs) { stao.gotov = true; stao = null; }
+        if (!stao) {
+          const sled = trenuci.find((t) => !t.gotov && t.p <= napredak + 0.004);
+          if (sled) { stao = sled; staoOd = sada; }
+        }
+        if (!stao) napredak = Math.min(1, (sada - t0 - _vidStajanoMs(trenuci, stajMs)) / ukupnoMs);
+        const km = kmUk * napredak;
+        let j = 1; while (j < cum.length - 1 && cum[j] < km) j++;
+        const k0 = cum[j - 1], k1 = cum[j], f2 = k1 > k0 ? (km - k0) / (k1 - k0) : 0;
+        const lo = pts[j - 1][0] + (pts[j][0] - pts[j - 1][0]) * f2;
+        const la = pts[j - 1][1] + (pts[j][1] - pts[j - 1][1]) * f2;
+        const brg = Math.atan2((pts[j][0] - pts[j - 1][0]) * Math.cos(la * Math.PI / 180), pts[j][1] - pts[j - 1][1]) * 180 / Math.PI;
+        const pr = brgG == null ? brg : brgG;
+        brgG = (pr + (((brg - pr + 540) % 360) - 180) * 0.16 + 360) % 360;
+        try { m.jumpTo({ center: [lo, la], bearing: brgG, pitch: stao ? 52 : 60, zoom: stao ? 16.8 : 16.2 }); } catch (e) {}
+        try {
+          x.drawImage(m.getCanvas(), 0, 0, VID.W, VID.H);
+          _vidStrelica(x, VID.W, VID.H, brgG);
+          _vidHud(x, s, { v: _vidBrzina(s, napredak), km }, stao, napredak);
+          kadrova++;
+        } catch (e) {}
+        if (napredak >= 1) { res(); return; }
+        requestAnimationFrame(korak);
+      };
+      requestAnimationFrame(korak);
+    });
+    naStanje && naStanje("zatvaram snimak");
+    rec.stop(); await gotov;
+    const blob = new Blob(delovi, { type: tip });
+    if (!blob.size) throw new Error("Snimak je ispao prazan - uređaj nije dao nijedan kadar.");
+    return { blob, tip, kadrova, sek: (performance.now() - t0) / 1000 };
+  } finally {
+    try { if (rec && rec.state !== "inactive") rec.stop(); } catch (e) {}
+    try { if (m) m.remove(); } catch (e) {}
+    try { div.remove(); } catch (e) {}
+    try { if (url) URL.revokeObjectURL(url); } catch (e) {}
+  }
+}
+function _vidStajanoMs(trenuci, stajMs) { return trenuci.filter((t) => t.gotov).length * stajMs; }
+function _vidBrzina(s, napredak) {
+  const smp = s.smp;
+  if (!smp || !smp.length) return s.avgK || 0;
+  const i = Math.min(smp.length - 1, Math.max(0, Math.round(napredak * (smp.length - 1))));
+  return smp[i] && smp[i].v != null ? smp[i].v : (s.avgK || 0);
 }
 function stplOtvori(s) {
   STPL.sum = s; STPL.ready = {}; STPL.busy = null;
