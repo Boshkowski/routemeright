@@ -2027,6 +2027,13 @@
     background: rgba(255,106,0,.14); border: 1px solid rgba(255,106,0,.45);
     font: 700 11px/1.25 var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--accent-label); }
   #rideSum .rrtren small { display: block; font-size: 13px; font-weight: 800; letter-spacing: 0; text-transform: none; color: var(--fg-strong); }
+  /* Prekidac 3D/ravno (1.9.2026). Do sada je `prefers-reduced-motion` gasio 3D u celini i bez
+     reci - vozac sa ukljucenim "Reduce Motion" u iOS-u dobije ravan pogled i ne zna zasto.
+     Sada je izbor vidljiv i njegov; sistemsko podesavanje samo bira POCETNO stanje. */
+  #rideSum .rr3d { width: 44px; height: 44px; flex: none; padding: 0; background: none; border: 0;
+    color: var(--fg-faint); font: 800 13px var(--font-ui); letter-spacing: .04em; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; }
+  #rideSum .rr3d.on { color: var(--accent); }
   #rideSum .rrvid { width: 44px; height: 44px; flex: none; padding: 0; display: flex; align-items: center; justify-content: center;
     background: none; border: 0; color: var(--accent); cursor: pointer; -webkit-tap-highlight-color: transparent; }
   #rideSum .rrvid svg { width: 21px; height: 21px; stroke: currentColor; }
@@ -3014,6 +3021,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
       </div>
       <!-- 1.9.2026: natpis trenutka na kome replay zastane (max nagib, najbrze, pauza) -->
       <div class="rrtren" id="rrTren" hidden></div>
+      <button class="rr3d" id="rr3d" type="button" aria-label="3D ili ravan pogled">3D</button>
       <button class="rrvid" id="rrVideo" type="button" aria-label="Napravi video">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M15 10l4.5-2.6v9.2L15 14"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>
       </button>
@@ -11959,8 +11967,13 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.111";
+const APP_VERSION = "0.9.112";
 const CHANGELOG = [
+  { v: "0.9.112", d: "01.09.2026.", stavke: [
+    "<b>3D pogled je sada tvoj izbor, sa prekidačem u traci replaya.</b> Ako ti je u iOS podešavanjima uključeno \"Reduce Motion\", aplikacija je do sada ćutke gasila 3D i ostavljala ravan pogled odozgo - bez ijedne reči zašto. Sada to podešavanje bira samo početno stanje, a dugme <b>3D / 2D</b> ima poslednju reč i pamti se.",
+    "<b>Ravan pogled je sada stvarno ravan.</b> Pri prelazu iz 3D mapa je ostajala nakrivljena, jer petlja replaya vraća samo položaj a ne i nagib.",
+    "<b>Strelica je krupnija</b> - u nagnutom kadru je bila premala.",
+  ] },
   { v: "0.9.111", d: "01.09.2026.", stavke: [
     "<b>Sažetak vožnje više ne ostaje preko drugih ekrana.</b> Spustiš ga, tapneš Rute ili Zajednicu, a on i dalje stoji preko njih. Sada promena taba gasi sažetak - isto pravilo koje Atlas već poštuje. Do prošle nedelje se ovo nije ni videlo, jer je sažetak pokrivao donji meni pa se tab nije mogao ni pritisnuti.",
   ] },
@@ -17461,7 +17474,7 @@ function sumReplayCrtaj(simT) {
   const z = sumReplayPoz(simT);
   if (!RRPL.mk) {
     const el = document.createElement("div");
-    el.style.cssText = "width:26px;height:26px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.7))";
+    el.style.cssText = "width:36px;height:36px;filter:drop-shadow(0 3px 7px rgba(0,0,0,.8))";   // 1.9.: u nagnutom kadru je 26 px bilo premalo
     el.innerHTML = '<svg viewBox="0 0 24 24" style="width:100%;height:100%"><path d="M12 2 L19 20 L12 15.5 L5 20 Z" fill="#38bdf8" stroke="var(--bg-sunken)" stroke-width="1.4"/></svg>';
     RRPL.mk = new maplibregl.Marker({ element: el, rotationAlignment: "map", pitchAlignment: "map" }).setLngLat([z.lo, z.la]).addTo(map);
   } else RRPL.mk.setLngLat([z.lo, z.la]);
@@ -17472,7 +17485,10 @@ function sumReplayCrtaj(simT) {
      Uz `prefers-reduced-motion` ostaje ravan pogled, bez nagiba i bez rotacije. */
   if (RRPL.on) {
     try {
-      if (RRPL.rm) map.jumpTo({ center: [z.lo, z.la] });
+      /* Ravan pogled MORA izricito da vrati nagib i okret: petlja se vrti na svaki kadar i
+         `jumpTo({center})` ne dira ni pitch ni bearing, pa bi mapa ostala nakrivljena posle
+         prelaza iz 3D u 2D. Izmereno 1.9.: nagib je ostajao na 59 stepeni. */
+      if (!RRPL.d3) map.jumpTo({ center: [z.lo, z.la], pitch: 0, bearing: 0 });
       else {
         const pr = RRPL.brgG == null ? z.brg : RRPL.brgG;
         let dd = ((z.brg - pr + 540) % 360) - 180;          // najkraci put oko kruga
@@ -17534,7 +17550,7 @@ function sumReplayPlay() {
   /* Kamera se PAMTI pre nego sto je replay preuzme (1.9.): posle izlaza sazetak mora da izgleda
      tacno kao pre - inace ostane nagnut i okrenut, a vozac to nije trazio. */
   try { if (!RRPL.kam) RRPL.kam = { c: map.getCenter(), z: map.getZoom(), b: map.getBearing(), p: map.getPitch() }; } catch (e) {}
-  if (RRPL.rm) { try { if (map.getZoom() > 13.5) map.jumpTo({ zoom: 12 }); } catch (e) {} }   // bez animacije: stari, ravan pogled
+  if (!RRPL.d3) { try { if (map.getZoom() > 13.5) map.jumpTo({ zoom: 12 }); } catch (e) {} }   // ravan pogled: stari kadar, ceo trag u vidokrugu
   RRPL.raf = requestAnimationFrame(sumReplayTick);
 }
 function sumReplayInit(s, pts) {
@@ -17546,6 +17562,10 @@ function sumReplayInit(s, pts) {
   RRPL.cum = sumCum(pts);
   RRPL.kmUk = RRPL.cum[RRPL.cum.length - 1];
   RRPL.rm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* Sistemsko "smanji kretanje" bira POCETNO stanje, ne konacno - vozac sme da ga pregazi. */
+  try { const z = localStorage.getItem("rmr2_replay3d"); RRPL.d3 = z == null ? !RRPL.rm : z === "1"; }
+  catch (e) { RRPL.d3 = !RRPL.rm; }
+  try { const b3 = document.getElementById("rr3d"); if (b3) { b3.textContent = RRPL.d3 ? "3D" : "2D"; b3.classList.toggle("on", !!RRPL.d3); } } catch (e) {}
   // vremenska linija iz uzoraka brzine: integral puta, pa normalizacija na duzinu traga
   RRPL.tl = null;
   const smp = s.smp;
@@ -17573,6 +17593,16 @@ function sumReplayInit(s, pts) {
     /* Izlaz iz replaya (30.8., teren 27.8.): gasi petlju i marker i vraca sazetak u pun list -
        isto sto simulator u maketi radi na kraju. stopPropagation jer je kartica u peek rezimu
        sama po sebi dugme za podizanje. */
+    document.getElementById("rr3d").addEventListener("click", (e) => {
+      e.stopPropagation();
+      RRPL.d3 = !RRPL.d3;
+      try { localStorage.setItem("rmr2_replay3d", RRPL.d3 ? "1" : "0"); } catch (er) {}
+      const b3 = document.getElementById("rr3d");
+      b3.textContent = RRPL.d3 ? "3D" : "2D"; b3.classList.toggle("on", !!RRPL.d3);
+      RRPL.brgG = null;
+      if (!RRPL.d3) { try { map.easeTo({ pitch: 0, bearing: 0, duration: 320 }); } catch (er) {} }
+      try { shareToast(RRPL.d3 ? "Pogled iz prvog lica" : "Ravan pogled odozgo"); } catch (er) {}
+    });
     document.getElementById("rrVideo").addEventListener("click", async (e) => {
       e.stopPropagation();
       const b2 = document.getElementById("rrVideo");
