@@ -11959,8 +11959,11 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.110";
+const APP_VERSION = "0.9.111";
 const CHANGELOG = [
+  { v: "0.9.111", d: "01.09.2026.", stavke: [
+    "<b>Sažetak vožnje više ne ostaje preko drugih ekrana.</b> Spustiš ga, tapneš Rute ili Zajednicu, a on i dalje stoji preko njih. Sada promena taba gasi sažetak - isto pravilo koje Atlas već poštuje. Do prošle nedelje se ovo nije ni videlo, jer je sažetak pokrivao donji meni pa se tab nije mogao ni pritisnuti.",
+  ] },
   { v: "0.9.110", d: "01.09.2026.", stavke: [
     "<b>Replay se može izvesti kao video.</b> Dugme sa kamerom u traci replaya pravi uspravan snimak 1080x1920 - vožnja iz prvog lica, sa strelicom, brzinom, kilometrima i zastancima na najdubljem nagibu, najbržoj tački i pauzama. Kad je gotov, otvara se deljenje: Fotografije, poruke, Instagram, šta god.",
     "<b>Ovo je pisano tek pošto je izmereno na tvom telefonu</b>, ne pre: iPhone 14 daje 59,8 kadrova u sekundi dok snima mapu koja se kreće, i podržava mp4. Da nije prošlo, ne bih ga ni pravio.",
@@ -12962,6 +12965,14 @@ function init() {
   nav.querySelectorAll("a").forEach((a) => {
     a.addEventListener("click", () => {
       const tab = a.dataset.tab;
+      /* TEREN 1.9.2026 (Boskov nalaz): "kada odemo na vozanja zavrsena i taj summary, ako
+         svucemo dole sve i kliknemo onu kucicu rute zajednice, ostaje nam summary voznje."
+         Tacno: sazetak je `position: fixed` sa z-index 320 i nije bio vezan ni za jedan tab, pa
+         je preziveo promenu taba i stajao preko Ruta, Zajednice i Ja. Do 30.8. se to nije ni
+         videlo jer je sam pokrivao donji meni pa se tab nije mogao ni tapnuti - popravka jednog
+         sloja je otkrila drugi, isti obrazac kao vec dvaput ove nedelje.
+         Atlas se ovde vec gasi na promenu taba (dole); sazetak je bio jedini koji nije. */
+      try { if (document.body.classList.contains("sumopen") && window.rideSumZatvori) window.rideSumZatvori(); } catch (e) {}
       nav.querySelectorAll("a").forEach((x) => x.classList.toggle("on", x === a));
       Object.values(screens).forEach((id) => document.getElementById(id).classList.remove("on"));
       if (tab === "planer") {
