@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-08T18:37+00:00",
+ "updated": "2026-09-08T21:49+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -7,10 +7,40 @@
    "ok": true,
    "items": [
     {
-     "type": "Ovire",
-     "title": "A1-E61, E70, Koper - Ljubljana: Ovire",
-     "detail": "A1, Koper - Ljubljana, priključek Unec - počivališče Lom v smeri Ljubljane, predmet na vozišču, oviran promet.",
+     "type": "Delo",
+     "title": "A2-E70, Obrežje - Ljubljana: Delo",
+     "detail": "A2, Obrežje - Ljubljana, predor Mali Vrh - predor Debeli hrib v smeri Ljubljane, dela, pomična zapora prehitevalnega pasu, strojno pometanje.",
+     "region": "A2-E70, Obrežje - Ljubljana"
+    },
+    {
+     "type": "Delo",
+     "title": "A2-E61, Karavanke - Ljubljana: Delo",
+     "detail": "A2, Karavanke - Ljubljana, počivališče Povodje - priključek Ljubljana, Šmartno v smeri Ljubljane, dela, oviran promet, barvanje talnih označb.",
+     "region": "A2-E61, Karavanke - Ljubljana"
+    },
+    {
+     "type": "Delo",
+     "title": "A1-E61, E70, Koper - Ljubljana: Delo",
+     "detail": "A1, Koper - Ljubljana, predor Kastelec - počivališče Ravne v smeri Ljubljane, dela, oviran promet.",
      "region": "A1-E61, E70, Koper - Ljubljana"
+    },
+    {
+     "type": "Delo",
+     "title": "A1-E61, E70, Ljubljana - Koper: Delo",
+     "detail": "A1, Ljubljana - Koper, počivališče Ravne - predor Kastelec v smeri Kopra, dela, oviran promet.",
+     "region": "A1-E61, E70, Ljubljana - Koper"
+    },
+    {
+     "type": "Delo",
+     "title": "A2-E61, Ljubljana - Karavanke: Delo",
+     "detail": "A2, Ljubljana - Karavanke, razcep Koseze - predor Šentvid v smeri Jesenic, dela, oviran promet.",
+     "region": "A2-E61, Ljubljana - Karavanke"
+    },
+    {
+     "type": "Delo",
+     "title": "H3 , Ljubljana - severna obvoznica: Delo",
+     "detail": "H3, Ljubljana - severna obvoznica, uvoz Ljubljana Savlje - razcep Kozarje v smeri Kosez, dela, oviran promet.",
+     "region": "H3 , Ljubljana - severna obvoznica"
     },
     {
      "type": "Delo",
@@ -27,38 +57,14 @@
     {
      "type": "Delo",
      "title": "A2-E61, Karavanke - Ljubljana: Delo",
-     "detail": "A2, Karavanke - Ljubljana, počivališče Povodje - priključek Ljubljana, Šmartno v smeri Ljubljane, dela, zaprt vozni pas, barvanje talnih označb.",
-     "region": "A2-E61, Karavanke - Ljubljana"
-    },
-    {
-     "type": "Delo",
-     "title": "A2-E61, Karavanke - Ljubljana: Delo",
      "detail": "A2, Karavanke - Ljubljana, izvoz Vodice - priključek Ljubljana, Šmartno v smeri Ljubljane, dela, zaprt vozni pas, barvanje talnih označb.",
      "region": "A2-E61, Karavanke - Ljubljana"
-    },
-    {
-     "type": "Okvara vozila",
-     "title": "A1-E57, Ljubljana - Maribor: Okvara vozila",
-     "detail": "A1, Ljubljana - Maribor, priključek Sl. Konjice - priključek Sl. Bistrica jug v smeri Maribora, okvara tovornega vozila, oviran promet.",
-     "region": "A1-E57, Ljubljana - Maribor"
     },
     {
      "type": "Delo",
      "title": "A2-E61, Karavanke - Ljubljana: Delo",
      "detail": "A2, Karavanke - Ljubljana, priključek Kranj zahod - priključek Kranj vzhod v smeri Ljubljane, dela, zaprt vozni pas.",
      "region": "A2-E61, Karavanke - Ljubljana"
-    },
-    {
-     "type": "Zastoj",
-     "title": "R2-409, Logatec - Vrhnika: Zastoj",
-     "detail": "R2-409, Logatec - Vrhnika, zastoj, dolžina: 1 km in 400 m.",
-     "region": "R2-409, Logatec - Vrhnika"
-    },
-    {
-     "type": "Zastoj",
-     "title": "A1-E61, E70, Koper - Ljubljana: Zastoj",
-     "detail": "A1, Koper - Ljubljana, priključek Vrhnika - priključek Dragomer v smeri Ljubljane, območje zastojev, zamuda: 4 min, dolžina: 5 km in 400 m.",
-     "region": "A1-E61, E70, Koper - Ljubljana"
     },
     {
      "type": "Delo",
@@ -71,12 +77,6 @@
      "title": "R2-403, Podrošt - Češnjica: Delo",
      "detail": "R2-403, Podrošt - Češnjica, pri Zalem Logu, izmenično enosmerni promet, kratkotrajne popolne zapore (do 15 minut), sanacija brežine, do 13. 11. 2026.",
      "region": "R2-403, Podrošt - Češnjica"
-    },
-    {
-     "type": "Ovire",
-     "title": "R3-748, Velike Lašče - Lužarji - Nova vas: Ovire",
-     "detail": "R3-748, Velike Lašče - Lužarji - Nova vas, pri Lužarjih, kratkotrajne popolne zapore (do 15 minut), snemanje promocijskega filma, do 21:00.",
-     "region": "R3-748, Velike Lašče - Lužarji - Nova vas"
     },
     {
      "type": "Delo",
@@ -248,51 +248,13 @@
     }
    ],
    "odseceno": 137,
-   "fetched": "2026-09-08T18:37+00:00"
+   "fetched": "2026-09-08T21:49+00:00"
   },
   "HR": {
    "name": "Hrvatska",
    "source": "HAK",
    "ok": true,
    "items": [
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A1 na 371+300 km između čvora Vučevica i čvora Split na kolniku u smjeru Dubrovnika. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A1",
-     "lat": 43.59079,
-     "lon": 16.47738
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A1 između 255+700 km i 255+800 km , između čvora Zadar centar i čvora Zadar istok. Zbog oštećanja odbojne ograde promet se vodi po dvije prometne trake u oba smjera uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
-     "region": "A1",
-     "lat": 44.17082,
-     "lon": 15.42299,
-     "coords": [
-      [
-       15.42299,
-       44.17082
-      ],
-      [
-       15.42267,
-       44.17043
-      ],
-      [
-       15.42235,
-       44.17005
-      ]
-     ]
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (teretno vozilo) na autocesti A1 u tunelu Mala Kapela na kolniku u smjeru Zagreba. Promet se vodi jednom prometnom trakom uz ograničenje brzine od 40 km/h. Molimo korisnike za oprez.",
-     "region": "A1",
-     "lat": 45.11606,
-     "lon": 15.24691
-    },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
@@ -502,10 +464,24 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (teretno vozilo) na autocesti A1 na 417+700 km između čvora Šestanovac i čvora Zagvozd na kolniku u smjeru Dubrovnika. Promet se vodi po dvije prometne trake uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "detail": "Izvanredni događaj na autocesti A1 između 255+700 km i 255+800 km , između čvora Zadar centar i čvora Zadar istok. Zbog oštećanja odbojne ograde promet se vodi po dvije prometne trake u oba smjera uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
      "region": "A1",
-     "lat": 43.43155,
-     "lon": 16.94445
+     "lat": 44.17082,
+     "lon": 15.42299,
+     "coords": [
+      [
+       15.42299,
+       44.17082
+      ],
+      [
+       15.42267,
+       44.17043
+      ],
+      [
+       15.42235,
+       44.17005
+      ]
+     ]
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
@@ -728,6 +704,84 @@
      "region": "A1",
      "lat": 44.24108,
      "lon": 15.58287
+    },
+    {
+     "type": "guzva/dogadjaj (Radovi)",
+     "title": "A1 - Radovi",
+     "detail": "Radovi na održavanju na autocesti A1 između 77+200 km i 77+700 km, između čvora Bosiljevo 2 i čvora Ogulin na kolniku u smjeru Dubrovnika. Promet se vodi jednom prometnom trakom uz ograničenje brzine od 60 km/h. Predviđeno trajanje radova je do 09.09.2026 u 08:00 h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 45.32319,
+     "lon": 15.28242,
+     "coords": [
+      [
+       15.28242,
+       45.32319
+      ],
+      [
+       15.28262,
+       45.32276
+      ],
+      [
+       15.28281,
+       45.32233
+      ],
+      [
+       15.28289,
+       45.32215
+      ],
+      [
+       15.283,
+       45.3219
+      ],
+      [
+       15.28318,
+       45.32147
+      ],
+      [
+       15.28326,
+       45.32128
+      ],
+      [
+       15.28333,
+       45.32104
+      ],
+      [
+       15.28344,
+       45.3207
+      ],
+      [
+       15.28346,
+       45.3206
+      ],
+      [
+       15.28358,
+       45.32017
+      ],
+      [
+       15.28359,
+       45.32016
+      ],
+      [
+       15.28367,
+       45.31972
+      ],
+      [
+       15.28369,
+       45.31963
+      ],
+      [
+       15.28374,
+       45.31927
+      ],
+      [
+       15.28376,
+       45.31907
+      ],
+      [
+       15.28377,
+       45.31883
+      ]
+     ]
     },
     {
      "type": "guzva/dogadjaj (Radovi)",
@@ -1076,426 +1130,6 @@
      ]
     },
     {
-     "type": "guzva/dogadjaj (Zastoj)",
-     "title": "A3 - Zastoj",
-     "detail": "Kolona teretnih vozila na autocesti A3 između 303+500 km i graničnog prijelaza GP Bajakovo na kolniku u smjeru Lipovca, duljine 2 km. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Kolona se povećava. Molimo korisnike za oprez i strpljenje.",
-     "region": "A3",
-     "lat": 45.04886,
-     "lon": 19.06595,
-     "coords": [
-      [
-       19.06595,
-       45.04885
-      ],
-      [
-       19.06606,
-       45.04886
-      ],
-      [
-       19.06659,
-       45.04887
-      ],
-      [
-       19.06722,
-       45.04888
-      ],
-      [
-       19.06785,
-       45.04889
-      ],
-      [
-       19.06804,
-       45.04889
-      ],
-      [
-       19.06849,
-       45.0489
-      ],
-      [
-       19.06912,
-       45.04891
-      ],
-      [
-       19.06976,
-       45.04892
-      ],
-      [
-       19.07039,
-       45.04893
-      ],
-      [
-       19.07103,
-       45.04894
-      ],
-      [
-       19.07166,
-       45.04895
-      ],
-      [
-       19.07229,
-       45.04896
-      ],
-      [
-       19.07293,
-       45.04896
-      ],
-      [
-       19.07356,
-       45.04897
-      ],
-      [
-       19.0742,
-       45.04898
-      ],
-      [
-       19.07457,
-       45.04899
-      ],
-      [
-       19.07483,
-       45.04899
-      ],
-      [
-       19.07547,
-       45.04899
-      ],
-      [
-       19.0761,
-       45.049
-      ],
-      [
-       19.07653,
-       45.049
-      ],
-      [
-       19.07673,
-       45.049
-      ],
-      [
-       19.07737,
-       45.049
-      ],
-      [
-       19.07747,
-       45.049
-      ],
-      [
-       19.078,
-       45.049
-      ],
-      [
-       19.07864,
-       45.04899
-      ],
-      [
-       19.07914,
-       45.04899
-      ],
-      [
-       19.07927,
-       45.04898
-      ],
-      [
-       19.0799,
-       45.04898
-      ],
-      [
-       19.08054,
-       45.04897
-      ],
-      [
-       19.08092,
-       45.04896
-      ],
-      [
-       19.08117,
-       45.04896
-      ],
-      [
-       19.08181,
-       45.04895
-      ],
-      [
-       19.08235,
-       45.04894
-      ],
-      [
-       19.08244,
-       45.04894
-      ],
-      [
-       19.08307,
-       45.04892
-      ],
-      [
-       19.08371,
-       45.0489
-      ],
-      [
-       19.08434,
-       45.04889
-      ],
-      [
-       19.0849,
-       45.04887
-      ],
-      [
-       19.08498,
-       45.04887
-      ],
-      [
-       19.08561,
-       45.04885
-      ],
-      [
-       19.08624,
-       45.04883
-      ],
-      [
-       19.08665,
-       45.04881
-      ],
-      [
-       19.08688,
-       45.0488
-      ],
-      [
-       19.08751,
-       45.04878
-      ],
-      [
-       19.08814,
-       45.04875
-      ],
-      [
-       19.08878,
-       45.04872
-      ],
-      [
-       19.08881,
-       45.04872
-      ],
-      [
-       19.08941,
-       45.04869
-      ],
-      [
-       19.09004,
-       45.04866
-      ],
-      [
-       19.09067,
-       45.04863
-      ],
-      [
-       19.09131,
-       45.04859
-      ]
-     ]
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3",
-     "lat": 45.1669,
-     "lon": 17.67695
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A3 na 34+000 km između čvora Jakuševec i čvora Kosnica na kolniku u smjeru Lipovca. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3",
-     "lat": 45.75366,
-     "lon": 16.07623
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog prometnog rasterećenja privoza čvoru Zagreb zapad (Jankomir) iz smjera Lipovca (A3) u smjeru Grada Zagreba, iz smjera Bregane (A3) i Macelja (A2) u smjeru Grada Zagreba (most Sava - Jankomir), prometuje se jednim prometnim trakom uz privremeno regulaciju prometa. Planirano trajanje je do 31.12.",
-     "region": "A3",
-     "lat": 45.78731,
-     "lon": 15.84901
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "izvanredni događaj",
-     "region": "A3",
-     "lat": 45.45889,
-     "lon": 16.76123,
-     "coords": [
-      [
-       16.76123,
-       45.45889
-      ],
-      [
-       16.75683,
-       45.46147
-      ],
-      [
-       16.75292,
-       45.46377
-      ],
-      [
-       16.7485,
-       45.46636
-      ],
-      [
-       16.74358,
-       45.46924
-      ],
-      [
-       16.73904,
-       45.47184
-      ],
-      [
-       16.73405,
-       45.47444
-      ],
-      [
-       16.72919,
-       45.47673
-      ],
-      [
-       16.72426,
-       45.47883
-      ],
-      [
-       16.71936,
-       45.48072
-      ],
-      [
-       16.71407,
-       45.4826
-      ],
-      [
-       16.7083,
-       45.48454
-      ],
-      [
-       16.70251,
-       45.48646
-      ],
-      [
-       16.69614,
-       45.48857
-      ],
-      [
-       16.69035,
-       45.49048
-      ],
-      [
-       16.68432,
-       45.4924
-      ],
-      [
-       16.67933,
-       45.49408
-      ],
-      [
-       16.6749,
-       45.49586
-      ],
-      [
-       16.67079,
-       45.49799
-      ],
-      [
-       16.66702,
-       45.50041
-      ],
-      [
-       16.66397,
-       45.50288
-      ],
-      [
-       16.66111,
-       45.50576
-      ],
-      [
-       16.65809,
-       45.50915
-      ],
-      [
-       16.65537,
-       45.5122
-      ],
-      [
-       16.65307,
-       45.51459
-      ],
-      [
-       16.65001,
-       45.51725
-      ],
-      [
-       16.64706,
-       45.5194
-      ],
-      [
-       16.64344,
-       45.52159
-      ],
-      [
-       16.6393,
-       45.52365
-      ],
-      [
-       16.63491,
-       45.5255
-      ],
-      [
-       16.62992,
-       45.52753
-      ],
-      [
-       16.62493,
-       45.52955
-      ],
-      [
-       16.61996,
-       45.5316
-      ],
-      [
-       16.61625,
-       45.53335
-      ],
-      [
-       16.61233,
-       45.53565
-      ],
-      [
-       16.60881,
-       45.53826
-      ],
-      [
-       16.60573,
-       45.54113
-      ],
-      [
-       16.60344,
-       45.54382
-      ],
-      [
-       16.60115,
-       45.54704
-      ],
-      [
-       16.59864,
-       45.55069
-      ],
-      [
-       16.59623,
-       45.55415
-      ],
-      [
-       16.59384,
-       45.55704
-      ]
-     ]
-    },
-    {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
      "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Slavonski Brod zapad i čvora Sredanci, u smjeru Lipovca. Promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za dodatni oprez.",
@@ -1666,6 +1300,124 @@
       [
        18.30286,
        45.14487
+      ]
+     ]
+    },
+    {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A3 - Zastoj",
+     "detail": "Kolona teretnih vozila na autocesti A3 između 304+500 km i graničnog prijelaza GP Bajakovo na kolniku u smjeru Lipovca, duljine 1 km. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Kolona se smanjuje. Molimo korisnike za oprez i strpljenje.",
+     "region": "A3",
+     "lat": 45.04899,
+     "lon": 19.07864,
+     "coords": [
+      [
+       19.07864,
+       45.04899
+      ],
+      [
+       19.07914,
+       45.04899
+      ],
+      [
+       19.07927,
+       45.04898
+      ],
+      [
+       19.0799,
+       45.04898
+      ],
+      [
+       19.08054,
+       45.04897
+      ],
+      [
+       19.08092,
+       45.04896
+      ],
+      [
+       19.08117,
+       45.04896
+      ],
+      [
+       19.08181,
+       45.04895
+      ],
+      [
+       19.08235,
+       45.04894
+      ],
+      [
+       19.08244,
+       45.04894
+      ],
+      [
+       19.08307,
+       45.04892
+      ],
+      [
+       19.08371,
+       45.0489
+      ],
+      [
+       19.08434,
+       45.04889
+      ],
+      [
+       19.0849,
+       45.04887
+      ],
+      [
+       19.08498,
+       45.04887
+      ],
+      [
+       19.08561,
+       45.04885
+      ],
+      [
+       19.08624,
+       45.04883
+      ],
+      [
+       19.08665,
+       45.04881
+      ],
+      [
+       19.08688,
+       45.0488
+      ],
+      [
+       19.08751,
+       45.04878
+      ],
+      [
+       19.08814,
+       45.04875
+      ],
+      [
+       19.08878,
+       45.04872
+      ],
+      [
+       19.08881,
+       45.04872
+      ],
+      [
+       19.08941,
+       45.04869
+      ],
+      [
+       19.09004,
+       45.04866
+      ],
+      [
+       19.09067,
+       45.04863
+      ],
+      [
+       19.09131,
+       45.04859
       ]
      ]
     },
@@ -1850,14 +1602,6 @@
        45.22816
       ]
      ]
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme na kolniku autoceste A3, na kraku 11 čvora Kosnica (kolnik u smjeru Bregane/Radničke ceste), promet se odvija uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3",
-     "lat": 45.76423,
-     "lon": 16.08988
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
@@ -2050,6 +1794,208 @@
       [
        17.11767,
        45.28015
+      ]
+     ]
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja opreme na kolniku autoceste A3, na kraku 11 čvora Kosnica (kolnik u smjeru Bregane/Radničke ceste), promet se odvija uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3",
+     "lat": 45.76423,
+     "lon": 16.08988
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3",
+     "lat": 45.1669,
+     "lon": 17.67695
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog prometnog rasterećenja privoza čvoru Zagreb zapad (Jankomir) iz smjera Lipovca (A3) u smjeru Grada Zagreba, iz smjera Bregane (A3) i Macelja (A2) u smjeru Grada Zagreba (most Sava - Jankomir), prometuje se jednim prometnim trakom uz privremeno regulaciju prometa. Planirano trajanje je do 31.12.",
+     "region": "A3",
+     "lat": 45.78731,
+     "lon": 15.84901
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "izvanredni događaj",
+     "region": "A3",
+     "lat": 45.45889,
+     "lon": 16.76123,
+     "coords": [
+      [
+       16.76123,
+       45.45889
+      ],
+      [
+       16.75683,
+       45.46147
+      ],
+      [
+       16.75292,
+       45.46377
+      ],
+      [
+       16.7485,
+       45.46636
+      ],
+      [
+       16.74358,
+       45.46924
+      ],
+      [
+       16.73904,
+       45.47184
+      ],
+      [
+       16.73405,
+       45.47444
+      ],
+      [
+       16.72919,
+       45.47673
+      ],
+      [
+       16.72426,
+       45.47883
+      ],
+      [
+       16.71936,
+       45.48072
+      ],
+      [
+       16.71407,
+       45.4826
+      ],
+      [
+       16.7083,
+       45.48454
+      ],
+      [
+       16.70251,
+       45.48646
+      ],
+      [
+       16.69614,
+       45.48857
+      ],
+      [
+       16.69035,
+       45.49048
+      ],
+      [
+       16.68432,
+       45.4924
+      ],
+      [
+       16.67933,
+       45.49408
+      ],
+      [
+       16.6749,
+       45.49586
+      ],
+      [
+       16.67079,
+       45.49799
+      ],
+      [
+       16.66702,
+       45.50041
+      ],
+      [
+       16.66397,
+       45.50288
+      ],
+      [
+       16.66111,
+       45.50576
+      ],
+      [
+       16.65809,
+       45.50915
+      ],
+      [
+       16.65537,
+       45.5122
+      ],
+      [
+       16.65307,
+       45.51459
+      ],
+      [
+       16.65001,
+       45.51725
+      ],
+      [
+       16.64706,
+       45.5194
+      ],
+      [
+       16.64344,
+       45.52159
+      ],
+      [
+       16.6393,
+       45.52365
+      ],
+      [
+       16.63491,
+       45.5255
+      ],
+      [
+       16.62992,
+       45.52753
+      ],
+      [
+       16.62493,
+       45.52955
+      ],
+      [
+       16.61996,
+       45.5316
+      ],
+      [
+       16.61625,
+       45.53335
+      ],
+      [
+       16.61233,
+       45.53565
+      ],
+      [
+       16.60881,
+       45.53826
+      ],
+      [
+       16.60573,
+       45.54113
+      ],
+      [
+       16.60344,
+       45.54382
+      ],
+      [
+       16.60115,
+       45.54704
+      ],
+      [
+       16.59864,
+       45.55069
+      ],
+      [
+       16.59623,
+       45.55415
+      ],
+      [
+       16.59384,
+       45.55704
       ]
      ]
     },
@@ -3924,10 +3870,34 @@
      "region": "D2-13",
      "lat": 45.44315,
      "lon": 18.87457
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "ŽC3076-1 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "ŽC3076-1",
+     "lat": 45.83834,
+     "lon": 16.29846
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "ŽC5130-1 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "ŽC5130-1",
+     "lat": 44.86689,
+     "lon": 15.34379
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "D34-2 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "D34-2",
+     "lat": 45.70931,
+     "lon": 18.29389
     }
    ],
-   "odseceno": 117,
-   "fetched": "2026-09-08T18:37+00:00",
+   "odseceno": 111,
+   "fetched": "2026-09-08T21:49+00:00",
    "nepotpuno": [
     "granicni-prijelazi-stanje"
    ]
@@ -4178,8 +4148,8 @@
      "region": "Šabac - Loznica"
     }
    ],
-   "odseceno": 101,
-   "fetched": "2026-09-08T18:37+00:00"
+   "odseceno": 100,
+   "fetched": "2026-09-08T21:49+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -4428,7 +4398,7 @@
     }
    ],
    "odseceno": 29,
-   "fetched": "2026-09-08T18:37+00:00"
+   "fetched": "2026-09-08T21:49+00:00"
   },
   "ME": {
    "name": "Crna Gora",
@@ -4496,7 +4466,7 @@
      "region": "Crna Gora"
     }
    ],
-   "fetched": "2026-09-08T18:37+00:00"
+   "fetched": "2026-09-08T21:49+00:00"
   },
   "MK": {
    "name": "S. Makedonija",
@@ -4582,7 +4552,7 @@
      "region": "Прилеп – Битола"
     }
    ],
-   "fetched": "2026-09-08T18:37+00:00"
+   "fetched": "2026-09-08T21:49+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -4650,7 +4620,7 @@
      "region": "Fier–Kthesa"
     }
    ],
-   "fetched": "2026-09-08T18:37+00:00"
+   "fetched": "2026-09-08T21:49+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -4975,7 +4945,7 @@
     }
    ],
    "odseceno": 399,
-   "fetched": "2026-09-08T18:37+00:00"
+   "fetched": "2026-09-08T21:49+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -5163,7 +5133,7 @@
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-09-08T18:37+00:00"
+   "fetched": "2026-09-08T21:49+00:00"
   }
  },
  "meteo": {
@@ -5417,30 +5387,6 @@
      "type": "meteo-upozorenje",
      "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / North-East",
      "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-09T08:00Z do 2026-09-09T21:59Z",
-     "region": "Slovenia / North-East"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow High-temperature Warning issued for Slovenia - Slovenia / South-East",
-     "detail": "nivo: zuto | pojava: Moderate High temperature | vazi: 2026-09-08T11:00Z do 2026-09-08T18:59Z",
-     "region": "Slovenia / South-East"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow High-temperature Warning issued for Slovenia - Slovenia / Central",
-     "detail": "nivo: zuto | pojava: Moderate High temperature | vazi: 2026-09-08T11:00Z do 2026-09-08T18:59Z",
-     "region": "Slovenia / Central"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow High-temperature Warning issued for Slovenia - Slovenia / South-West",
-     "detail": "nivo: zuto | pojava: Moderate High temperature | vazi: 2026-09-08T11:00Z do 2026-09-08T18:59Z",
-     "region": "Slovenia / South-West"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow High-temperature Warning issued for Slovenia - Slovenia / North-East",
-     "detail": "nivo: zuto | pojava: Moderate High temperature | vazi: 2026-09-08T11:00Z do 2026-09-08T18:59Z",
      "region": "Slovenia / North-East"
     }
    ],
