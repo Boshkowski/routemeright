@@ -4258,6 +4258,57 @@ function primiDeljenuLokaciju(sirovo, ime, rezervniUpit) {
   setTimeout(() => { try { SEARCH_MODE = "to"; pickDestination({ n: ime || koordIme(kk), lat: kk.lat, lon: kk.lon }); } catch (e) {} }, 400);
   return true;
 }
+/* KRATKI GOOGLE LINKOVI (7.9.2026, Boskov zahtev: "neko mi posalje lokaciju na WhatsApp").
+   Kad se deli iz Google Maps aplikacije, poruka nosi `maps.app.goo.gl/XXXX` - a u tom nizu NEMA
+   nijedne cifre koordinate, pa parseKoord na njemu vraca null i pretraga tiho padne u obican
+   tekst. Koordinate stizu tek u zaglavlju `Location` prvog preusmerenja.
+   IZMERENO na pravom linku (Bosko, 7.9.2026): JEDAN 302 skok, i Location vec sadrzi
+   ".../place/44.808410,20.514364/data=...!3d44.8084102!4d20.514364" - dakle oblik koji
+   parseKoord od 9.8. VEC cita. Zato ovde nema novog citanja koordinata, samo skok.
+   Zasto samo u nativnoj ljusci: izmereno istog dana, maps.app.goo.gl NE salje
+   Access-Control-Allow-Origin, pa pregledac taj odgovor ne sme ni da procita. CapacitorHttp ide
+   mimo pregledaca i CORS ga ne veze. U vebu vracamo null, a pozivalac to KAZE covekeu - tiho
+   nenalazenje je tacno ono sto stojeci nalog o iskrenosti zabranjuje. */
+const KRATAK_LINK_RX = /^https?:\/\/(?:maps\.app\.goo\.gl\/|goo\.gl\/maps\/|maps\.google\.[a-z.]{2,6}\/url\?)/i;
+function jeKratakLink(t) { return KRATAK_LINK_RX.test(String(t || "").trim()); }
+function nativniHttp() {
+  try { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.CapacitorHttp) || null; } catch (e) { return null; }
+}
+/* Vraca PUN url posle skoka, ili null. HEAD je dovoljan - telo nam ne treba.
+   PROCITANO IZ IZVORA LJUSKE (7.9.2026, native/node_modules/@capacitor/ios), da se ne bi
+   pretpostavljalo:
+     - `CAPHttpPlugin` (jsName "CapacitorHttp") registruje se BEZUSLOVNO u CapacitorBridge.
+       registerPlugins() - stoji u pluginList pre nego sto se capacitor.config uopste procita.
+       Znaci most postoji i bez ijedne izmene u konfiguraciji.
+     - iOS NE poznaje `disableRedirects` (nema ga u HttpRequestHandler.swift), pa URLSession
+       skok prati sam. Zato je grana `r.url` na iPhoneu GLAVNA, a ne rezerva - a to je tacno
+       ono sto je izmereno `curl -L`: krajnji url nosi koordinate.
+       Opcija ostaje poslata jer je Android postuje; tamo se cita `Location`.
+     - iOS vraca zaglavlja MALIM slovima (lowerCaseHeaderDictionary), pa se traze bez obzira
+       na velicinu slova. */
+async function razresiKratakLink(url) {
+  const CH = nativniHttp();
+  const u = String(url || "").trim();
+  if (!CH || !jeKratakLink(u)) return null;
+  try {
+    const r = await CH.request({ url: u, method: "HEAD", disableRedirects: true, connectTimeout: 8000, readTimeout: 8000 });
+    const h = (r && r.headers) || {};
+    for (const k in h) if (String(k).toLowerCase() === "location" && h[k]) return String(h[k]);
+    if (r && r.url && String(r.url) !== u) return String(r.url);   // ljuska koja skok prati sama vraca krajnji URL
+  } catch (e) {}
+  return null;
+}
+/* Ista vrata kao primiDeljenuLokaciju, ali umeju da sacekaju taj jedan skok.
+   Sinhrona verzija ostaje NETAKNUTA: nju zove nativna ljuska, kojoj bi Promise uvek izgledao
+   kao uspeh (AppDelegate: `rmrOtvoriURL(...)?'ok':'nije'`). */
+async function primiDeljenuLokacijuAsync(sirovo, ime, rezervniUpit) {
+  if (primiDeljenuLokaciju(sirovo, ime, rezervniUpit)) return true;
+  let kand = String(sirovo || "");
+  try { kand = decodeURIComponent(kand); } catch (e) {}
+  if (!jeKratakLink(kand)) return false;
+  const puni = await razresiKratakLink(kand);
+  return puni ? primiDeljenuLokaciju(puni, ime, null) : false;
+}
 /* routemeright:// (custom URL scheme, prijavljen u Info.plist; radi i sa besplatnim potpisom).
    Nativni omotač (AppDelegate.swift) pozove window.rmrOtvoriURL sa punim URL-om i ponavlja dok ne dobije "ok",
    jer pri hladnom startu web sloj još ne postoji. Tolerantno na oblik:
@@ -4277,7 +4328,21 @@ window.rmrOtvoriURL = function (sirovURL) {
   let p; try { p = new URLSearchParams(upit); } catch (e) { return false; }
   const sirovo = p.get("ll") || p.get("q") || p.get("geo");
   const ime = p.get("naziv") || p.get("name") || "";
-  return primiDeljenuLokaciju(sirovo, ime, upit);
+  if (primiDeljenuLokaciju(sirovo, ime, upit)) return true;
+  /* Kratak link (maps.app.goo.gl): koordinate stizu tek posle skoka, a AppDelegate ceka SINHRON
+     odgovor - Promise bi mu uvek bio "ok". Zato ovde odmah kazemo "primljeno" (i jesmo primili:
+     link je nas oblik), a skok pratimo u pozadini. Ako skok ne uspe, ne cutimo: otvara se
+     pretraga sa tim linkom, gde isti red objasni zasto. */
+  let kand = String(sirovo || "");
+  try { kand = decodeURIComponent(kand); } catch (e) {}
+  if (jeKratakLink(kand)) {
+    primiDeljenuLokacijuAsync(kand, ime, null).then((ok) => {
+      if (ok) return;
+      try { if (typeof otvoriPretraguSaLinkom === "function") otvoriPretraguSaLinkom(kand); } catch (e) {}
+    });
+    return true;
+  }
+  return false;
 };
 window.handleOpenURL = function (u) { try { window.rmrOtvoriURL(u); } catch (e) {} };   // Cordova oblik, za svaki slučaj
 /* ---- ADRESA SA KUCNIM BROJEM (19.8., Boskov nalaz sa Murtera) ------------------------------
@@ -7111,9 +7176,12 @@ async function renderRoadStatus(route) {
     const sat = new Date(dep0 + (g.durSec || 0) * 1000).toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
     rows.push(`<li>${rIco("toll", 14)} <b>Granica ${uZem(g.iz)} - ${uZem(g.u)}</b>${g.prelaz ? " (" + esc(g.prelaz) + ")" : ""}` +
       ` · km ${Math.round(g.km)} · oko ${sat}` +
-      /* 0.9.95 (QA nalaz 55): "nema prijavljenog cekanja" je tvrdnja, a app nijedan izvor nije ni
-         pitala - HAK-ova kategorija granicnih prelaza ne odgovara (rs.borders je prazan i u dev
-         kopiji i u zivom fajlu). Recenica ostaje SAMO kad je izvor stvarno konsultovan i vratio "-". */
+      /* 0.9.95 (QA nalaz 55): "nema prijavljenog cekanja" je tvrdnja, a app tada nijedan izvor
+         nije ni pitala - HAK-ova kategorija granicnih prelaza nije odgovarala i rs.borders je
+         bio prazan. Recenica ostaje SAMO kad je izvor stvarno konsultovan i vratio "-".
+         ISPRAVKA 7.9.2026: rs.borders VISE NIJE prazan - robot vraca hrvatske prelaze sa
+         cekanjem, koordinatama i izvorom "HAK/MUP-HR" (izmereno: Bajakovo, Tovarnik, Zupanja,
+         Jasenovac). Uslov ispod se zato sada stvarno i pali; pravilo se ne menja. */
       (cek.length ? ` · <b class="warn-inline">čekanje ${esc(cek.join(" / "))}</b>`
         : (g.izvor ? " · nema prijavljenog čekanja" : " · čekanje: nemamo podatak za ovaj prelaz")) +
       (g.izvor ? `<span class="poi-dist"> ${esc(g.izvor)}${g.ocitano ? ", očitano " + esc(g.ocitano) : ""}</span>` : "") + `</li>`);
@@ -11982,7 +12050,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.113";
+const APP_VERSION = "0.9.114";
 const CHANGELOG = [
   { v: "0.9.113", d: "01.09.2026.", stavke: [
     "<b>Dugme za video je pucalo na svakoj vožnji sa pauzom.</b> Poruka \"number is not iterable\" koju si video na ekranu bila je prava greška: čitao sam ukupan broj minuta pauze kao da je spisak mesta. Ista greška je u replayu bila progutana, pa zastanci na pauzama nikad nisu ni radili - a niko to nije primetio jer nije bilo poruke. Sada rade, i minuti su minuti (pauza od 12 min više ne piše \"1 min\").",
@@ -12970,7 +13038,15 @@ function init() {
     const sirovo = params.get("ll") || params.get("q") || params.get("geo");
     const ime = params.get("naziv") || params.get("name") || "";
     // rezerva se daje SAMO kad je koordinatni parametar zaista tu, da ?demo= link ne padne ovde
+    /* 7.9.: kratak link u ?q= je do sada tiho padao na ovom mestu isto kao u pretrazi.
+       Sinhrona provera prva (nista se ne usporava), pa tek onda skok. */
     if (primiDeljenuLokaciju(sirovo, ime, sirovo ? location.search : null)) return;
+    if (sirovo && jeKratakLink(String(sirovo))) {
+      primiDeljenuLokacijuAsync(sirovo, ime, null).then((ok) => {
+        if (!ok) { try { otvoriPretraguSaLinkom(String(sirovo)); } catch (e) {} }
+      });
+      return;
+    }
   }
   if (params.has("demo")) {
     $("from").value = params.get("from") || "Beograd";
@@ -13204,6 +13280,35 @@ function openSearch(mode) {   // mode: 'to' (default) ili 'from' - Google princi
   setTimeout(() => i.focus(), 120);
 }
 let SEARCH_MODE = "to";
+/* ---- Kratak Google link u pretrazi (7.9.2026) --------------------------------------------
+   Nalepljen `maps.app.goo.gl/...` je do danas padao u obicnu pretragu po tekstu i covek bi dobio
+   prazno, bez reci zasto. Sada: u ljusci se skok prati i red se sam pretvori u tacku, a u
+   pregledacu (gde CORS to zabranjuje) stoji red koji to i kaze. */
+let _kratakSeq = 0, _kratakUToku = "", _kratakPao = "";
+function otvoriPretraguSaLinkom(link) {
+  try {
+    openSearch("to");
+    const i = document.getElementById("sInput");
+    if (!i) return;
+    i.value = String(link || "");
+    renderSugg(i.value);
+  } catch (e) {}
+}
+async function razresiIPokazi(link) {
+  const cist = String(link || "").trim();
+  if (_kratakUToku === cist) return;            // isti link se ne trazi dvaput
+  _kratakUToku = cist;
+  const moj = ++_kratakSeq;
+  const puni = await razresiKratakLink(cist);
+  if (moj !== _kratakSeq) return;               // covek je u medjuvremenu kucao dalje
+  _kratakUToku = "";
+  const i = document.getElementById("sInput");
+  if (!i || i.value.trim() !== cist) return;    // polje vise ne drzi taj link
+  const k = puni ? parseKoord(puni) : null;
+  if (k) { try { pickDestination({ n: koordIme(k), lat: k.lat, lon: k.lon }); } catch (e) {} return; }
+  _kratakPao = cist;                            // ne cutimo: sledeci render nosi objasnjenje
+  renderSugg(i.value);
+}
 /* closeSearch je JEDINA vrata iz ekrana pretrage, pa je i jedino mesto koje gasi naoruzanu
    Atlas nameru (0.9.90, nalaz B1: ranije je visila samo na #sBack, pa su Moja lokacija, Kuca,
    Sacuvane rute, Izaberi na mapi i sistemsko nazad ostavljali deonicu naoruzanu da otme neku
@@ -13325,6 +13430,13 @@ function renderSugg(q) {
     sugg.innerHTML = ""; updateSearchStatic(); return;
   }
   const kk = parseKoord(q);   // nalepljene koordinate ili link (WhatsApp/Google/Apple) - prvi red, bez mreze (9.8.)
+  /* Kratak Google link nema koordinate u sebi (7.9.) - stanje reda koji ce se pokazati:
+     "cekaj" dok pratimo skok, "pao" kad skok nije dao tacku, "web" kad ga ni ne smemo pratiti. */
+  let kratak = "";
+  if (!kk && jeKratakLink(q)) {
+    kratak = (_kratakPao === q.trim()) ? "pao" : (nativniHttp() ? "cekaj" : "web");
+    if (kratak === "cekaj") razresiIPokazi(q);
+  }
   const fq = SFOLD(q.trim());
   /* Rangiranje po imenu (11.8.). Ranije je ovde stajalo `x.f.includes(fq)`, a x.f je ime PLUS adresa -
      pa je na upit "Beograd" grad ispadao tek 12. red: iznad njega osam kafana cija adresa pominje
@@ -13358,11 +13470,21 @@ function renderSugg(q) {
   /* Mrezni (Photon) rezultati imaju stalno mesto u listi umesto da se lepe na dno: kad nemamo jak
      lokalni pogodak, to mesto je odmah ispod "Nedavno" - grad koji si ukucao je tako prvi red. */
   const gde = jak ? red.length : Math.min(recN, red.length);
-  sugg.innerHTML = red.slice(0, gde).join("") + `<div id="sNet"></div>` + red.slice(gde).join("") +
+  const KRATAK_RED = {
+    cekaj: ["Otvaram deljeni link…", "kratak Google link - tražim tačku"],
+    pao:   ["Link nije dao tačku", "Google ga nije razrešio; otvori ga jednom u Mapama pa podeli odatle"],
+    web:   ["Ovaj link mogu da otvorim samo u aplikaciji", "kratak Google link - u pregledaču ga ne smem pratiti"]
+  }[kratak];
+  const kratakRed = !KRATAK_RED ? "" :
+    `<div class="srow"><span class="sic m">${rIco("pin", 18)}</span><div class="st"><b>${esc(KRATAK_RED[0])}</b><span>${esc(KRATAK_RED[1])}</span></div></div>`;
+  sugg.innerHTML = kratakRed + red.slice(0, gde).join("") + `<div id="sNet"></div>` + red.slice(gde).join("") +
     `<div class="srow" data-geo="1"><span class="sic">${rIco("route", 18)}</span><div class="st"><b>Traži "${esc(q.trim())}"</b><span>mesta i adrese (OpenStreetMap)</span></div></div>` +
     `<div class="srow" data-pickmap="1"><span class="sic m">${rIco("pin", 18)}</span><div class="st"><b>Izaberi na mapi</b><span>pomeri mapu i potvrdi tačku</span></div></div>`;   // nikad corsokak (6.8.)
   sugg._hits = hits; sugg._q = q.trim(); sugg._net = []; sugg._jak = jak;
-  scheduleNetSugg(sugg._q);
+  /* Kratak link se NE salje geokoderu (7.9.). Photon na "https://maps.app.goo.gl/..." ionako
+     nema sta da odgovori, a usput bi tudjem servisu otisla lokacija koju je neko podelio
+     licno tebi - to nije nasa da je prosledjujemo. */
+  if (!kratak) scheduleNetSugg(sugg._q);
 }
 /* ---- Cuvar imena odredista (0.9.82, terenski nalaz 23.8.: DO polje, naslov relacije i "cilj:" su
    pisali golo "10"). Vise proizvodjaca imena (Photon sugestije, TomTom, Overpass, reverse) ume da
