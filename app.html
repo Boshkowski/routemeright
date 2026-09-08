@@ -2043,6 +2043,15 @@
     color: var(--fg-faint); font: 800 13px var(--font-ui); letter-spacing: .04em; cursor: pointer;
     -webkit-tap-highlight-color: transparent; }
   #rideSum .rr3d.on { color: var(--accent); }
+  /* Granice deonice za izvoz (8.9.2026). Meta 34x44: uze od 44 jer u redu vec stoje play,
+     klizac, 3D i video, a visina ostaje puna da se pogadja rukavicom. */
+  #rideSum .rrmark { width: 34px; height: 44px; flex: none; padding: 0; background: none; border: 0;
+    color: var(--fg-faint); font: 800 17px var(--font-ui); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #rideSum .rrmark.on { color: var(--accent); }
+  #rideSum .rrmid { position: relative; }
+  /* Izabrani opseg kao traka PREKO klizaca - vidi se sta ce se izvesti, bez druge skale. */
+  #rideSum .rrsel { position: absolute; left: 0; right: 0; bottom: 3px; height: 3px; pointer-events: none; }
+  #rideSum .rrsel i { position: absolute; top: 0; height: 3px; background: var(--accent); border-radius: 2px; }
   #rideSum .rrvid { width: 44px; height: 44px; flex: none; padding: 0; display: flex; align-items: center; justify-content: center;
     background: none; border: 0; color: var(--accent); cursor: pointer; -webkit-tap-highlight-color: transparent; }
   #rideSum .rrvid svg { width: 21px; height: 21px; stroke: currentColor; }
@@ -3031,8 +3040,14 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
            "10°" doslovno crtali jedno preko drugog. -->
       <div class="rrmid">
         <input type="range" id="rrSlider" min="0" max="1000" value="0" step="1" aria-label="Trenutak vožnje">
+        <!-- 8.9.2026 (Boskova odluka): izbor deonice za izvoz. Klizac se vec koristi za
+             premotavanje, pa se granice postavljaju NA TRENUTNOM mestu klizaca - bez novog
+             gesta i bez druge trake. Traka pokazuje sta je izabrano. -->
+        <div class="rrsel" id="rrSel" hidden></div>
       </div>
       <button class="rr3d" id="rr3d" type="button" aria-label="3D ili ravan pogled">3D</button>
+      <button class="rrmark" id="rrOd" type="button" aria-label="Početak deonice za izvoz">[</button>
+      <button class="rrmark" id="rrDo" type="button" aria-label="Kraj deonice za izvoz">]</button>
       <button class="rrvid" id="rrVideo" type="button" aria-label="Napravi video">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M15 10l4.5-2.6v9.2L15 14"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>
       </button>
@@ -12050,7 +12065,7 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.114";
+const APP_VERSION = "0.9.115";
 const CHANGELOG = [
   { v: "0.9.113", d: "01.09.2026.", stavke: [
     "<b>Dugme za video je pucalo na svakoj vožnji sa pauzom.</b> Poruka \"number is not iterable\" koju si video na ekranu bila je prava greška: čitao sam ukupan broj minuta pauze kao da je spisak mesta. Ista greška je u replayu bila progutana, pa zastanci na pauzama nikad nisu ni radili - a niko to nije primetio jer nije bilo poruke. Sada rade, i minuti su minuti (pauza od 12 min više ne piše \"1 min\").",
@@ -17526,6 +17541,28 @@ async function sumMaketa(s, pts, svez) {
    nagib. Pauze prirodno preskace (u pauzi se uzorci ne pisu). Cela voznja traje ~40 s, slajder
    skace bilo gde. Radi i za stare zapise iz dnevnika - i oni nose trag + uzorke. */
 const RRPL = { on: false, raf: 0, t: 0, dur: 1, speed: 1, pts: null, cum: null, tl: null, mk: null, lastTs: 0, frame: 0 };
+/* Izbor deonice za izvoz (8.9.2026, Boskova odluka). Granice se drze u KILOMETRIMA, ne u
+   udelu klizaca: klizac meri VREME, a izvoz se racuna po PUTU - na voznji sa pauzom i
+   gradskom vuznjom to nije isto, pa bi udeo klizaca izvezao pogresan komad. */
+const RRSEL = { od: null, do: null };
+function rrSelReset() { RRSEL.od = RRSEL.do = null; rrSelCrtaj(); }
+function rrSelOpseg() {   // -> {od, do} u udelu PUTA, ili null za ceo put
+  const uk = RRPL.kmUk || 0;
+  if (!uk || RRSEL.od == null && RRSEL.do == null) return null;
+  let a = (RRSEL.od != null ? RRSEL.od : 0) / uk, b = (RRSEL.do != null ? RRSEL.do : uk) / uk;
+  if (a > b) { const t = a; a = b; b = t; }
+  if (b - a < 0.002) return null;   // premalo da bi bio snimak - vazi ceo put
+  return { od: a, do: b };
+}
+function rrSelCrtaj() {
+  const el = document.getElementById("rrSel"); if (!el) return;
+  const o = rrSelOpseg();
+  el.hidden = !o;
+  el.innerHTML = o ? '<i style="left:' + (o.od * 100).toFixed(2) + '%;width:' + ((o.do - o.od) * 100).toFixed(2) + '%"></i>' : "";
+  const bo = document.getElementById("rrOd"), bd = document.getElementById("rrDo");
+  if (bo) bo.classList.toggle("on", RRSEL.od != null);
+  if (bd) bd.classList.toggle("on", RRSEL.do != null);
+}
 function sumReplayStop() {
   RRPL.on = false;
   try { cancelAnimationFrame(RRPL.raf); } catch (e) {}
@@ -17655,6 +17692,7 @@ function sumReplayCrtaj(simT) {
     const mm = Math.floor(simT / 60), hh = Math.floor(mm / 60);
     document.getElementById("rrTime").textContent = hh ? hh + ":" + String(mm % 60).padStart(2, "0") : mm + ":" + String(Math.floor(simT % 60)).padStart(2, "0");
     document.getElementById("rrKm").textContent = z.km.toFixed(1).replace(".", ",") + " km";
+    RRPL.kmSad = z.km;   // 8.9.: granice deonice za izvoz se citaju odavde, u KILOMETRIMA (klizac je u vremenu)
     document.getElementById("rrSpd").textContent = (z.v != null ? z.v : Math.round(RRPL.kmUk / (RRPL.dur / 3600))) + " km/h";
     const le = document.getElementById("rrLean");
     if (z.ln != null && Math.abs(z.ln) >= 3) { le.hidden = false; le.textContent = Math.abs(z.ln) + "° " + (z.ln < 0 ? "levo" : "desno"); }
@@ -17757,18 +17795,44 @@ function sumReplayInit(s, pts) {
       if (!RRPL.d3) { try { map.easeTo({ pitch: 0, bearing: 0, duration: 320 }); } catch (er) {} }
       try { shareToast(RRPL.d3 ? "Pogled iz prvog lica" : "Ravan pogled odozgo"); } catch (er) {}
     });
+    /* Granice deonice: uzimaju TRENUTNI kilometar replaya. Drugi tap na isto dugme ponistava
+       tu granicu, pa se izlazi bez trazenja treceg dugmeta. */
+    const markiraj = (koja) => (e) => {
+      e.stopPropagation();
+      const km = RRPL.kmSad != null ? RRPL.kmSad : 0;
+      RRSEL[koja] = RRSEL[koja] != null && Math.abs(RRSEL[koja] - km) < 0.05 ? null : km;
+      rrSelCrtaj();
+      const o = rrSelOpseg();
+      try { shareToast(o ? "Deonica " + (o.do - o.od === 1 ? "ceo put" : ((o.do - o.od) * (RRPL.kmUk || 0)).toFixed(1).replace(".", ",") + " km") : "Izvozi se ceo put"); } catch (er) {}
+    };
+    document.getElementById("rrOd").addEventListener("click", markiraj("od"));
+    document.getElementById("rrDo").addEventListener("click", markiraj("do"));
     document.getElementById("rrVideo").addEventListener("click", async (e) => {
       e.stopPropagation();
       const b2 = document.getElementById("rrVideo");
       if (b2.disabled) return;
       const s2 = RRPL.sum;
       if (!s2) { try { shareToast("Nema vožnje za snimanje."); } catch (er) {} return; }
+      const opseg = rrSelOpseg();
+      /* Procena PRE snimanja. Boskova odluka je "nebitno koliko traje", ali duzina snimka i
+         cekanje na izradu nisu isto - na 220 km je snimak oko cetvrt sata a izrada jos toliko,
+         i na to se pristaje svesno. Brzina uredjaja se pamti od proslog izvoza; prvi put ide
+         konzervativnih 12 kadrova u sekundi. */
+      const kmDeo = (RRPL.kmUk || 0) * (opseg ? (opseg.do - opseg.od) : 1);
+      let fpsRanije = 12;
+      try { const v = +localStorage.getItem("rmr2_vid_fps"); if (isFinite(v) && v >= VID.fpsMin) fpsRanije = v; } catch (er) {}
+      const pl = vidPlan(kmDeo, fpsRanije);
+      const sta = opseg ? "izabranu deonicu (" + kmDeo.toFixed(1).replace(".", ",") + " km)" : "ceo put (" + kmDeo.toFixed(1).replace(".", ",") + " km)";
+      if (!confirm("Snimam " + sta + ".\n\nSnimak: oko " + vidTrajanje(pl.sekVidea) +
+                   "\nIzrada: oko " + vidTrajanje(pl.kadrova / pl.fps) + ", ekran mora ostati upaljen." +
+                   "\n\nZa kraći snimak označi deonicu dugmadima [ i ] u traci replaya.")) return;
       b2.disabled = true;
       try { sumReplayPauza(); } catch (er) {}
       const rec = (t) => { try { shareToast("Pravim video - " + t + "…"); } catch (er) {} };
       rec("pripremam");
       try {
-        const r = await vozVideo(s2, rec);
+        const r = await vozVideo(s2, rec, opseg);
+        try { if (r.fps) localStorage.setItem("rmr2_vid_fps", String(Math.round(r.fps))); } catch (er) {}
         const ext = /mp4/.test(r.tip) ? "mp4" : "webm";
         const ime = "routemeright-" + (new Date().toISOString().slice(0, 10)) + "." + ext;
         const file = new File([r.blob], ime, { type: r.tip });
@@ -18431,7 +18495,43 @@ function fotoStanje(dataUrl) {
    VANEKRANSKA mapa - isti obrazac koji deljene slike vec koriste - i snima se KOMPOZITNO
    platno 1080x1920: kadar mape plus strelica, brojke i natpis trenutka. Tako video ima HUD,
    a navigacija ne placa nista. */
-const VID = { W: 1080, H: 1920, fps: 30, sek: 24 };
+/* PREPISANO 8.9.2026 posle Boskovog nalaza: "sve preskace, ne ide po ulici i putanji".
+   IZMERENO pre prepisivanja, pravi izvoz nad pravom rutiranom geometrijom od 623,8 km
+   (tools/fixtures/bg-jadrija-vijugava.json, 19.709 tacaka):
+       pomeraj kamere po kadru: medijana 848 m, p90 988 m, NAJVECI SKOK 18 km
+       sirina ekrana na zumu 16,2 je oko 1,6 km
+   Dakle vise od pola ekrana po kadru, trideset puta u sekundi. Dva odvojena uzroka:
+     1. TRAJANJE je bilo fiksnih 24 s bez obzira na duzinu voznje, pa je cela voznja isla na
+        720 kadrova. Na kratkoj gradskoj voznji to je 1,4 m po kadru i izgleda dobro - zato se
+        na kratkom testu nije videlo. Na 220 km je 305 m, na 624 km je 848 m.
+     2. NAPREDAK se merio zidnim satom (`(sada - t0) / 24000`), pa svaki zastoj u crtanju
+        (ucitavanje plocica, ciscenje memorije, pregrevanje) postane prostorni skok. Odatle
+        onih 18 km u jednom kadru: jedan zastoj od oko 700 ms.
+   Boskova odluka 8.9.: ceo snimak, nebitno koliko traje, plus izbor deonice, ali mora glatko.
+
+   Sada: napredak ide po REDNOM BROJU KADRA, a ne po satu, pa je prostorni korak konstantan
+   bez obzira na to koliko je uredjaju trebalo. Trajanje se racuna iz kilometraze.
+   Zasto se fps MERI a ne pretpostavlja: MediaRecorder vremenski zigose kadrove po stvarnom
+   vremenu, pa `requestFrame` ne sabija spor izvoz u kratak snimak - garantuje samo da nijedan
+   kadar nije dupliran ni ispusten. Ako bismo terali 30 kadrova na uredjaju koji stize 14,
+   snimak bi se video ubrzavao i usporavao. Zato se prvo izmeri sta uredjaj STVARNO stize, pa
+   se petlja veze za tu brzinu. */
+/* fpsMin je 6, a ne "pristojnih" 12, namerno: ritam se vezuje za ono sto uredjaj STVARNO
+   stize. Ako telefon vuce 7 kadrova u sekundi a mi teramo 12, svaki kadar kasni i snimak
+   postaje neravnomeran u VREMENU - isti kvar kao skakanje, samo na drugoj osi. Bolje je
+   posteno sporiji snimak nego trzav. */
+const VID = { W: 1080, H: 1920, fpsMax: 30, fpsMin: 6, mpk: 8, stajS: 1.2, zagrevanje: 24 };
+/* Plan izvoza: koliko kadrova, koliki snimak, i koliko ce sam izvoz trajati. Racuna se PRE
+   snimanja da bi covek video na sta pristaje - "snimak 15 min" i "cekanje 20 min" nisu isto. */
+function vidPlan(kmUk, fps) {
+  const f = Math.max(VID.fpsMin, Math.min(VID.fpsMax, fps || VID.fpsMax));
+  const kadrova = Math.max(2, Math.round(kmUk * 1000 / VID.mpk));
+  return { kadrova, fps: f, sekVidea: kadrova / f, mpk: VID.mpk };
+}
+function vidTrajanje(sek) {
+  const m = Math.floor(sek / 60), s2 = Math.round(sek % 60);
+  return m ? m + " min " + (s2 ? s2 + " s" : "") : Math.round(sek) + " s";
+}
 function _vidHud(x, s, z, tr, napredak) {
   const W = VID.W, H = VID.H;
   x.save();
@@ -18483,12 +18583,20 @@ function _vidStrelica(x, W, H, brg) {   // strelica vozaca u sredini kadra, okre
   x.lineWidth = 4; x.strokeStyle = "#05080B"; x.stroke();
   x.restore();
 }
-async function vozVideo(s, naStanje) {
+/* `opseg` = {od, do} u udelu cele voznje (0..1). Izostavljen znaci ceo put.
+   Boskova odluka 8.9.2026: "ceo video nebitno koliko traje, i mogucnost da izaberemo samo
+   deonicu koju hocemo da izvezemo, ali mora da bude glatko." */
+async function vozVideo(s, naStanje, opseg) {
   if (typeof MediaRecorder === "undefined") throw new Error("Ovaj uređaj ne ume da snima video iz aplikacije.");
   const segs = tragSegmenti(s).filter((g) => g && g.length > 1);
   const pts = segs.flat();
   if (pts.length < 3) throw new Error("Vožnja nema GPS trag.");
   const cum = sumCum(pts), kmUk = cum[cum.length - 1];
+  const od = Math.max(0, Math.min(1, (opseg && +opseg.od) || 0));
+  const doo = Math.max(od + 0.001, Math.min(1, (opseg && +opseg.do) != null && (opseg && +opseg.do) > 0 ? +opseg.do : 1));
+  const raspon = doo - od;
+  const kmOd = kmUk * od, kmDo = kmUk * doo, kmDeonice = kmDo - kmOd;
+  let brgG = null, stajKadrova = 2;
   const div = document.createElement("div");
   div.style.cssText = "position:fixed;left:-3000px;top:0;width:" + (VID.W / 2) + "px;height:" + (VID.H / 2) + "px;";
   document.body.appendChild(div);
@@ -18508,14 +18616,8 @@ async function vozVideo(s, naStanje) {
 
     const cv = document.createElement("canvas"); cv.width = VID.W; cv.height = VID.H;
     const x = cv.getContext("2d");
-    const stream = cv.captureStream(VID.fps);
     const tip = ["video/mp4", "video/mp4;codecs=avc1", "video/webm;codecs=h264", "video/webm"].find((t) => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t));
     if (!tip) throw new Error("Uređaj ne podržava nijedan format snimka.");
-    const delovi = [];
-    rec = new MediaRecorder(stream, { mimeType: tip, videoBitsPerSecond: 4500000 });
-    rec.ondataavailable = (e) => { if (e.data && e.data.size) delovi.push(e.data); };
-    const gotov = new Promise((res) => { rec.onstop = res; });
-    rec.start(300);
 
     /* Trenuci se racunaju iz ISTIH podataka kao u replayu na ekranu, da video i sazetak ne
        pricaju dve price. Prevod mesto -> napredak ide preko kumulativnog puta. */
@@ -18527,12 +18629,14 @@ async function vozVideo(s, naStanje) {
         const dx = (pts[i][0] - +mm[0]) * Math.cos(+mm[1] * Math.PI / 180), dy = pts[i][1] - +mm[1];
         const d2 = dx * dx + dy * dy; if (d2 < najD) { najD = d2; naj = i; }
       }
-      trenuci.push({ p: cum[naj] / Math.max(0.001, kmUk), naslov, vred });
+      const p = cum[naj] / Math.max(0.001, kmUk);
+      if (p < od || p > doo) return;                 // trenutak van izabrane deonice se ne broji
+      trenuci.push({ p: (p - od) / raspon, naslov, vred });
     };
     dodaj(s.momL, "Max levo", (s.momL && s.momL[2] != null ? Math.round(s.momL[2]) : Math.round(s.lnL || 0)) + "°");
     dodaj(s.momR, "Max desno", (s.momR && s.momR[2] != null ? Math.round(s.momR[2]) : Math.round(s.lnR || 0)) + "°");
     dodaj(s.momBrz, "Najbrže", Math.round((s.momBrz && s.momBrz[2] != null ? s.momBrz[2] : s.maxK) || 0) + " km/h");
-    /* ⚠ isto kao gore: `pauzeNa`, i treci clan su MINUTI. Ovo je bilo "number is not iterable"
+    /* ⚠ `pauzeNa`: treci clan su MINUTI, ne koordinata. Ovo je bilo "number is not iterable"
        koje je 1.9. iskocilo Bosku na ekran kad je pritisnuo dugme za video. */
     for (const pz of (Array.isArray(s.pauzeNa) ? s.pauzeNa : [])) {
       if (!Array.isArray(pz)) continue;
@@ -18541,49 +18645,79 @@ async function vozVideo(s, naStanje) {
     }
     trenuci.sort((a2, b2) => a2.p - b2.p);
 
-    const ukupnoMs = VID.sek * 1000, stajMs = 1300;
+    /* Jedan kadar: kamera na mesto, SACEKAJ da mapa stvarno prikaze taj kadar, pa kompozituj.
+       Cekanje je bilo ono sto je nedostajalo - `jumpTo` samo zakaze crtanje, a `getCanvas()`
+       odmah posle njega vraca JOS UVEK STARE piksele. Zato je mapa kaskala za strelicom.
+       Ceka se jedan prolaz crtanja (`render`), ne `idle`: idle ceka i sve plocice, sto na
+       nagnutom pogledu nad neucitanim podrucjem ume da traje sekundama - na 27.000 kadrova to
+       su sati. Kapa postoji da jedan zaglavljen prolaz ne zaustavi ceo izvoz. */
+    const kadar = async (i, ukupno) => {
+      const stao = _vidStaoNa(trenuci, i, ukupno, stajKadrova);
+      const np = _vidNapredak(i, ukupno, trenuci, stajKadrova);
+      const km = kmOd + (kmDo - kmOd) * np;
+      let j = 1; while (j < cum.length - 1 && cum[j] < km) j++;
+      const k0 = cum[j - 1], k1 = cum[j], f2 = k1 > k0 ? (km - k0) / (k1 - k0) : 0;
+      const lo = pts[j - 1][0] + (pts[j][0] - pts[j - 1][0]) * f2;
+      const la = pts[j - 1][1] + (pts[j][1] - pts[j - 1][1]) * f2;
+      const brg = Math.atan2((pts[j][0] - pts[j - 1][0]) * Math.cos(la * Math.PI / 180), pts[j][1] - pts[j - 1][1]) * 180 / Math.PI;
+      const pr = brgG == null ? brg : brgG;
+      brgG = (pr + (((brg - pr + 540) % 360) - 180) * 0.16 + 360) % 360;
+      try {
+        m.jumpTo({ center: [lo, la], bearing: brgG, pitch: stao ? 52 : 60, zoom: stao ? 16.8 : 16.2 });
+        await new Promise((res) => { const t = setTimeout(res, 400); m.once("render", () => { clearTimeout(t); res(); }); });
+      } catch (e) {}
+      try {
+        x.drawImage(m.getCanvas(), 0, 0, VID.W, VID.H);
+        _vidStrelica(x, VID.W, VID.H, brgG);
+        _vidHud(x, s, { v: _vidBrzina(s, np), km: km }, stao, np);
+      } catch (e) {}
+    };
+
+    /* ZAGREVANJE: pre snimanja se nacrta nekoliko kadrova da bi se izmerilo sta uredjaj STVARNO
+       stize. Bez toga bismo terali 30 kadrova u sekundi na telefonu koji stize 14, pa bi se
+       snimak video ubrzavao i usporavao - MediaRecorder zigose po stvarnom vremenu. */
+    naStanje && naStanje("merim brzinu uređaja");
+    const tz = performance.now();
+    for (let i = 0; i < VID.zagrevanje; i++) await kadar(0, 2);
+    /* 0.9 puta izmereno, namerno: ako se ritam veze za SAM VRH onoga sto uredjaj stize, svaki
+       kadar kasni po koju milisekundu i razmaci se rastu (izmereno: medijana 64 ms na cilj od
+       63, p90 77, najgori 116). Sa malom rezervom vecina kadrova stigne pre roka i CEKA, pa je
+       razmak ujednacen - a to je ono sto se na snimku vidi kao glatkoca. */
+    const mereno = 0.9 * VID.zagrevanje / Math.max(0.001, (performance.now() - tz) / 1000);
+    const plan = vidPlan(kmDeonice, mereno);
+    const ukupnoKadrova = plan.kadrova, fps = plan.fps;
+    stajKadrova = Math.max(2, Math.min(Math.round(VID.stajS * fps), Math.floor(0.06 * ukupnoKadrova)));
+
+    const stream = cv.captureStream(0);
+    const staza = stream.getVideoTracks()[0];
+    const rucno = staza && typeof staza.requestFrame === "function";
+    const stream2 = rucno ? stream : cv.captureStream(fps);
+    const delovi = [];
+    rec = new MediaRecorder(stream2, { mimeType: tip, videoBitsPerSecond: 4500000 });
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) delovi.push(e.data); };
+    const gotov = new Promise((res) => { rec.onstop = res; });
+    rec.start(300);
+
     const t0 = performance.now();
-    let napredak = 0, brgG = null, stao = null, staoOd = 0, kadrova = 0;
-    await new Promise((res) => {
-      let zadnjiKadar = 0;
-      const korak = () => {
-        const sada = performance.now();
-        /* Kompozit se crta najvise VID.fps puta u sekundi. Bez ove brane petlja radi na 60, a
-           snima se 30 - duplo crtanja platna 1080x1920 koje niko ne vidi. Na telefonu to znaci
-           bespotrebnu toplotu i throttling bas dok se snima. */
-        if (sada - zadnjiKadar < 1000 / VID.fps - 1) { requestAnimationFrame(korak); return; }
-        zadnjiKadar = sada;
-        if (stao && sada - staoOd > stajMs) { stao.gotov = true; stao = null; }
-        if (!stao) {
-          const sled = trenuci.find((t) => !t.gotov && t.p <= napredak + 0.004);
-          if (sled) { stao = sled; staoOd = sada; }
-        }
-        if (!stao) napredak = Math.min(1, (sada - t0 - _vidStajanoMs(trenuci, stajMs)) / ukupnoMs);
-        const km = kmUk * napredak;
-        let j = 1; while (j < cum.length - 1 && cum[j] < km) j++;
-        const k0 = cum[j - 1], k1 = cum[j], f2 = k1 > k0 ? (km - k0) / (k1 - k0) : 0;
-        const lo = pts[j - 1][0] + (pts[j][0] - pts[j - 1][0]) * f2;
-        const la = pts[j - 1][1] + (pts[j][1] - pts[j - 1][1]) * f2;
-        const brg = Math.atan2((pts[j][0] - pts[j - 1][0]) * Math.cos(la * Math.PI / 180), pts[j][1] - pts[j - 1][1]) * 180 / Math.PI;
-        const pr = brgG == null ? brg : brgG;
-        brgG = (pr + (((brg - pr + 540) % 360) - 180) * 0.16 + 360) % 360;
-        try { m.jumpTo({ center: [lo, la], bearing: brgG, pitch: stao ? 52 : 60, zoom: stao ? 16.8 : 16.2 }); } catch (e) {}
-        try {
-          x.drawImage(m.getCanvas(), 0, 0, VID.W, VID.H);
-          _vidStrelica(x, VID.W, VID.H, brgG);
-          _vidHud(x, s, { v: _vidBrzina(s, napredak), km }, stao, napredak);
-          kadrova++;
-        } catch (e) {}
-        if (napredak >= 1) { res(); return; }
-        requestAnimationFrame(korak);
-      };
-      requestAnimationFrame(korak);
-    });
+    let kadrova = 0;
+    const kadarMs = 1000 / fps;
+    for (let i = 0; i < ukupnoKadrova; i++) {
+      const pocetak = performance.now();
+      await kadar(i, ukupnoKadrova);
+      if (rucno) { try { staza.requestFrame(); } catch (e) {} }
+      kadrova++;
+      /* Ravnomeran ritam: kadar koji je gotov pre roka CEKA. Bez toga bi se brzi delovi puta
+         (ucitane plocice) videli ubrzano, a spori usporeno - a to je isto "ne ide glatko",
+         samo u vremenu umesto u prostoru. */
+      const ostalo = kadarMs - (performance.now() - pocetak);
+      if (ostalo > 1) await new Promise((r2) => setTimeout(r2, ostalo));
+      if ((i & 31) === 0) naStanje && naStanje(Math.round(100 * i / ukupnoKadrova) + "%");
+    }
     naStanje && naStanje("zatvaram snimak");
     rec.stop(); await gotov;
     const blob = new Blob(delovi, { type: tip });
     if (!blob.size) throw new Error("Snimak je ispao prazan - uređaj nije dao nijedan kadar.");
-    return { blob, tip, kadrova, sek: (performance.now() - t0) / 1000 };
+    return { blob, tip, kadrova, fps, sek: (performance.now() - t0) / 1000 };
   } finally {
     try { if (rec && rec.state !== "inactive") rec.stop(); } catch (e) {}
     try { if (m) m.remove(); } catch (e) {}
@@ -18591,7 +18725,32 @@ async function vozVideo(s, naStanje) {
     try { if (url) URL.revokeObjectURL(url); } catch (e) {}
   }
 }
-function _vidStajanoMs(trenuci, stajMs) { return trenuci.filter((t) => t.gotov).length * stajMs; }
+/* Zastanci na trenucima, u KADROVIMA a ne u milisekundama. Kad je trajanje izvedeno iz
+   kilometraze, fiksnih 1300 ms je na snimku od 15 minuta nevidljivo a na deonici od 12 sekundi
+   pojede pola snimka - zato je zastanak ogranicen i na 6% ukupnog snimka (racuna se u pozivaocu). */
+function _vidZastanci(trenuci, ukupno, stajKadrova) {
+  return trenuci.map((t, i) => ({ i, kadar: Math.round(t.p * (ukupno - 1)), naslov: t.naslov, vred: t.vred, staj: stajKadrova }));
+}
+function _vidStaoNa(trenuci, i, ukupno, stajKadrova) {
+  for (const z of _vidZastanci(trenuci, ukupno, stajKadrova)) {
+    const poc = z.kadar + z.i * stajKadrova;
+    if (i >= poc && i < poc + stajKadrova) return { naslov: z.naslov, vred: z.vred };
+  }
+  return null;
+}
+/* Napredak po REDNOM BROJU KADRA. Zastanci se oduzimaju iz brojaca, pa kamera stoji dok
+   natpis trenutka stoji, a posle nastavlja tacno odande - bez skoka koji je pravio stari
+   racun po zidnom satu. */
+function _vidNapredak(i, ukupno, trenuci, stajKadrova) {
+  let potroseno = 0;
+  for (const z of _vidZastanci(trenuci, ukupno, stajKadrova)) {
+    const poc = z.kadar + z.i * stajKadrova;
+    if (i >= poc + stajKadrova) potroseno += stajKadrova;
+    else if (i >= poc) { potroseno += i - poc; break; }
+  }
+  const hod = Math.max(1, ukupno - 1 - trenuci.length * stajKadrova);
+  return Math.max(0, Math.min(1, (i - potroseno) / hod));
+}
 function _vidBrzina(s, napredak) {
   const smp = s.smp;
   if (!smp || !smp.length) return s.avgK || 0;
