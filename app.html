@@ -1447,7 +1447,15 @@
   #atlasSheet .alllink svg { width: 14px; height: 14px; stroke: var(--fg-muted); fill: none; stroke-width: 2; }
   #atlasSheet .allhint { text-align: center; font-size: 11px; color: var(--fg-faint); padding-bottom: 4px; }
   /* puna lista sa filterima (V1 stil) */
+  /* 13.9.2026 (Boskov nalaz sa uredjaja): u rezimu pune liste traka Atlasa je stajala FIKSNO
+     preko zaglavlja liste - dva zaglavlja jedno na drugom, dva razlicita "nazad", a red filtera
+     "Zemlja" se gubio ispod. Dok si u listi, jedini nazad je onaj u listi. */
+  body.atlas.alista #atlasBar { display: none; }
   #atlasSheet .lhead { display: flex; align-items: center; gap: 6px; padding: 0 16px 6px; }
+  #atlasSheet .lhead .lgpx { margin-left: auto; flex: none; width: 40px; height: 40px; padding: 0;
+    display: flex; align-items: center; justify-content: center; background: var(--surface);
+    border: 1px solid var(--line); border-radius: var(--r-sm); cursor: pointer; }
+  #atlasSheet .lhead .lgpx svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; }
   #atlasSheet .lhead .lb { background: none; border: 0; color: var(--accent-label); font: 600 13px var(--font-ui);
     cursor: pointer; padding: 8px 10px 8px 0; min-height: 44px; }
   #atlasSheet .lhead .lt { font-size: 14px; font-weight: 800; color: var(--fg-strong); }
@@ -12142,8 +12150,15 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.116";
+const APP_VERSION = "0.9.117";
 const CHANGELOG = [
+  { v: "0.9.117", d: "13.09.2026.", stavke: [
+    "<b>Replay više ne preskače.</b> Snimak vožnje na ekranu se do sada pomerao po satu telefona i gutao celu vožnju za 40 sekundi bez obzira na dužinu - na dvočasovnoj vožnji to je preko 60 metara po kadru, a kad kadar zakasni i preko 300. Sada se pomera po PUTU: nijedan kadar ne pređe više od 2,5% širine ekrana. Zastoj telefona sme da produži replay, ne više da ga iseče.",
+    "<b>Duža vožnja se rešava širim kadrom, ne bržim skakanjem.</b> Zum sada prati brzinu: 20 km ostaje na ulici (16,4), 220 km se gleda sa 13,5, a 624 km sa 12. Isti glatki pomeraj na svakoj dužini, i mapa stigne da učita pločice - ranije je kamera bežala ispred njih pa je ekran ostajao prazan.",
+    "<b>Ručno označen deo [ ] ide kroz isti list kao i predlozi.</b> Do sada je imao svoj, slabiji put: bez trake napretka, bez Odustani, i sa deljenjem koje iOS odbija jer nije pokrenuto svežim dodirom - otud engleska poruka \"The request is not allowed...\" na kraju snimanja. Sada i on dobija traku, Odustani i dugme Podeli koje se tapne kad je gotovo.",
+    "<b>Poruke o grešci su na srpskom.</b> Sirova poruka pregledača više ne stiže do vozača, a zatvaranje share liste se više ne prijavljuje kao kvar.",
+    "<b>Atlas: jedno zaglavlje umesto dva.</b> U punoj listi deonica traka \"‹ Atlas deonica\" je stajala preko zaglavlja liste, sa dva različita \"nazad\", a red filtera Zemlja se gubio ispod nje. Sada se traka sklanja dok si u listi, a uvoz GPX-a je dobio mesto u samoj listi da ne bi opet postao nedostupan.",
+  ] },
   { v: "0.9.116", d: "09.09.2026.", stavke: [
     "<b>Snimak se više ne traži premotavanjem: aplikacija predlaže isečke.</b> Tapneš dugme za video i dobiješ već izabran najbolji deo vožnje, krupno, sa jednim dugmetom. Predlozi se prave od onoga što app već zna: najvijugavija deonica, mesto rekorda brzine, mesto najvećeg nagiba, i početak.",
     "<b>Snimak traje najviše 60 sekundi, i to se vidi kao slika.</b> Ispod trajanja stoji merač 0-60 s koji pocrveni i napiše MAKSIMUM kad isečak dodirne plafon. Koliko puta stane u tih 60 s zavisi od telefona: pomeraj je fiksnih 8 m po kadru, pa brži uređaj pokrije 14,4 km a sporiji 6,7. Kartica piše ono što na TVOM telefonu stvarno stane.",
@@ -17678,6 +17693,45 @@ function sumReplayStop() {
    prevode iz MESTA u VREME replaya: najbliza tacka traga daje kilometar, a vremenska linija
    uzoraka daje trenutak. Bez uzoraka se pada na ravnomernu raspodelu po trajanju. */
 const RRPL_STAJ_MS = 1700;
+/* PACING REPLAYA (13.9.2026, Boškov nalaz sa uređaja: "Opet preskače i iseckano je",
+   "Zašto se ne vidi mapa? Nego ide skače po tamnom bez ičega?").
+
+   Replay se do sada pomerao po ZIDNOM SATU (`dt * speed`) i gutao celu vožnju za ~40 s bez
+   obzira na dužinu: `RRPL.speed = RRPL.dur / 40`. To je ISTA greška koju je 8.9. imao izvoz
+   videa - fiksno trajanje podeljeno promenljivom količinom - samo u susednoj funkciji, koju
+   tada nisam popravio. Na dvočasovnoj vožnji to je ~66 m po kadru, a kad kadar zakasni
+   (`dt` je bio kapiran na 0,1 s) i preko 300 m u jednom skoku. Otud i crna mapa: kamera je
+   na zumu 16,4 skakala brže nego što MapLibre stigne da dovuče ijednu pločicu, pa se svaki
+   zahtev otkazivao pre nego što se vrati.
+
+   Glatkoća NIJE apsolutan broj metara nego UDEO ŠIRINE KADRA po kadru. Zato se ovde NE
+   prepisuje konstanta iz izvoza (8 m/kadar bi vožnju od 220 km pretvorio u 7 minuta zurenja):
+   udeo se drži, a ŠIRINA KADRA se prilagođava - duža vožnja, širi kadar, isti glatki pomeraj.
+
+   Tabela za ciljanih 40 s na 60 kadrova u sekundi (izračunato pre isporuke, ne procenjeno):
+        20 km  ->    8 m/kadar  ->  zum 16,4  (kapa blizine, ulica se vidi)
+        60 km  ->   25 m/kadar  ->  zum 15,4
+       220 km  ->   92 m/kadar  ->  zum 13,5
+       624 km  ->  260 m/kadar  ->  zum 12,0  (kapa širine)
+   Tek kad zum udari u donju kapu, replay postaje DUŽI od 40 s - širina se potroši pre vremena.
+   Birač brzine je posebna stavka i čeka Boškovu odluku; ovo je samo gašenje laži. */
+const RRPL_CILJ_S = 40;      // koliko traje replay cele voznje kad sirina kadra to dozvoljava
+const RRPL_UDEO = 0.025;     // najveci pomeraj po kadru, kao udeo sirine kadra
+const RRPL_ZUM_MAX = 16.4;   // blizu (zatecena vrednost - ulica se vidi)
+const RRPL_ZUM_MIN = 12;     // dalje od ovoga se ne odmice, nego se usporava
+function rrMpp(zum, la) { return 156543.03392 * Math.cos(la * Math.PI / 180) / Math.pow(2, zum); }
+function rrSirinaKadra() { try { return Math.max(320, map.getCanvas().clientWidth); } catch (e) { return 390; } }
+/* Inverz od sumReplayPoz: iz kilometraze vrati trenutak. Potreban jer se od 13.9. replay
+   pomera po PUTU a ne po vremenu - a klizac, zastanci i natpisi i dalje zive u vremenu. */
+function sumReplayTZaKm(km) {
+  const tl = RRPL.tl;
+  if (!tl || !tl.d || tl.d.length < 2) return RRPL.dur * (RRPL.kmUk ? km / RRPL.kmUk : 0);
+  const d = km / (RRPL.skala || 1);
+  let i = 1;
+  while (i < tl.d.length - 1 && tl.d[i] < d) i++;
+  const d0 = tl.d[i - 1], d1 = tl.d[i], f = d1 > d0 ? Math.min(1, Math.max(0, (d - d0) / (d1 - d0))) : 0;
+  return tl.t[i - 1] + (tl.t[i] - tl.t[i - 1]) * f;
+}
 function _rrKmZaTacku(lo, la) {
   const p = RRPL.pts, c = RRPL.cum;
   if (!p || !c) return null;
@@ -17757,6 +17811,7 @@ function sumReplayPoz(simT) {   // trenutak -> {km, lo, la, brg, v, ln}
 }
 function sumReplayCrtaj(simT) {
   const z = sumReplayPoz(simT);
+  RRPL.kmSad = z.km;   // 13.9.: pacing po PUTU cita ovo svaki kadar (ranije na svaki cetvrti)
   if (!RRPL.mk) {
     const el = document.createElement("div");
     el.style.cssText = "width:36px;height:36px;filter:drop-shadow(0 3px 7px rgba(0,0,0,.8))";   // 1.9.: u nagnutom kadru je 26 px bilo premalo
@@ -17778,7 +17833,13 @@ function sumReplayCrtaj(simT) {
         const pr = RRPL.brgG == null ? z.brg : RRPL.brgG;
         let dd = ((z.brg - pr + 540) % 360) - 180;          // najkraci put oko kruga
         RRPL.brgG = (pr + dd * 0.18 + 360) % 360;           // EMA po uglu
-        map.jumpTo({ center: [z.lo, z.la], bearing: RRPL.brgG, pitch: RRPL.stao ? 52 : 60, zoom: RRPL.stao ? 17 : 16.4 });
+        /* Zum vise nije fiksan: prati koliko se brzo kamera krece (vidi RRPL_UDEO gore).
+           Gladi se EMA-om da promena ne poskoci kad se pomeraj promeni, i pri zastanku se
+           primakne za pola koraka - ali NIKAD preko kape blizine. */
+        const zc = RRPL.zum || RRPL_ZUM_MAX;
+        RRPL.zumG = RRPL.zumG == null ? zc : RRPL.zumG + (zc - RRPL.zumG) * 0.12;
+        map.jumpTo({ center: [z.lo, z.la], bearing: RRPL.brgG, pitch: RRPL.stao ? 52 : 60,
+          zoom: RRPL.stao ? Math.min(RRPL_ZUM_MAX + 0.6, RRPL.zumG + 0.6) : RRPL.zumG });
       }
     } catch (e) {}
   }
@@ -17797,8 +17858,17 @@ function sumReplayCrtaj(simT) {
 }
 function sumReplayTick(ts) {
   if (!RRPL.on) return;
-  const dt = RRPL.lastTs ? Math.min(0.1, (ts - RRPL.lastTs) / 1000) : 0;
+  /* Brzina uređaja se MERI, ne pretpostavlja: isti pomeraj po kadru na 30 kadrova daje duplo
+     duži replay nego na 60, pa se korak računa iz izmerenog broja kadrova. EMA, da jedan
+     zakasneli kadar ne pomeri ceo račun. */
+  const dtReal = RRPL.lastTs ? (ts - RRPL.lastTs) / 1000 : 0;
   RRPL.lastTs = ts;
+  /* Zakasneo kadar NIJE podatak o brzini uređaja nego štucanje, i ne sme da uđe u prosek:
+     kroz `fps` bi se vratio u korak (manji fps = veći korak) i zastoj bi opet postao prostorni
+     skok, samo zaobilazno. Uzorci van 5-250 kadrova u sekundi se odbacuju; pravi spor uređaj
+     (10-30) i dalje prolazi i menja tempo, kako i treba. */
+  if (dtReal > 0.004 && dtReal < 0.2) { const f = 1 / dtReal; RRPL.fps = RRPL.fps ? RRPL.fps * 0.9 + f * 0.1 : f; }
+  const fps = Math.max(10, Math.min(120, RRPL.fps || 60));
   /* ZASTANAK NA TRENUTKU (1.9.): dok stoji, vreme replaya se NE pomera - inace bi zastanak
      progutao deo voznje i marker bi posle skocio unapred. Zastaje se najvise jednom po trenutku
      (`vidjeni`), pa premotavanje unazad ne pretvara vracanje u niz zastanaka. */
@@ -17807,7 +17877,7 @@ function sumReplayTick(ts) {
     RRPL.stao = null; rrTrenPrikazi(null);
   } else if (RRPL.stani && RRPL.stani.length) {
     for (const tr of RRPL.stani) {
-      if (tr._bio || tr.t > RRPL.t || tr.t < RRPL.t - 3) continue;
+      if (tr._bio || tr.t > RRPL.t || tr.t < (RRPL.tPre != null ? RRPL.tPre : RRPL.t - 3)) continue;
       tr._bio = true; RRPL.stao = tr; RRPL.staoTs = ts;
       rrTrenPrikazi(tr);
       sumReplayCrtaj(RRPL.t);
@@ -17815,7 +17885,21 @@ function sumReplayTick(ts) {
       return;
     }
   }
-  RRPL.t = Math.min(RRPL.dur, RRPL.t + dt * RRPL.speed);
+  /* POMERAJ PO PUTU. Korak je toliki da cela vožnja stane u RRPL_CILJ_S, ali nikad veći od
+     RRPL_UDEO širine kadra - a kad bi bio, prvo se ŠIRI kadar (zum dole); tek kad zum udari
+     u kapu, korak se skraćuje i replay traje duže od cilja. Nijedan kadar ne sme da pređe
+     više nego što oko stigne da isprati, i više nego što mapa stigne da učita. */
+  const kmSad = RRPL.kmSad != null ? RRPL.kmSad : sumReplayPoz(RRPL.t).km;
+  const la = RRPL.pts && RRPL.pts.length ? RRPL.pts[0][1] : 44.8, w = rrSirinaKadra();
+  let korak = RRPL.kmUk * 1000 / (RRPL_CILJ_S * fps);                     // metara po kadru
+  RRPL.zum = Math.max(RRPL_ZUM_MIN, Math.min(RRPL_ZUM_MAX,
+    Math.log2(156543.03392 * Math.cos(la * Math.PI / 180) * w * RRPL_UDEO / Math.max(0.5, korak))));
+  korak = Math.min(korak, rrMpp(RRPL.zum, la) * w * RRPL_UDEO);
+  RRPL.tPre = RRPL.t;
+  RRPL.t = Math.min(RRPL.dur, sumReplayTZaKm(Math.min(RRPL.kmUk, kmSad + korak / 1000)));
+  /* Dok motor stoji (semafor, pauza), kilometraža se ne menja pa bi vreme stalo u mestu i
+     replay bi visio. Minimalni pomeraj u vremenu pregazi stajanje. */
+  if (RRPL.t <= RRPL.tPre) RRPL.t = Math.min(RRPL.dur, RRPL.tPre + RRPL.dur / (RRPL_CILJ_S * fps));
   sumReplayCrtaj(RRPL.t);
   if (RRPL.t >= RRPL.dur) { sumReplayPauza(); return; }   // kraj: stani, marker ostaje na cilju
   RRPL.raf = requestAnimationFrame(sumReplayTick);
@@ -17829,7 +17913,7 @@ function sumReplayPauza() {
 function sumReplayPlay() {
   const el = document.getElementById("rideSum");
   if (RRPL.t >= RRPL.dur - 0.2) RRPL.t = 0;   // ponovo od pocetka
-  RRPL.on = true; RRPL.lastTs = 0;
+  RRPL.on = true; RRPL.lastTs = 0; RRPL.tPre = null;
   el.classList.add("peek", "replaying");   // mapa je heroj, kartica = niska traka sa kontrolama
   const pb = document.getElementById("rrPlay");
   if (pb) pb.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
@@ -17866,7 +17950,9 @@ function sumReplayInit(s, pts) {
     if (dd > 0.3) { RRPL.tl = { t, d, v, ln: ln.some((x) => x != null) ? ln : null }; RRPL.skala = RRPL.kmUk / dd; RRPL.dur = t[t.length - 1] || 60; }
   }
   if (!RRPL.tl) RRPL.dur = Math.max(60, (s.mov || s.min || 1) * 60);   // bez uzoraka: ravnomerno po trajanju
-  RRPL.speed = Math.max(1, RRPL.dur / 40);   // cela voznja ~40 s
+  /* 13.9.: `RRPL.speed = RRPL.dur / 40` je OBRISAN - to je bio uzrok preskakanja (fiksno
+     trajanje podeljeno promenljivom dužinom). Tempo se sada računa po putu, u sumReplayTick. */
+  RRPL.fps = 0; RRPL.zum = RRPL_ZUM_MAX; RRPL.zumG = null; RRPL.tPre = null; RRPL.kmSad = null;
   RRPL.t = 0; RRPL.frame = 0;
   RRPL.stao = null; RRPL.brgG = null; RRPL.kam = null;
   RRPL.sum = s;                       // 1.9.: izvoz videa snima BAS ovu voznju
@@ -17909,38 +17995,12 @@ function sumReplayInit(s, pts) {
       const s2 = RRPL.sum;
       if (!s2) { try { shareToast("Nema vožnje za snimanje."); } catch (er) {} return; }
       /* 0.9.116: umesto confirm dijaloga otvara se list sa predlozima (maketa video-izbor-C).
-         Ručno izabran opseg dugmadima [ ] i dalje radi i ima prečicu: ako je postavljen,
-         preskače se izbor i snima se baš to. */
-      const opseg = rrSelOpseg();
+         13.9.2026: i ručno označen opseg [ ] ide kroz TAJ isti list - ranije je imao svoj,
+         slabiji put bez trake napretka i sa deljenjem bez svežeg dodira. Opseg je u udelu
+         puta, list radi u kilometrima, pa se prevodi ovde. */
       try { sumReplayPauza(); } catch (er) {}
-      if (!opseg) { vidOtvori(s2); return; }
-      b2.disabled = true;
-      try { sumReplayPauza(); } catch (er) {}
-      /* Izvoz od 0.9.116 javlja napredak kao PODATAK, ne kao rečenicu (list ga crta kao traku).
-         Ovaj, ručni put i dalje ide preko toasta, pa objekat mora da se prevede - inače bi
-         vozaču pisalo "Pravim video - [object Object]". */
-      const rec = (t) => { try {
-        const txt = typeof t === "string" ? t : (Math.round(t.pct || 0) + "%" + (t.ostaloS != null ? ", još oko " + vidTrajanje(t.ostaloS) : ""));
-        shareToast("Pravim video - " + txt + "…");
-      } catch (er) {} };
-      rec("pripremam");
-      try {
-        const r = await vozVideo(s2, rec, opseg);
-        try { if (r.fps) localStorage.setItem("rmr2_vid_fps", String(Math.round(r.fps))); } catch (er) {}
-        const ext = /mp4/.test(r.tip) ? "mp4" : "webm";
-        const ime = "routemeright-" + (new Date().toISOString().slice(0, 10)) + "." + ext;
-        const file = new File([r.blob], ime, { type: r.tip });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file] });
-        } else {   // desktop / bez deljenja fajlova: preuzimanje
-          const u = URL.createObjectURL(r.blob);
-          const a2 = document.createElement("a"); a2.href = u; a2.download = ime; a2.click();
-          setTimeout(() => URL.revokeObjectURL(u), 4000);
-        }
-        try { navLog("video-izvoz", { kb: Math.round(r.blob.size / 1024), kadrova: r.kadrova, sek: Math.round(r.sek) }); } catch (er) {}
-      } catch (err) {
-        try { shareToast(err && err.message ? err.message : "Video nije napravljen."); } catch (er) {}
-      } finally { b2.disabled = false; }
+      const o = rrSelOpseg(), uk = RRPL.kmUk || 0;
+      vidOtvori(s2, o && uk ? { kmOd: o.od * uk, kmDo: o.do * uk } : null);
     });
     document.getElementById("rrX").addEventListener("click", (e) => {
       e.stopPropagation();
@@ -18661,7 +18721,7 @@ function vidTrasaSvg(kmOd, kmDo, w, h, punoDo, uvGore, uvDole) {
     (punoD ? '<path d="' + punoD + '" fill="none" stroke="var(--accent)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>' : "") +
     '</svg>';
 }
-function vidOtvori(s) {
+function vidOtvori(s, rucni) {
   const el = document.getElementById("vidSheet"); if (!el) return;
   const segs = tragSegmenti(s).filter((g) => g && g.length > 1);
   VIDS.pts = segs.flat();
@@ -18669,6 +18729,32 @@ function vidOtvori(s) {
   VIDS.cum = sumCum(VIDS.pts); VIDS.kmUk = VIDS.cum[VIDS.cum.length - 1];
   VIDS.sum = s; VIDS.izbor = 0; VIDS.radi = false;
   VIDS.pred = vidPredlozi(s, vidFps());
+  /* 13.9.2026 (Boškov nalaz sa uređaja): ručno označen opseg [ ] je išao MIMO ovog lista, starim
+     putem koji je posle izvoza sam zvao navigator.share. iOS za deljenje traži SVEŽ dodir, a posle
+     izvoza od pola minuta gesta više ne postoji - pa je vozaču izlazila sirova engleska poruka
+     "The request is not allowed by the user agent or the platform...". Sad i ručni izbor ulazi
+     ovde: ista traka napretka, isto Odustani, i Podeli koje se tapne posle. Jedan put, ne dva. */
+  if (rucni && rucni.kmDo > rucni.kmOd && VIDS.kmUk > 0) {
+    const f = vidFps(), maxKm = VID.maxSek * f * VID.mpk / 1000;
+    const ozn = rucni.kmDo - rucni.kmOd;
+    let a = rucni.kmOd, b = rucni.kmDo;
+    if (ozn > maxKm) {   // kapa seče OKO sredine označenog, ne od njegovog početka
+      const sred = (a + b) / 2;
+      a = Math.max(0, Math.min(sred - maxKm / 2, VIDS.kmUk - maxKm));
+      b = a + maxKm;
+    }
+    const k = { ime: "Tvoj izbor", kmOd: a, kmDo: b };
+    k.km = k.kmDo - k.kmOd;
+    k.sek = vidPlan(k.km, f).sekVidea;
+    k.naKapi = k.sek >= VID.maxSek - 0.05;
+    k.opseg = { od: k.kmOd / VIDS.kmUk, do: k.kmDo / VIDS.kmUk };
+    /* Ako je označio više nego što staje, to mu se KAŽE - inače dobije kraći snimak nego što
+       je tražio i nigde ne piše zašto. */
+    k.opis = ozn > maxKm + 0.01
+      ? "označio si " + ozn.toFixed(1).replace(".", ",") + " km, u minut staje " + k.km.toFixed(1).replace(".", ",")
+      : "deonica koju si označio";
+    VIDS.pred.unshift(k);
+  }
   if (!VIDS.pred.length) { try { shareToast("Vožnja je prekratka za snimak."); } catch (e) {} return; }
   el.hidden = false;
   vidCrtaj();
@@ -18721,6 +18807,20 @@ function vidNapredak(n) {
   if (fz) fz.textContent = n.faza || "";
   if (sv && p && n.pct != null) sv.outerHTML = vidTrasaSvg(p.kmOd, p.kmDo, 340, 176, pct / 100, 40, 52);
 }
+/* 13.9.2026: pregrada izmedju pregledaca i vozaca. `err.message` iz DOMException-a je sirova
+   engleska recenica ("The request is not allowed by the user agent...") i tacno tako je i
+   osvanula na Boskovom ekranu. Nase greske imaju name === "Error" i vec su na srpskom;
+   sve ostalo je pregledac i prevodi se. null znaci "ne govori nista" (covek je sam otkazao). */
+function vidGreska(err) {
+  if (!err) return "Snimak nije napravljen.";
+  if (err.name === "AbortError") return null;                 // zatvorio share sheet - to nije kvar
+  if (err.name && err.name !== "Error") {
+    if (err.name === "NotAllowedError") return "Telefon nije dozvolio deljenje iz pozadine. Tapni Podeli još jednom.";
+    if (err.name === "NotSupportedError") return "Ovaj uređaj ne ume da podeli video fajl. Snimak je napravljen, probaj preko Fotografija.";
+    return "Snimak nije napravljen na ovom uređaju.";
+  }
+  return err.message || "Snimak nije napravljen.";
+}
 async function vidKreni() {
   const p = VIDS.pred[VIDS.izbor], s = VIDS.sum;
   if (!p || !s || VIDS.radi) return;
@@ -18765,13 +18865,18 @@ async function vidKreni() {
       try {
         if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file] });
         else { const u = URL.createObjectURL(r.blob); const a2 = document.createElement("a"); a2.href = u; a2.download = ime; a2.click(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
-      } catch (e) {}
+      } catch (e) {
+        const por = vidGreska(e);   // otkazan share sheet cuti; pravi kvar se kaze, i to na srpskom
+        if (por) { try { shareToast(por); } catch (er) {} }
+      }
     });
     try { navLog("video-izvoz", { kb: Math.round(r.blob.size / 1024), kadrova: r.kadrova, sek: Math.round(r.sek), km: +r.km.toFixed(2), isecak: p.ime }); } catch (e) {}
   } catch (err) {
     VIDS.radi = false;
     if (VID.otkaz) { vidCrtaj(); return; }               // Odustani vraća na izbor, bez poruke o grešci
-    t.innerHTML = '<p class="vnota">' + esc(err && err.message ? err.message : "Snimak nije napravljen.") + '</p>' +
+    const por = vidGreska(err);
+    if (por === null) { vidCrtaj(); return; }
+    t.innerHTML = '<p class="vnota">' + esc(por) + '</p>' +
       '<button class="vsek" id="vidNazad" type="button">Nazad na izbor</button>';
     document.getElementById("vidNazad").addEventListener("click", vidCrtaj);
   } finally { VIDS.radi = false; }
@@ -20853,8 +20958,13 @@ function atlasListaCrtaj(telo, baza) {   // puna lista (V1 stil) sa filterima; d
   const kol = fil.kol ? ATLAS_KOLEKCIJE.find((k) => k.id === fil.kol) : null;
   const rez = atlasFiltriraj(baza, fil);
   const chip = (grp, val, tx, on) => '<button type="button" data-fg="' + grp + '" data-fv="' + esc(val) + '"' + (on ? ' class="on"' : "") + ">" + esc(tx) + "</button>";
+  /* Uvoz GPX-a mora da postoji i OVDE: od 13.9. traka Atlasa (koja ga je nosila od 31.8.) ne
+     stoji nad listom, pa bi dugme opet postalo nevidljivo - tacno kvar koji je 31.8. i zatvoren. */
+  const lgpx = '<button class="lgpx" id="atlasGpxLista" type="button" aria-label="Uvezi GPX rutu" title="Uvezi GPX">' +
+    '<svg viewBox="0 0 24 24" stroke-width="2" fill="none"><path d="M12 16V4m0 0L7 9m5-5 5 5"/>' +
+    '<path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></button>';
   let html = '<div class="lhead"><button class="lb" id="atlasListaNazad" type="button">‹ Nazad</button>' +
-    '<span class="lt" aria-live="polite">' + (kol ? esc(kol.naslov) : "Sve deonice") + ' <b>(' + rez.length + ")</b></span></div>";
+    '<span class="lt" aria-live="polite">' + (kol ? esc(kol.naslov) : "Sve deonice") + ' <b>(' + rez.length + ")</b></span>" + lgpx + "</div>";
   html += '<div class="afil"><span class="fl">Zemlja</span>' + chip("zemlja", "", "Sve", !fil.zemlja) +
     atlasZemljeSpisak(baza).map((z) => chip("zemlja", z.cc, z.ime, fil.zemlja === z.cc)).join("") + "</div>";
   html += '<div class="afil"><span class="fl">Dužina</span>' + chip("duzina", "", "Sve", !fil.duzina) +
@@ -20880,6 +20990,7 @@ function atlasSheetCrtaj() {
     telo.innerHTML = '<div class="aempty"><b>Baza deonica trenutno nije dostupna.</b><br>Atlas radi iz lokalnih podataka - probaj ponovo za koji trenutak.</div>';
     return;
   }
+  document.body.classList.toggle("alista", !!ATLAS.lista);   // 13.9.: traka Atlasa se sklanja dok si u listi
   if (ATLAS.lista) { atlasListaCrtaj(telo, baza); return; }
   const sel = ATLAS.sel ? baza.find((x) => x.kljuc === ATLAS.sel) : null;
   /* G5: izbor iz filtrirane liste vise ne brise trud - filteri zive u ATLAS.fil, a ovaj red
@@ -20973,6 +21084,7 @@ async function atlasOtvori() {
   ATLAS.on = true;
   ATLAS._lista = false;
   ATLAS.sel = null; ATLAS.lista = false; ATLAS.q = ""; ATLAS.fil = {}; ATLAS.prikazano = 0;
+  document.body.classList.remove("alista");
   ATLAS.prikazanoQ = 0; ATLAS._povratak = null; ATLAS._skrol = 0;
   const gen = ++ATLAS._gen;   // D1: zatvori+otvori u trci je duplo registrovao map click I dvaput utisao slojeve
   atlasKesPonisti();          // D3: sveza ocena iz iste sesije mora da se vidi u izlozbi
@@ -21252,6 +21364,7 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
         ATLAS.lista = true; atlasSheetCrtaj();
         return;
       }
+      if (e.target.closest("#atlasGpxLista")) { const gf = document.getElementById("gpxFile"); if (gf) { gf.value = ""; gf.click(); } return; }
       if (e.target.closest("#atlasListaNazad")) { ATLAS.lista = false; ATLAS.fil = {}; ATLAS._povratak = null; atlasSheetCrtaj(); return; }
       const kolBtn = e.target.closest("[data-kol]");
       if (kolBtn) { ATLAS.lista = true; ATLAS.fil = kolBtn.dataset.kol ? { kol: kolBtn.dataset.kol } : {}; ATLAS.prikazano = 80;
