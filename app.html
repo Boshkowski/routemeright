@@ -10003,8 +10003,83 @@ const KOLEKCIJE = [
   { id: "serpentine", ime: "1.000 serpentina", ikona: "curves", opis: "broje se same, iz svake vožnje", brojac: true, cilj: 1000 },
 ];
 const PRIZNANJA = { prviKanjon: "Prvi kanjon", kisa: "Istrpeo kišu", potvrdjen: "5 prijava potvrdili drugi vozači" };
-function _zajCitaj(k, def) { try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch (e) { return def; } }
-function _zajPisi(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }   // 0.9.82: vraca uspeh - dnevnik na punoj kvoti proredi trag i proba ponovo
+/* PAKOVANJE TRAGA (13.9.2026, Boskov terenski nalaz: "uporno pricam da mora da prati put").
+   Snimak voznje je crtao PRAVE LINIJE preko kuca jer zapis u dnevniku nije imao tacaka:
+   GPS belezi na 12 m, ali se u dnevnik cuvalo `min(1500, max(150, km*2.2))` tacaka -
+   na voznji od 47 km to je 150 tacaka, dakle JEDNA TACKA NA 313 METARA. Nijedan tempo
+   kamere to ne moze da popravi; linija fizicki ne lezi na putu.
+
+   Proredjivanje je postojalo zbog localStorage kvote, i to je bio pravi razlog - ali
+   pogresno resenje. JSON zapis tacke `[20.123456,44.812345,12]` je ~26 bajtova; ista tacka
+   kao delta-varint (sema Google polyline, precizno na ~1,1 m) je ~4. Izmereno pre izmene:
+
+       voznja   danas (313-455 m)      pakovano na 20 m
+        47 km    10 KB /   150 tac      10 KB /  2.350 tac
+        70 km    10 KB /   154 tac      15 KB /  3.500 tac
+       220 km    32 KB /   484 tac      48 KB / 11.000 tac
+       624 km    73 KB / 1.373 tac     136 KB / 31.200 tac
+
+   Dakle: ista memorija, 15 puta vise tacaka. Pakuje se SAMO na granici prema localStorage -
+   u radnoj memoriji `trag` ostaje obican niz, pa nijedan crtac (tragSegmenti, sumCum,
+   best3km, vidPredlozi, vozVideo, sumReplayPoz, sazetak, deljena slika, GPX) ne zna za ovo
+   i nijedan se ne dira. Stari zapisi sa `trag` nizom se citaju nepromenjeni. */
+function _pakBroj(v, out) {   // cik-cak + varint, base64-ish kao u Google polyline semi
+  v = v < 0 ? ~(v << 1) : (v << 1);
+  while (v >= 0x20) { out.push(String.fromCharCode((0x20 | (v & 0x1f)) + 63)); v >>>= 5; }
+  out.push(String.fromCharCode(v + 63));
+}
+function tragPakuj(pts) {
+  const out = [];
+  let pl = 0, pa = 0, pn = 0;
+  for (const p of pts) {
+    if (!p || p[0] == null || p[1] == null) continue;
+    const lo = Math.round(p[0] * 1e5), la = Math.round(p[1] * 1e5);
+    // treci clan = nagib u toj tacki; 0 znaci "nema podatka", inace ugao pomeren za 100
+    const n = (p.length > 2 && p[2] != null && !isNaN(p[2])) ? Math.max(-90, Math.min(90, Math.round(p[2]))) + 100 : 0;
+    _pakBroj(lo - pl, out); _pakBroj(la - pa, out); _pakBroj(n - pn, out);
+    pl = lo; pa = la; pn = n;
+  }
+  return out.join("");
+}
+function tragRaspakuj(str) {
+  const pts = [];
+  if (typeof str !== "string" || !str) return pts;
+  let i = 0, lo = 0, la = 0, n = 0;
+  const broj = () => {
+    let r = 0, sh = 0, b;
+    do { b = str.charCodeAt(i++) - 63; r |= (b & 0x1f) << sh; sh += 5; } while (b >= 0x20 && i < str.length + 1);
+    return (r & 1) ? ~(r >> 1) : (r >> 1);
+  };
+  while (i < str.length) {
+    lo += broj(); la += broj(); n += broj();
+    pts.push(n ? [lo / 1e5, la / 1e5, n - 100] : [lo / 1e5, la / 1e5]);
+  }
+  return pts;
+}
+/* Granica prema localStorage: u zapis ide `tragP` (pakovan), iz zapisa izlazi `trag` (niz).
+   Tura je omotac sa `etape`, pa se ista zamena radi i unutra. */
+/* Pakuju se SAMO zapisi koji su i nastali pakovani (`_pak`). Zatecen dnevnik se pri nadogradnji
+   NE migrira: stari zapis sa `trag` nizom se procita, prepise verbatim i ostane citljiv i ako se
+   aplikacija ikad vrati na stariju verziju. Oznaka je neprebrojiva - ne ulazi u JSON. */
+function _pakOznaci(o) { try { Object.defineProperty(o, "_pak", { value: true, enumerable: false, configurable: true, writable: true }); } catch (e) { o._pak = true; } return o; }
+function _zapisPakuj(r) {
+  if (!r) return r;
+  let o = r;
+  if (r._pak && Array.isArray(o.trag) && o.trag.length) { o = Object.assign({}, o, { tragP: tragPakuj(o.trag) }); delete o.trag; }
+  if (o.tura && Array.isArray(o.etape)) { o = o === r ? Object.assign({}, o) : o; o.etape = o.etape.map(_zapisPakuj); }
+  return o;
+}
+function _zapisRaspakuj(r) {
+  if (!r) return r;
+  let o = r;
+  if (typeof o.tragP === "string") { o = _pakOznaci(Object.assign({}, o, { trag: tragRaspakuj(o.tragP) })); delete o.tragP; }
+  if (o.tura && Array.isArray(o.etape)) { o = o === r ? Object.assign({}, o) : o; o.etape = o.etape.map(_zapisRaspakuj); }
+  return o;
+}
+function voznjeZaUpis(lista) { return Array.isArray(lista) ? lista.map(_zapisPakuj) : lista; }
+function voznjeVelicina(lista) { try { return JSON.stringify(voznjeZaUpis(lista)).length; } catch (e) { return 0; } }
+function _zajCitaj(k, def) { try { const v = JSON.parse(localStorage.getItem(k)) ?? def; return (k === "mr_voznje" && Array.isArray(v)) ? v.map(_zapisRaspakuj) : v; } catch (e) { return def; } }
+function _zajPisi(k, v) { try { localStorage.setItem(k, JSON.stringify(k === "mr_voznje" ? voznjeZaUpis(v) : v)); return true; } catch (e) { return false; } }   // 0.9.82: vraca uspeh - dnevnik na punoj kvoti proredi trag i proba ponovo
 function kolStanje() { return _zajCitaj("mr_kolekcije", {}); }
 function priznanjaStanje() { return _zajCitaj("mr_priznanja", {}); }
 function isoNedelja(ts) {
@@ -10339,7 +10414,8 @@ function dnevnikUpisi(v) {
   }
   for (let i = 0; i < 1000; i++) {   // velicinski gard PRE kvote: 30 zapisa sa turama ume da naraste
     let n = 0;
-    try { n = JSON.stringify(lista).length; } catch (e) { break; }
+    n = voznjeVelicina(lista);   // 13.9.: meri se ono sto STVARNO ide u localStorage (pakovano)
+    if (!n) break;
     if (n <= DNEVNIK_MAX_B) break;
     if (!dnevnikStanji(lista)) break;
   }
@@ -10572,7 +10648,9 @@ function zabeleziVoznju() {
     /* Trag za "ruta je heroj": gustina SKALIRA sa duzinom (13.8., Boskov nalaz: 373 km sa 150
        tacaka u dnevniku = tacka na 2,5 km, pa linija ide PRAVOLINIJSKI preko brda, a
        "najvijugavija" meri sum). Cilj ~165 m po tacki, plafon 1600 (RAM, ne localStorage). */
-    const tragCilj = Math.min(3000, Math.max(400, Math.round(km * 6)));   // 0.9.82: plafon 1600 -> 3000 (340 km tura je imala tacku na 213 m - crtez sece krivine)
+    /* 13.9.2026: bilo `min(3000, max(400, km*6))` = tacka na 118-208 m. Isti kvar kao u dnevniku,
+       samo na svezem sazetku. Sada isti cilj od 20 m po tacki - vidi tabelu uz zapis u dnevnik. */
+    const tragCilj = Math.min(20000, Math.max(600, Math.round(km * 50)));
     const trag = (RIDE.trace && RIDE.trace.length > 1)
       ? RIDE.trace.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / tragCilj)) === 0 || i === a.length - 1) : null;
     const smp = (RIDE.samples && RIDE.samples.length > 5)   // kriva nagiba: proredi na ~240 tacaka za sparkline
@@ -10607,12 +10685,21 @@ function zabeleziVoznju() {
       rupaKm: RIDE.rupaM > 0 ? Math.round(RIDE.rupaM / 100) / 10 : undefined,   // nalaz 100: zapisano, neprikazano (v. lastSummary)
       rupaMin: RIDE.rupaMs > 0 ? Math.max(1, Math.round(RIDE.rupaMs / 60000)) : undefined,
       rupaN: RIDE.rupaN || undefined,
-      /* Trag i u dnevnik - gustina skalira sa duzinom (13.8.): 150 tacaka je za 373 km davalo
-         korak od 2,5 km i pravolinijski crtez. Cilj ~455 m po tacki, plafon 800 (~17 KB po
-         voznji, 20 voznji ~340 KB - localStorage to nosi). */
-      trag: trag ? (() => { const c = Math.min(1500, Math.max(150, Math.round(km * 2.2)));   // 0.9.82: plafon 800 -> 1500; puna kvota se resava proredom + ponovnim upisom ispod
-        return trag.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / c)) === 0 || i === a.length - 1)
-          .map((p) => (p.length > 2 && p[2] != null) ? [+p[0].toFixed(5), +p[1].toFixed(5), p[2]] : [+p[0].toFixed(5), +p[1].toFixed(5)]); })() : undefined,
+      /* Trag u dnevnik. Do 13.9.2026. je ovde stajalo `min(1500, max(150, km*2.2))`, sto je na
+         voznji od 47 km davalo 150 tacaka - JEDNA TACKA NA 313 METARA - pa je snimak crtao prave
+         linije preko kuca umesto da prati put. Boskov terenski nalaz: "uporno pricam da mora da
+         prati put". Razlog za prored je bila localStorage kvota, i on je bio stvaran; resenje je
+         bilo pogresno. Sada se trag PAKUJE (vidi tragPakuj), pa ista memorija nosi 15x vise tacaka.
+
+         Cilj je 20 m po tacki (GPS belezi na 12 m, pa je ovo jedva ispod izvora):
+             10 km ->    600 tac ->  17 m     220 km -> 11.000 tac -> 20 m
+             47 km ->  2.350 tac ->  20 m     624 km -> 20.000 tac -> 31 m (plafon)
+             70 km ->  3.500 tac ->  20 m
+         Pakovano: 47 km = 10 KB, 220 km = 48 KB, 624 km = 136 KB. Dnevnik drzi 30 voznji uz
+         gard od 2 MB, pa i 30 tura od po 220 km staje (1,4 MB). Zaokruzivanje na 5 decimala
+         vise ne treba - pakovanje samo kvantizuje na ~1,1 m. */
+      trag: trag ? (() => { const c = Math.min(20000, Math.max(600, Math.round(km * 50)));
+        return trag.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / c)) === 0 || i === a.length - 1); })() : undefined,
       // kompaktni uzorci (~120 tacaka, ~1.5KB) - da i sacuvana voznja ima grafik brzine (Boskov nalaz 9.8.: "kad udjem u voznje, ne vidim ga")
       smp: smp ? smp.filter((_, i, a) => i % Math.max(1, Math.ceil(a.length / 120)) === 0 || i === a.length - 1).map((x) => ({ t: x.t, v: x.v, ln: x.ln })) : undefined,
       /* Momenti idu i u dnevnik (13.8., Boskov nalaz sa treće vožnje: "kada kliknem ne izbacuje mi
@@ -10622,6 +10709,7 @@ function zabeleziVoznju() {
       momLnL: LEAN.momL ? [+LEAN.momL[0].toFixed(5), +LEAN.momL[1].toFixed(5), LEAN.momL[2]] : undefined,
       momLnR: LEAN.momR ? [+LEAN.momR[0].toFixed(5), +LEAN.momR[1].toFixed(5), LEAN.momR[2]] : undefined,
       pauzeNa: (RIDE.pauzeNa && RIDE.pauzeNa.length) ? RIDE.pauzeNa.filter((x) => x && x[0] != null && x[2] > 0).map((x) => [+x[0].toFixed(5), +x[1].toFixed(5), x[2]]) : undefined });
+    _pakOznaci(rec);   // 13.9.: NOV zapis se cuva pakovan; zatecen dnevnik se ne migrira (vidi _zapisPakuj)
     /* TURA (0.9.86): voznja startovana kao "Nastavi turu" (ili oporavljena sa turaTs u kontrolnoj
        tacki) se lepi kao etapa na zapis iz najave. Zapis moze u medjuvremenu da nestane
        (kvota/razdvajanje) - tada voznja ide zasebno, uz posten ton umesto tihog gutanja. */
@@ -12150,8 +12238,14 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.117";
+const APP_VERSION = "0.9.118";
 const CHANGELOG = [
+  { v: "0.9.118", d: "13.09.2026.", stavke: [
+    "<b>Trag u snimku sada leži NA PUTU.</b> Do sada je snimak crtao prave linije preko kuća, i to nije bio tempo kamere nego geometrija: u dnevnik se čuvalo samo <b>150 tačaka na 47 km, dakle jedna tačka na 313 metara</b>. Između dve tačke se crta prava, pa je linija sekla krivine. Izmereno na pravoj geometriji puta od 623 km: odstupanje od puta je bilo <b>do 96 metara</b>.",
+    "<b>Sada je odstupanje 3,9 metara.</b> Trag se pakuje (delta-zapis umesto JSON brojeva), pa ista memorija nosi 15 puta više tačaka: jedna tačka na 20 metara umesto na 313. Vožnja od 220 km staje u 26 KB umesto 125 KB.",
+    "<b>Snimak i replay lepe trag na puteve, kao što sažetak radi od ranije.</b> Mapa sažetka je koristila map-matching još od 0.9.82, ali snimak i replay nisu - zato je linija na ekranu izgledala dobro a u preuzetom snimku nije. Sada sva tri koriste istu geometriju. Ako trag ima rupe, lepljenje se preskače: preko rupe bi se izmislio put kojim nisi prošao.",
+    "<b>Radna memorija više ne kvari trag pre čuvanja.</b> Trag se polovio već posle 36 km, pa je na vožnji od 70 km najstariji deo bio na 24-48 m još pre nego što se sačuva. Sada 288 km prolazi bez ijednog proređivanja.",
+  ] },
   { v: "0.9.117", d: "13.09.2026.", stavke: [
     "<b>Replay više ne preskače.</b> Snimak vožnje na ekranu se do sada pomerao po satu telefona i gutao celu vožnju za 40 sekundi bez obzira na dužinu - na dvočasovnoj vožnji to je preko 60 metara po kadru, a kad kadar zakasni i preko 300. Sada se pomera po PUTU: nijedan kadar ne pređe više od 2,5% širine ekrana. Zastoj telefona sme da produži replay, ne više da ga iseče.",
     "<b>Duža vožnja se rešava širim kadrom, ne bržim skakanjem.</b> Zum sada prati brzinu: 20 km ostaje na ulici (16,4), 220 km se gleda sa 13,5, a 624 km sa 12. Isti glatki pomeraj na svakoj dužini, i mapa stigne da učita pločice - ranije je kamera bežala ispred njih pa je ekran ostajao prazan.",
@@ -16174,7 +16268,12 @@ function tragBelezi(lo, la, bezNagiba) {
   const tl = RIDE.trace[RIDE.trace.length - 1];
   if (!tl || haversine(tl[1], tl[0], la, lo) * 1000 > (RIDE._trStepM || 12)) {
     RIDE.trace.push([lo, la, (!bezNagiba && LEAN.on) ? Math.round(LEAN.cur) : null]);   // 3. clan = nagib u toj tacki (mapa sazetka ga boji, 9.8.); replay: null - zamrznut LEAN.cur bi lagao (0.9.83)
-    if (RIDE.trace.length > 3000) RIDE.trace = RIDE.trace.filter((_, i, a) => i % 2 === 0 || i === a.length - 1);
+    /* 13.9.2026: plafon 3000 je znacio da se trag polovi vec posle 36 km (3000 x 12 m), pa je na
+       70 km voznji najstariji deo bio na 24-48 m JOS PRE cuvanja - i najbolji zapis bi sacuvao
+       vec pokvaren trag. Plafon 24.000 nosi 288 km bez ijednog polovljenja:
+           47 km -> 12 m     220 km -> 12 m     624 km -> 48 m (dva polovljenja)
+       Memorija: 24.000 tacaka je ~2,5 MB u JS nizovima, sto telefon nosi tokom voznje. */
+    if (RIDE.trace.length > 24000) RIDE.trace = RIDE.trace.filter((_, i, a) => i % 2 === 0 || i === a.length - 1);
   }
 }
 function fixKorak(p, tsMs, replay) {
@@ -17290,6 +17389,27 @@ function _sumNagibNaSnap(raw, snap) {   // nagib sa sirovog traga na snap liniju
   });
 }
 const _snapKes = new Map();   // ts zapisa -> snap tacke (isti zapis ne zove Valhallu dvaput); plafon 10, najstariji ispada (review)
+/* TRAG NA PUTEVE - jedan izvor za sazetak, replay i izvoz videa (13.9.2026).
+   Do danas je map-matching koristio SAMO staticni crtez u sazetku (sumTragSnap, 0.9.82), dok su
+   replay na ekranu i izvoz videa crtali SIROV trag. Zato je Bosko na ekranu video liniju koja
+   lezi na putu, a u preuzetom snimku prave linije preko kuca - i zato je tri puta rekao "mora da
+   prati put" dok sam ja odgovarao na pitanje o glatkoci.
+   Snapuje se SAMO trag bez rupa (jedan segment): preko rupe bi Valhalla izmislila put kojim
+   vozac nije prosao, a to je tacno ono sto sekcija Postenje obecava da necemo raditi. */
+async function tragNaPuteve(s, pts, naStanje) {
+  try {
+    const kljuc = String((s && s.ts) || "");
+    if (kljuc && _snapKes.has(kljuc)) return _snapKes.get(kljuc);
+    if (!pts || pts.length < 4) return null;
+    naStanje && naStanje("lepim trag na puteve");
+    const r = await traceGpxRoute(pts.map((p) => [p[0], p[1]]), "trag");
+    if (!r || !r.coords || r.coords.length < 2) return null;
+    const snap = _sumNagibNaSnap(pts, r.coords);
+    if (!snap || snap.length < 2) return null;
+    if (kljuc) { _snapKes.set(kljuc, snap); if (_snapKes.size > 10) _snapKes.delete(_snapKes.keys().next().value); }
+    return snap;
+  } catch (e) { return null; }
+}
 async function sumTragSnap(s, raw) {
   /* Crtanje traga PO PUTEVIMA (0.9.82, terenski nalaz 23.8.: 340 km nacrtano iseckanim pravim
      linijama). Valhalla trace_route (map_snap) vec postoji za GPX uvoz - ovde lepi SAMO CRTEZ:
@@ -17325,6 +17445,16 @@ async function sumTragSnap(s, raw) {
       if (!bestSeg || bestSeg.length < 2) return;   // oreol ne moze na snap geometriju -> NE snapuj nista (oreol i trag uvek zajedno)
     }
     map.getSource("sumtrag").setData({ type: "Feature", geometry: { type: "LineString", coordinates: snap.map((p) => [p[0], p[1]]) } });
+    /* 13.9.: i REPLAY prelazi na snap geometriju, da crtez i vožnja kamere ne budu dve različite
+       linije. Trenutak u vremenu se ne dira - menja se samo put kojim marker ide. */
+    try {
+      if (RRPL.sum && String(RRPL.sum.ts || "") === kljuc && RRPL.pts && snap.length > 2) {
+        const dd = RRPL.tl && RRPL.tl.d ? RRPL.tl.d[RRPL.tl.d.length - 1] : 0;
+        RRPL.pts = snap; RRPL.cum = sumCum(snap); RRPL.kmUk = RRPL.cum[RRPL.cum.length - 1];
+        if (dd > 0) RRPL.skala = RRPL.kmUk / dd;
+        RRPL.kmSad = null;
+      }
+    } catch (er) {}
     const ns = map.getSource("sumtrag-nagib");
     if (ns) ns.setData({ type: "FeatureCollection", features: _sumNagibFeats(snap) });
     if (bs && bestSeg) bs.setData({ type: "Feature", geometry: { type: "LineString", coordinates: bestSeg.map((p) => [p[0], p[1]]) } });
@@ -19016,7 +19146,12 @@ function _vidStrelica(x, W, H, brg) {   // strelica vozaca u sredini kadra, okre
    deonicu koju hocemo da izvezemo, ali mora da bude glatko." */
 async function vozVideo(s, naStanje, opseg) {
   if (typeof MediaRecorder === "undefined") throw new Error("Ovaj uređaj ne ume da snima video iz aplikacije.");
-  const segs = tragSegmenti(s).filter((g) => g && g.length > 1);
+  const segsSir = tragSegmenti(s).filter((g) => g && g.length > 1);
+  /* 13.9.2026: snimak crta ISTU geometriju koju sazetak lepi na puteve. Ako trag ima rupe
+     (vise segmenata) ili servis ne odgovori, ostaje sirov crtez - nikad izmisljen put.
+     `opseg` je u UDELU puta, pa zamena geometrije ne pomera izabrani isecak. */
+  const _snap = segsSir.length === 1 ? await tragNaPuteve(s, segsSir[0], naStanje) : null;
+  const segs = (_snap && _snap.length > 2) ? [_snap] : segsSir;
   const pts = segs.flat();
   if (pts.length < 3) throw new Error("Vožnja nema GPS trag.");
   const cum = sumCum(pts), kmUk = cum[cum.length - 1];
