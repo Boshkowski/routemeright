@@ -1505,7 +1505,66 @@
   body.atlas #homeFabs button:not([data-fab="gps"]) { display: none !important; }
   body.atlas #homeFabs button[data-fab="gps"] { display: flex !important; top: calc(84px + env(safe-area-inset-top)); bottom: auto; z-index: 26; }
   /* odricanje odgovornosti pre prve voznje; #turaSheet (0.9.86) deli isti jezik - pitanje pre starta */
-  #discSheet, #turaSheet, #atlasCilj, #mestoSheet { position: fixed; inset: 0; z-index: 340; }
+  #discSheet, #turaSheet, #atlasCilj, #mestoSheet, #vidSheet { position: fixed; inset: 0; z-index: 340; }
+  /* --- Snimak voznje (0.9.116) ------------------------------------------------------------
+     Merac 0-60 s ispod trajanja je pozajmljen iz makete A: kapa se tako VIDI kao slika, a ne
+     samo tvrdi recenicom. Kad isecak dodirne plafon, merac je narandzast i pise MAKSIMUM. */
+  #vidSheet .vhead { display: flex; align-items: flex-start; gap: 12px; }
+  #vidSheet .vhead > div:first-child { flex: 1; min-width: 0; }
+  #vidSheet .vsub { font-size: 13px; line-height: 1.5; color: var(--fg-muted); margin: 0 0 14px; }
+  #vidSheet .vx { width: 44px; height: 44px; flex: none; margin: -6px -10px 0 0; background: none;
+    border: 0; color: var(--fg-muted); font-size: 17px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #vidSheet .vhero { position: relative; background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-lg); overflow: hidden; }
+  #vidSheet .vhero svg { display: block; width: 100%; height: 176px; }
+  #vidSheet .vgore { position: absolute; left: 14px; right: 14px; top: 12px; display: flex;
+    align-items: baseline; gap: 9px; }
+  #vidSheet .vime { font-size: 18px; font-weight: 800; color: var(--fg-strong); }
+  #vidSheet .vkm { font-family: var(--font-num); font-size: 13px; color: var(--fg-muted); }
+  #vidSheet .vdole { position: absolute; left: 14px; right: 14px; bottom: 11px; display: flex;
+    align-items: flex-end; justify-content: space-between; gap: 12px; }
+  #vidSheet .vopis { font-size: 12.5px; color: var(--fg-soft); flex: 1; min-width: 0; }
+  #vidSheet .vtraj { font-family: var(--font-num); font-size: 34px; font-weight: 700; line-height: 1;
+    color: var(--fg-strong); text-align: right; }
+  #vidSheet .vtraj i { font-style: normal; font-size: 14px; color: var(--fg-muted); margin-left: 2px; }
+  #vidSheet .vmer { width: 96px; height: 3px; border-radius: 2px; background: var(--fill-wash); margin: 6px 0 0 auto; }
+  #vidSheet .vmer i { display: block; height: 3px; border-radius: 2px; background: var(--fg-muted); }
+  #vidSheet .vmer.max i { background: var(--accent); }
+  #vidSheet .vmax { font-family: var(--font-num); font-size: 9.5px; letter-spacing: .12em;
+    color: var(--accent-label); text-align: right; margin-top: 4px; }
+  #vidSheet .vnota { font-size: 12px; color: var(--fg-muted); margin: 9px 2px 0; line-height: 1.5; }
+  #vidSheet .vlab { font-size: 10.5px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--fg-faint); margin: 18px 2px 8px; }
+  #vidSheet .vred { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px;
+    background: none; border: 0; border-top: 1px solid var(--line-hairline); padding: 8px 2px;
+    color: var(--fg); text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #vidSheet .vred svg { width: 58px; height: 40px; flex: none; background: var(--surface);
+    border: 1px solid var(--line-hairline); border-radius: var(--r-sm); }
+  #vidSheet .vred .s b { display: block; font-family: var(--font-num); font-size: 9px;
+    letter-spacing: .1em; color: var(--accent-label); font-weight: 400; margin-top: 2px; }
+  #vidSheet .vred .t { flex: 1; min-width: 0; }
+  #vidSheet .vred .t b { display: block; font-size: 14.5px; font-weight: 700; color: var(--fg-strong); }
+  #vidSheet .vred .t span { display: block; font-size: 12px; color: var(--fg-muted); margin-top: 1px; }
+  #vidSheet .vred .s { font-family: var(--font-num); font-size: 15px; color: var(--fg-soft); flex: none; }
+  #vidSheet .vred:active { background: var(--fill-wash); }
+  /* IZRADA: procenat je bukvalno kadar/ukupno, pa traka nema CSS prelaz - prelaz bi glumio
+     vrednost koju traka jos nema (ista lekcija kao kod trake napretka u maketi A). */
+  #vidSheet .vpct { display: flex; align-items: baseline; justify-content: space-between; margin-top: 4px; }
+  #vidSheet .vpct b { font-family: var(--font-num); font-size: 38px; font-weight: 700; color: var(--fg-strong); }
+  #vidSheet .vpct b i { font-style: normal; font-size: 15px; color: var(--fg-muted); }
+  #vidSheet .vpct span { font-family: var(--font-num); font-size: 13px; color: var(--fg-muted); }
+  #vidSheet .vbar { height: 6px; border-radius: 3px; background: var(--fill-wash); overflow: hidden; margin: 8px 0 6px; }
+  #vidSheet .vbar i { display: block; height: 6px; background: var(--accent); }
+  #vidSheet .vfaza { font-family: var(--font-num); font-size: 11px; color: var(--fg-faint); }
+  #vidSheet .vupoz { display: flex; gap: 9px; font-size: 12.5px; line-height: 1.5; color: var(--warn-fg);
+    background: var(--warn-bg); border-radius: var(--r-md); padding: 10px 12px; margin: 14px 0 0; }
+  #vidSheet .vsek { width: 100%; min-height: 48px; margin-top: 12px; background: none;
+    border: 1px solid var(--line); border-radius: var(--r-lg); color: var(--fg-soft);
+    font: 700 15px var(--font-ui); cursor: pointer; }
+  #vidSheet .vgotov { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700;
+    color: var(--ok-fg); margin-bottom: 10px; }
+  #vidSheet .vmeta { display: flex; gap: 18px; font-family: var(--font-num); font-size: 13px;
+    color: var(--fg-muted); margin: 10px 2px 0; }
   #mestoSheet .ml { display: block; font-size: 11px; font-weight: 600; color: var(--fg-muted);
     text-transform: uppercase; letter-spacing: .14em; margin: 12px 2px 6px; }
   #mestoSheet input { width: 100%; background: var(--surface); border: 1px solid var(--line);
@@ -1541,17 +1600,17 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #jaMesta .mrow.prazan .mt span { color: var(--accent-label); font-weight: 600; }
   #jaMesta .mrow .mc { flex: none; width: 16px; height: 16px; color: var(--fg-faint); }
-  #discSheet .back, #turaSheet .back, #atlasCilj .back, #mestoSheet .back { position: absolute; inset: 0; background: rgba(2,6,16,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-  #discSheet .body, #turaSheet .body, #atlasCilj .body, #mestoSheet .body { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: min(560px, 100%);
+  #discSheet .back, #turaSheet .back, #atlasCilj .back, #mestoSheet .back, #vidSheet .back { position: absolute; inset: 0; background: rgba(2,6,16,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  #discSheet .body, #turaSheet .body, #atlasCilj .body, #mestoSheet .body, #vidSheet .body { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: min(560px, 100%);
     background: var(--bg); border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line);
     padding: 8px 18px calc(18px + env(safe-area-inset-bottom)); max-height: 84vh; overflow-y: auto; }
-  #discSheet .grab, #turaSheet .grab, #atlasCilj .grab, #mestoSheet .grab { width: 38px; height: 4px; border-radius: var(--r-xs); background: var(--fill-muted); margin: 4px auto 12px; }
-  #discSheet .ttl, #turaSheet .ttl, #atlasCilj .ttl, #mestoSheet .ttl { font-size: 20px; font-weight: 800; color: var(--fg-strong); margin-bottom: 8px; }
+  #discSheet .grab, #turaSheet .grab, #atlasCilj .grab, #mestoSheet .grab, #vidSheet .grab { width: 38px; height: 4px; border-radius: var(--r-xs); background: var(--fill-muted); margin: 4px auto 12px; }
+  #discSheet .ttl, #turaSheet .ttl, #atlasCilj .ttl, #mestoSheet .ttl, #vidSheet .ttl { font-size: 20px; font-weight: 800; color: var(--fg-strong); margin-bottom: 8px; }
   #discSheet .lst p, #turaSheet .lst p, #atlasCilj .lst p { font-size: 13px; line-height: 1.6; color: var(--fg-soft); margin: 0 0 11px; }
   #discSheet .lst p b, #turaSheet .lst p b, #atlasCilj .lst p b { color: var(--fg-strong); }
   #discSheet .lst .sub, #turaSheet .lst .sub, #atlasCilj .lst .sub { font-size: 13px; color: var(--fg-muted); }
   #discSheet .lst a { color: var(--accent-label); }
-  #discSheet .ok, #turaSheet .ok, #atlasCilj .ok, #mestoSheet .ok { width: 100%; margin-top: 6px; background: linear-gradient(135deg, var(--accent), var(--orange-600)); border: 0;
+  #discSheet .ok, #turaSheet .ok, #atlasCilj .ok, #mestoSheet .ok, #vidSheet .ok { width: 100%; margin-top: 6px; background: linear-gradient(135deg, var(--accent), var(--orange-600)); border: 0;
     color: var(--on-accent); border-radius: var(--r-lg); padding: 14px; font: 800 16px var(--font-ui); cursor: pointer; }
   #turaSheet .sec, #atlasCilj .sec, #mestoSheet .sec { width: 100%; margin-top: 8px; background: transparent; border: 1px solid var(--line-strong);
     color: var(--fg); border-radius: var(--r-lg); padding: 13px; font: 700 15px var(--font-ui); cursor: pointer; }
@@ -2888,6 +2947,24 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
   </div>
   <!-- tihi dijalog za "Vodi me preko nje" kad plan vec postoji: zadrzi cilj ili izaberi novi -->
   <!-- POSTAVI MESTO (0.9.92): Kuca i tri omiljena mesta - upisi adresu ILI pokazi na mapi -->
+  <!-- SNIMAK VOZNJE (0.9.116, Boskova odluka 9.9.2026 + maketa maketa/video-izbor-C.html).
+       "Jedan heroj": app je vec izabrala najbolji isecak i pokazuje ga krupno, sa jednim
+       dugmetom; ostali predlozi su tihi redovi ispod. Ista povrsina posle postaje traka
+       napretka pa gotovo stanje - ekran se ne prestrukturira. -->
+  <div id="vidSheet" hidden role="dialog" aria-modal="true" aria-label="Snimak vožnje">
+    <div class="back" id="vidBack"></div>
+    <div class="body">
+      <div class="grab"></div>
+      <div class="vhead">
+        <div>
+          <div class="ttl">Snimak vožnje</div>
+          <p class="vsub" id="vidSub"></p>
+        </div>
+        <button class="vx" id="vidX" type="button" aria-label="Zatvori">✕</button>
+      </div>
+      <div id="vidTelo"></div>
+    </div>
+  </div>
   <div id="mestoSheet" hidden role="dialog" aria-modal="true" aria-label="Postavi mesto">
     <div class="back" id="mestoBack"></div>
     <div class="body">
@@ -12065,8 +12142,25 @@ async function loadBikes() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.115";
+const APP_VERSION = "0.9.116";
 const CHANGELOG = [
+  { v: "0.9.116", d: "09.09.2026.", stavke: [
+    "<b>Snimak se više ne traži premotavanjem: aplikacija predlaže isečke.</b> Tapneš dugme za video i dobiješ već izabran najbolji deo vožnje, krupno, sa jednim dugmetom. Predlozi se prave od onoga što app već zna: najvijugavija deonica, mesto rekorda brzine, mesto najvećeg nagiba, i početak.",
+    "<b>Snimak traje najviše 60 sekundi, i to se vidi kao slika.</b> Ispod trajanja stoji merač 0-60 s koji pocrveni i napiše MAKSIMUM kad isečak dodirne plafon. Koliko puta stane u tih 60 s zavisi od telefona: pomeraj je fiksnih 8 m po kadru, pa brži uređaj pokrije 14,4 km a sporiji 6,7. Kartica piše ono što na TVOM telefonu stvarno stane.",
+    "<b>Traka napretka je iskrena.</b> Procenat je bukvalno broj urađenog kadra podeljen ukupnim, preostalo vreme se računa iz izmerene brzine, a trasa isečka se puni istim tim brojem. Odustani stvarno prekida i vraća te na izbor.",
+    "<b>Ako snimak ispadne duži nego što je kartica obećala, app to kaže.</b> Procena ide po brzini prošlog izvoza; ako je uređaj danas sporiji, u gotovom stanju piše zašto se broj razlikuje.",
+  ] },
+  { v: "0.9.115", d: "08.09.2026.", stavke: [
+    "<b>Izvoz videa više ne preskače.</b> Rekao si \"katastrofa, sve preskače, ne ide po ulici i putanji\", i merenje je to potvrdilo do cifre: na ruti od 623,8 km kamera se između dva kadra pomerala <b>848 metara u proseku, a najveći skok je bio 18 kilometara</b> - više od pola ekrana, trideset puta u sekundi. Sada je pomeraj konstantnih 8 metara po kadru.",
+    "<b>Snimak traje koliko vožnja traži.</b> Trajanje se računa iz kilometraže umesto da bude fiksnih 24 sekunde. Pre snimanja ti app kaže i koliko će snimak trajati i koliko će sama izrada trajati.",
+    "<b>Mapa više ne kasni za strelicom.</b> Kamera je do sada crtala kadar odmah po pomeranju, a mapa tada još nije bila iscrtala novi prizor - pa se hvatala prethodna slika.",
+    "<b>Brzina snimka se meri, ne pretpostavlja.</b> Pre snimanja app napravi nekoliko probnih kadrova da vidi šta uređaj stvarno stiže, pa ritam veže za taj broj.",
+  ] },
+  { v: "0.9.114", d: "07.09.2026.", stavke: [
+    "<b>Lokacija poslata na WhatsApp se sada otvara i kad je link kratak.</b> Kad neko deli iz Google Maps aplikacije, poruka nosi <b>maps.app.goo.gl/...</b>, a u tom nizu nema nijedne cifre koordinate - aplikacija ga je do sada tiho gutala i vraćala praznu pretragu. Sada se prati preusmerenje i tačka se sama postavi kao odredište.",
+    "<b>Kad taj link ne može da se otvori, aplikacija to kaže</b> umesto praznog spiska. U pregledaču ga po pravilima mreže ne smemo pratiti.",
+    "<b>Deljeni link se više ne šalje geokoderu.</b> Dok je stajao u polju pretrage, ceo link je odlazio na tuđi servis kao da je ime mesta.",
+  ] },
   { v: "0.9.113", d: "01.09.2026.", stavke: [
     "<b>Dugme za video je pucalo na svakoj vožnji sa pauzom.</b> Poruka \"number is not iterable\" koju si video na ekranu bila je prava greška: čitao sam ukupan broj minuta pauze kao da je spisak mesta. Ista greška je u replayu bila progutana, pa zastanci na pauzama nikad nisu ni radili - a niko to nije primetio jer nije bilo poruke. Sada rade, i minuti su minuti (pauza od 12 min više ne piše \"1 min\").",
     "<b>Traka replaya više nije nagurana.</b> Klizač i dugmad su prvi red, brojke svoj red ispod, a natpis trenutka svoj. Na 390 px se \"2D\" i \"10°\" doslovno crtalo jedno preko drugog.",
@@ -17805,6 +17899,7 @@ function sumReplayInit(s, pts) {
       const o = rrSelOpseg();
       try { shareToast(o ? "Deonica " + (o.do - o.od === 1 ? "ceo put" : ((o.do - o.od) * (RRPL.kmUk || 0)).toFixed(1).replace(".", ",") + " km") : "Izvozi se ceo put"); } catch (er) {}
     };
+    ["vidX", "vidBack"].forEach((id) => { const e2 = document.getElementById(id); if (e2) e2.addEventListener("click", vidZatvori); });
     document.getElementById("rrOd").addEventListener("click", markiraj("od"));
     document.getElementById("rrDo").addEventListener("click", markiraj("do"));
     document.getElementById("rrVideo").addEventListener("click", async (e) => {
@@ -17813,22 +17908,21 @@ function sumReplayInit(s, pts) {
       if (b2.disabled) return;
       const s2 = RRPL.sum;
       if (!s2) { try { shareToast("Nema vožnje za snimanje."); } catch (er) {} return; }
+      /* 0.9.116: umesto confirm dijaloga otvara se list sa predlozima (maketa video-izbor-C).
+         Ručno izabran opseg dugmadima [ ] i dalje radi i ima prečicu: ako je postavljen,
+         preskače se izbor i snima se baš to. */
       const opseg = rrSelOpseg();
-      /* Procena PRE snimanja. Boskova odluka je "nebitno koliko traje", ali duzina snimka i
-         cekanje na izradu nisu isto - na 220 km je snimak oko cetvrt sata a izrada jos toliko,
-         i na to se pristaje svesno. Brzina uredjaja se pamti od proslog izvoza; prvi put ide
-         konzervativnih 12 kadrova u sekundi. */
-      const kmDeo = (RRPL.kmUk || 0) * (opseg ? (opseg.do - opseg.od) : 1);
-      let fpsRanije = 12;
-      try { const v = +localStorage.getItem("rmr2_vid_fps"); if (isFinite(v) && v >= VID.fpsMin) fpsRanije = v; } catch (er) {}
-      const pl = vidPlan(kmDeo, fpsRanije);
-      const sta = opseg ? "izabranu deonicu (" + kmDeo.toFixed(1).replace(".", ",") + " km)" : "ceo put (" + kmDeo.toFixed(1).replace(".", ",") + " km)";
-      if (!confirm("Snimam " + sta + ".\n\nSnimak: oko " + vidTrajanje(pl.sekVidea) +
-                   "\nIzrada: oko " + vidTrajanje(pl.kadrova / pl.fps) + ", ekran mora ostati upaljen." +
-                   "\n\nZa kraći snimak označi deonicu dugmadima [ i ] u traci replaya.")) return;
+      try { sumReplayPauza(); } catch (er) {}
+      if (!opseg) { vidOtvori(s2); return; }
       b2.disabled = true;
       try { sumReplayPauza(); } catch (er) {}
-      const rec = (t) => { try { shareToast("Pravim video - " + t + "…"); } catch (er) {} };
+      /* Izvoz od 0.9.116 javlja napredak kao PODATAK, ne kao rečenicu (list ga crta kao traku).
+         Ovaj, ručni put i dalje ide preko toasta, pa objekat mora da se prevede - inače bi
+         vozaču pisalo "Pravim video - [object Object]". */
+      const rec = (t) => { try {
+        const txt = typeof t === "string" ? t : (Math.round(t.pct || 0) + "%" + (t.ostaloS != null ? ", još oko " + vidTrajanje(t.ostaloS) : ""));
+        shareToast("Pravim video - " + txt + "…");
+      } catch (er) {} };
       rec("pripremam");
       try {
         const r = await vozVideo(s2, rec, opseg);
@@ -18520,13 +18614,242 @@ function fotoStanje(dataUrl) {
    stize. Ako telefon vuce 7 kadrova u sekundi a mi teramo 12, svaki kadar kasni i snimak
    postaje neravnomeran u VREMENU - isti kvar kao skakanje, samo na drugoj osi. Bolje je
    posteno sporiji snimak nego trzav. */
-const VID = { W: 1080, H: 1920, fpsMax: 30, fpsMin: 6, mpk: 8, stajS: 1.2, zagrevanje: 24 };
+const VID = { W: 1080, H: 1920, fpsMax: 30, fpsMin: 6, mpk: 8, stajS: 1.2, zagrevanje: 24, maxSek: 60 };
 /* Plan izvoza: koliko kadrova, koliki snimak, i koliko ce sam izvoz trajati. Racuna se PRE
    snimanja da bi covek video na sta pristaje - "snimak 15 min" i "cekanje 20 min" nisu isto. */
 function vidPlan(kmUk, fps) {
   const f = Math.max(VID.fpsMin, Math.min(VID.fpsMax, fps || VID.fpsMax));
   const kadrova = Math.max(2, Math.round(kmUk * 1000 / VID.mpk));
   return { kadrova, fps: f, sekVidea: kadrova / f, mpk: VID.mpk };
+}
+/* ===== LIST "SNIMAK VOŽNJE" (0.9.116) =====================================================
+   Maketa: maketa/video-izbor-C.html, Boškov izbor 9.9.2026 ("jedan heroj"), sa meračem
+   0-60 s pozajmljenim iz varijante A. */
+const VIDS = { sum: null, pred: [], izbor: 0, pts: null, cum: null, kmUk: 0, radi: false };
+function vidFps() {   // brzina prošlog izvoza; prvi put konzervativnih 12
+  try { const v = +localStorage.getItem("rmr2_vid_fps"); if (isFinite(v) && v >= VID.fpsMin) return Math.min(VID.fpsMax, v); } catch (e) {}
+  return 12;
+}
+/* Sličica isečka iz PRAVIH koordinata. `punoDo` (0..1) boji pređeni deo - isti broj koji vozi
+   traku napretka, pa slika i procenat ne mogu da se raziđu. */
+function vidTrasaSvg(kmOd, kmDo, w, h, punoDo, uvGore, uvDole) {
+  const pts = VIDS.pts, cum = VIDS.cum;
+  if (!pts || !cum) return "";
+  const a = [];
+  for (let i = 0; i < pts.length; i++) if (cum[i] >= kmOd - 0.02 && cum[i] <= kmDo + 0.02) a.push(pts[i]);
+  if (a.length < 2) return "";
+  const xs = a.map((p) => p[0]), ys = a.map((p) => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const kos = Math.cos(((y0 + y1) / 2) * Math.PI / 180);   // sever gore, bez rastezanja
+  const sw = Math.max((x1 - x0) * kos, 1e-9), sh = Math.max(y1 - y0, 1e-9);
+  /* Uvlačenje gore i dole je NEJEDNAKO: preko kadra idu ime (gore) i opis sa trajanjem (dole),
+     pa bi centrirana trasa prolazila kroz slova. Merene trake: 40 px gore, 52 px dole. */
+  const ug = uvGore != null ? uvGore : 17, ud = uvDole != null ? uvDole : 17;
+  const px0 = 17, pw = w - 34, ph = h - ug - ud;
+  const sc = Math.min(pw / sw, ph / sh);
+  const px = (p) => (px0 + ((p[0] - x0) * kos) * sc + (pw - sw * sc) / 2).toFixed(1);
+  const py = (p) => (ug + ((y1 - p[1]) * sc) + (ph - sh * sc) / 2).toFixed(1);
+  const d = a.map((p, i) => (i ? "L" : "M") + px(p) + " " + py(p)).join(" ");
+  let punoD = "";
+  if (punoDo != null) {
+    const n = Math.max(2, Math.round(a.length * Math.max(0, Math.min(1, punoDo))));
+    punoD = a.slice(0, n).map((p, i) => (i ? "L" : "M") + px(p) + " " + py(p)).join(" ");
+  }
+  const boja = punoDo != null ? "var(--fill-subtle)" : "var(--accent)";
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true">' +
+    '<path d="' + d + '" fill="none" stroke="' + boja + '" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    (punoD ? '<path d="' + punoD + '" fill="none" stroke="var(--accent)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>' : "") +
+    '</svg>';
+}
+function vidOtvori(s) {
+  const el = document.getElementById("vidSheet"); if (!el) return;
+  const segs = tragSegmenti(s).filter((g) => g && g.length > 1);
+  VIDS.pts = segs.flat();
+  if (VIDS.pts.length < 3) { try { shareToast("Vožnja nema GPS trag."); } catch (e) {} return; }
+  VIDS.cum = sumCum(VIDS.pts); VIDS.kmUk = VIDS.cum[VIDS.cum.length - 1];
+  VIDS.sum = s; VIDS.izbor = 0; VIDS.radi = false;
+  VIDS.pred = vidPredlozi(s, vidFps());
+  if (!VIDS.pred.length) { try { shareToast("Vožnja je prekratka za snimak."); } catch (e) {} return; }
+  el.hidden = false;
+  vidCrtaj();
+}
+function vidZatvori() {
+  VID.otkaz = true;
+  const el = document.getElementById("vidSheet"); if (el) el.hidden = true;
+}
+function vidCrtaj() {
+  const t = document.getElementById("vidTelo"), sub = document.getElementById("vidSub");
+  if (!t) return;
+  const p = VIDS.pred[VIDS.izbor]; if (!p) return;
+  sub.textContent = "Snimak traje najviše " + VID.maxSek + " sekundi. Izabran je najbolji deo vožnje.";
+  const ostali = VIDS.pred.map((x, i) => ({ x, i })).filter((o) => o.i !== VIDS.izbor);
+  /* Izrada traje otprilike koliko i sam snimak: petlja je vezana za IZMERENU brzinu uređaja,
+     pa se svaki kadar crta u ritmu u kom se i snima. Zato je isti broj, ali se kaže odvojeno -
+     "snimak 60 s" i "čekanje 60 s" nisu ista stvar za onoga ko drži telefon u ruci. */
+  const izrada = vidTrajanje(p.km * 1000 / VID.mpk / vidFps());
+  t.innerHTML =
+    '<div class="vhero">' + vidTrasaSvg(p.kmOd, p.kmDo, 340, 176, null, 40, 52) +
+      '<div class="vgore"><span class="vime">' + esc(p.ime) + '</span><span class="vkm">' + p.km.toFixed(1).replace(".", ",") + ' km</span></div>' +
+      '<div class="vdole"><span class="vopis">' + esc(p.opis) + '</span><span>' +
+        '<span class="vtraj">' + Math.round(p.sek) + '<i>s</i></span>' +
+        '<span class="vmer' + (p.naKapi ? " max" : "") + '"><i style="width:' + Math.round(100 * Math.min(1, p.sek / VID.maxSek)) + '%"></i></span>' +
+        (p.naKapi ? '<span class="vmax">MAKSIMUM</span>' : "") +
+      '</span></div>' +
+    '</div>' +
+    '<button class="ok" id="vidKreni" type="button">Napravi snimak</button>' +
+    '<p class="vnota">Izrada traje oko ' + izrada + ' i ekran mora ostati upaljen.</p>' +
+    (ostali.length ? '<div class="vlab">Ostali predlozi</div>' + ostali.map((o) =>
+      '<button class="vred" type="button" data-pred="' + o.i + '">' + vidTrasaSvg(o.x.kmOd, o.x.kmDo, 58, 40, null, 6, 6) +
+      '<span class="t"><b>' + esc(o.x.ime) + ' ' + o.x.km.toFixed(1).replace(".", ",") + ' km</b><span>' + esc(o.x.opis) + '</span></span>' +
+      '<span class="s">' + Math.round(o.x.sek) + ' s' + (o.x.naKapi ? '<b>MAKS</b>' : '') + '</span></button>').join("") : "") +
+    '<div class="vlab">Ili</div>' +
+    '<button class="vred" type="button" data-sam="1"><span class="t"><b>Izaberi sam</b>' +
+      '<span>granice postavljaš dugmadima [ i ] u traci replaya</span></span><span class="s">›</span></button>';
+  t.querySelectorAll("[data-pred]").forEach((b) => b.addEventListener("click", () => { VIDS.izbor = +b.dataset.pred; vidCrtaj(); }));
+  const sam = t.querySelector("[data-sam]"); if (sam) sam.addEventListener("click", () => vidZatvori());
+  const kr = document.getElementById("vidKreni"); if (kr) kr.addEventListener("click", vidKreni);
+}
+function vidNapredak(n) {
+  const t = document.getElementById("vidTelo"); if (!t) return;
+  const p = VIDS.pred[VIDS.izbor];
+  const pct = Math.max(0, Math.min(100, Math.round(n.pct || 0)));
+  const bar = t.querySelector(".vbar i"), pc = t.querySelector(".vpct b"), os = t.querySelector(".vpct span"),
+        fz = t.querySelector(".vfaza"), sv = t.querySelector(".vhero svg");
+  if (bar) bar.style.width = pct + "%";
+  if (pc) pc.innerHTML = pct + '<i>%</i>';
+  if (os) os.textContent = n.ostaloS != null ? "još oko " + vidTrajanje(n.ostaloS) : "";
+  if (fz) fz.textContent = n.faza || "";
+  if (sv && p && n.pct != null) sv.outerHTML = vidTrasaSvg(p.kmOd, p.kmDo, 340, 176, pct / 100, 40, 52);
+}
+async function vidKreni() {
+  const p = VIDS.pred[VIDS.izbor], s = VIDS.sum;
+  if (!p || !s || VIDS.radi) return;
+  VIDS.radi = true; VID.otkaz = false;
+  const t = document.getElementById("vidTelo");
+  t.innerHTML =
+    '<div class="vhero">' + vidTrasaSvg(p.kmOd, p.kmDo, 340, 176, 0, 40, 52) +
+      '<div class="vgore"><span class="vime">' + esc(p.ime) + '</span><span class="vkm">' + p.km.toFixed(1).replace(".", ",") + ' km</span></div>' +
+    '</div>' +
+    '<div class="vpct"><b>0<i>%</i></b><span></span></div>' +
+    '<div class="vbar"><i style="width:0%"></i></div><div class="vfaza">pripremam mapu</div>' +
+    '<div class="vupoz"><span>⚠</span><span>Ekran mora ostati upaljen. Ako se telefon zaključa, izrada staje tu gde je.</span></div>' +
+    '<button class="vsek" id="vidOdustani" type="button">Odustani</button>';
+  document.getElementById("vidOdustani").addEventListener("click", () => { VID.otkaz = true; });
+  try {
+    const r = await vozVideo(s, (n) => {
+      if (typeof n === "string") vidNapredak({ faza: n });
+      else vidNapredak(n);
+    }, p.opseg);
+    try { if (r.fps) localStorage.setItem("rmr2_vid_fps", String(Math.round(r.fps))); } catch (e) {}
+    const ext = /mp4/.test(r.tip) ? "mp4" : "webm";
+    const ime = "routemeright-" + (new Date().toISOString().slice(0, 10)) + "." + ext;
+    t.innerHTML =
+      '<div class="vhero">' + vidTrasaSvg(p.kmOd, p.kmDo, 340, 176, 1, 40, 52) +
+        '<div class="vgore"><span class="vime">' + esc(p.ime) + '</span><span class="vkm">' + p.km.toFixed(1).replace(".", ",") + ' km</span></div>' +
+      '</div>' +
+      '<div class="vgotov" style="margin-top:12px">✓ Snimak je gotov</div>' +
+      '<div class="vmeta"><span>' + Math.round(r.sekVidea) + ' s</span><span>' + (r.blob.size / 1048576).toFixed(1).replace(".", ",") + ' MB</span><span>1080x1920</span></div>' +
+      /* Kartica obećava trajanje po brzini PROŠLOG izvoza. Ako je ovaj uređaj danas sporiji ili
+         brži, snimak ispadne drugačiji nego što je pisalo - i to se KAŽE, umesto da razlika
+         tiho stoji između dva broja koje je isti čovek video jedan za drugim. Sledeći put je
+         tačno, jer se izmerena brzina pamti. */
+      (Math.abs(r.sekVidea - p.sek) > Math.max(2, p.sek * 0.2)
+        ? '<p class="vnota">Na kartici je pisalo ' + Math.round(p.sek) + ' s: to je bilo po brzini prošlog izvoza, a ovaj uređaj je danas ' +
+          (r.sekVidea > p.sek ? 'sporiji' : 'brži') + '. Sledeći snimak će biti tačno procenjen.</p>'
+        : '') +
+      '<button class="ok" id="vidPodeli" type="button" style="margin-top:14px">Podeli</button>' +
+      '<button class="vsek" id="vidJos" type="button">Napravi još jedan</button>';
+    document.getElementById("vidJos").addEventListener("click", () => { VIDS.radi = false; vidCrtaj(); });
+    document.getElementById("vidPodeli").addEventListener("click", async () => {
+      const file = new File([r.blob], ime, { type: r.tip });
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file] });
+        else { const u = URL.createObjectURL(r.blob); const a2 = document.createElement("a"); a2.href = u; a2.download = ime; a2.click(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
+      } catch (e) {}
+    });
+    try { navLog("video-izvoz", { kb: Math.round(r.blob.size / 1024), kadrova: r.kadrova, sek: Math.round(r.sek), km: +r.km.toFixed(2), isecak: p.ime }); } catch (e) {}
+  } catch (err) {
+    VIDS.radi = false;
+    if (VID.otkaz) { vidCrtaj(); return; }               // Odustani vraća na izbor, bez poruke o grešci
+    t.innerHTML = '<p class="vnota">' + esc(err && err.message ? err.message : "Snimak nije napravljen.") + '</p>' +
+      '<button class="vsek" id="vidNazad" type="button">Nazad na izbor</button>';
+    document.getElementById("vidNazad").addEventListener("click", vidCrtaj);
+  } finally { VIDS.radi = false; }
+}
+/* PREDLOZI ISEČAKA (9.9.2026, Boškova odluka posle tri makete; izabrana varijanta C).
+   "Ajde ovako da bude maks 1min ali da se to jasno naglasi i da korisnik izabere koji minut
+   vožnje ce da izabere mozda taj najzanimljiviji."
+   Umesto da čovek premotavanjem traži zanimljiv deo, aplikacija nudi ono što VEĆ zna:
+   best3km (najvijugavija deonica), momBrz (mesto rekorda), momL/momR (najveći nagib).
+
+   Kapa od 60 s NIJE fiksna kilometraža. Pomeraj je konstantnih 8 m po kadru (to drži
+   glatkoću), a kadrova u sekundi zavisi od uređaja - pa 60 s na 30 fps nosi 14,4 km, a na
+   14 fps samo 6,7 km. Zato kartica sme da piše samo ono što na TOM telefonu stvarno stane.
+   Predlog duži od kape se seče OKO tačke od interesa, nikad od početka: inače rekord ispadne
+   iz snimka a kartica i dalje piše "rekord 118 km/h". */
+function vidPredlozi(s, fps) {
+  const segs = tragSegmenti(s).filter((g) => g && g.length > 1);
+  const pts = segs.flat();
+  if (pts.length < 3) return [];
+  const cum = sumCum(pts), kmUk = cum[cum.length - 1];
+  if (!(kmUk > 0)) return [];
+  const f = Math.max(VID.fpsMin, Math.min(VID.fpsMax, fps || VID.fpsMin));
+  const maxKm = Math.min(kmUk, VID.maxSek * f * VID.mpk / 1000);
+  const kmNa = (lo, la) => {   // najbliža tačka traga -> pređeni km
+    let naj = 0, najD = 1e18;
+    for (let i = 0; i < pts.length; i++) {
+      const dx = (pts[i][0] - +lo) * Math.cos(+la * Math.PI / 180), dy = pts[i][1] - +la;
+      const d2 = dx * dx + dy * dy; if (d2 < najD) { najD = d2; naj = i; }
+    }
+    return cum[naj];
+  };
+  const oko = (kmSred, duz) => {   // prozor OKO tačke, uvučen u granice vožnje
+    const d = Math.max(0.05, Math.min(duz, maxKm, kmUk));
+    const a = Math.max(0, Math.min(kmUk - d, kmSred - d / 2));
+    return { kmOd: a, kmDo: a + d };
+  };
+  const kandidati = [];
+  const b3 = best3kmSeg(segs);
+  if (b3) {   // izostaje na retkom ili kratkom tragu, i to je namerno (nalaz 13.8.)
+    const a = cum[Math.max(0, b3.a)], b = cum[Math.min(b3.b, cum.length - 1)];
+    kandidati.push(Object.assign({ ime: "Najvijugavije",
+      opis: Math.round(b3.dens) + "° skretanja po kilometru" }, oko((a + b) / 2, b - a)));
+  }
+  if (s && s.momBrz && s.momBrz[0] != null) {
+    const km = kmNa(s.momBrz[0], s.momBrz[1]);
+    const v = s.momBrz[2] != null ? Math.round(s.momBrz[2]) : Math.round(s.maxK || 0);
+    kandidati.push(Object.assign({ ime: "Najbrže",
+      opis: (v ? "rekord " + v + " km/h" : "najbrži deo") + " na " + Math.round(km) + ". km" }, oko(km, maxKm)));
+  }
+  {   // veći od dva nagiba; oba su [lon, lat, stepeni]
+    const L = s && s.momL, R = s && s.momR;
+    const jaci = (Math.abs((L && L[2]) || 0) >= Math.abs((R && R[2]) || 0)) ? L : R;
+    const strana = jaci === L ? "levo" : "desno";
+    if (jaci && jaci[0] != null) {
+      const km = kmNa(jaci[0], jaci[1]);
+      kandidati.push(Object.assign({ ime: "Najveći nagib",
+        opis: Math.round(Math.abs(jaci[2] || 0)) + "° " + strana + " na " + Math.round(km) + ". km" },
+        oko(km, Math.min(5, maxKm))));
+    }
+  }
+  kandidati.push(Object.assign({ ime: "Od početka",
+    opis: maxKm >= kmUk - 0.01 ? "cela vožnja" : "prvih " + maxKm.toFixed(1).replace(".", ",") + " km" },
+    { kmOd: 0, kmDo: Math.min(maxKm, kmUk) }));
+
+  /* Isti isečak se ne nudi dvaput. "Isti" znači ISTI PROZOR (oba kraja u krugu od 200 m),
+     ne "jedan je unutar drugog": vijugavih 3 km unutar prvih 8 km daju dva različita snimka
+     i obe kartice imaju smisla. */
+  const van = [];
+  for (const k of kandidati) {
+    if (!(k.kmDo > k.kmOd)) continue;
+    if (van.some((p) => Math.abs(p.kmOd - k.kmOd) < 0.2 && Math.abs(p.kmDo - k.kmDo) < 0.2)) continue;
+    k.km = k.kmDo - k.kmOd;
+    k.sek = vidPlan(k.km, f).sekVidea;
+    k.naKapi = k.sek >= VID.maxSek - 0.05;   // kartica to pokazuje meračem, ne samo brojem
+    k.opseg = { od: k.kmOd / kmUk, do: k.kmDo / kmUk };
+    van.push(k);
+  }
+  return van;
 }
 function vidTrajanje(sek) {
   const m = Math.floor(sek / 60), s2 = Math.round(sek % 60);
@@ -18592,10 +18915,10 @@ async function vozVideo(s, naStanje, opseg) {
   const pts = segs.flat();
   if (pts.length < 3) throw new Error("Vožnja nema GPS trag.");
   const cum = sumCum(pts), kmUk = cum[cum.length - 1];
-  const od = Math.max(0, Math.min(1, (opseg && +opseg.od) || 0));
-  const doo = Math.max(od + 0.001, Math.min(1, (opseg && +opseg.do) != null && (opseg && +opseg.do) > 0 ? +opseg.do : 1));
-  const raspon = doo - od;
-  const kmOd = kmUk * od, kmDo = kmUk * doo, kmDeonice = kmDo - kmOd;
+  let od = Math.max(0, Math.min(1, (opseg && +opseg.od) || 0));
+  let doo = Math.max(od + 0.001, Math.min(1, (opseg && +opseg.do) != null && (opseg && +opseg.do) > 0 ? +opseg.do : 1));
+  let raspon = doo - od;
+  let kmOd = kmUk * od, kmDo = kmUk * doo, kmDeonice = kmDo - kmOd;
   let brgG = null, stajKadrova = 2;
   const div = document.createElement("div");
   div.style.cssText = "position:fixed;left:-3000px;top:0;width:" + (VID.W / 2) + "px;height:" + (VID.H / 2) + "px;";
@@ -18633,17 +18956,22 @@ async function vozVideo(s, naStanje, opseg) {
       if (p < od || p > doo) return;                 // trenutak van izabrane deonice se ne broji
       trenuci.push({ p: (p - od) / raspon, naslov, vred });
     };
-    dodaj(s.momL, "Max levo", (s.momL && s.momL[2] != null ? Math.round(s.momL[2]) : Math.round(s.lnL || 0)) + "°");
-    dodaj(s.momR, "Max desno", (s.momR && s.momR[2] != null ? Math.round(s.momR[2]) : Math.round(s.lnR || 0)) + "°");
-    dodaj(s.momBrz, "Najbrže", Math.round((s.momBrz && s.momBrz[2] != null ? s.momBrz[2] : s.maxK) || 0) + " km/h");
-    /* ⚠ `pauzeNa`: treci clan su MINUTI, ne koordinata. Ovo je bilo "number is not iterable"
-       koje je 1.9. iskocilo Bosku na ekran kad je pritisnuo dugme za video. */
-    for (const pz of (Array.isArray(s.pauzeNa) ? s.pauzeNa : [])) {
-      if (!Array.isArray(pz)) continue;
-      const min = pz[2] != null && isFinite(pz[2]) ? Math.round(pz[2]) : null;
-      dodaj(pz, "Pauza", min != null && min > 0 ? min + " min" : "");
-    }
-    trenuci.sort((a2, b2) => a2.p - b2.p);
+    /* Trenuci se PUNE tek posle merenja brzine uređaja i kape od 60 s (9.9.2026): kapa ume da
+       odseče deo isečka, pa bi trenutak izračunat pre nje pao van snimka i natpis bi stajao nad
+       praznim putem. Ovde se samo priprema; puni se posle kape. */
+    const puniTrenutke = () => {
+      dodaj(s.momL, "Max levo", (s.momL && s.momL[2] != null ? Math.round(s.momL[2]) : Math.round(s.lnL || 0)) + "°");
+      dodaj(s.momR, "Max desno", (s.momR && s.momR[2] != null ? Math.round(s.momR[2]) : Math.round(s.lnR || 0)) + "°");
+      dodaj(s.momBrz, "Najbrže", Math.round((s.momBrz && s.momBrz[2] != null ? s.momBrz[2] : s.maxK) || 0) + " km/h");
+      /* ⚠ `pauzeNa`: treci clan su MINUTI, ne koordinata. Ovo je bilo "number is not iterable"
+         koje je 1.9. iskocilo Bosku na ekran kad je pritisnuo dugme za video. */
+      for (const pz of (Array.isArray(s.pauzeNa) ? s.pauzeNa : [])) {
+        if (!Array.isArray(pz)) continue;
+        const min = pz[2] != null && isFinite(pz[2]) ? Math.round(pz[2]) : null;
+        dodaj(pz, "Pauza", min != null && min > 0 ? min + " min" : "");
+      }
+      trenuci.sort((a2, b2) => a2.p - b2.p);
+    };
 
     /* Jedan kadar: kamera na mesto, SACEKAJ da mapa stvarno prikaze taj kadar, pa kompozituj.
        Cekanje je bilo ono sto je nedostajalo - `jumpTo` samo zakaze crtanje, a `getCanvas()`
@@ -18651,9 +18979,10 @@ async function vozVideo(s, naStanje, opseg) {
        Ceka se jedan prolaz crtanja (`render`), ne `idle`: idle ceka i sve plocice, sto na
        nagnutom pogledu nad neucitanim podrucjem ume da traje sekundama - na 27.000 kadrova to
        su sati. Kapa postoji da jedan zaglavljen prolaz ne zaustavi ceo izvoz. */
-    const kadar = async (i, ukupno) => {
-      const stao = _vidStaoNa(trenuci, i, ukupno, stajKadrova);
-      const np = _vidNapredak(i, ukupno, trenuci, stajKadrova);
+    const kadar = async (i, ukupno, tren) => {
+      const T = tren || trenuci;
+      const stao = _vidStaoNa(T, i, ukupno, stajKadrova);
+      const np = _vidNapredak(i, ukupno, T, stajKadrova);
       const km = kmOd + (kmDo - kmOd) * np;
       let j = 1; while (j < cum.length - 1 && cum[j] < km) j++;
       const k0 = cum[j - 1], k1 = cum[j], f2 = k1 > k0 ? (km - k0) / (k1 - k0) : 0;
@@ -18678,14 +19007,35 @@ async function vozVideo(s, naStanje, opseg) {
        snimak video ubrzavao i usporavao - MediaRecorder zigose po stvarnom vremenu. */
     naStanje && naStanje("merim brzinu uređaja");
     const tz = performance.now();
-    for (let i = 0; i < VID.zagrevanje; i++) await kadar(0, 2);
+    for (let i = 0; i < VID.zagrevanje; i++) await kadar(0, 2, []);
     /* 0.9 puta izmereno, namerno: ako se ritam veze za SAM VRH onoga sto uredjaj stize, svaki
        kadar kasni po koju milisekundu i razmaci se rastu (izmereno: medijana 64 ms na cilj od
        63, p90 77, najgori 116). Sa malom rezervom vecina kadrova stigne pre roka i CEKA, pa je
        razmak ujednacen - a to je ono sto se na snimku vidi kao glatkoca. */
     const mereno = 0.9 * VID.zagrevanje / Math.max(0.001, (performance.now() - tz) / 1000);
-    const plan = vidPlan(kmDeonice, mereno);
-    const ukupnoKadrova = plan.kadrova, fps = plan.fps;
+    const fps = Math.max(VID.fpsMin, Math.min(VID.fpsMax, mereno));
+
+    /* KAPA OD 60 SEKUNDI (Boškova odluka 9.9.2026). Seče se OPSEG, nikad broj kadrova:
+       ako bi se 220 km nagurala u 1800 kadrova, pomeraj bi skočio sa 8 m na 122 m po kadru i
+       vratili bismo tačno ono skakanje zbog kojeg je izvoz i prepisan.
+       Seče se OKO SREDINE isečka - ono što je čovek izabrao ostaje u sredini kadra.
+       Kapa se računa tek ovde jer zavisi od izmerene brzine uređaja: 60 s je 14,4 km na
+       30 kadrova/s, a samo 6,7 km na 14. */
+    const maxKm = VID.maxSek * fps * VID.mpk / 1000;
+    let seceno = 0;
+    if (kmDeonice > maxKm + 0.01) {
+      seceno = kmDeonice - maxKm;
+      const sred = (kmOd + kmDo) / 2;
+      kmOd = Math.max(0, Math.min(kmUk - maxKm, sred - maxKm / 2));
+      kmDo = kmOd + maxKm;
+      kmDeonice = maxKm;
+      od = kmOd / kmUk; doo = kmDo / kmUk; raspon = doo - od;
+      naStanje && naStanje("snimak je skraćen na " + VID.maxSek + " s");
+    }
+    puniTrenutke();
+
+    const plan = vidPlan(kmDeonice, fps);
+    const ukupnoKadrova = plan.kadrova;
     stajKadrova = Math.max(2, Math.min(Math.round(VID.stajS * fps), Math.floor(0.06 * ukupnoKadrova)));
 
     const stream = cv.captureStream(0);
@@ -18701,7 +19051,9 @@ async function vozVideo(s, naStanje, opseg) {
     const t0 = performance.now();
     let kadrova = 0;
     const kadarMs = 1000 / fps;
+    VID.otkaz = false;
     for (let i = 0; i < ukupnoKadrova; i++) {
+      if (VID.otkaz) throw new Error("Snimak je prekinut.");   // dugme Odustani; finally ispod čisti mapu i snimač
       const pocetak = performance.now();
       await kadar(i, ukupnoKadrova);
       if (rucno) { try { staza.requestFrame(); } catch (e) {} }
@@ -18711,13 +19063,15 @@ async function vozVideo(s, naStanje, opseg) {
          samo u vremenu umesto u prostoru. */
       const ostalo = kadarMs - (performance.now() - pocetak);
       if (ostalo > 1) await new Promise((r2) => setTimeout(r2, ostalo));
-      if ((i & 31) === 0) naStanje && naStanje(Math.round(100 * i / ukupnoKadrova) + "%");
+      if ((i & 7) === 0 && naStanje) naStanje({
+        pct: 100 * i / ukupnoKadrova, kadar: i, ukupno: ukupnoKadrova,
+        ostaloS: (ukupnoKadrova - i) / fps, faza: "snimam " + i + "/" + ukupnoKadrova });
     }
     naStanje && naStanje("zatvaram snimak");
     rec.stop(); await gotov;
     const blob = new Blob(delovi, { type: tip });
     if (!blob.size) throw new Error("Snimak je ispao prazan - uređaj nije dao nijedan kadar.");
-    return { blob, tip, kadrova, fps, sek: (performance.now() - t0) / 1000 };
+    return { blob, tip, kadrova, fps, km: kmDeonice, seceno, sekVidea: plan.sekVidea, sek: (performance.now() - t0) / 1000 };
   } finally {
     try { if (rec && rec.state !== "inactive") rec.stop(); } catch (e) {}
     try { if (m) m.remove(); } catch (e) {}
