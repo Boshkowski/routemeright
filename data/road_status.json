@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-14T18:36+00:00",
+ "updated": "2026-09-14T22:28+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -7,22 +7,34 @@
    "ok": true,
    "items": [
     {
-     "type": "Delo",
-     "title": "A2-E70, Ljubljana - Obrežje: Delo",
-     "detail": "A2, Ljubljana - Obrežje, priključek Grosuplje vzhod - priključek Višnja Gora v smeri Novega mesta, dela, zaprt prehitevalni pas.",
-     "region": "A2-E70, Ljubljana - Obrežje"
+     "type": "Ovire",
+     "title": "H4 , Nova Gorica - Razdrto: Ovire",
+     "detail": "H4, Nova Gorica - Razdrto, priključek Šempeter - priključek Vogrsko, žival na cestišču, oviran promet.",
+     "region": "H4 , Nova Gorica - Razdrto"
+    },
+    {
+     "type": "Ovire",
+     "title": "H4 , Razdrto - Nova Gorica: Ovire",
+     "detail": "H4, Razdrto - Nova Gorica, priključek Vogrsko - priključek Šempeter, žival na cestišču, oviran promet.",
+     "region": "H4 , Razdrto - Nova Gorica"
     },
     {
      "type": "Delo",
-     "title": "A3-E70, E61, Fernetiči - razcep Gabrk: Delo",
-     "detail": "A3, Fernetiči - razcep Gabrk, razcep Gabrk iz smeri Kopra proti Fernetičem, Italiji, dela, oviran promet.",
-     "region": "A3-E70, E61, Fernetiči - razcep Gabrk"
+     "title": "A2-E61, Karavanke - Ljubljana: Delo",
+     "detail": "A2, Karavanke - Ljubljana, pred priključkom Vodice v smeri Ljubljane, dela, zaprt vozni pas.",
+     "region": "A2-E61, Karavanke - Ljubljana"
     },
     {
      "type": "Delo",
-     "title": "A1-E57, Ljubljana - Maribor: Delo",
-     "detail": "A1, Ljubljana - Maribor, priključek Sl. Bistrica sever - počivališče Polskava v smeri Maribora, dela, zaprt vozni pas.",
-     "region": "A1-E57, Ljubljana - Maribor"
+     "title": "A2-E61, Karavanke - Ljubljana: Delo",
+     "detail": "A2, Karavanke - Ljubljana, izvoz Vodice iz smeri Karavank, Avstrije, dela, popolna zapora.",
+     "region": "A2-E61, Karavanke - Ljubljana"
+    },
+    {
+     "type": "Nesreča",
+     "title": "G2-101, Ljubelj - Bistrica  (Tržič): Nesreča",
+     "detail": "G2-101, Tržič - Ljubelj, prelaz Ljubelj na avstrijski strani, prometna nesreča, popolna zapora.",
+     "region": "G2-101, Ljubelj - Bistrica  (Tržič)"
     },
     {
      "type": "Ovire",
@@ -32,21 +44,9 @@
     },
     {
      "type": "Delo",
-     "title": "G2-107, Šentjur - Mestinje: Delo",
-     "detail": "G2-107, Celje - Rogaška Slatina, Mala Pristava, izmenično enosmerni promet, vzdrževalnih del na območju nivojskega prehoda.",
-     "region": "G2-107, Šentjur - Mestinje"
-    },
-    {
-     "type": "Delo",
      "title": "R1-210, Sovodenj - Cerkno: Delo",
      "detail": "R1-210, Trebija - Cerkno, Čeplez, izmenično enosmerni promet, sanacije strehe na objektu, do 19. 9. 2026.",
      "region": "R1-210, Sovodenj - Cerkno"
-    },
-    {
-     "type": "Delo",
-     "title": "A1-E57, Maribor - Ljubljana: Delo",
-     "detail": "A1, Maribor - Ljubljana, priključek Žalec, Arja vas - počivališče Lukovica v smeri Ljubljane, dela, oviran promet.",
-     "region": "A1-E57, Maribor - Ljubljana"
     },
     {
      "type": "Delo",
@@ -224,12 +224,6 @@
     },
     {
      "type": "Delo",
-     "title": "R1-210, Kranj - Škofja Loka: Delo",
-     "detail": "R1-210, Kranj - Škofja Loka, v Zgornjih Bitnjah, izmenično enosmerni promet, ureditev avtobusnih postajališč, do 14. 9. 2026.",
-     "region": "R1-210, Kranj - Škofja Loka"
-    },
-    {
-     "type": "Delo",
      "title": "R2-425, Poljana - Šentvid: Delo",
      "detail": "R2-425, Poljana - Šentvid, v Črni na Koroškem, izmenično enosmerni promet, obnova ceste, do 26. 1. 2027.",
      "region": "R2-425, Poljana - Šentvid"
@@ -245,16 +239,30 @@
      "title": "LZ-001330, Južna obvoznica - Tovarnišk: Delo",
      "detail": "Ajdovščina, Tovarniška cesta, popolna zapora, ureditev križišča, do 16. 9. 2026.",
      "region": "LZ-001330, Južna obvoznica - Tovarnišk"
+    },
+    {
+     "type": "Delo",
+     "title": "R3-638, Žirovnica - Begunje: Delo",
+     "detail": "R3-638, Žirovnica - Begunje, v Doslovčah, izmenično enosmerni promet, ureditve avtobusnega postajališča, do 23. 9. 2026.",
+     "region": "R3-638, Žirovnica - Begunje"
     }
    ],
-   "odseceno": 133,
-   "fetched": "2026-09-14T18:36+00:00"
+   "odseceno": 132,
+   "fetched": "2026-09-14T22:28+00:00"
   },
   "HR": {
    "name": "Hrvatska",
    "source": "HAK",
    "ok": true,
    "items": [
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "D1-118 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "D1-118",
+     "lat": 43.52798,
+     "lon": 16.49218
+    },
     {
      "type": "zatvaranje (Radovi)",
      "title": "LC34011-1 - Radovi",
@@ -1241,11 +1249,21 @@
     },
     {
      "type": "radovi (Radovi)",
-     "title": "D430-1 - Radovi",
+     "title": "D3-9 - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
-     "region": "D430-1",
-     "lat": 45.75603,
-     "lon": 16.09993
+     "region": "D3-9",
+     "lat": 45.94986,
+     "lon": 16.23866,
+     "coords": [
+      [
+       16.23866,
+       45.94986
+      ],
+      [
+       16.23866,
+       45.94985
+      ]
+     ]
     },
     {
      "type": "radovi (Radovi)",
@@ -1318,24 +1336,6 @@
       [
        14.45212,
        45.32962
-      ]
-     ]
-    },
-    {
-     "type": "radovi (Radovi)",
-     "title": "D3-9 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "D3-9",
-     "lat": 45.94986,
-     "lon": 16.23866,
-     "coords": [
-      [
-       16.23866,
-       45.94986
-      ],
-      [
-       16.23866,
-       45.94985
       ]
      ]
     },
@@ -1543,11 +1543,11 @@
     },
     {
      "type": "radovi (Radovi)",
-     "title": "D25-1 - Radovi",
+     "title": "default - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
-     "region": "D25-1",
-     "lat": 44.7439,
-     "lon": 15.70642
+     "region": "default",
+     "lat": 45.15458,
+     "lon": 18.40265
     },
     {
      "type": "radovi (Radovi)",
@@ -1725,27 +1725,11 @@
     },
     {
      "type": "radovi (Radovi)",
-     "title": "default - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "default",
-     "lat": 45.15458,
-     "lon": 18.40265
-    },
-    {
-     "type": "radovi (Radovi)",
      "title": "D28-1 - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
      "region": "D28-1",
      "lat": 45.91461,
      "lon": 16.56653
-    },
-    {
-     "type": "radovi (Radovi)",
-     "title": "D2-11 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "D2-11",
-     "lat": 45.57975,
-     "lon": 18.5693
     },
     {
      "type": "radovi (Radovi)",
@@ -1757,11 +1741,35 @@
     },
     {
      "type": "radovi (Radovi)",
+     "title": "D2-11 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D2-11",
+     "lat": 45.57975,
+     "lon": 18.5693
+    },
+    {
+     "type": "radovi (Radovi)",
+     "title": "D25-1 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D25-1",
+     "lat": 44.7439,
+     "lon": 15.70642
+    },
+    {
+     "type": "radovi (Radovi)",
      "title": "default - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
      "region": "default",
      "lat": 45.87015,
      "lon": 16.14652
+    },
+    {
+     "type": "radovi (Radovi)",
+     "title": "D430-1 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D430-1",
+     "lat": 45.75603,
+     "lon": 16.09993
     },
     {
      "type": "radovi (Radovi)",
@@ -1948,132 +1956,10 @@
        44.57688
       ]
      ]
-    },
-    {
-     "type": "radovi (Radovi)",
-     "title": "D51-2 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "D51-2",
-     "lat": 45.33067,
-     "lon": 17.59393,
-     "coords": [
-      [
-       17.59393,
-       45.33067
-      ],
-      [
-       17.59407,
-       45.33065
-      ],
-      [
-       17.59372,
-       45.33069
-      ],
-      [
-       17.59372,
-       45.33069
-      ],
-      [
-       17.59364,
-       45.33071
-      ],
-      [
-       17.59356,
-       45.33072
-      ],
-      [
-       17.59356,
-       45.33072
-      ],
-      [
-       17.59329,
-       45.33078
-      ],
-      [
-       17.59275,
-       45.33091
-      ],
-      [
-       17.59221,
-       45.33103
-      ],
-      [
-       17.59217,
-       45.33104
-      ],
-      [
-       17.59135,
-       45.33123
-      ],
-      [
-       17.59097,
-       45.33132
-      ],
-      [
-       17.58969,
-       45.3316
-      ],
-      [
-       17.58882,
-       45.33179
-      ],
-      [
-       17.58766,
-       45.33204
-      ],
-      [
-       17.58661,
-       45.33227
-      ],
-      [
-       17.58538,
-       45.33254
-      ],
-      [
-       17.58463,
-       45.33269
-      ],
-      [
-       17.58357,
-       45.33291
-      ],
-      [
-       17.58252,
-       45.33312
-      ],
-      [
-       17.58213,
-       45.33319
-      ],
-      [
-       17.58154,
-       45.33329
-      ],
-      [
-       17.58051,
-       45.33345
-      ],
-      [
-       17.57994,
-       45.33355
-      ],
-      [
-       17.57906,
-       45.33373
-      ],
-      [
-       17.57848,
-       45.33384
-      ],
-      [
-       17.57656,
-       45.33422
-      ]
-     ]
     }
    ],
-   "odseceno": 72,
-   "fetched": "2026-09-14T18:36+00:00",
+   "odseceno": 73,
+   "fetched": "2026-09-14T22:28+00:00",
    "nepotpuno": [
     "stanje-na-autocestama",
     "granicni-prijelazi-stanje"
@@ -2326,7 +2212,7 @@
     }
    ],
    "odseceno": 101,
-   "fetched": "2026-09-14T18:36+00:00"
+   "fetched": "2026-09-14T22:28+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -2575,7 +2461,7 @@
     }
    ],
    "odseceno": 28,
-   "fetched": "2026-09-14T18:36+00:00"
+   "fetched": "2026-09-14T22:28+00:00"
   },
   "ME": {
    "name": "Crna Gora",
@@ -2643,7 +2529,7 @@
      "region": "Crna Gora"
     }
    ],
-   "fetched": "2026-09-14T18:36+00:00"
+   "fetched": "2026-09-14T22:28+00:00"
   },
   "MK": {
    "name": "S. Makedonija",
@@ -2735,7 +2621,7 @@
      "region": "Прилеп – Битола"
     }
    ],
-   "fetched": "2026-09-14T18:36+00:00"
+   "fetched": "2026-09-14T22:28+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -2803,7 +2689,7 @@
      "region": "Fier–Kthesa"
     }
    ],
-   "fetched": "2026-09-14T18:36+00:00"
+   "fetched": "2026-09-14T22:28+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -3128,7 +3014,7 @@
     }
    ],
    "odseceno": 367,
-   "fetched": "2026-09-14T18:36+00:00"
+   "fetched": "2026-09-14T22:28+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -3316,7 +3202,7 @@
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-09-14T18:36+00:00"
+   "fetched": "2026-09-14T22:28+00:00"
   }
  },
  "meteo": {
@@ -3364,50 +3250,8 @@
     },
     {
      "type": "meteo-upozorenje",
-     "title": "Yellow Wind Warning issued for Croatia - South Dalmatia region",
-     "detail": "nivo: zuto | pojava: wind | vazi: 2026-09-14T20:00Z do 2026-09-14T21:59Z",
-     "region": "South Dalmatia region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Wind Warning issued for Croatia - Velebit channel region",
-     "detail": "nivo: zuto | pojava: wind | vazi: 2026-09-14T18:00Z do 2026-09-14T21:59Z",
-     "region": "Velebit channel region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Wind Warning issued for Croatia - Middle Dalmatia region",
-     "detail": "nivo: zuto | pojava: wind | vazi: 2026-09-14T18:00Z do 2026-09-14T21:59Z",
-     "region": "Middle Dalmatia region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Wind Warning issued for Croatia - North Dalmatia region",
-     "detail": "nivo: zuto | pojava: wind | vazi: 2026-09-14T18:00Z do 2026-09-14T21:59Z",
-     "region": "North Dalmatia region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Wind Warning issued for Croatia - Kvarner i Kvarneric region",
-     "detail": "nivo: zuto | pojava: wind | vazi: 2026-09-14T18:00Z do 2026-09-14T21:59Z",
-     "region": "Kvarner i Kvarneric region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Wind Warning issued for Croatia - West Istrian coast region",
-     "detail": "nivo: zuto | pojava: wind | vazi: 2026-09-14T20:00Z do 2026-09-14T21:59Z",
-     "region": "West Istrian coast region"
-    },
-    {
-     "type": "meteo-upozorenje",
      "title": "Yellow Wind Warning issued for Croatia - Rijeka region",
      "detail": "nivo: zuto | pojava: wind | vazi: 2026-09-14T22:01Z do 2026-09-15T09:00Z",
-     "region": "Rijeka region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Wind Warning issued for Croatia - Rijeka region",
-     "detail": "nivo: zuto | pojava: wind | vazi: 2026-09-14T19:00Z do 2026-09-14T21:59Z",
      "region": "Rijeka region"
     }
    ],
@@ -3418,18 +3262,30 @@
    0
   ],
   "BA": [
-   [],
-   0
-  ],
-  "ME": [
    [
     {
      "type": "meteo-upozorenje",
-     "title": "Yellow Wind Warning issued for Montenegro - Adriatic coast",
-     "detail": "nivo: zuto | pojava: Wind | vazi: 2026-09-13T22:01Z do 2026-09-14T21:59Z",
-     "region": "Adriatic coast"
+     "title": "Yellow Fog Warning issued for Bosnia-Herzegovina - Tuzla",
+     "detail": "nivo: zuto | pojava: Fog | vazi: 2026-09-15T22:00Z do 2026-09-16T08:00Z",
+     "region": "Tuzla"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Fog Warning issued for Bosnia-Herzegovina - Sarajevo",
+     "detail": "nivo: zuto | pojava: Fog | vazi: 2026-09-15T22:00Z do 2026-09-16T08:00Z",
+     "region": "Sarajevo"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Fog Warning issued for Bosnia-Herzegovina - Bihac",
+     "detail": "nivo: zuto | pojava: Fog | vazi: 2026-09-15T22:00Z do 2026-09-16T08:00Z",
+     "region": "Bihac"
     }
    ],
+   0
+  ],
+  "ME": [
+   [],
    0
   ],
   "MK": [
