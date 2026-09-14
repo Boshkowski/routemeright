@@ -22,9 +22,10 @@ jobs:
       - name: Sakupi podatke
         run: python3 tools/collect_road_status.py
       # 14.9.2026: ping je gadjao tabelu `prijave`, koja je RLS-om zatvorena za anon rolu -
-      # i to NAMERNO (app cita kroz pogled `prijave_javno`). Svaki ping je godinu dana vracao
-      # HTTP 401 "permission denied for table prijave", a `|| true` + continue-on-error su to
-      # tiho gutali. Supabase je zbog toga poslao najavu pauziranja zbog neaktivnosti.
+      # i to NAMERNO (app cita kroz pogled `prijave_javno`). Ping je dodat 3.8.2026, ISTOG DANA
+      # kad i RLS sema, pa je bio pogresan od prvog sata: sest nedelja je vracao HTTP 401
+      # "permission denied for table prijave", a `|| true` + continue-on-error su to tiho gutali.
+      # Supabase je 13.9. poslao najavu pauziranja zbog neaktivnosti.
       # Sada se gadja ISTI pogled koji cita i aplikacija, i korak PADA ako ping ne prodje.
       - name: Supabase ping (besplatna baza zaspi posle 7 dana bez saobracaja)
         run: |
