@@ -21,13 +21,22 @@ jobs:
           python-version: "3.12"
       - name: Sakupi podatke
         run: python3 tools/collect_road_status.py
+      # 14.9.2026: ping je gadjao tabelu `prijave`, koja je RLS-om zatvorena za anon rolu -
+      # i to NAMERNO (app cita kroz pogled `prijave_javno`). Svaki ping je godinu dana vracao
+      # HTTP 401 "permission denied for table prijave", a `|| true` + continue-on-error su to
+      # tiho gutali. Supabase je zbog toga poslao najavu pauziranja zbog neaktivnosti.
+      # Sada se gadja ISTI pogled koji cita i aplikacija, i korak PADA ako ping ne prodje.
       - name: Supabase ping (besplatna baza zaspi posle 7 dana bez saobracaja)
         run: |
-          curl -s -o /dev/null --max-time 20 \
-            "https://sankrmswthypvwevzdwz.supabase.co/rest/v1/prijave?select=id&limit=1" \
+          KOD=$(curl -s -o /tmp/ping.out -w "%{http_code}" --max-time 20 \
+            "https://sankrmswthypvwevzdwz.supabase.co/rest/v1/prijave_javno?select=id&limit=1" \
             -H "apikey: sb_publishable_RTYwIJ1CuNB9xCSoMAyWtA_Y89-QXiI" \
-            -H "Authorization: Bearer sb_publishable_RTYwIJ1CuNB9xCSoMAyWtA_Y89-QXiI" || true
-        continue-on-error: true
+            -H "Authorization: Bearer sb_publishable_RTYwIJ1CuNB9xCSoMAyWtA_Y89-QXiI")
+          echo "Supabase ping: HTTP $KOD"
+          if [ "$KOD" != "200" ]; then
+            echo "::error::Supabase ping nije prosao (HTTP $KOD) - baza ce biti pauzirana posle 7 dana."
+            head -c 400 /tmp/ping.out; exit 1
+          fi
       - name: Tesseract OCR (Kosovo objavljuje cene samo kao sliku)
         run: sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr
         continue-on-error: true
