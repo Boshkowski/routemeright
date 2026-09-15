@@ -1,0 +1,362 @@
+/* RouteMeRight - components
+   ============================================================================
+   Built from tokens.css only: no hex, no raw px outside the token scale except
+   1px hairlines. Markup examples for every class live on the brand page.
+
+   Deliberate departures from the Atlas mockup these came from:
+   - hover never lifts a card or a button (translateY removed); it brightens the
+     line instead. Lift-on-hover is a rejected pattern in Filip's taste corpus.
+   - numerals are Coast Light; reading labels and controls are Archivo.
+   ========================================================================== */
+
+/* ---- ground ---------------------------------------------------------------- */
+.rmr {
+  font-family: var(--rmr-font-text);
+  font-weight: var(--rmr-weight-body);
+  font-size: var(--rmr-size-body);
+  line-height: var(--rmr-leading-body);
+  color: var(--rmr-text);
+  background: var(--rmr-bg);
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+.rmr *, .rmr *::before, .rmr *::after { box-sizing: border-box; }
+.rmr :where(button, input, select) { font: inherit; color: inherit; }
+.rmr :where(button) { cursor: pointer; border: 0; background: none; }
+.rmr :where(a) { color: inherit; text-decoration: none; }
+.rmr :where(button, a, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--rmr-focus);
+  outline-offset: var(--rmr-space-1);
+}
+
+/* ---- type roles ------------------------------------------------------------- */
+.rmr-display {
+  margin: 0;
+  font-size: var(--rmr-size-display);
+  font-weight: var(--rmr-weight-display);
+  line-height: var(--rmr-leading-display);
+  letter-spacing: var(--rmr-track-display);
+  text-wrap: balance;
+}
+.rmr-body { font-size: var(--rmr-size-body); line-height: var(--rmr-leading-body); }
+.rmr-note { font-size: var(--rmr-size-body); line-height: 1.55; color: var(--rmr-text-3); margin: 0; }
+.rmr-muted { color: var(--rmr-text-muted); }
+
+/* Reading labels and eyebrows: Archivo, with a real medium weight. */
+.rmr-caption {
+  font-family: var(--rmr-font-label);
+  font-size: var(--rmr-size-caption);
+  font-weight: var(--rmr-weight-label);
+  letter-spacing: var(--rmr-track-caption);
+  line-height: var(--rmr-leading-body);
+  text-transform: uppercase;
+  color: var(--rmr-text-muted);
+}
+.rmr-caption--accent { color: var(--rmr-accent-text); }
+.rmr-caption--ink { color: var(--rmr-text-2); }
+
+/* numerals: Coast with aligned figures */
+.rmr-num {
+  font-family: var(--rmr-font-num);
+  font-weight: var(--rmr-weight-num);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+/* a figure inside a caption keeps the caption's face: Coast Light among Archivo 500 capitals
+   is lighter and shorter than the letters around it, so the number became the faintest word */
+.rmr-caption .rmr-num { font-family: inherit; font-weight: inherit; letter-spacing: inherit; }
+.rmr-num--display { font-size: var(--rmr-size-display); line-height: 1; letter-spacing: -0.02em; }
+
+/* ---- logo: the speed R (primary from 14.9.2026) ------------------------------
+   Symbols #rmr-speed and #rmr-wordmark come from brand/logo/symbols.html. The mark
+   takes currentColor, ME takes --rmr-logo-accent. Proportions are the lockup files':
+   horizontal = wordmark cap 0.32 x mark height, 0.234 apart; stacked = cap 0.235, 0.1175 apart. */
+.rmr-lockup {
+  --rmr-lockup-mark: 32px;
+  --rmr-logo-accent: var(--rmr-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--rmr-lockup-mark) * 0.234);
+  color: var(--rmr-text);
+  line-height: 0;
+}
+.rmr-lockup__mark { flex: none; height: var(--rmr-lockup-mark); width: calc(var(--rmr-lockup-mark) * var(--rmr-mark-ratio)); fill: currentColor; }
+.rmr-lockup__word { flex: none; height: calc(var(--rmr-lockup-mark) * 0.32); width: calc(var(--rmr-lockup-mark) * 0.32 * 6896 / 700); fill: currentColor; }
+.rmr-lockup--stacked { flex-direction: column; gap: calc(var(--rmr-lockup-mark) * 0.1175); }
+.rmr-lockup--stacked .rmr-lockup__word { height: calc(var(--rmr-lockup-mark) * 0.235); width: calc(var(--rmr-lockup-mark) * 0.235 * 6896 / 700); }
+.rmr-lockup--compact { --rmr-lockup-mark: 22px; }
+.rmr-lockup--hero { --rmr-lockup-mark: 96px; }
+
+/* ---- logo: the line R (alternative, the Atlas mockup's mark) --------------------- */
+.rmr-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rmr-space-3);
+  font-family: var(--rmr-font-text);
+  font-size: var(--rmr-size-caption);
+  font-weight: var(--rmr-weight-label);
+  letter-spacing: 0.15em;
+  line-height: 1.2;
+  color: var(--rmr-text);
+  white-space: nowrap;
+}
+/* styled on the <svg>, not the path: a <use>d symbol only inherits from its host */
+.rmr-logo__mark {
+  width: var(--rmr-logo-mark, 30px); height: var(--rmr-logo-mark, 30px); flex: none;
+  fill: none; stroke: var(--rmr-accent); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
+}
+.rmr-logo__accent { color: var(--rmr-accent); }
+.rmr-logo--compact { --rmr-logo-mark: 22px; gap: var(--rmr-space-2); }
+.rmr-logo--hero { --rmr-logo-mark: 56px; gap: var(--rmr-space-5); font-size: var(--rmr-size-body); letter-spacing: 0.15em; }
+
+/* ---- icons ------------------------------------------------------------------ */
+.rmr-icon {
+  width: var(--rmr-icon-md);
+  height: var(--rmr-icon-md);
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--rmr-icon-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rmr-icon--sm { width: var(--rmr-icon-sm); height: var(--rmr-icon-sm); }
+.rmr-icon--lg { width: var(--rmr-icon-lg); height: var(--rmr-icon-lg); stroke-width: 1.1; }
+
+/* ---- surfaces ---------------------------------------------------------------- */
+.rmr-shell {
+  max-width: var(--rmr-shell-max);
+  background: var(--rmr-grad-shell);
+  border: 1px solid var(--rmr-line-strong);
+  border-radius: var(--rmr-radius-shell);
+  box-shadow: var(--rmr-shadow-shell);
+  overflow: hidden;
+}
+.rmr-rule { height: 1px; border: 0; margin: 0; background: var(--rmr-line); }
+
+/* ---- buttons ------------------------------------------------------------------ */
+.rmr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rmr-space-2);
+  min-height: var(--rmr-target);
+  padding: 0 var(--rmr-space-4);
+  border-radius: var(--rmr-radius-md);
+  font-size: var(--rmr-size-body);
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: border-color var(--rmr-dur) var(--rmr-ease-out), filter var(--rmr-dur) var(--rmr-ease-out), color var(--rmr-dur) var(--rmr-ease-out);
+}
+.rmr-btn:active { filter: brightness(0.94); transition-duration: var(--rmr-dur-fast); }
+.rmr-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+/* busy: the label stays readable while it works ("Šaljem"), it just stops taking presses */
+.rmr-btn[aria-busy="true"] { cursor: progress; filter: saturate(0.8); }
+
+/* the one action per view: a lit orange bar, label left, icon right */
+.rmr-btn--primary {
+  justify-content: space-between;
+  gap: var(--rmr-space-4);
+  min-height: 50px;
+  padding: var(--rmr-space-3) var(--rmr-space-4);
+  background: var(--rmr-grad-cta);
+  border: 1px solid var(--rmr-line-selected);
+  color: var(--rmr-on-accent);
+  font-weight: var(--rmr-weight-label);
+  box-shadow: var(--rmr-shadow-cta);
+}
+@media (hover: hover) { .rmr-btn--primary:hover { filter: brightness(1.06); } }
+
+/* glossy control that floats on the map */
+.rmr-btn--control {
+  background: var(--rmr-grad-control);
+  border: 1px solid var(--rmr-line-control);
+  box-shadow: var(--rmr-shadow-control);
+  font-family: var(--rmr-font-label);   /* same reading role as the segmented control */
+  font-size: var(--rmr-size-caption);
+  letter-spacing: var(--rmr-track-caption);
+  text-transform: uppercase;
+  padding: 0 var(--rmr-space-4);
+}
+.rmr-btn--icon {
+  width: var(--rmr-target);
+  padding: 0;
+  background: var(--rmr-grad-icon);
+  border: 1px solid var(--rmr-line-strong);
+}
+.rmr-btn--icon[aria-pressed="true"], .rmr-btn--icon[aria-expanded="true"] { color: var(--rmr-accent-text); border-color: var(--rmr-line-selected); }
+.rmr-btn--ghost { border: 1px solid var(--rmr-line-control); border-radius: var(--rmr-radius-sm); color: var(--rmr-text-muted); padding: 0 var(--rmr-space-6); }
+.rmr-btn--text { color: var(--rmr-text-muted); padding: 0 var(--rmr-space-3); font-family: var(--rmr-font-label); font-size: var(--rmr-size-caption); letter-spacing: var(--rmr-track-caption); text-transform: uppercase; }
+@media (hover: hover) {
+  .rmr-btn--control:hover, .rmr-btn--icon:hover, .rmr-btn--ghost:hover { border-color: var(--rmr-line-hover); }
+  .rmr-btn--text:hover, .rmr-btn--ghost:hover { color: var(--rmr-text); }
+}
+
+/* ---- fields -------------------------------------------------------------------- */
+.rmr-search {
+  display: flex;
+  align-items: center;
+  gap: var(--rmr-space-3);
+  padding: 0 var(--rmr-space-4);
+  background: color-mix(in srgb, var(--rmr-field-sunken) 34%, transparent);
+  border: 1px solid var(--rmr-line-strong);
+  border-radius: var(--rmr-radius-md);
+  box-shadow: var(--rmr-shadow-inset);
+  transition: border-color var(--rmr-dur) var(--rmr-ease-out);
+}
+.rmr-search:focus-within { border-color: var(--rmr-focus); }
+.rmr-search .rmr-icon { color: var(--rmr-text-muted); }
+.rmr-search input { flex: 1; min-width: 0; height: 46px; border: 0; background: transparent; color: var(--rmr-text); font-size: var(--rmr-size-body); outline: none; }
+.rmr-search input::placeholder { color: var(--rmr-text-muted); }
+.rmr-kbd {
+  font-family: var(--rmr-font-label);
+  font-size: var(--rmr-size-caption);
+  color: var(--rmr-text-muted);
+  border: 1px solid var(--rmr-line-strong);
+  border-radius: var(--rmr-radius-xs);
+  padding: 2px 6px;
+  line-height: 1.4;
+}
+.rmr-field { display: grid; gap: var(--rmr-space-2); }
+.rmr-select {
+  width: 100%;
+  min-height: var(--rmr-target);
+  padding: 0 var(--rmr-space-3);
+  background: var(--rmr-field);
+  border: 1px solid var(--rmr-line-control);
+  border-radius: var(--rmr-radius-sm);
+  font-size: var(--rmr-size-body);
+}
+
+/* ---- tabs ------------------------------------------------------------------------- */
+.rmr-tabs { display: flex; gap: var(--rmr-space-6); border-bottom: 1px solid var(--rmr-line); overflow-x: auto; scrollbar-width: thin; }
+.rmr-tabs button {
+  position: relative;
+  flex: none;
+  min-height: 52px;
+  padding: 18px 0 16px;
+  color: var(--rmr-text-muted);
+  font-size: var(--rmr-size-body);
+  white-space: nowrap;
+  transition: color var(--rmr-dur) var(--rmr-ease-out);
+}
+.rmr-tabs button[aria-pressed="true"] { color: var(--rmr-text); }
+.rmr-tabs button[aria-pressed="true"]::after { content: ""; position: absolute; inset: auto 0 0 0; height: 2px; background: var(--rmr-accent); }
+@media (hover: hover) { .rmr-tabs button:hover { color: var(--rmr-text); } }
+
+/* ---- section card (a road in a collection) ------------------------------------------- */
+.rmr-card {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+  border: 1px solid var(--rmr-line);
+  border-radius: var(--rmr-radius-lg);
+  background: var(--rmr-grad-card);
+  overflow: hidden;
+  transition: border-color var(--rmr-dur) var(--rmr-ease-out), background var(--rmr-dur) var(--rmr-ease-out);
+}
+@media (hover: hover) { .rmr-card:hover { border-color: var(--rmr-line-hover); } }
+.rmr-card[aria-pressed="true"] { border-color: var(--rmr-line-selected); background: var(--rmr-grad-selected); }
+.rmr-card__route { position: relative; display: block; height: 92px; border-bottom: 1px solid var(--rmr-line-faint); color: var(--rmr-route-idle); }
+.rmr-card[aria-pressed="true"] .rmr-card__route { color: var(--rmr-accent); }
+.rmr-card__route svg { width: 100%; height: 100%; display: block; }
+.rmr-card__rank { position: absolute; left: var(--rmr-space-4); top: var(--rmr-space-3); }
+.rmr-card__flag { position: absolute; right: var(--rmr-space-3); bottom: var(--rmr-space-2); }
+.rmr-card__body { display: block; padding: var(--rmr-space-4); }
+.rmr-card__title { display: block; margin: var(--rmr-space-2) 0 0; font-size: var(--rmr-size-body); font-weight: var(--rmr-weight-body); line-height: 1.5; min-height: 42px; overflow-wrap: anywhere; }
+.rmr-card__values { display: flex; justify-content: space-between; align-items: baseline; gap: var(--rmr-space-3); margin-top: var(--rmr-space-3); }
+.rmr-card__rating { display: inline-flex; align-items: center; gap: var(--rmr-space-1); color: var(--rmr-rating); }
+.rmr-card__rating .rmr-icon { width: 13px; height: 13px; }
+
+/* ---- metrics ---------------------------------------------------------------------------- */
+.rmr-metrics { display: flex; align-items: center; gap: var(--rmr-space-7); }
+.rmr-distance { display: flex; align-items: baseline; gap: var(--rmr-space-2); }
+.rmr-score { display: flex; align-items: center; gap: var(--rmr-space-2); padding-left: var(--rmr-space-7); border-left: 1px solid var(--rmr-line-strong); }
+.rmr-score .rmr-icon { color: var(--rmr-accent); }
+.rmr-score strong { display: block; font-weight: var(--rmr-weight-body); }
+
+/* three facts about a road: icon, caption, value */
+.rmr-traits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--rmr-space-3); padding: var(--rmr-space-4) 0; border-block: 1px solid var(--rmr-line); }
+.rmr-trait .rmr-icon { display: block; margin-bottom: var(--rmr-space-2); color: var(--rmr-text-3); }
+.rmr-trait:nth-child(2) .rmr-icon { color: var(--rmr-focus); }
+.rmr-trait strong { display: block; margin-top: var(--rmr-space-1); font-weight: var(--rmr-weight-body); line-height: 1.25; }
+
+/* ---- map furniture ------------------------------------------------------------------------ */
+.rmr-marker {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: var(--rmr-radius-pill);
+  font-family: var(--rmr-font-num);
+  font-size: var(--rmr-size-caption);
+  background: var(--rmr-grad-start);
+  color: var(--rmr-on-start);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--rmr-focus) 10%, transparent), var(--rmr-shadow-marker);
+}
+.rmr-marker--end {
+  background: var(--rmr-grad-end);
+  color: var(--rmr-on-accent);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--rmr-accent) 10%, transparent), var(--rmr-shadow-marker);
+}
+.rmr-legend { display: inline-flex; align-items: center; gap: var(--rmr-space-2); }
+.rmr-legend__route { width: 22px; height: 2px; background: var(--rmr-accent); box-shadow: var(--rmr-glow-route); }
+
+/* ---- state ------------------------------------------------------------------------------------
+   Road and weather state is always a colour AND a word; the colour never travels alone. */
+.rmr-state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rmr-space-2);
+  font-family: var(--rmr-font-label);
+  font-size: var(--rmr-size-caption);
+  letter-spacing: var(--rmr-track-caption);
+  text-transform: uppercase;
+  color: var(--rmr-state, var(--rmr-unknown));
+}
+.rmr-state::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: var(--rmr-radius-pill);
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
+}
+.rmr-state--good { --rmr-state: var(--rmr-good); }
+.rmr-state--caution { --rmr-state: var(--rmr-caution); }
+.rmr-state--danger { --rmr-state: var(--rmr-danger); }
+.rmr-state--unknown { --rmr-state: var(--rmr-unknown); }
+
+/* condition strip: one segment per stretch of road, width by share of the route */
+.rmr-strip { display: flex; gap: 2px; height: 6px; }
+.rmr-strip > span { flex: var(--share, 1) 1 0; min-width: 2px; border-radius: 1px; background: var(--rmr-state, var(--rmr-unknown)); }
+
+/* ---- segmented control --------------------------------------------------------------------------- */
+.rmr-segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--rmr-line-strong);
+  border-radius: var(--rmr-radius-md);
+  background: var(--rmr-field-sunken);
+}
+.rmr-segmented button {
+  min-height: calc(var(--rmr-target) - 6px);   /* with the 2px padding and 1px border the control is the full 44px target */
+  padding: 0 var(--rmr-space-3);
+  border-radius: var(--rmr-radius-sm);
+  font-family: var(--rmr-font-label);
+  font-size: var(--rmr-size-caption);
+  letter-spacing: var(--rmr-track-caption);
+  text-transform: uppercase;
+  color: var(--rmr-text-muted);
+  transition: color var(--rmr-dur) var(--rmr-ease-out);
+}
+.rmr-segmented button[aria-pressed="true"] { color: var(--rmr-text); background: var(--rmr-grad-control); box-shadow: var(--rmr-shadow-control); }
+@media (hover: hover) { .rmr-segmented button:hover { color: var(--rmr-text); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rmr *, .rmr *::before, .rmr *::after { transition: none !important; animation: none !important; }
+}

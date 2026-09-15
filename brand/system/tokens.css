@@ -1,0 +1,215 @@
+/* RouteMeRight - brand tokens
+   ============================================================================
+   The ONE place a colour, size, radius, duration or font name is written.
+   components.css and every page built in this style use var(--rmr-*) only.
+
+   Source of the look: docs/atlas-mockup-alt.html (Filip, 5.9.2026), chosen on
+   14.9.2026 as "the style we're going to build things". The light theme and the
+   state colours were added to it on 14.9.2026. Later the same day the palette was
+   warmed to Filip's moodboard (dusk rider, metal speed R, orange road light):
+   "not so blue, but more orange/reddish". Charcoal instead of green-grey graphite,
+   a more saturated orange, silver instead of mint.
+
+   Two layers:
+   - PRIMITIVES (Graphite, Paper, Ink, Accent, State): raw values with a name.
+   - THEME: what components use. Each theme token is light-dark(light, dark),
+     so one line serves both themes. The theme follows the phone; a page can pin
+     it with <html data-theme="light|dark">.
+
+   How to edit:
+   - Change a primitive and everything built on it follows, in both themes: theme, line and
+     material tokens only reference primitives (color-mix for transparency). Shadows on dark
+     are the one exception, plain black.
+   - The brand page (brand/system/index.html) reads THIS file: "@group" lines
+     become its sections and the comment after each token becomes its role.
+     Keep one token per line, comment after the semicolon.
+   - Or tweak live on that page (Edit tokens) and copy the result back here.
+   ========================================================================== */
+
+/* Stopgap until Coast gets heavier dots: its Light cut draws . , : and · at stroke weight, so
+   at small sizes "09:00" reads "09 00" and "72,8" reads "728". Those four characters are left
+   out of the face and fall through to Archivo (next in --rmr-font-cap). Delete the
+   unicode-range line once the font has them. */
+/* Archivo, self-hosted like Coast: variable weight and width, latin + latin-ext (OFL) */
+@font-face{font-family:"Archivo";src:url("../../fonts/Archivo-Variable-latin-ext.woff2") format("woff2");font-weight:100 900;font-stretch:62% 125%;font-style:normal;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Archivo";src:url("../../fonts/Archivo-Variable-latin.woff2") format("woff2");font-weight:100 900;font-stretch:62% 125%;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face {
+  font-family: "ZR Coast";
+  src: url("../../fonts/ZRCoast-Light.woff2") format("woff2");
+  font-weight: 300;   /* the actual Light cut; consumers disable synthetic weight */
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-002B, U+002D, U+002F-0039, U+003B-00B6, U+00B8-FFFF;
+}
+
+:root { color-scheme: light dark; }
+:root[data-theme="dark"] { color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
+
+:root {
+  /* @group Graphite | Dark surfaces, darkest to lightest. Warm charcoal with a faint ember lean. */
+  --rmr-graphite-1000: #0e0c0b; /* Page ground behind the app shell */
+  --rmr-graphite-950: #110e0d; /* Sunken field */
+  --rmr-graphite-900: #171412; /* Form field fill */
+  --rmr-graphite-850: #1a1614; /* Map shade */
+  --rmr-graphite-800: #1d1916; /* Map ground */
+  --rmr-graphite-750: #1f1b18; /* Surface */
+  --rmr-graphite-700: #28231f; /* Shell, lit corner */
+  --rmr-graphite-650: #322b27; /* Card, lit corner */
+  --rmr-graphite-600: #3b342f; /* Icon button, lit corner */
+  --rmr-graphite-500: #463e38; /* Control, lit corner */
+
+  /* @group Paper | Light surfaces, lightest to darkest. The same warm lean, lifted. */
+  --rmr-paper-0: #ffffff; /* Lit edge of a raised control */
+  --rmr-paper-50: #faf8f6; /* Surface */
+  --rmr-paper-100: #f4f1ed; /* Page ground */
+  --rmr-paper-150: #ede8e3; /* Field, map shade */
+  --rmr-paper-200: #e5dfd8; /* Map ground */
+  --rmr-paper-300: #d8d0c8; /* Shaded edge of a raised control */
+
+  /* @group Ink | Text values. The 100-500 steps sit on graphite; the 600-900 steps sit on paper. */
+  --rmr-ink-100: #ece8e4; /* Primary text on dark */
+  --rmr-ink-200: #dbd4ce; /* Strong secondary on dark */
+  --rmr-ink-300: #c2b9b1; /* Long-form note on dark */
+  --rmr-ink-400: #b1a79e; /* Second name in a title, on dark */
+  --rmr-ink-500: #a1978e; /* Muted on dark */
+  --rmr-ink-600: #685d55; /* Muted on light (5.7:1 on paper-100) */
+  --rmr-ink-700: #524840; /* Second name in a title, on light */
+  --rmr-ink-800: #372f2a; /* Long-form note on light */
+  --rmr-ink-850: #27201c; /* Strong secondary on light */
+  --rmr-ink-900: #16110e; /* Primary text on light */
+
+  /* @group Accent | Two voices. Orange is the road and the action; silver is the start and focus. */
+  --rmr-orange-200: #ffd3b5; /* End marker, light edge */
+  --rmr-orange-300: #ffa468; /* Primary action, lit edge */
+  --rmr-orange-400: #ff7a2e; /* Brand accent on dark: route, active tab, selection, logo */
+  --rmr-orange-500: #f46a1f; /* Primary action, body */
+  --rmr-orange-600: #d95617; /* Primary action, shaded edge */
+  --rmr-orange-700: #c24c12; /* Brand accent on light: route, marks, logo (4.3:1 on paper-100) */
+  --rmr-orange-800: #983b0d; /* Accent text on light (6.3:1 on paper-100) */
+  --rmr-orange-ink: #2b1207; /* Text on orange */
+  --rmr-silver-200: #ecebea; /* Start marker, light edge */
+  --rmr-silver-400: #cfccc9; /* Focus and start on dark */
+  --rmr-silver-600: #a9a5a1; /* Start marker, shaded edge */
+  --rmr-silver-800: #57524e; /* Focus and start on light */
+  --rmr-silver-ink: #1c1917; /* Text on silver */
+  --rmr-sand-300: #dfbd97; /* Rating on dark */
+  --rmr-sand-700: #87623a; /* Rating on light */
+  --rmr-sage-300: #bdb3aa; /* Idle route shape on dark */
+  --rmr-sage-600: #857a71; /* Idle route shape on light */
+
+  /* @group State | Road and weather state. Meaning, never decoration: always paired with a word. */
+  --rmr-good-400: #86d98a; /* Good, dry, open - on dark */
+  --rmr-good-700: #1f7a43; /* Good - on light */
+  --rmr-caution-400: #f0c14b; /* Caution, works, wet - on dark */
+  --rmr-caution-700: #855f00; /* Caution - on light */
+  --rmr-danger-400: #ea3d57; /* Storm, closed, danger - on dark (crimson, 30 degrees off the orange accent; 4.6:1 on graphite-900) */
+  --rmr-danger-700: #b3223a; /* Danger - on light (5.8:1 on paper-100) */
+  --rmr-unknown-400: #928a84; /* No data, outside the forecast - on dark */
+  --rmr-unknown-700: #665e58; /* No data - on light (5.6:1 on paper-100) */
+
+  /* @group Theme | What components use. light-dark(light value, dark value). */
+  --rmr-bg: light-dark(var(--rmr-paper-100), var(--rmr-graphite-1000)); /* Page ground */
+  --rmr-surface: light-dark(var(--rmr-paper-50), var(--rmr-graphite-750)); /* Panels and surfaces */
+  --rmr-field: light-dark(var(--rmr-paper-0), var(--rmr-graphite-900)); /* Select and form fields */
+  --rmr-field-sunken: light-dark(var(--rmr-paper-150), var(--rmr-graphite-950)); /* Search field well */
+  --rmr-map: light-dark(var(--rmr-paper-200), var(--rmr-graphite-800)); /* Map ground */
+  --rmr-shade: light-dark(var(--rmr-paper-150), var(--rmr-graphite-850)); /* Panel side of the map */
+  --rmr-text: light-dark(var(--rmr-ink-900), var(--rmr-ink-100)); /* Primary text and numerals */
+  --rmr-text-2: light-dark(var(--rmr-ink-850), var(--rmr-ink-200)); /* Strong secondary: captions that lead */
+  --rmr-text-3: light-dark(var(--rmr-ink-800), var(--rmr-ink-300)); /* Long-form note */
+  --rmr-text-4: light-dark(var(--rmr-ink-700), var(--rmr-ink-400)); /* Second name in a title */
+  --rmr-text-muted: light-dark(var(--rmr-ink-600), var(--rmr-ink-500)); /* Captions, meta, placeholders */
+  --rmr-accent: light-dark(var(--rmr-orange-700), var(--rmr-orange-400)); /* Route line, active tab, selection, logo */
+  --rmr-accent-text: light-dark(var(--rmr-orange-800), var(--rmr-orange-400)); /* Accent used as text */
+  --rmr-focus: light-dark(var(--rmr-silver-800), var(--rmr-silver-400)); /* Focus ring, start, second highlight */
+  --rmr-rating: light-dark(var(--rmr-sand-700), var(--rmr-sand-300)); /* Rating value */
+  --rmr-route-idle: light-dark(var(--rmr-sage-600), var(--rmr-sage-300)); /* Unselected route shape */
+  --rmr-on-accent: var(--rmr-graphite-1000); /* Text on orange actions: >=4.92:1 across the gradient */
+  --rmr-on-start: var(--rmr-silver-ink); /* Text on the start marker */
+  --rmr-good: light-dark(var(--rmr-good-700), var(--rmr-good-400)); /* State: good */
+  --rmr-caution: light-dark(var(--rmr-caution-700), var(--rmr-caution-400)); /* State: caution */
+  --rmr-danger: light-dark(var(--rmr-danger-700), var(--rmr-danger-400)); /* State: danger */
+  --rmr-unknown: light-dark(var(--rmr-unknown-700), var(--rmr-unknown-400)); /* State: no data */
+
+  /* @group Lines | Hairlines carry the structure, not boxes. White on dark, graphite on light. */
+  --rmr-line-faint: light-dark(color-mix(in srgb, var(--rmr-ink-900) 5%, transparent), color-mix(in srgb, var(--rmr-paper-0) 3.5%, transparent)); /* Inside a card, under a route preview */
+  --rmr-line: light-dark(color-mix(in srgb, var(--rmr-ink-900) 10%, transparent), color-mix(in srgb, var(--rmr-paper-0) 8%, transparent)); /* Hairline: section and header dividers */
+  --rmr-line-strong: light-dark(color-mix(in srgb, var(--rmr-ink-900) 15%, transparent), color-mix(in srgb, var(--rmr-paper-0) 13%, transparent)); /* Field and control border */
+  --rmr-line-control: light-dark(color-mix(in srgb, var(--rmr-ink-900) 17%, transparent), color-mix(in srgb, var(--rmr-paper-0) 15%, transparent)); /* Glossy control border */
+  --rmr-line-hover: light-dark(color-mix(in srgb, var(--rmr-ink-900) 34%, transparent), color-mix(in srgb, var(--rmr-paper-0) 33%, transparent)); /* Hover on any bordered control */
+  --rmr-line-selected: light-dark(color-mix(in srgb, var(--rmr-orange-700) 55%, transparent), color-mix(in srgb, var(--rmr-orange-400) 55%, transparent)); /* Selected card border */
+
+  /* @group Type | Archivo carries reading labels. ZR Coast carries numbers; one real Light cut. */
+  --rmr-font-text: "Archivo", system-ui, sans-serif; /* Titles, body, buttons */
+  --rmr-font-num: "ZR Coast", "Archivo", "Archivo Variable", ui-monospace, monospace; /* Numerals and display data */
+  --rmr-font-label: var(--rmr-font-text); /* Reading labels, captions and controls */
+  --rmr-font-cap: var(--rmr-font-num); /* Legacy alias for numeric consumers */
+  --rmr-weight-num: 300; /* Actual Coast Light weight; no synthetic bold */
+  --rmr-size-caption: 12px; /* Reading labels and eyebrows (Archivo 500, uppercase) */
+  --rmr-size-body: 14px; /* Body, buttons, card titles */
+  --rmr-size-display: 32px; /* Screen titles and display numerals */
+  --rmr-weight-display: 300; /* Titles */
+  --rmr-weight-body: 400; /* Body */
+  --rmr-weight-label: 500; /* Buttons, wordmark */
+  --rmr-track-caption: 0.1em; /* Caption letter-spacing */
+  --rmr-track-display: -0.035em; /* Title letter-spacing */
+  --rmr-leading-display: 1.18; /* Title line-height */
+  --rmr-leading-body: 1.5; /* Body line-height */
+
+  /* @group Space | One scale; the container owns the gap. */
+  --rmr-space-1: 4px; /* Hairline offsets */
+  --rmr-space-2: 8px; /* Inside a group */
+  --rmr-space-3: 12px; /* Between peers in a row */
+  --rmr-space-4: 16px; /* Card padding, compact */
+  --rmr-space-5: 20px; /* Mobile gutter */
+  --rmr-space-6: 24px; /* Between groups */
+  --rmr-space-7: 28px; /* Panel padding */
+  --rmr-space-8: 36px; /* Shell gutter, desktop */
+  --rmr-space-9: 48px; /* Between sections */
+  --rmr-space-10: 72px; /* Between chapters */
+
+  /* @group Radius | Soft machined corners. One family per view. */
+  --rmr-radius-xs: 3px; /* Key hint */
+  --rmr-radius-sm: 6px; /* Select, ghost button */
+  --rmr-radius-md: 8px; /* Controls, fields, primary action */
+  --rmr-radius-lg: 10px; /* Cards */
+  --rmr-radius-shell: 26px; /* App shell */
+  --rmr-radius-pill: 999px; /* Markers, state dots, pills */
+
+  /* @group Light | Materials. Surfaces are lit from the top-left; shadows sit low. */
+  --rmr-grad-shell: linear-gradient(140deg, light-dark(var(--rmr-paper-0), var(--rmr-graphite-700)), light-dark(var(--rmr-paper-100), var(--rmr-graphite-950)) 38%, light-dark(var(--rmr-paper-50), var(--rmr-graphite-900))); /* App shell */
+  --rmr-grad-header: linear-gradient(125deg, light-dark(color-mix(in srgb, var(--rmr-paper-0) 70%, transparent), color-mix(in srgb, var(--rmr-graphite-500) 19%, transparent)), transparent 65%); /* Header sheen */
+  --rmr-grad-control: linear-gradient(150deg, light-dark(var(--rmr-paper-0), color-mix(in srgb, var(--rmr-graphite-500) 95%, transparent)), light-dark(var(--rmr-paper-150), color-mix(in srgb, var(--rmr-graphite-750) 96%, transparent))); /* Glossy map control */
+  --rmr-grad-icon: linear-gradient(135deg, light-dark(var(--rmr-paper-0), var(--rmr-graphite-600)), light-dark(var(--rmr-paper-150), var(--rmr-graphite-750))); /* Icon button */
+  --rmr-grad-card: linear-gradient(130deg, light-dark(color-mix(in srgb, var(--rmr-paper-0) 90%, transparent), color-mix(in srgb, var(--rmr-graphite-650) 50%, transparent)), light-dark(color-mix(in srgb, var(--rmr-paper-100) 90%, transparent), color-mix(in srgb, var(--rmr-graphite-850) 50%, transparent))); /* Card */
+  --rmr-grad-selected: linear-gradient(140deg, light-dark(color-mix(in srgb, color-mix(in srgb, var(--rmr-orange-200) 45%, var(--rmr-paper-0)) 95%, transparent), color-mix(in srgb, color-mix(in srgb, var(--rmr-orange-500) 22%, var(--rmr-graphite-650)) 44%, transparent)), light-dark(color-mix(in srgb, var(--rmr-paper-50) 95%, transparent), color-mix(in srgb, var(--rmr-graphite-700) 38%, transparent))); /* Selected card */
+  --rmr-grad-cta: linear-gradient(120deg, var(--rmr-orange-300), var(--rmr-orange-500) 65%, var(--rmr-orange-600)); /* Primary action, same in both themes */
+  --rmr-grad-start: linear-gradient(140deg, var(--rmr-silver-200), var(--rmr-silver-600)); /* Start marker */
+  --rmr-grad-end: linear-gradient(140deg, var(--rmr-orange-200), var(--rmr-orange-500)); /* End marker */
+  --rmr-grad-map-shade: linear-gradient(90deg, var(--rmr-shade) 2%, color-mix(in srgb, var(--rmr-shade) 98%, transparent) 20%, color-mix(in srgb, var(--rmr-shade) 79%, transparent) 29%, color-mix(in srgb, var(--rmr-shade) 31%, transparent) 43%, transparent 62%); /* Panel over map */
+  --rmr-shadow-shell: 0 28px 70px light-dark(color-mix(in srgb, var(--rmr-ink-900) 10%, transparent), rgb(0 0 0 / 0.35)), inset 0 1px 0 light-dark(color-mix(in srgb, var(--rmr-paper-0) 90%, transparent), color-mix(in srgb, var(--rmr-paper-0) 4%, transparent)); /* Shell */
+  --rmr-shadow-control: 0 4px 12px light-dark(color-mix(in srgb, var(--rmr-ink-900) 10%, transparent), rgb(0 0 0 / 0.35)), inset 0 1px 0 light-dark(color-mix(in srgb, var(--rmr-paper-0) 90%, transparent), color-mix(in srgb, var(--rmr-paper-0) 5%, transparent)); /* Control */
+  --rmr-shadow-cta: 0 4px 16px light-dark(color-mix(in srgb, var(--rmr-orange-800) 20%, transparent), rgb(0 0 0 / 0.22)), inset 0 1px 0 color-mix(in srgb, var(--rmr-paper-0) 47%, transparent); /* Primary action */
+  --rmr-shadow-marker: 0 3px 12px light-dark(color-mix(in srgb, var(--rmr-ink-900) 22%, transparent), rgb(0 0 0 / 0.55)); /* Map marker, lifted off the map */
+  --rmr-shadow-inset: inset 0 1px 5px light-dark(color-mix(in srgb, var(--rmr-ink-900) 8%, transparent), rgb(0 0 0 / 0.13)); /* Sunken field */
+  --rmr-glow-route: 0 0 6px light-dark(color-mix(in srgb, var(--rmr-orange-700) 30%, transparent), color-mix(in srgb, var(--rmr-orange-400) 32%, transparent)); /* Route key in a legend */
+
+  /* @group Icon | Line icons on a 24 grid. */
+  --rmr-icon-stroke: 1.35; /* Stroke width at 24px */
+  --rmr-icon-sm: 18px; /* In controls */
+  --rmr-icon-md: 24px; /* Default */
+  --rmr-icon-lg: 32px; /* Section marks and traits */
+
+  /* @group Motion | Short and quiet. Nothing lifts or bounces. */
+  --rmr-ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* Enters, state changes */
+  --rmr-dur-fast: 120ms; /* Press */
+  --rmr-dur: 200ms; /* Hover, selection */
+  --rmr-dur-slow: 500ms; /* Map and media fade-in */
+
+  /* @group Layout | Frame and touch. */
+  --rmr-shell-max: 1420px; /* App shell width */
+  --rmr-panel-width: 414px; /* Selection panel over the map */
+  --rmr-target: 44px; /* Minimum touch target */
+  --rmr-mark-ratio: calc(840 / 520); /* Speed R width over height (brand/logo build; v3, 14.9.2026) */
+}

@@ -1,0 +1,62 @@
+/* RouteMeRight - pravne strane (privatnost, uslovi, impresum) u Atlas identitetu (15.9.2026).
+   Boje, pisma, razmaci i radijusi dolaze ISKLJUCIVO iz brand/system/tokens.css (+ komponente iz
+   brand/system/components.css, ucitane pre ovog fajla). Ovde je samo raspored za dug tekst.
+   Tema prati telefon (light-dark), kao aplikacija. Tekst strana ovaj fajl ne dira.
+   Legal pages in the Atlas identity: tokens and components from brand/system, layout only here. */
+html { color-scheme: light dark; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body.pravno { margin: 0; min-height: 100vh; -webkit-text-size-adjust: 100%; font-size: 16px; line-height: 1.6;
+  padding: 0 0 calc(var(--rmr-space-9) + env(safe-area-inset-bottom)); }
+.pv-symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* vrh: lockup levo, ostale dve pravne strane desno; lepi se uz vrh kao na brend strani */
+.pv-top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: var(--rmr-space-4);
+  padding: calc(var(--rmr-space-3) + env(safe-area-inset-top)) max(var(--rmr-space-5), 3.4vw) var(--rmr-space-3);
+  background: color-mix(in srgb, var(--rmr-bg) 88%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--rmr-line); }
+.pv-top .rmr-lockup { --rmr-lockup-mark: 26px; text-decoration: none; min-height: var(--rmr-target); }
+.pv-links { display: flex; gap: var(--rmr-space-5); flex-wrap: wrap; align-items: center; }
+.pv-links a { display: inline-flex; align-items: center; min-height: var(--rmr-target); font-family: var(--rmr-font-label); font-size: var(--rmr-size-caption);
+  font-weight: var(--rmr-weight-label); letter-spacing: var(--rmr-track-caption); text-transform: uppercase; color: var(--rmr-text-muted); text-decoration: none; }
+.pv-links a[aria-current="page"] { color: var(--rmr-text); }
+
+.wrap { max-width: 720px; margin: 0 auto; padding: var(--rmr-space-8) var(--rmr-space-5) 0; }
+h1 { font-family: var(--rmr-font-text); font-size: clamp(30px, 5vw, 44px); font-weight: var(--rmr-weight-display); line-height: var(--rmr-leading-display);
+  letter-spacing: var(--rmr-track-display); margin: var(--rmr-space-4) 0 var(--rmr-space-2); color: var(--rmr-text); text-wrap: balance; }
+.dt { font-family: var(--rmr-font-label); font-size: var(--rmr-size-caption); font-weight: var(--rmr-weight-label); letter-spacing: var(--rmr-track-caption);
+  text-transform: uppercase; color: var(--rmr-text-muted); margin-bottom: var(--rmr-space-7); }
+h2 { font-size: clamp(20px, 3vw, 24px); font-weight: 400; letter-spacing: -0.02em; line-height: 1.25; margin: var(--rmr-space-9) 0 var(--rmr-space-3);
+  padding-top: var(--rmr-space-4); border-top: 1px solid var(--rmr-line); color: var(--rmr-text); }
+h3 { font-size: 17px; font-weight: 500; margin: var(--rmr-space-6) 0 var(--rmr-space-2); color: var(--rmr-text); }
+p, li { color: var(--rmr-text-3); }
+li { margin-bottom: var(--rmr-space-2); }
+ul { padding-left: 20px; }
+b { color: var(--rmr-text); font-weight: 600; }
+a { color: var(--rmr-accent-text); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rmr-line-hover); }
+
+/* okviri: kartica iz sistema; "vazno" i "dobro" nose boju stanja na levoj ivici i u natpisu, ne kao poplavu boje */
+.box { border: 1px solid var(--rmr-line); border-radius: var(--rmr-radius-lg); background: var(--rmr-grad-card); box-shadow: var(--rmr-shadow-control);
+  padding: var(--rmr-space-4) var(--rmr-space-5); margin: var(--rmr-space-6) 0; }
+.box p:last-child { margin-bottom: 0; }
+.box.vazno { border-left: 3px solid var(--rmr-danger); }
+.box.dobro { border-left: 3px solid var(--rmr-good); }
+.kick { font-family: var(--rmr-font-label); font-size: var(--rmr-size-caption); font-weight: var(--rmr-weight-label); letter-spacing: var(--rmr-track-caption);
+  text-transform: uppercase; color: var(--rmr-accent-text); margin-bottom: var(--rmr-space-2); }
+.box.vazno .kick { color: var(--rmr-danger); }
+.box.dobro .kick { color: var(--rmr-good); }
+
+table { width: 100%; border-collapse: collapse; margin: var(--rmr-space-4) 0; font-size: 15px; }
+th, td { text-align: left; padding: var(--rmr-space-3); border-bottom: 1px solid var(--rmr-line); vertical-align: top; }
+th { color: var(--rmr-text); font-weight: 500; }
+td { color: var(--rmr-text-3); }
+.todo { color: var(--rmr-caution); font-weight: 500; }
+
+.wrap > footer { margin-top: var(--rmr-space-10); padding-top: var(--rmr-space-5); border-top: 1px solid var(--rmr-line); font-size: 14px; }
+.wrap > footer p { color: var(--rmr-text-muted); }
+.wrap > footer .pv-links { margin: var(--rmr-space-3) 0; }
+.nazad { display: inline-flex; align-items: center; justify-content: center; min-height: var(--rmr-target); margin-top: var(--rmr-space-3); padding: 0 var(--rmr-space-6);
+  border: 1px solid var(--rmr-line-control); border-radius: var(--rmr-radius-sm); color: var(--rmr-text-2); text-decoration: none;
+  font-family: var(--rmr-font-label); font-size: var(--rmr-size-caption); font-weight: var(--rmr-weight-label); letter-spacing: var(--rmr-track-caption); text-transform: uppercase; }
+@media (hover: hover) { .pv-links a:hover, .nazad:hover { color: var(--rmr-text); } .nazad:hover { border-color: var(--rmr-line-hover); } }
+/* uzak ekran: tri linka + lockup ne staju u jedan red, a isti linkovi stoje u podnozju - gore ostaje samo lockup */
+@media (max-width: 560px) { .pv-top .pv-links { display: none; } .wrap { padding-top: var(--rmr-space-6); } }
