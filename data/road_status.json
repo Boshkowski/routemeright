@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-15T21:17+00:00",
+ "updated": "2026-09-16T00:16+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -8,21 +8,15 @@
    "items": [
     {
      "type": "Delo",
-     "title": "A2-E70, Ljubljana - Obrežje: Delo",
-     "detail": "A2, Ljubljana - Obrežje, uvoz Šmarje Sap - uvoz Grosuplje vzhod v smeri Novega mesta, dela, pomična zapora prehitevalnega pasu.",
-     "region": "A2-E70, Ljubljana - Obrežje"
+     "title": "A2-E61, Karavanke - Ljubljana: Delo",
+     "detail": "A2, Karavanke - Ljubljana, priključek Vodice - priključek Ljubljana, Šentvid v smeri Ljubljane, dela, zaprt vozni pas.",
+     "region": "A2-E61, Karavanke - Ljubljana"
     },
     {
      "type": "Delo",
      "title": "A1-E61, E70, Koper - Ljubljana: Delo",
      "detail": "A1, Koper - Ljubljana, priključek Unec - priključek Logatec v smeri Ljubljane, dela, pomična zapora prehitevalnega pasu.",
      "region": "A1-E61, E70, Koper - Ljubljana"
-    },
-    {
-     "type": "Delo",
-     "title": "A2-E70, Ljubljana - Obrežje: Delo",
-     "detail": "A2, Ljubljana - Obrežje, priključek Grosuplje vzhod - priključek Višnja Gora v smeri Novega mesta, dela, zaprt prehitevalni pas.",
-     "region": "A2-E70, Ljubljana - Obrežje"
     },
     {
      "type": "Delo",
@@ -245,22 +239,29 @@
      "title": "R3-638, Žirovnica - Begunje: Delo",
      "detail": "R3-638, Žirovnica - Begunje, v Doslovčah, izmenično enosmerni promet, ureditve avtobusnega postajališča, do 23. 9. 2026.",
      "region": "R3-638, Žirovnica - Begunje"
+    },
+    {
+     "type": "Delo",
+     "title": "RT-912, Zali Log - Davča: Delo",
+     "detail": "RT-912, Zali log - Davča - Novaki, pri Davči, na treh odsekih, izmenično enosmerni promet, sanacije usada in brežin, do 29. 11. 2026.",
+     "region": "RT-912, Zali Log - Davča"
     }
    ],
-   "odseceno": 131,
-   "fetched": "2026-09-15T21:17+00:00"
+   "odseceno": 129,
+   "fetched": "2026-09-16T00:16+00:00"
   },
   "HR": {
    "name": "Hrvatska",
    "source": "HAK",
    "ok": true,
    "items": [],
-   "fetched": "2026-09-15T21:17+00:00",
+   "fetched": "2026-09-16T00:16+00:00",
    "nepotpuno": [
     "stanje-na-autocestama",
     "ceste-zatvorene-zbog-radova",
     "privremena-prometna-regulacija",
-    "dogadaji-na-cestama-ostalo"
+    "dogadaji-na-cestama-ostalo",
+    "granicni-prijelazi-stanje"
    ]
   },
   "RS": {
@@ -510,7 +511,7 @@
     }
    ],
    "odseceno": 104,
-   "fetched": "2026-09-15T21:17+00:00"
+   "fetched": "2026-09-16T00:16+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -758,8 +759,8 @@
      "region": "Granični prijelazi"
     }
    ],
-   "odseceno": 29,
-   "fetched": "2026-09-15T21:17+00:00"
+   "odseceno": 30,
+   "fetched": "2026-09-16T00:16+00:00"
   },
   "ME": {
    "name": "Crna Gora",
@@ -821,7 +822,7 @@
      "region": "Crna Gora"
     }
    ],
-   "fetched": "2026-09-15T21:17+00:00"
+   "fetched": "2026-09-16T00:16+00:00"
   },
   "MK": {
    "name": "S. Makedonija",
@@ -913,7 +914,7 @@
      "region": "Прилеп – Битола"
     }
    ],
-   "fetched": "2026-09-15T21:17+00:00"
+   "fetched": "2026-09-16T00:16+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -981,7 +982,7 @@
      "region": "Fier–Kthesa"
     }
    ],
-   "fetched": "2026-09-15T21:17+00:00"
+   "fetched": "2026-09-16T00:16+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -1306,7 +1307,7 @@
     }
    ],
    "odseceno": 367,
-   "fetched": "2026-09-15T21:17+00:00"
+   "fetched": "2026-09-16T00:16+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -1494,20 +1495,125 @@
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-09-15T21:17+00:00"
+   "fetched": "2026-09-16T00:16+00:00"
   }
  },
  "meteo": {
   "RS": [
-   [],
+   [
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow High-temperature Warning issued for Serbia - Southeastern Serbia",
+     "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-09-16T22:00Z do 2026-09-17T21:59Z",
+     "region": "Southeastern Serbia"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow High-temperature Warning issued for Serbia - Eastern Serbia",
+     "detail": "nivo: zuto | pojava: High temperature | vazi: 2026-09-16T22:00Z do 2026-09-17T21:59Z",
+     "region": "Eastern Serbia"
+    }
+   ],
    0
   ],
   "HR": [
-   [],
+   [
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Croatia - Rijeka region",
+     "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-09-17T07:00Z do 2026-09-17T21:59Z",
+     "region": "Rijeka region"
+    }
+   ],
    0
   ],
   "SI": [
-   [],
+   [
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / Sea",
+     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-16T23:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / Sea"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / Central",
+     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-17T06:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / Central"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / South-West",
+     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-16T23:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / South-West"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Rain Warning issued for Slovenia - Slovenia / South-West",
+     "detail": "nivo: zuto | pojava: Moderate Rain | vazi: 2026-09-16T23:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / South-West"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Rain Warning issued for Slovenia - Slovenia / North-West",
+     "detail": "nivo: zuto | pojava: Moderate Rain | vazi: 2026-09-16T23:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / North-West"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / South-East",
+     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-17T06:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / South-East"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / North-West",
+     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-16T23:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / North-West"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / Sea",
+     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-16T23:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / Sea"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / South-East",
+     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-17T06:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / South-East"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / Central",
+     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-17T02:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / Central"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / South-West",
+     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-16T23:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / South-West"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Rain Warning issued for Slovenia - Slovenia / South-West",
+     "detail": "nivo: zuto | pojava: Moderate Rain | vazi: 2026-09-16T23:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / South-West"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Thunderstorm Warning issued for Slovenia - Slovenia / North-West",
+     "detail": "nivo: zuto | pojava: Moderate Thunderstorms | vazi: 2026-09-16T23:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / North-West"
+    },
+    {
+     "type": "meteo-upozorenje",
+     "title": "Yellow Rain Warning issued for Slovenia - Slovenia / North-West",
+     "detail": "nivo: zuto | pojava: Moderate Rain | vazi: 2026-09-16T23:00Z do 2026-09-17T21:59Z",
+     "region": "Slovenia / North-West"
+    }
+   ],
    0
   ],
   "BA": [
@@ -1538,50 +1644,7 @@
    0
   ],
   "MK": [
-   [
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Thunderstorm Warning issued for Republic of North Macedonia - Southeastern region",
-     "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-09-15T09:17Z do 2026-09-15T21:59Z",
-     "region": "Southeastern region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Thunderstorm Warning issued for Republic of North Macedonia - Pelagonia region",
-     "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-09-15T10:03Z do 2026-09-15T21:59Z",
-     "region": "Pelagonia region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Thunderstorm Warning issued for Republic of North Macedonia - Northeastern region",
-     "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-09-15T10:03Z do 2026-09-15T21:59Z",
-     "region": "Northeastern region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Thunderstorm Warning issued for Republic of North Macedonia - Southwestern region",
-     "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-09-15T10:03Z do 2026-09-15T21:59Z",
-     "region": "Southwestern region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Thunderstorm Warning issued for Republic of North Macedonia - Skopje region",
-     "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-09-15T10:03Z do 2026-09-15T21:59Z",
-     "region": "Skopje region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Thunderstorm Warning issued for Republic of North Macedonia - Polog region",
-     "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-09-15T10:03Z do 2026-09-15T21:59Z",
-     "region": "Polog region"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Thunderstorm Warning issued for Republic of North Macedonia - Vardar region",
-     "detail": "nivo: zuto | pojava: Thunderstorm | vazi: 2026-09-15T10:03Z do 2026-09-15T21:59Z",
-     "region": "Vardar region"
-    }
-   ],
+   [],
    0
   ],
   "BG": [
@@ -1594,24 +1657,6 @@
   ],
   "GR": [
    [
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Rain Warning issued for Greece - Kriti",
-     "detail": "nivo: zuto | pojava: Moderate Rain | vazi: 2026-09-15T10:00Z do 2026-09-15T23:59Z",
-     "region": "Kriti"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Thunderstorm Warning issued for Greece - Kriti",
-     "detail": "nivo: zuto | pojava: Moderate Thunderstorm | vazi: 2026-09-15T10:00Z do 2026-09-15T23:59Z",
-     "region": "Kriti"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Rain Warning issued for Greece - Ionion Islands",
-     "detail": "nivo: zuto | pojava: Moderate Rain | vazi: 2026-09-15T05:00Z do 2026-09-15T23:59Z",
-     "region": "Ionion Islands"
-    },
     {
      "type": "meteo-upozorenje",
      "title": "Green Rain Warning issued for Greece - Kriti",
@@ -1646,45 +1691,5 @@
    0
   ]
  },
- "borders": [
-  {
-   "prelaz": "Gornji Varoš",
-   "zemlja": "HR",
-   "ulaz_auto": "-",
-   "izlaz_auto": "do 30 min.",
-   "ulaz_teretno": "1 h",
-   "izlaz_teretno": "-",
-   "ocitano": "15.9.2026. 21:22:38",
-   "lat": 45.16319,
-   "lon": 17.20499,
-   "izvor": "HAK/MUP-HR",
-   "za": "putnicka vozila"
-  },
-  {
-   "prelaz": "Slavonski Brod",
-   "zemlja": "HR",
-   "ulaz_auto": "-",
-   "izlaz_auto": "-",
-   "ulaz_teretno": "1 h",
-   "izlaz_teretno": "-",
-   "ocitano": "15.09.2026 21:11:53",
-   "lat": 45.156888,
-   "lon": 18.002278,
-   "izvor": "HAK/MUP-HR",
-   "za": "putnicka vozila"
-  },
-  {
-   "prelaz": "Tovarnik",
-   "zemlja": "HR",
-   "ulaz_auto": "-",
-   "izlaz_auto": "-",
-   "ulaz_teretno": "Višesatna čekanja",
-   "izlaz_teretno": "-",
-   "ocitano": "15.9.2026. 22:34:24",
-   "lat": 45.157234,
-   "lon": 19.170414,
-   "izvor": "HAK/MUP-HR",
-   "za": "putnicka vozila"
-  }
- ]
+ "borders": []
 }
