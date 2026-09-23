@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-22T22:05+00:00",
+ "updated": "2026-09-23T00:29+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -7,15 +7,9 @@
    "ok": true,
    "items": [
     {
-     "type": "Delo",
-     "title": "A1-E61, E70, Ljubljana - Koper: Delo",
-     "detail": "A1, Ljubljana - Koper, počivališče Studenec - priključek Senožeče v smeri Kopra, dela, pomična zapora prehitevalnega pasu.",
-     "region": "A1-E61, E70, Ljubljana - Koper"
-    },
-    {
-     "type": "Delo",
-     "title": "A2-E70, Ljubljana - Obrežje: Delo",
-     "detail": "A2, Ljubljana - Obrežje, priključek Grosuplje vzhod - priključek Višnja Gora v smeri Novega mesta, dela, zaprt prehitevalni pas.",
+     "type": "Ovire",
+     "title": "A2-E70, Ljubljana - Obrežje: Ovire",
+     "detail": "A2, Ljubljana - Obrežje, pred priključkom Novo mesto zahod v smeri Obrežja, predmet na vozišču, oviran promet.",
      "region": "A2-E70, Ljubljana - Obrežje"
     },
     {
@@ -245,16 +239,38 @@
      "title": "A1-E57, Maribor - Ljubljana: Delo",
      "detail": "A1, Maribor - Ljubljana, priključek Sl. Bistrica sever - priključek Sl. Bistrica jug v smeri Ljubljane, dela, promet poteka po dveh zoženih pasovih, do 30. 9. 2026.",
      "region": "A1-E57, Maribor - Ljubljana"
+    },
+    {
+     "type": "Delo",
+     "title": "A2-E70, Obrežje - Ljubljana: Delo",
+     "detail": "A2, Obrežje - Ljubljana, uvoz Ivančna Gorica v smeri Ljubljane, dela, popolna zapora.",
+     "region": "A2-E70, Obrežje - Ljubljana"
     }
    ],
-   "odseceno": 131,
-   "fetched": "2026-09-22T22:05+00:00"
+   "odseceno": 130,
+   "fetched": "2026-09-23T00:29+00:00"
   },
   "HR": {
    "name": "Hrvatska",
    "source": "HAK",
    "ok": true,
    "items": [
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A1 na 238+400 km između tunela Čelinka i PUO Jasenice u smjeru Dubrovnika. Zbog oštećenja odbojne ograde promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 44.24108,
+     "lon": 15.58287
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Vozilo u kvaru (teretno vozilo) na autocesti A1 na 213+150 km na kolniku u smjeru Dubrovnika. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 44.3653,
+     "lon": 15.63809
+    },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
@@ -692,22 +708,6 @@
        44.17005
       ]
      ]
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A1 na 238+400 km između tunela Čelinka i PUO Jasenice u smjeru Dubrovnika. Zbog oštećenja odbojne ograde promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A1",
-     "lat": 44.24108,
-     "lon": 15.58287
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (teretno vozilo) na autocesti A1 na 213+150 km na kolniku u smjeru Dubrovnika. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
-     "region": "A1",
-     "lat": 44.3653,
-     "lon": 15.63809
     },
     {
      "type": "guzva/dogadjaj (Radovi)",
@@ -1714,14 +1714,6 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3",
-     "lat": 45.1669,
-     "lon": 17.67695
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
      "detail": "Zbog oštećenja opreme na kolniku autoceste A3, na kraku 11 čvora Kosnica (kolnik u smjeru Bregane/Radničke ceste), promet se odvija uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3",
      "lat": 45.76423,
@@ -2284,6 +2276,14 @@
        45.28015
       ]
      ]
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3",
+     "lat": 45.1669,
+     "lon": 17.67695
     },
     {
      "type": "guzva/dogadjaj (Radovi)",
@@ -4813,7 +4813,10 @@
     }
    ],
    "odseceno": 132,
-   "fetched": "2026-09-22T22:05+00:00"
+   "fetched": "2026-09-23T00:29+00:00",
+   "nepotpuno": [
+    "granicni-prijelazi-stanje"
+   ]
   },
   "RS": {
    "name": "Srbija",
@@ -5062,7 +5065,7 @@
     }
    ],
    "odseceno": 98,
-   "fetched": "2026-09-22T22:05+00:00"
+   "fetched": "2026-09-23T00:29+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -5311,7 +5314,7 @@
     }
    ],
    "odseceno": 34,
-   "fetched": "2026-09-22T22:05+00:00"
+   "fetched": "2026-09-23T00:29+00:00"
   },
   "ME": {
    "name": "Crna Gora",
@@ -5373,7 +5376,7 @@
      "region": "Crna Gora"
     }
    ],
-   "fetched": "2026-09-22T22:05+00:00"
+   "fetched": "2026-09-23T00:29+00:00"
   },
   "MK": {
    "name": "S. Makedonija",
@@ -5465,12 +5468,12 @@
      "region": "Прилеп – Битола"
     }
    ],
-   "fetched": "2026-09-22T22:05+00:00"
+   "fetched": "2026-09-23T00:29+00:00"
   },
   "AL": {
    "name": "Albanija",
    "source": "ARRSH",
-   "ok": true,
+   "ok": false,
    "items": [
     {
      "type": "roadwork",
@@ -5533,6 +5536,8 @@
      "region": "Sarandës"
     }
    ],
+   "error": "<urlopen error timed out>",
+   "stale": true,
    "fetched": "2026-09-22T22:05+00:00"
   },
   "BG": {
@@ -5858,7 +5863,7 @@
     }
    ],
    "odseceno": 367,
-   "fetched": "2026-09-22T22:05+00:00"
+   "fetched": "2026-09-23T00:29+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -6046,7 +6051,7 @@
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-09-22T22:05+00:00"
+   "fetched": "2026-09-23T00:29+00:00"
   }
  },
  "meteo": {
@@ -6308,93 +6313,10 @@
      "title": "Orange Thunderstorm Warning issued for Greece - East Sterea &amp; Evvoia",
      "detail": "nivo: narandzasto | pojava: Severe Thunderstorm | vazi: 2026-09-23T00:00Z do 2026-09-23T06:00Z",
      "region": "East Sterea &amp; Evvoia"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Thunderstorm Warning issued for Greece - East Peloponnisos",
-     "detail": "nivo: zuto | pojava: Moderate Thunderstorm | vazi: 2026-09-22T00:00Z do 2026-09-23T00:00Z",
-     "region": "East Peloponnisos"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Orange Rain Warning issued for Greece - East Peloponnisos",
-     "detail": "nivo: narandzasto | pojava: Orange Warning | vazi: 2026-09-22T09:00Z do 2026-09-23T00:00Z",
-     "region": "East Peloponnisos"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Rain Warning issued for Greece - West Sterea",
-     "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-09-22T03:00Z do 2026-09-23T00:00Z",
-     "region": "West Sterea"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Rain Warning issued for Greece - Epirus",
-     "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-09-22T00:00Z do 2026-09-23T00:00Z",
-     "region": "Epirus"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Rain Warning issued for Greece - North East Aegean Islands",
-     "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-09-22T00:00Z do 2026-09-23T00:00Z",
-     "region": "North East Aegean Islands"
     }
    ],
    0
   ]
  },
- "borders": [
-  {
-   "prelaz": "Bajakovo",
-   "zemlja": "HR",
-   "ulaz_auto": "-",
-   "izlaz_auto": "do 30 min.",
-   "ulaz_teretno": "5 h",
-   "izlaz_teretno": "-",
-   "ocitano": "22.9.2026. 21:09:01",
-   "lat": 45.05,
-   "lon": 19.1,
-   "izvor": "HAK/MUP-HR",
-   "za": "putnicka vozila"
-  },
-  {
-   "prelaz": "Tovarnik",
-   "zemlja": "HR",
-   "ulaz_auto": "-",
-   "izlaz_auto": "-",
-   "ulaz_teretno": "Višesatna čekanja",
-   "izlaz_teretno": "2 h",
-   "ocitano": "22.09.2026 21:26:20",
-   "lat": 45.157234,
-   "lon": 19.170414,
-   "izvor": "HAK/MUP-HR",
-   "za": "putnicka vozila"
-  },
-  {
-   "prelaz": "Batina",
-   "zemlja": "HR",
-   "ulaz_auto": "-",
-   "izlaz_auto": "-",
-   "ulaz_teretno": "2 h",
-   "izlaz_teretno": "-",
-   "ocitano": "22.9.2026. 22:29:52",
-   "lat": 45.84,
-   "lon": 18.85,
-   "izvor": "HAK/MUP-HR",
-   "za": "putnicka vozila"
-  },
-  {
-   "prelaz": "Svilaj",
-   "zemlja": "HR",
-   "ulaz_auto": "-",
-   "izlaz_auto": "-",
-   "ulaz_teretno": "3 h",
-   "izlaz_teretno": "-",
-   "ocitano": "22.09.2026 20:06:02",
-   "lat": 45.12,
-   "lon": 18.29,
-   "izvor": "HAK/MUP-HR",
-   "za": "putnicka vozila"
-  }
- ]
+ "borders": []
 }
