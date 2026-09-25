@@ -6,7 +6,7 @@
    Deliberate departures from the Atlas mockup these came from:
    - hover never lifts a card or a button (translateY removed); it brightens the
      line instead. Lift-on-hover is a rejected pattern in Filip's taste corpus.
-   - numerals are Coast Light; reading labels and controls are Archivo.
+   - numerals are Coast (Medium for readouts, Light for display); reading labels and controls are Archivo.
    ========================================================================== */
 
 /* ---- ground ---------------------------------------------------------------- */
@@ -42,11 +42,12 @@
 .rmr-note { font-size: var(--rmr-size-body); line-height: 1.55; color: var(--rmr-text-3); margin: 0; }
 .rmr-muted { color: var(--rmr-text-muted); }
 
-/* Reading labels and eyebrows: Archivo, with a real medium weight. */
+/* Small captions and eyebrows: Coast Medium (Filip, 15.9.2026: Archivo is the main face, Coast is for
+   small captions and numbers). */
 .rmr-caption {
-  font-family: var(--rmr-font-label);
+  font-family: var(--rmr-font-caption);
   font-size: var(--rmr-size-caption);
-  font-weight: var(--rmr-weight-label);
+  font-weight: var(--rmr-weight-num);
   letter-spacing: var(--rmr-track-caption);
   line-height: var(--rmr-leading-body);
   text-transform: uppercase;
@@ -55,17 +56,20 @@
 .rmr-caption--accent { color: var(--rmr-accent-text); }
 .rmr-caption--ink { color: var(--rmr-text-2); }
 
-/* numerals: Coast with aligned figures */
+/* numerals: Coast with aligned figures, for a figure that stands on its own. Readouts are Medium,
+   display figures Light. A figure inside a sentence is not Coast (below). */
 .rmr-num {
   font-family: var(--rmr-font-num);
   font-weight: var(--rmr-weight-num);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
-/* a figure inside a caption keeps the caption's face: Coast Light among Archivo 500 capitals
-   is lighter and shorter than the letters around it, so the number became the faintest word */
+/* a figure inside a caption keeps the caption's weight and spacing */
 .rmr-caption .rmr-num { font-family: inherit; font-weight: inherit; letter-spacing: inherit; }
-.rmr-num--display { font-size: var(--rmr-size-display); line-height: 1; letter-spacing: -0.02em; }
+.rmr-num--display { font-size: var(--rmr-size-display); font-weight: var(--rmr-weight-num-display); line-height: 1; letter-spacing: -0.02em; }
+/* a figure inside a sentence takes the sentence's face (Filip, 15.9.2026): a second face in the
+   middle of a line reads as a break, not as emphasis */
+.rmr-note .rmr-num, .rmr-body .rmr-num, .rmr-display .rmr-num { font-family: inherit; font-weight: inherit; letter-spacing: inherit; font-variant-numeric: inherit; }
 
 /* ---- logo: the speed R (primary from 14.9.2026) ------------------------------
    Symbols #rmr-speed and #rmr-wordmark come from brand/logo/symbols.html. The mark
@@ -110,6 +114,8 @@
 .rmr-logo--hero { --rmr-logo-mark: 56px; gap: var(--rmr-space-5); font-size: var(--rmr-size-body); letter-spacing: 0.15em; }
 
 /* ---- icons ------------------------------------------------------------------ */
+/* The family lives in icons.js (<use href="#i-NAME">). The line is the same 1.5 px at every size,
+   so the stroke width is divided by the size (24 grid units / rendered px). Cut ends, mitred corners. */
 .rmr-icon {
   width: var(--rmr-icon-md);
   height: var(--rmr-icon-md);
@@ -117,11 +123,13 @@
   fill: none;
   stroke: currentColor;
   stroke-width: var(--rmr-icon-stroke);
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+  stroke-miterlimit: 4;
 }
-.rmr-icon--sm { width: var(--rmr-icon-sm); height: var(--rmr-icon-sm); }
-.rmr-icon--lg { width: var(--rmr-icon-lg); height: var(--rmr-icon-lg); stroke-width: 1.1; }
+.rmr-icon--sm { width: var(--rmr-icon-sm); height: var(--rmr-icon-sm); stroke-width: calc(var(--rmr-icon-stroke) * 24 / 18); }
+.rmr-icon--lg { width: var(--rmr-icon-lg); height: var(--rmr-icon-lg); stroke-width: calc(var(--rmr-icon-stroke) * 24 / 32); }
+.rmr-icon--ride { width: 20px; height: 20px; stroke-width: calc(var(--rmr-icon-stroke-ride) * 24 / 20); }
 
 /* ---- surfaces ---------------------------------------------------------------- */
 .rmr-shell {
@@ -172,9 +180,9 @@
   background: var(--rmr-grad-control);
   border: 1px solid var(--rmr-line-control);
   box-shadow: var(--rmr-shadow-control);
-  font-family: var(--rmr-font-label);   /* same reading role as the segmented control */
+  font-family: var(--rmr-font-label);   /* same control role as the segmented control */
   font-size: var(--rmr-size-caption);
-  letter-spacing: var(--rmr-track-caption);
+  letter-spacing: var(--rmr-track-control);
   text-transform: uppercase;
   padding: 0 var(--rmr-space-4);
 }
@@ -186,7 +194,7 @@
 }
 .rmr-btn--icon[aria-pressed="true"], .rmr-btn--icon[aria-expanded="true"] { color: var(--rmr-accent-text); border-color: var(--rmr-line-selected); }
 .rmr-btn--ghost { border: 1px solid var(--rmr-line-control); border-radius: var(--rmr-radius-sm); color: var(--rmr-text-muted); padding: 0 var(--rmr-space-6); }
-.rmr-btn--text { color: var(--rmr-text-muted); padding: 0 var(--rmr-space-3); font-family: var(--rmr-font-label); font-size: var(--rmr-size-caption); letter-spacing: var(--rmr-track-caption); text-transform: uppercase; }
+.rmr-btn--text { color: var(--rmr-text-muted); padding: 0 var(--rmr-space-3); font-family: var(--rmr-font-label); font-size: var(--rmr-size-caption); letter-spacing: var(--rmr-track-control); text-transform: uppercase; }
 @media (hover: hover) {
   .rmr-btn--control:hover, .rmr-btn--icon:hover, .rmr-btn--ghost:hover { border-color: var(--rmr-line-hover); }
   .rmr-btn--text:hover, .rmr-btn--ghost:hover { color: var(--rmr-text); }
@@ -209,7 +217,7 @@
 .rmr-search input { flex: 1; min-width: 0; height: 46px; border: 0; background: transparent; color: var(--rmr-text); font-size: var(--rmr-size-body); outline: none; }
 .rmr-search input::placeholder { color: var(--rmr-text-muted); }
 .rmr-kbd {
-  font-family: var(--rmr-font-label);
+  font-family: var(--rmr-font-caption);
   font-size: var(--rmr-size-caption);
   color: var(--rmr-text-muted);
   border: 1px solid var(--rmr-line-strong);
@@ -310,8 +318,9 @@
   display: inline-flex;
   align-items: center;
   gap: var(--rmr-space-2);
-  font-family: var(--rmr-font-label);
+  font-family: var(--rmr-font-caption);
   font-size: var(--rmr-size-caption);
+  font-weight: var(--rmr-weight-num);
   letter-spacing: var(--rmr-track-caption);
   text-transform: uppercase;
   color: var(--rmr-state, var(--rmr-unknown));
@@ -334,6 +343,57 @@
 .rmr-strip { display: flex; gap: 2px; height: 6px; }
 .rmr-strip > span { flex: var(--share, 1) 1 0; min-width: 2px; border-radius: 1px; background: var(--rmr-state, var(--rmr-unknown)); }
 
+/* ---- road sign: the ride screen's turn card ----------------------------------------------------------
+   A motorway direction sign, not a green box: a 5 px rim, a white inner line, the arrow in its own
+   column, then distance, action, where it leads and the road plates. It carries no buttons; the
+   next maneuver hangs under it as a tab and warnings sit below as plates of their own. Sizes are the
+   phone's (the ride screen is read at arm's length with gloves on). Same in both themes.
+   Markup: .rmr-sign > .rmr-sign__arrow (svg) + .rmr-sign__text > __dist, __what, __to, __plates. */
+.rmr-sign {
+  position: relative;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  column-gap: var(--rmr-space-4);
+  align-items: start;
+  padding: var(--rmr-space-4) calc(var(--rmr-space-4) + 2px) calc(var(--rmr-space-4) + 1px) calc(var(--rmr-space-3) + 2px);
+  border-radius: 16px;
+  background: var(--rmr-sign-green);
+  color: var(--rmr-sign-ink);
+  font-family: var(--rmr-font-text);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.35);
+}
+.rmr-sign::before { content: ""; position: absolute; inset: 5px; border: 2px solid rgb(255 255 255 / 0.92); border-radius: 11px; pointer-events: none; }
+.rmr-sign__arrow { display: grid; place-items: center; min-height: 56px; margin-top: -4px; }
+.rmr-sign__arrow:has(> span) { min-height: 0; margin-top: 5px; }   /* a status dot sits on the first line of words */
+.rmr-sign__arrow svg { width: 60px; height: 60px; display: block; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: butt; stroke-linejoin: miter; }
+.rmr-sign__text { display: grid; min-width: 0; }
+.rmr-sign__dist { font-family: var(--rmr-font-num); font-weight: var(--rmr-weight-num); font-size: 44px; line-height: 1; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.rmr-sign__what { margin-top: 6px; font-size: 19px; font-weight: 600; line-height: 1.2; }
+.rmr-sign__dist:empty + .rmr-sign__what { margin-top: 0; }
+.rmr-sign__to { margin-top: 2px; font-size: 16px; font-weight: 500; line-height: 1.25; opacity: 0.88; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rmr-sign__plates { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.rmr-sign--grey { background: var(--rmr-sign-grey); }
+.rmr-sign--grey::before { border-style: dashed; border-color: rgb(255 255 255 / 0.55); }
+.rmr-sign--rec { background: var(--rmr-sign-rec); animation: rmr-sign-rec 2.4s ease-in-out infinite; }
+@keyframes rmr-sign-rec { 50% { background: var(--rmr-danger-700); } }
+
+/* road plates, coloured as on the road: E and A roads green, national roads yellow, exits white */
+.rmr-plate { display: inline-flex; align-items: center; height: 26px; padding: 0 8px; border-radius: 5px; font-family: var(--rmr-font-num); font-weight: var(--rmr-weight-num); font-size: 14px; line-height: 1; letter-spacing: 0.01em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rmr-plate--e, .rmr-plate--a { background: var(--rmr-sign-green); color: var(--rmr-sign-ink); box-shadow: inset 0 0 0 2px var(--rmr-sign-ink); }
+.rmr-plate--n { background: var(--rmr-plate-national); color: var(--rmr-plate-national-ink); box-shadow: inset 0 0 0 2px var(--rmr-plate-national-ink); }
+.rmr-plate--x { background: var(--rmr-sign-ink); color: var(--rmr-sign-green); }
+
+/* under the sign: the next maneuver as a tab on the left, controls on the right, then notices */
+.rmr-sign-then { display: inline-flex; align-items: center; gap: var(--rmr-space-2); width: fit-content; margin-left: 18px; padding: 8px 14px 10px; border-radius: 0 0 12px 12px; background: var(--rmr-sign-green-deep); color: #e3f6ea; font-family: var(--rmr-font-text); font-size: 14px; font-weight: 600; box-shadow: 0 10px 28px rgb(0 0 0 / 0.35); }
+.rmr-sign-then svg { width: 24px; height: 24px; fill: none; stroke: var(--rmr-sign-ink); stroke-width: 2.5; stroke-linecap: butt; stroke-linejoin: miter; }
+.rmr-sign-notice { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; font-family: var(--rmr-font-text); font-size: 16px; font-weight: 700; line-height: 1.2; color: #fff7ea; background: var(--rmr-sign-caution); }
+.rmr-sign-notice--danger { background: var(--rmr-sign-danger); color: #ffe7ea; }
+
+/* a new maneuver slides into the sign: arrow, then words */
+@keyframes rmr-sign-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.rmr-sign.is-fresh .rmr-sign__arrow, .rmr-sign.is-fresh .rmr-sign__text { animation: rmr-sign-in 240ms var(--rmr-ease-out) both; }
+.rmr-sign.is-fresh .rmr-sign__text { animation-delay: 40ms; }
+
 /* ---- segmented control --------------------------------------------------------------------------- */
 .rmr-segmented {
   display: inline-flex;
@@ -349,7 +409,7 @@
   border-radius: var(--rmr-radius-sm);
   font-family: var(--rmr-font-label);
   font-size: var(--rmr-size-caption);
-  letter-spacing: var(--rmr-track-caption);
+  letter-spacing: var(--rmr-track-control);
   text-transform: uppercase;
   color: var(--rmr-text-muted);
   transition: color var(--rmr-dur) var(--rmr-ease-out);

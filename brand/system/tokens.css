@@ -35,8 +35,8 @@
 @font-face{font-family:"Archivo";src:url("../../fonts/Archivo-Variable-latin.woff2") format("woff2");font-weight:100 900;font-stretch:62% 125%;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face {
   font-family: "ZR Coast";
-  src: url("../../fonts/ZRCoast-Light.woff2") format("woff2");
-  font-weight: 300;   /* the actual Light cut; consumers disable synthetic weight */
+  src: url("../../fonts/ZRCoast.woff2") format("woff2");
+  font-weight: 300 500;   /* one variable file: Light 300, Regular 400, Medium 500; nothing heavier exists */
   font-style: normal;
   font-display: swap;
   unicode-range: U+0000-002B, U+002D, U+002F-0039, U+003B-00B6, U+00B8-FFFF;
@@ -108,6 +108,17 @@
   --rmr-unknown-400: #928a84; /* No data, outside the forecast - on dark */
   --rmr-unknown-700: #665e58; /* No data - on light (5.6:1 on paper-100) */
 
+  /* @group Sign | The ride screen's turn sign and its plates. Pinned in both themes: a road sign does not follow the theme. */
+  --rmr-sign-green: #0d6b3d; /* Direction sign ground, traffic green (white ink 6.6:1) */
+  --rmr-sign-green-deep: #084c2b; /* "Then" tab hanging under the sign */
+  --rmr-sign-grey: #4a423b; /* No position yet: looking for GPS, weak signal, new route */
+  --rmr-sign-rec: #6e1a26; /* Recording a ride without a route */
+  --rmr-sign-ink: #ffffff; /* Everything written on a sign */
+  --rmr-plate-national: #f2c230; /* National road plate (M 22, 115) */
+  --rmr-plate-national-ink: #16110e; /* Number and edge on the national plate */
+  --rmr-sign-caution: #b45309; /* Plate under the sign: camera or works ahead (white ink 5.0:1) */
+  --rmr-sign-danger: #9b1c32; /* Plate under the sign: storm ahead (white ink 8.1:1) */
+
   /* @group Theme | What components use. light-dark(light value, dark value). */
   --rmr-bg: light-dark(var(--rmr-paper-100), var(--rmr-graphite-1000)); /* Page ground */
   --rmr-surface: light-dark(var(--rmr-paper-50), var(--rmr-graphite-750)); /* Panels and surfaces */
@@ -140,19 +151,22 @@
   --rmr-line-hover: light-dark(color-mix(in srgb, var(--rmr-ink-900) 34%, transparent), color-mix(in srgb, var(--rmr-paper-0) 33%, transparent)); /* Hover on any bordered control */
   --rmr-line-selected: light-dark(color-mix(in srgb, var(--rmr-orange-700) 55%, transparent), color-mix(in srgb, var(--rmr-orange-400) 55%, transparent)); /* Selected card border */
 
-  /* @group Type | Archivo carries reading labels. ZR Coast carries numbers; one real Light cut. */
-  --rmr-font-text: "Archivo", system-ui, sans-serif; /* Titles, body, buttons */
-  --rmr-font-num: "ZR Coast", "Archivo", "Archivo Variable", ui-monospace, monospace; /* Numerals and display data */
-  --rmr-font-label: var(--rmr-font-text); /* Reading labels, captions and controls */
+  /* @group Type | Archivo is the main face: titles, prose, labels you read, controls. ZR Coast carries numbers and small captions, weights 300 to 500 (Filip, 15.9.2026). */
+  --rmr-font-text: "Archivo", system-ui, sans-serif; /* Titles, body, buttons: the main face */
+  --rmr-font-num: "ZR Coast", "Archivo", "Archivo Variable", ui-monospace, monospace; /* Numbers that stand on their own, and small captions */
+  --rmr-font-label: var(--rmr-font-text); /* Controls: button and segmented-choice labels */
+  --rmr-font-caption: var(--rmr-font-num); /* Small captions: eyebrows, section labels, state words, tags, keys */
   --rmr-font-cap: var(--rmr-font-num); /* Legacy alias for numeric consumers */
-  --rmr-weight-num: 300; /* Actual Coast Light weight; no synthetic bold */
-  --rmr-size-caption: 12px; /* Reading labels and eyebrows (Archivo 500, uppercase) */
+  --rmr-weight-num: 500; /* Readout figures under 32 px: cards, stats, lists (Coast Medium) */
+  --rmr-weight-num-display: 300; /* Display figures, 32 px and up, on posters and hero numbers (Coast Light) */
+  --rmr-size-caption: 12px; /* Small captions (Coast 500) and uppercase control labels (Archivo 500) */
   --rmr-size-body: 14px; /* Body, buttons, card titles */
   --rmr-size-display: 32px; /* Screen titles and display numerals */
   --rmr-weight-display: 300; /* Titles */
   --rmr-weight-body: 400; /* Body */
   --rmr-weight-label: 500; /* Buttons, wordmark */
-  --rmr-track-caption: 0.1em; /* Caption letter-spacing */
+  --rmr-track-caption: 0.06em; /* Caption letter-spacing: Coast is monospaced and needs less than a proportional face */
+  --rmr-track-control: 0.1em; /* Letter-spacing of uppercase control labels in Archivo */
   --rmr-track-display: -0.035em; /* Title letter-spacing */
   --rmr-leading-display: 1.18; /* Title line-height */
   --rmr-leading-body: 1.5; /* Body line-height */
@@ -195,8 +209,9 @@
   --rmr-shadow-inset: inset 0 1px 5px light-dark(color-mix(in srgb, var(--rmr-ink-900) 8%, transparent), rgb(0 0 0 / 0.13)); /* Sunken field */
   --rmr-glow-route: 0 0 6px light-dark(color-mix(in srgb, var(--rmr-orange-700) 30%, transparent), color-mix(in srgb, var(--rmr-orange-400) 32%, transparent)); /* Route key in a legend */
 
-  /* @group Icon | Line icons on a 24 grid. */
-  --rmr-icon-stroke: 1.35; /* Stroke width at 24px */
+  /* @group Icon | One family on a 24 grid (icons.js): cut ends, mitred corners, octagons for circles. */
+  --rmr-icon-stroke: 1.5; /* Line in px, the same at every size */
+  --rmr-icon-stroke-ride: 2; /* Line on the ride screen, read at arm's length */
   --rmr-icon-sm: 18px; /* In controls */
   --rmr-icon-md: 24px; /* Default */
   --rmr-icon-lg: 32px; /* Section marks and traits */
