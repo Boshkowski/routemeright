@@ -1,5 +1,5 @@
 {
- "updated": "2026-09-26T17:07+00:00",
+ "updated": "2026-09-26T19:49+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -7,22 +7,28 @@
    "ok": true,
    "items": [
     {
-     "type": "Delo",
-     "title": "A1-E57, Ljubljana  - vzh. obvoznica: Delo",
-     "detail": "A1, Ljubljana - vzhodna obvoznica, uvoz Ljubljana vzhod - priključek Ljubljana Bizovik v smeri Malenc, dela, oviran promet.",
-     "region": "A1-E57, Ljubljana  - vzh. obvoznica"
+     "type": "Okvara vozila",
+     "title": "A1-E61, E70, Ljubljana - Koper: Okvara vozila",
+     "detail": "A1, Ljubljana - Koper, priključek Vrhnika, okvara avtobusa, oviran promet.",
+     "region": "A1-E61, E70, Ljubljana - Koper"
     },
     {
      "type": "Ovire",
-     "title": "A1-E57, Maribor - Ljubljana: Ovire",
-     "detail": "A1, Maribor - Ljubljana, priključek Sl. Bistrica jug - priključek Sl. Konjice v smeri Ljubljane, predmet na vozišču, oviran promet.",
-     "region": "A1-E57, Maribor - Ljubljana"
+     "title": "A3-E70, E61, razcep Gabrk - Fernetiči: Ovire",
+     "detail": "A3, razcep Gabrk - Fernetiči, počivališče Povir - priključek Sežana vzhod, žival na cestišču, oviran promet, divji prašič.",
+     "region": "A3-E70, E61, razcep Gabrk - Fernetiči"
+    },
+    {
+     "type": "Ovire",
+     "title": "A3-E70, E61, Fernetiči - razcep Gabrk: Ovire",
+     "detail": "A3, Fernetiči - razcep Gabrk, priključek Sežana vzhod - počivališče Povir v smeri Gabrka, žival na cestišču, oviran promet, divji prašič.",
+     "region": "A3-E70, E61, Fernetiči - razcep Gabrk"
     },
     {
      "type": "Delo",
-     "title": "G1-11 , Škofije - Koper: Delo",
-     "detail": "G1-11, Škofije - Koper, priključek Koper center, Slavček v smeri Izole, dela, oviran promet, košnja.",
-     "region": "G1-11 , Škofije - Koper"
+     "title": "A1-E57, Maribor - Ljubljana: Delo",
+     "detail": "A1, Maribor - Ljubljana, priključek Šempeter - priključek Šentrupert v smeri Ljubljane, dela, zaprt odstavni pas, košnja.",
+     "region": "A1-E57, Maribor - Ljubljana"
     },
     {
      "type": "Delo",
@@ -33,14 +39,8 @@
     {
      "type": "Zastoj",
      "title": "A1-E61, E70, Koper - Ljubljana: Zastoj",
-     "detail": "A1, Koper - Ljubljana, priključek Razdrto - priključek Postojna v smeri Ljubljane, območje zastojev, zamuda: 19 min, dolžina: 4 km in 400 m.",
+     "detail": "A1, Koper - Ljubljana, počivališče Studenec - priključek Postojna v smeri Ljubljane, zastoj, dolžina: 1 km in 500 m.",
      "region": "A1-E61, E70, Koper - Ljubljana"
-    },
-    {
-     "type": "Ovire",
-     "title": "A5 , Pince - Maribor: Ovire",
-     "detail": "A5, Pince - Maribor, počivališče Dolinsko - priključek Gančani v smeri Murske Sobote, nadzor prometa, promet preusmerjen skozi počivališče.",
-     "region": "A5 , Pince - Maribor"
     },
     {
      "type": "Delo",
@@ -59,12 +59,6 @@
      "title": "R1-208, Gračišče - Sočerga: Delo",
      "detail": "R1-208, Gračišče - Sočerga, pri Sočergi, izmenično enosmerni promet, popravilo poseda, do 30. 9. 2026.",
      "region": "R1-208, Gračišče - Sočerga"
-    },
-    {
-     "type": "Delo",
-     "title": "A1-E57, Maribor - Ljubljana: Delo",
-     "detail": "A1, Maribor - Ljubljana, priključek Sl. Bistrica jug - počivališče Tepanje v smeri Ljubljane, dela, zaprt vozni pas.",
-     "region": "A1-E57, Maribor - Ljubljana"
     },
     {
      "type": "Delo",
@@ -245,62 +239,22 @@
      "title": "G1-1, Ruta - Maribor  (Koroški most): Delo",
      "detail": "G1-1, Maribor - Dravograd, v Bresternici, izmenično enosmerni promet, gradnja TP Bresternica 5 in SN kablovodov, do 15. 10. 2026.",
      "region": "G1-1, Ruta - Maribor  (Koroški most)"
+    },
+    {
+     "type": "Delo",
+     "title": "R2-409, Kozina - Kastelec: Delo",
+     "detail": "R2-409, Kastelec - Kozina, pri Kastelcu, izmenično enosmerni promet, sanacija asfaltnih površin, do 16. 10. 2026.",
+     "region": "R2-409, Kozina - Kastelec"
     }
    ],
-   "odseceno": 141,
-   "fetched": "2026-09-26T17:07+00:00"
+   "odseceno": 140,
+   "fetched": "2026-09-26T19:49+00:00"
   },
   "HR": {
    "name": "Hrvatska",
    "source": "HAK",
    "ok": true,
    "items": [
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A1 između 255+700 km i 255+800 km , između čvora Zadar centar i čvora Zadar istok. Zbog oštećanja odbojne ograde promet se vodi po dvije prometne trake u oba smjera uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
-     "region": "A1",
-     "lat": 44.17082,
-     "lon": 15.42299,
-     "coords": [
-      [
-       15.42299,
-       44.17082
-      ],
-      [
-       15.42267,
-       44.17043
-      ],
-      [
-       15.42235,
-       44.17005
-      ]
-     ]
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A1 na 238+400 km između tunela Čelinka i PUO Jasenice u smjeru Dubrovnika. Zbog oštećenja odbojne ograde promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A1",
-     "lat": 44.24108,
-     "lon": 15.58287
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A1 na 410+000 km između čvora Šestanovac i čvora Blato na Cetini na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
-     "region": "A1",
-     "lat": 43.45999,
-     "lon": 16.86046
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A1 na 336+200 km između čvora Prgomet i čvora Danilo na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
-     "region": "A1",
-     "lat": 43.68282,
-     "lon": 16.0886
-    },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A1 - Izvanredni događaj",
@@ -514,6 +468,44 @@
        44.2516
       ]
      ]
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A1 na 112+000 km između čvora Ogulin i čvora Brinje na kolniku u smjeru Dubrovnika. Promet se vodi po dvije prometne trake uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 45.05213,
+     "lon": 15.18515
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A1 između 255+700 km i 255+800 km , između čvora Zadar centar i čvora Zadar istok. Zbog oštećanja odbojne ograde promet se vodi po dvije prometne trake u oba smjera uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 44.17082,
+     "lon": 15.42299,
+     "coords": [
+      [
+       15.42299,
+       44.17082
+      ],
+      [
+       15.42267,
+       44.17043
+      ],
+      [
+       15.42235,
+       44.17005
+      ]
+     ]
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A1 na 238+400 km između tunela Čelinka i PUO Jasenice u smjeru Dubrovnika. Zbog oštećenja odbojne ograde promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 44.24108,
+     "lon": 15.58287
     },
     {
      "type": "guzva/dogadjaj (Radovi)",
@@ -998,80 +990,6 @@
     {
      "type": "guzva/dogadjaj (Radovi)",
      "title": "A2 - Radovi",
-     "detail": "zbog radova se vozi jednom stranom autoceste dvosmjerno",
-     "region": "A2",
-     "lat": 46.10654,
-     "lon": 15.8947,
-     "coords": [
-      [
-       15.8947,
-       46.10654
-      ],
-      [
-       15.89483,
-       46.10629
-      ],
-      [
-       15.89555,
-       46.105
-      ],
-      [
-       15.89622,
-       46.10389
-      ],
-      [
-       15.89698,
-       46.10271
-      ],
-      [
-       15.89744,
-       46.10202
-      ],
-      [
-       15.89795,
-       46.10129
-      ],
-      [
-       15.89894,
-       46.09994
-      ],
-      [
-       15.89945,
-       46.09928
-      ],
-      [
-       15.89999,
-       46.09861
-      ],
-      [
-       15.90049,
-       46.098
-      ],
-      [
-       15.90106,
-       46.09732
-      ],
-      [
-       15.90181,
-       46.09648
-      ],
-      [
-       15.90255,
-       46.09568
-      ],
-      [
-       15.90414,
-       46.09401
-      ],
-      [
-       15.90504,
-       46.09311
-      ]
-     ]
-    },
-    {
-     "type": "guzva/dogadjaj (Radovi)",
-     "title": "A2 - Radovi",
      "detail": "zbog radova se vozi jednim trakom",
      "region": "A2",
      "lat": 46.06837,
@@ -1224,6 +1142,80 @@
       [
        15.92387,
        46.04658
+      ]
+     ]
+    },
+    {
+     "type": "guzva/dogadjaj (Radovi)",
+     "title": "A2 - Radovi",
+     "detail": "zbog radova se vozi jednom stranom autoceste dvosmjerno",
+     "region": "A2",
+     "lat": 46.10654,
+     "lon": 15.8947,
+     "coords": [
+      [
+       15.8947,
+       46.10654
+      ],
+      [
+       15.89483,
+       46.10629
+      ],
+      [
+       15.89555,
+       46.105
+      ],
+      [
+       15.89622,
+       46.10389
+      ],
+      [
+       15.89698,
+       46.10271
+      ],
+      [
+       15.89744,
+       46.10202
+      ],
+      [
+       15.89795,
+       46.10129
+      ],
+      [
+       15.89894,
+       46.09994
+      ],
+      [
+       15.89945,
+       46.09928
+      ],
+      [
+       15.89999,
+       46.09861
+      ],
+      [
+       15.90049,
+       46.098
+      ],
+      [
+       15.90106,
+       46.09732
+      ],
+      [
+       15.90181,
+       46.09648
+      ],
+      [
+       15.90255,
+       46.09568
+      ],
+      [
+       15.90414,
+       46.09401
+      ],
+      [
+       15.90504,
+       46.09311
       ]
      ]
     },
@@ -1566,370 +1558,6 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3",
-     "lat": 45.1669,
-     "lon": 17.67695
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Sredanci i čvora Nova Gradiška, u smjeru Bregane, promet se vodi po dvije prometne trake. Vozi se uz ograničenje 100 km/h. Molimo korisnike za dodatni oprez.",
-     "region": "A3",
-     "lat": 45.14506,
-     "lon": 18.31165,
-     "coords": [
-      [
-       18.31165,
-       45.14506
-      ],
-      [
-       18.28853,
-       45.14599
-      ],
-      [
-       18.26632,
-       45.15056
-      ],
-      [
-       18.24136,
-       45.1551
-      ],
-      [
-       18.21579,
-       45.15517
-      ],
-      [
-       18.19251,
-       45.1556
-      ],
-      [
-       18.17342,
-       45.16409
-      ],
-      [
-       18.15474,
-       45.17214
-      ],
-      [
-       18.12744,
-       45.17337
-      ],
-      [
-       18.09823,
-       45.17457
-      ],
-      [
-       18.07442,
-       45.17723
-      ],
-      [
-       18.04972,
-       45.18155
-      ],
-      [
-       18.02791,
-       45.18462
-      ],
-      [
-       18.00821,
-       45.18136
-      ],
-      [
-       17.9876,
-       45.17995
-      ],
-      [
-       17.96878,
-       45.17864
-      ],
-      [
-       17.95136,
-       45.17253
-      ],
-      [
-       17.93133,
-       45.16975
-      ],
-      [
-       17.90462,
-       45.16925
-      ],
-      [
-       17.88028,
-       45.16809
-      ],
-      [
-       17.85708,
-       45.16401
-      ],
-      [
-       17.83277,
-       45.15872
-      ],
-      [
-       17.80667,
-       45.15476
-      ],
-      [
-       17.78111,
-       45.15116
-      ],
-      [
-       17.75831,
-       45.1508
-      ],
-      [
-       17.73613,
-       45.15454
-      ],
-      [
-       17.71338,
-       45.16164
-      ],
-      [
-       17.69164,
-       45.16461
-      ],
-      [
-       17.67025,
-       45.16871
-      ],
-      [
-       17.65092,
-       45.17725
-      ],
-      [
-       17.63441,
-       45.18777
-      ],
-      [
-       17.61607,
-       45.19181
-      ],
-      [
-       17.59492,
-       45.19296
-      ],
-      [
-       17.57555,
-       45.20058
-      ],
-      [
-       17.55436,
-       45.2088
-      ],
-      [
-       17.53261,
-       45.21385
-      ],
-      [
-       17.50903,
-       45.21764
-      ],
-      [
-       17.48672,
-       45.22412
-      ],
-      [
-       17.46555,
-       45.22897
-      ],
-      [
-       17.44335,
-       45.22997
-      ],
-      [
-       17.41865,
-       45.22816
-      ]
-     ]
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme na kolniku autoceste A3, na kraku 11 čvora Kosnica (kolnik u smjeru Bregane/Radničke ceste), promet se odvija uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3",
-     "lat": 45.76423,
-     "lon": 16.08988
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Slavonski Brod zapad i čvora Sredanci, u smjeru Lipovca. Promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za dodatni oprez.",
-     "region": "A3",
-     "lat": 45.17022,
-     "lon": 17.94074,
-     "coords": [
-      [
-       17.94074,
-       45.17022
-      ],
-      [
-       17.94882,
-       45.17173
-      ],
-      [
-       17.95587,
-       45.17382
-      ],
-      [
-       17.96252,
-       45.17661
-      ],
-      [
-       17.97003,
-       45.17883
-      ],
-      [
-       17.9772,
-       45.18
-      ],
-      [
-       17.98568,
-       45.17999
-      ],
-      [
-       17.99456,
-       45.17947
-      ],
-      [
-       18.00266,
-       45.18008
-      ],
-      [
-       18.01005,
-       45.18173
-      ],
-      [
-       18.01783,
-       45.18365
-      ],
-      [
-       18.0255,
-       45.18447
-      ],
-      [
-       18.03297,
-       45.18421
-      ],
-      [
-       18.04226,
-       45.18273
-      ],
-      [
-       18.05276,
-       45.1809
-      ],
-      [
-       18.06388,
-       45.17896
-      ],
-      [
-       18.07252,
-       45.17744
-      ],
-      [
-       18.08146,
-       45.17599
-      ],
-      [
-       18.09126,
-       45.17491
-      ],
-      [
-       18.10204,
-       45.1743
-      ],
-      [
-       18.1141,
-       45.17381
-      ],
-      [
-       18.12553,
-       45.17334
-      ],
-      [
-       18.13696,
-       45.17286
-      ],
-      [
-       18.14838,
-       45.17239
-      ],
-      [
-       18.15841,
-       45.17139
-      ],
-      [
-       18.16629,
-       45.16856
-      ],
-      [
-       18.17239,
-       45.16463
-      ],
-      [
-       18.17996,
-       45.15983
-      ],
-      [
-       18.18767,
-       45.15669
-      ],
-      [
-       18.19619,
-       45.1549
-      ],
-      [
-       18.2038,
-       45.15452
-      ],
-      [
-       18.21522,
-       45.15504
-      ],
-      [
-       18.22567,
-       45.15553
-      ],
-      [
-       18.23616,
-       45.15534
-      ],
-      [
-       18.24587,
-       45.15452
-      ],
-      [
-       18.25615,
-       45.15288
-      ],
-      [
-       18.26624,
-       45.15046
-      ],
-      [
-       18.27493,
-       45.14821
-      ],
-      [
-       18.28403,
-       45.1465
-      ],
-      [
-       18.29335,
-       45.14538
-      ],
-      [
-       18.30286,
-       45.14487
-      ]
-     ]
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
      "detail": "Zbog prometnog rasterećenja privoza čvoru Zagreb zapad (Jankomir) iz smjera Lipovca (A3) u smjeru Grada Zagreba, iz smjera Bregane (A3) i Macelja (A2) u smjeru Grada Zagreba (most Sava - Jankomir), prometuje se jednim prometnim trakom uz privremeno regulaciju prometa. Planirano trajanje je do 31.12.",
      "region": "A3",
      "lat": 45.78731,
@@ -2130,122 +1758,20 @@
      ]
     },
     {
-     "type": "guzva/dogadjaj (Zastoj)",
-     "title": "A3 - Zastoj",
-     "detail": "Kolona teretnih vozila na autocesti A3 između 304+500 km i graničnog prijelaza GP Bajakovo na kolniku u smjeru Lipovca, duljine 1 km. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Kolona se povećava. Molimo korisnike za oprez i strpljenje.",
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja opreme na kolniku autoceste A3, na kraku 11 čvora Kosnica (kolnik u smjeru Bregane/Radničke ceste), promet se odvija uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3",
-     "lat": 45.04899,
-     "lon": 19.07864,
-     "coords": [
-      [
-       19.07864,
-       45.04899
-      ],
-      [
-       19.07914,
-       45.04899
-      ],
-      [
-       19.07927,
-       45.04898
-      ],
-      [
-       19.0799,
-       45.04898
-      ],
-      [
-       19.08054,
-       45.04897
-      ],
-      [
-       19.08092,
-       45.04896
-      ],
-      [
-       19.08117,
-       45.04896
-      ],
-      [
-       19.08181,
-       45.04895
-      ],
-      [
-       19.08235,
-       45.04894
-      ],
-      [
-       19.08244,
-       45.04894
-      ],
-      [
-       19.08307,
-       45.04892
-      ],
-      [
-       19.08371,
-       45.0489
-      ],
-      [
-       19.08434,
-       45.04889
-      ],
-      [
-       19.0849,
-       45.04887
-      ],
-      [
-       19.08498,
-       45.04887
-      ],
-      [
-       19.08561,
-       45.04885
-      ],
-      [
-       19.08624,
-       45.04883
-      ],
-      [
-       19.08665,
-       45.04881
-      ],
-      [
-       19.08688,
-       45.0488
-      ],
-      [
-       19.08751,
-       45.04878
-      ],
-      [
-       19.08814,
-       45.04875
-      ],
-      [
-       19.08878,
-       45.04872
-      ],
-      [
-       19.08881,
-       45.04872
-      ],
-      [
-       19.08941,
-       45.04869
-      ],
-      [
-       19.09004,
-       45.04866
-      ],
-      [
-       19.09067,
-       45.04863
-      ],
-      [
-       19.09131,
-       45.04859
-      ]
-     ]
+     "lat": 45.76423,
+     "lon": 16.08988
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3",
+     "lat": 45.1669,
+     "lon": 17.67695
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
@@ -2254,6 +1780,362 @@
      "region": "A3",
      "lat": 45.75761,
      "lon": 15.90084
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Sredanci i čvora Nova Gradiška, u smjeru Bregane, promet se vodi po dvije prometne trake. Vozi se uz ograničenje 100 km/h. Molimo korisnike za dodatni oprez.",
+     "region": "A3",
+     "lat": 45.14506,
+     "lon": 18.31165,
+     "coords": [
+      [
+       18.31165,
+       45.14506
+      ],
+      [
+       18.28853,
+       45.14599
+      ],
+      [
+       18.26632,
+       45.15056
+      ],
+      [
+       18.24136,
+       45.1551
+      ],
+      [
+       18.21579,
+       45.15517
+      ],
+      [
+       18.19251,
+       45.1556
+      ],
+      [
+       18.17342,
+       45.16409
+      ],
+      [
+       18.15474,
+       45.17214
+      ],
+      [
+       18.12744,
+       45.17337
+      ],
+      [
+       18.09823,
+       45.17457
+      ],
+      [
+       18.07442,
+       45.17723
+      ],
+      [
+       18.04972,
+       45.18155
+      ],
+      [
+       18.02791,
+       45.18462
+      ],
+      [
+       18.00821,
+       45.18136
+      ],
+      [
+       17.9876,
+       45.17995
+      ],
+      [
+       17.96878,
+       45.17864
+      ],
+      [
+       17.95136,
+       45.17253
+      ],
+      [
+       17.93133,
+       45.16975
+      ],
+      [
+       17.90462,
+       45.16925
+      ],
+      [
+       17.88028,
+       45.16809
+      ],
+      [
+       17.85708,
+       45.16401
+      ],
+      [
+       17.83277,
+       45.15872
+      ],
+      [
+       17.80667,
+       45.15476
+      ],
+      [
+       17.78111,
+       45.15116
+      ],
+      [
+       17.75831,
+       45.1508
+      ],
+      [
+       17.73613,
+       45.15454
+      ],
+      [
+       17.71338,
+       45.16164
+      ],
+      [
+       17.69164,
+       45.16461
+      ],
+      [
+       17.67025,
+       45.16871
+      ],
+      [
+       17.65092,
+       45.17725
+      ],
+      [
+       17.63441,
+       45.18777
+      ],
+      [
+       17.61607,
+       45.19181
+      ],
+      [
+       17.59492,
+       45.19296
+      ],
+      [
+       17.57555,
+       45.20058
+      ],
+      [
+       17.55436,
+       45.2088
+      ],
+      [
+       17.53261,
+       45.21385
+      ],
+      [
+       17.50903,
+       45.21764
+      ],
+      [
+       17.48672,
+       45.22412
+      ],
+      [
+       17.46555,
+       45.22897
+      ],
+      [
+       17.44335,
+       45.22997
+      ],
+      [
+       17.41865,
+       45.22816
+      ]
+     ]
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3, između čvora Slavonski Brod zapad i čvora Sredanci, u smjeru Lipovca. Promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za dodatni oprez.",
+     "region": "A3",
+     "lat": 45.17022,
+     "lon": 17.94074,
+     "coords": [
+      [
+       17.94074,
+       45.17022
+      ],
+      [
+       17.94882,
+       45.17173
+      ],
+      [
+       17.95587,
+       45.17382
+      ],
+      [
+       17.96252,
+       45.17661
+      ],
+      [
+       17.97003,
+       45.17883
+      ],
+      [
+       17.9772,
+       45.18
+      ],
+      [
+       17.98568,
+       45.17999
+      ],
+      [
+       17.99456,
+       45.17947
+      ],
+      [
+       18.00266,
+       45.18008
+      ],
+      [
+       18.01005,
+       45.18173
+      ],
+      [
+       18.01783,
+       45.18365
+      ],
+      [
+       18.0255,
+       45.18447
+      ],
+      [
+       18.03297,
+       45.18421
+      ],
+      [
+       18.04226,
+       45.18273
+      ],
+      [
+       18.05276,
+       45.1809
+      ],
+      [
+       18.06388,
+       45.17896
+      ],
+      [
+       18.07252,
+       45.17744
+      ],
+      [
+       18.08146,
+       45.17599
+      ],
+      [
+       18.09126,
+       45.17491
+      ],
+      [
+       18.10204,
+       45.1743
+      ],
+      [
+       18.1141,
+       45.17381
+      ],
+      [
+       18.12553,
+       45.17334
+      ],
+      [
+       18.13696,
+       45.17286
+      ],
+      [
+       18.14838,
+       45.17239
+      ],
+      [
+       18.15841,
+       45.17139
+      ],
+      [
+       18.16629,
+       45.16856
+      ],
+      [
+       18.17239,
+       45.16463
+      ],
+      [
+       18.17996,
+       45.15983
+      ],
+      [
+       18.18767,
+       45.15669
+      ],
+      [
+       18.19619,
+       45.1549
+      ],
+      [
+       18.2038,
+       45.15452
+      ],
+      [
+       18.21522,
+       45.15504
+      ],
+      [
+       18.22567,
+       45.15553
+      ],
+      [
+       18.23616,
+       45.15534
+      ],
+      [
+       18.24587,
+       45.15452
+      ],
+      [
+       18.25615,
+       45.15288
+      ],
+      [
+       18.26624,
+       45.15046
+      ],
+      [
+       18.27493,
+       45.14821
+      ],
+      [
+       18.28403,
+       45.1465
+      ],
+      [
+       18.29335,
+       45.14538
+      ],
+      [
+       18.30286,
+       45.14487
+      ]
+     ]
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A3 na 27+400 km između čvora Jakuševec i čvora Buzin na kolniku u smjeru Bregane. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3",
+     "lat": 45.75294,
+     "lon": 15.99476
     },
     {
      "type": "guzva/dogadjaj (Radovi)",
@@ -4396,10 +4278,184 @@
      "region": "A4",
      "lat": 46.20954,
      "lon": 16.40789
+    },
+    {
+     "type": "guzva/dogadjaj (Radovi)",
+     "title": "A4 - Radovi",
+     "detail": "Radovi na održavanju na autocesti A4 između 56+350 km i 51+000 km, između čvora Breznički Hum i čvora Novi Marof. Kolnik u smjeru Goričana je zatvoren za promet, a promet se odvija dvosmjerno na kolniku u smjeru Zagreba uz ograničenje brzine od 80 km/h. Predviđeno trajanje radova je do 29.10.2026 Mo",
+     "region": "A4",
+     "lat": 46.10155,
+     "lon": 16.2841,
+     "coords": [
+      [
+       16.2841,
+       46.10155
+      ],
+      [
+       16.28443,
+       46.1029
+      ],
+      [
+       16.28496,
+       46.10417
+      ],
+      [
+       16.28564,
+       46.10543
+      ],
+      [
+       16.2865,
+       46.10663
+      ],
+      [
+       16.28717,
+       46.10742
+      ],
+      [
+       16.28824,
+       46.10852
+      ],
+      [
+       16.28931,
+       46.10965
+      ],
+      [
+       16.28985,
+       46.11047
+      ],
+      [
+       16.29036,
+       46.11176
+      ],
+      [
+       16.29053,
+       46.11277
+      ],
+      [
+       16.29088,
+       46.11398
+      ],
+      [
+       16.29148,
+       46.11491
+      ],
+      [
+       16.29239,
+       46.11596
+      ],
+      [
+       16.29378,
+       46.11748
+      ],
+      [
+       16.29505,
+       46.11888
+      ],
+      [
+       16.29587,
+       46.11975
+      ],
+      [
+       16.29719,
+       46.12072
+      ],
+      [
+       16.29849,
+       46.12137
+      ],
+      [
+       16.29984,
+       46.122
+      ],
+      [
+       16.3008,
+       46.12261
+      ],
+      [
+       16.30201,
+       46.12367
+      ],
+      [
+       16.30333,
+       46.12454
+      ],
+      [
+       16.3048,
+       46.12509
+      ],
+      [
+       16.30674,
+       46.12541
+      ],
+      [
+       16.30826,
+       46.1257
+      ],
+      [
+       16.30997,
+       46.12626
+      ],
+      [
+       16.31183,
+       46.12672
+      ],
+      [
+       16.31313,
+       46.1268
+      ],
+      [
+       16.31498,
+       46.12658
+      ],
+      [
+       16.31641,
+       46.12616
+      ],
+      [
+       16.31798,
+       46.12574
+      ],
+      [
+       16.31927,
+       46.12559
+      ],
+      [
+       16.32061,
+       46.12562
+      ],
+      [
+       16.3219,
+       46.12585
+      ],
+      [
+       16.32303,
+       46.12622
+      ],
+      [
+       16.32421,
+       46.12678
+      ],
+      [
+       16.32574,
+       46.12743
+      ],
+      [
+       16.3273,
+       46.12775
+      ],
+      [
+       16.32855,
+       46.1278
+      ],
+      [
+       16.33014,
+       46.12765
+      ]
+     ]
     }
    ],
-   "odseceno": 139,
-   "fetched": "2026-09-26T17:07+00:00",
+   "odseceno": 137,
+   "fetched": "2026-09-26T19:49+00:00",
    "nepotpuno": [
     "granicni-prijelazi-stanje"
    ]
@@ -4651,7 +4707,7 @@
     }
    ],
    "odseceno": 101,
-   "fetched": "2026-09-26T17:07+00:00"
+   "fetched": "2026-09-26T19:49+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -4900,7 +4956,7 @@
     }
    ],
    "odseceno": 34,
-   "fetched": "2026-09-26T17:07+00:00"
+   "fetched": "2026-09-26T19:49+00:00"
   },
   "ME": {
    "name": "Crna Gora",
@@ -4962,7 +5018,7 @@
      "region": "Crna Gora"
     }
    ],
-   "fetched": "2026-09-26T17:07+00:00"
+   "fetched": "2026-09-26T19:49+00:00"
   },
   "MK": {
    "name": "S. Makedonija",
@@ -5042,7 +5098,7 @@
      "region": "Кичево – Охрид"
     }
    ],
-   "fetched": "2026-09-26T17:07+00:00"
+   "fetched": "2026-09-26T19:49+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -5110,7 +5166,7 @@
      "region": "Sarandës"
     }
    ],
-   "fetched": "2026-09-26T17:07+00:00"
+   "fetched": "2026-09-26T19:49+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -5178,7 +5234,7 @@
      "region": "Граница с Република Сърбия"
     }
    ],
-   "fetched": "2026-09-26T17:07+00:00"
+   "fetched": "2026-09-26T19:49+00:00"
   },
   "RO": {
    "name": "Rumunija",
@@ -5427,7 +5483,7 @@
     }
    ],
    "odseceno": 372,
-   "fetched": "2026-09-26T17:07+00:00"
+   "fetched": "2026-09-26T19:49+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -5615,7 +5671,7 @@
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-09-26T17:07+00:00"
+   "fetched": "2026-09-26T19:49+00:00"
   }
  },
  "meteo": {
@@ -5816,18 +5872,6 @@
      "title": "Orange Thunderstorm Warning issued for Greece - East Peloponnisos",
      "detail": "nivo: narandzasto | pojava: Orange Warning | vazi: 2026-09-26T10:00Z do 2026-09-26T21:00Z",
      "region": "East Peloponnisos"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Orange Thunderstorm Warning issued for Greece - West Peloponnisos",
-     "detail": "nivo: narandzasto | pojava: Severe Thunderstorm | vazi: 2026-09-26T10:00Z do 2026-09-26T18:00Z",
-     "region": "West Peloponnisos"
-    },
-    {
-     "type": "meteo-upozorenje",
-     "title": "Yellow Rain Warning issued for Greece - West Sterea",
-     "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-09-25T15:00Z do 2026-09-26T18:00Z",
-     "region": "West Sterea"
     }
    ],
    0
