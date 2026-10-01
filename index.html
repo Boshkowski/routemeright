@@ -14,14 +14,14 @@
     <meta property="og:title" content="RouteMeRight - Pametna ruta za motor" />
     <meta property="og:description" content="Trošak za baš tvoj motor, vreme u trenutku kada prolaziš i probrane rute na Balkanu." />
     <meta name="twitter:card" content="summary" />
-    <script type="module" crossorigin src="./assets/launch-ROKImk_w.js"></script>
+    <script type="module" crossorigin src="./assets/launch-Co3vLgAA.js"></script>
     <link rel="modulepreload" crossorigin href="./assets/build-DoP2OPfF.js">
     <link rel="modulepreload" crossorigin href="./assets/lenis-DpKHxWCV.js">
-    <link rel="modulepreload" crossorigin href="./assets/overlay-DxlUkt2l.js">
+    <link rel="modulepreload" crossorigin href="./assets/overlay-CPob4PTN.js">
     <link rel="stylesheet" crossorigin href="./assets/build-6ap6_48p.css">
     <link rel="stylesheet" crossorigin href="./assets/lenis-fOJvfYOR.css">
-    <link rel="stylesheet" crossorigin href="./assets/overlay-Bixs_be3.css">
-    <link rel="stylesheet" crossorigin href="./assets/launch-BrkrebvV.css">
+    <link rel="stylesheet" crossorigin href="./assets/overlay-BGC9-ugD.css">
+    <link rel="stylesheet" crossorigin href="./assets/launch-BbEz0XQs.css">
   </head>
   <body class="ln rmr">
     <svg class="ln-symbols" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -36,13 +36,15 @@
     <div class="ln-scrim" aria-hidden="true"></div>
 
     <header class="ln-top">
-      <span class="rmr-caption ln-top-soon">Uskoro</span>
+      <span class="rmr-caption ln-top-soon" data-i18n="top.soon">Uskoro</span>
       <!-- the speed R, v2 (brand/logo): symbols injected from brand/logo/symbols.html by main.ts -->
-      <a class="ln-logo rmr-lockup" href="#top" aria-label="RouteMeRight, na početak">
+      <a class="ln-logo rmr-lockup" href="#top" aria-label="RouteMeRight, na početak" data-i18n-aria="top.logoAria">
         <svg class="rmr-lockup__mark ln-logo-mark" aria-hidden="true"><use href="#rmr-speed"/></svg>
         <svg class="rmr-lockup__word ln-logo-word" aria-hidden="true"><use href="#rmr-wordmark"/></svg>
       </a>
-      <a class="rmr-caption ln-top-join" href="#prijava">Prijava <svg class="rmr-icon" aria-hidden="true"><use href="#i-down"/></svg></a>
+      <!-- 1.10.2026: prekidac jezika (Boskova odluka) - isti kljuc rmr2_jezik kao aplikacija -->
+      <button class="rmr-caption ln-top-lang" id="langToggle" type="button" aria-label="Switch to English">EN</button>
+      <a class="rmr-caption ln-top-join" href="#prijava" data-i18n="top.join">Prijava <svg class="rmr-icon" aria-hidden="true"><use href="#i-down"/></svg></a>
     </header>
 
     <main class="ln-doc">
@@ -50,35 +52,35 @@
            finishes as the sign-up arrives (src/launch/main.ts reads these sections) -->
       <section class="ln-hero" id="top">
         <div class="ln-hero-copy">
-          <h1 class="ln-hero-title">Pametna ruta za motor.</h1>
-          <p class="rmr-caption ln-cue"><span class="ln-cue-rule" aria-hidden="true"></span>Skroluj i vozi</p>
+          <h1 class="ln-hero-title" data-i18n="hero.title">Pametna ruta za motor.</h1>
+          <p class="rmr-caption ln-cue" data-i18n="hero.cue"><span class="ln-cue-rule" aria-hidden="true"></span>Skroluj i vozi</p>
         </div>
       </section>
 
       <section class="ln-beat" data-beat="trosak" aria-labelledby="b1">
         <div class="ln-beat-copy">
-          <p class="rmr-caption rmr-caption--accent">Gorivo + putarine</p>
-          <h2 class="ln-beat-title" id="b1">Trošak za baš tvoj motor.</h2>
-          <p class="ln-beat-lede">Potrošnja tvog modela, gorivo po zemljama i putarine na ruti. Unapred, bez otprilike.</p>
-          <p class="rmr-caption ln-beat-fact"><span class="rmr-num">691</span> model u bazi</p>
+          <p class="rmr-caption rmr-caption--accent" data-i18n="b1.kick">Gorivo + putarine</p>
+          <h2 class="ln-beat-title" id="b1" data-i18n="b1.title">Trošak za baš tvoj motor.</h2>
+          <p class="ln-beat-lede" data-i18n="b1.lede">Potrošnja tvog modela, gorivo po zemljama i putarine na ruti. Unapred, bez otprilike.</p>
+          <p class="rmr-caption ln-beat-fact"><span class="rmr-num">691</span><span data-i18n="b1.fact"> model u bazi</span></p>
         </div>
       </section>
 
       <section class="ln-beat" data-beat="prognoza" aria-labelledby="b2">
         <div class="ln-beat-copy">
-          <p class="rmr-caption rmr-caption--accent">Prognoza za motocikliste</p>
-          <h2 class="ln-beat-title" id="b2">Vreme u trenutku kada prolaziš.</h2>
-          <p class="ln-beat-lede">Ne za grad, nego za svaki kilometar rute - presuda 3 vremenska modela.</p>
-          <p class="rmr-caption ln-beat-fact"><span class="rmr-num">3</span> modela + MET Norway</p>
+          <p class="rmr-caption rmr-caption--accent" data-i18n="b2.kick">Prognoza za motocikliste</p>
+          <h2 class="ln-beat-title" id="b2" data-i18n="b2.title">Vreme u trenutku kada prolaziš.</h2>
+          <p class="ln-beat-lede" data-i18n="b2.lede">Ne za grad, nego za svaki kilometar rute - presuda 3 vremenska modela.</p>
+          <p class="rmr-caption ln-beat-fact"><span class="rmr-num">3</span><span data-i18n="b2.fact"> modela + MET Norway</span></p>
         </div>
       </section>
 
       <section class="ln-beat" data-beat="rute" aria-labelledby="b3">
         <div class="ln-beat-copy">
-          <p class="rmr-caption rmr-caption--accent">Probrane rute</p>
-          <h2 class="ln-beat-title" id="b3">Neke rute se pamte po krivinama.</h2>
-          <p class="ln-beat-lede">Probrane rute na Balkanu, sa ocenom vozača koji su tuda prošli: asfalt, krivine i saobraćaj.</p>
-          <p class="rmr-caption ln-beat-fact">Đurđevića Tara - Jasenovo Polje · <span class="rmr-num">72,8</span> km · ocena <span class="rmr-num">5</span> / <span class="rmr-num">5</span></p>
+          <p class="rmr-caption rmr-caption--accent" data-i18n="b3.kick">Probrane rute</p>
+          <h2 class="ln-beat-title" id="b3" data-i18n="b3.title">Neke rute se pamte po krivinama.</h2>
+          <p class="ln-beat-lede" data-i18n="b3.lede">Probrane rute na Balkanu, sa ocenom vozača koji su tuda prošli: asfalt, krivine i saobraćaj.</p>
+          <p class="rmr-caption ln-beat-fact"><span data-i18n="b3.fact1">Đurđevića Tara - Jasenovo Polje · </span><span class="rmr-num" data-km="72.8">72,8</span><span data-i18n="b3.fact2"> km · ocena </span><span class="rmr-num">5</span> / <span class="rmr-num">5</span></p>
         </div>
       </section>
 
@@ -87,46 +89,46 @@
            poeni/kolekcije/priznanja bez naloga. -->
       <section class="ln-beat" data-beat="voznja" aria-labelledby="b4">
         <div class="ln-beat-copy">
-          <p class="rmr-caption rmr-caption--accent">Snimak vožnje</p>
-          <h2 class="ln-beat-title" id="b4">Svaka vožnja ostaje zapisana.</h2>
-          <p class="ln-beat-lede">Kilometri, vreme, prosečna i najveća brzina, ugao nagiba levo i desno. Na kraju: kartica koju deliš i snimak rute.</p>
-          <p class="rmr-caption ln-beat-fact">Trag leži na putu · nagib u stepenima · snimak do <span class="rmr-num">60</span> s</p>
+          <p class="rmr-caption rmr-caption--accent" data-i18n="b4.kick">Snimak vožnje</p>
+          <h2 class="ln-beat-title" id="b4" data-i18n="b4.title">Svaka vožnja ostaje zapisana.</h2>
+          <p class="ln-beat-lede" data-i18n="b4.lede">Kilometri, vreme, prosečna i najveća brzina, ugao nagiba levo i desno. Na kraju: kartica koju deliš i snimak rute.</p>
+          <p class="rmr-caption ln-beat-fact"><span data-i18n="b4.fact">Trag leži na putu · nagib u stepenima · snimak do </span><span class="rmr-num">60</span> s</p>
         </div>
       </section>
 
       <section class="ln-beat" data-beat="zajednica" aria-labelledby="b5">
         <div class="ln-beat-copy">
-          <p class="rmr-caption rmr-caption--accent">Zajednica</p>
-          <h2 class="ln-beat-title" id="b5">Vozači koji znaju put.</h2>
-          <p class="ln-beat-lede">Mesta gde se motoristi zaustavljaju, prijave opasnosti dok su sveže i ocene deonica od onih koji su tuda prošli. Skupljaj poene, kompletiraj kolekcije i osvajaj priznanja.</p>
-          <p class="rmr-caption ln-beat-fact"><span class="rmr-num">638</span> mesta zajednice · kolekcije · priznanja</p>
+          <p class="rmr-caption rmr-caption--accent" data-i18n="b5.kick">Zajednica</p>
+          <h2 class="ln-beat-title" id="b5" data-i18n="b5.title">Vozači koji znaju put.</h2>
+          <p class="ln-beat-lede" data-i18n="b5.lede">Mesta gde se motoristi zaustavljaju, prijave opasnosti dok su sveže i ocene deonica od onih koji su tuda prošli. Skupljaj poene, kompletiraj kolekcije i osvajaj priznanja.</p>
+          <p class="rmr-caption ln-beat-fact"><span class="rmr-num">638</span><span data-i18n="b5.fact"> mesta zajednice · kolekcije · priznanja</span></p>
         </div>
       </section>
 
       <section class="ln-join" id="prijava" aria-labelledby="join-title">
         <div class="ln-join-copy">
-          <p class="rmr-caption rmr-caption--accent">Uskoro</p>
-          <h2 class="ln-join-title" id="join-title">Budi prvi na listi.</h2>
-          <p class="ln-join-lede">Kad aplikacija izađe, javljamo ti. Jedna poruka, ništa više.</p>
+          <p class="rmr-caption rmr-caption--accent" data-i18n="join.kick">Uskoro</p>
+          <h2 class="ln-join-title" id="join-title" data-i18n="join.title">Budi prvi na listi.</h2>
+          <p class="ln-join-lede" data-i18n="join.lede">Kad aplikacija izađe, javljamo ti. Jedna poruka, ništa više.</p>
 
           <!-- Formspree mlgqwbjd: the same list as the live page (prijave stižu Bošku) -->
           <form class="ln-form" id="join" action="https://formspree.io/f/mlgqwbjd" method="POST" novalidate>
             <div class="ln-fields">
               <label class="ln-field">
-                <span class="rmr-caption">Mejl</span>
-                <input type="email" name="email" placeholder="tvoj@mejl.com" autocomplete="email" autocapitalize="off" spellcheck="false" enterkeyhint="send" aria-describedby="join-status" required />
+                <span class="rmr-caption" data-i18n="join.email">Mejl</span>
+                <input type="email" name="email" placeholder="tvoj@mejl.com" data-i18n-ph="join.emailPh" autocomplete="email" autocapitalize="off" spellcheck="false" enterkeyhint="send" aria-describedby="join-status" required />
               </label>
               <label class="ln-field">
-                <span class="rmr-caption">Tvoj motor <span class="ln-opt">(opciono)</span></span>
-                <input type="text" name="motor" placeholder="npr. Yamaha MT-07" list="motori" autocomplete="off" />
+                <span class="rmr-caption" data-i18n="join.bike">Tvoj motor <span class="ln-opt" data-i18n="join.opt">(opciono)</span></span>
+                <input type="text" name="motor" placeholder="npr. Yamaha MT-07" data-i18n-ph="join.bikePh" list="motori" autocomplete="off" />
               </label>
             </div>
             <datalist id="motori"></datalist>
             <input type="text" name="_gotcha" class="ln-gotcha" tabindex="-1" autocomplete="off" />
-            <input type="hidden" name="_subject" value="Nova prijava - RouteMeRight lista" />
+            <input type="hidden" name="_subject" value="Nova prijava - RouteMeRight lista" data-i18n-value="join.subject" />
             <input type="hidden" name="strana" value="landing - ruta na skrol" />
             <button class="rmr-btn rmr-btn--primary ln-submit" type="submit">
-              <span class="ln-submit-label">Javi mi</span>
+              <span class="ln-submit-label" data-i18n="join.submit">Javi mi</span>
               <svg class="rmr-icon" aria-hidden="true"><use href="#i-arrow"/></svg>
             </button>
           </form>
@@ -135,18 +137,18 @@
 
           <div class="ln-done" id="join-done" tabindex="-1" hidden>
             <svg class="rmr-icon ln-done-icon" aria-hidden="true"><use href="#i-check"/></svg>
-            <p class="ln-join-lede"><strong>Na listi si.</strong> Javljamo ti kad aplikacija izađe.</p>
+            <p class="ln-join-lede"><strong data-i18n="join.done1">Na listi si.</strong><span data-i18n="join.done2"> Javljamo ti kad aplikacija izađe.</span></p>
           </div>
 
-          <p class="ln-fine">Bez spama. Samo jedna poruka - kad izađe. <a href="https://routemeright.app/privatnost.html">Privatnost</a></p>
+          <p class="ln-fine"><span data-i18n="join.fine">Bez spama. Samo jedna poruka - kad izađe. </span><a href="https://routemeright.app/privatnost.html" data-pravno="https://routemeright.app/privatnost.html" data-i18n="join.privacy">Privatnost</a></p>
         </div>
 
         <footer class="ln-foot">
           <span class="rmr-caption">routemeright.app</span>
-          <nav class="ln-foot-links" aria-label="Pravno">
-            <a class="rmr-caption" href="https://routemeright.app/privatnost.html">Privatnost</a>
-            <a class="rmr-caption" href="https://routemeright.app/uslovi.html">Uslovi</a>
-            <a class="rmr-caption" href="https://routemeright.app/impresum.html">Impresum</a>
+          <nav class="ln-foot-links" aria-label="Pravno" data-i18n-aria="foot.legalAria">
+            <a class="rmr-caption" href="https://routemeright.app/privatnost.html" data-pravno="https://routemeright.app/privatnost.html" data-i18n="foot.privacy">Privatnost</a>
+            <a class="rmr-caption" href="https://routemeright.app/uslovi.html" data-pravno="https://routemeright.app/uslovi.html" data-i18n="foot.terms">Uslovi</a>
+            <a class="rmr-caption" href="https://routemeright.app/impresum.html" data-pravno="https://routemeright.app/impresum.html" data-i18n="foot.imprint">Impresum</a>
           </nav>
         </footer>
       </section>
