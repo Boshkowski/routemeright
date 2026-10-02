@@ -16748,6 +16748,9 @@ async function plan() {
       let usla = false;
       if (!roundGen && atlasNameraVazi(dA)) {
         const vA = atlasVias(dA, from);
+        if (vA && vA.length > 1 && to && to.lat != null) {   // 3.10.: kad je CILJ sam izlaz deonice, izlaz ne ide i kao stanica (dve iste tacke)
+          const z = vA[vA.length - 1].v; if (haversine(to.lat, to.lon, z[1], z[0]) < 0.05) vA.pop();
+        }
         if (vA && vA.length) {
           state.vias = vA; state.atlasApplied = dA.kljuc || dA.naziv; state.famousApplied = null;
           // 0.9.91: geometrija ostaje pri ruci - kurirano sivenje je koristi kao SAV BEZ CENE (atlasKandidat)
@@ -17426,8 +17429,12 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.174";
+const APP_VERSION = "0.9.175";
 const CHANGELOG = [
+  { v: "0.9.175", d: "03.10.2026.", stavke: [
+    "<b>\"Vodi me preko nje\" bez biranja cilja.</b> Dodir na deonicu u Atlasu i Vodi me: ruta ide od tebe do ulaza deonice (bližeg kraja), pa preko cele deonice do izlaza. Cilj se više ne traži posebno; ako već imaš cilj, pita te kao i do sad.",
+    "<b>Istraži → Blizu tebe: dodir na deonicu ponovo radi.</b> Od selidbe lista u traku (0.9.126) dodir na red u \"Blizu tebe\" nije stizao nikome, pa se ništa nije dešavalo. Sad otvara karticu deonice sa \"Vodi me preko nje\", a \"Nazad na listu\" vraća baš u Blizu tebe.",
+  ] },
   { v: "0.9.174", d: "03.10.2026.", stavke: [
     "<b>Prijatelj: dugme Nazad i jasna lokacija.</b> List prijatelja ima \"← Nazad\" (crveni X je ličio na brisanje). Ispod statistike piše da li je na mapi, da li mu je lokacija stara, ili je nikad nije poslao. U Ja, ispod prekidača, piše kad je tvoja lokacija poslednji put poslata.",
     "<b>Korisničko ime mora biti po pravilu.</b> Polje je obavezno; dok kucaš, loš oblik (razmak, velika slova, ćirilica) odmah dobija crven okvir i poruku sa predlogom (npr. \"ANA DIVIC\" → ana_divic). Kreni ne pušta dalje dok ime nije ispravno. Isto važi za promenu u Ja.",
@@ -28352,6 +28359,17 @@ function blizuCrtaj() {
   document.addEventListener("click", (e) => {
     const r = e.target.closest("#blizuPanel .bpolu button");
     if (r) { BLIZU.r = +r.dataset.r || 50; blizuCrtaj(); return; }
+    /* 3.10. (Bosko: "kliknem na bilo koju od tih ruta, nista se ne desava"): redovi deonica u "Blizu tebe" zive u
+       #istraziPane (selidba u traku, 0.9.126), a slusalac za [data-k] stoji na #atlasTelo - dodir nije stizao nikome.
+       Izmereno u pregledacu: 26 redova, klik -> ATLAS.sel ostaje null. Ovde: izbor + prelaz na karticu, sa povratkom u TU listu. */
+    const red = e.target.closest("#istraziPane [data-k]");
+    if (red && red.dataset.k) {
+      const lista = IST.list, n = document.querySelectorAll("#istraziPane [data-k]").length;
+      atlasIzaberi(red.dataset.k);
+      ATLAS._povratak = { fil: { ...(ATLAS.fil || {}) }, prikazano: ATLAS.prikazano || 80, skrol: 0, n, ist: lista };   // "Nazad na listu" vraca u Blizu tebe
+      istPrikazi("deonice");
+      return;
+    }
     if (e.target.closest("#blizuKrug")) {
       const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
       document.body.classList.add("planning");
@@ -28681,7 +28699,24 @@ function atlasVodiMe() {
   const ciljIme = imaCilj ? cilj.value.trim() : "";
   atlasZatvori("mapa");
   if (imaCilj) { atlasCiljPitaj(ciljIme); return; }
-  try { openSearch("to"); } catch (e) {}   // postojeci tok izbora odredista
+  /* 3.10. (Bosko: "kad kliknem na tu rutu da me prvo vodi do ulaza pa onda celu rutu"): bez cilja se cilj NE trazi -
+     cilj je IZLAZ deonice (kraj dalji od mene), a plan() kroz pendingAtlas ubaci ulaz i usputne tacke. Ruta: ja -> ulaz -> cela deonica. */
+  const iz = atlasIzlaz(d);
+  if (iz) { SEARCH_MODE = "to"; pickDestination({ n: iz.name, lat: iz.lat, lon: iz.lon, odmah: true }); return; }
+  try { openSearch("to"); } catch (e) {}   // bez geometrije deonice: stari tok izbora odredista
+}
+function atlasKrajevi(d) {   // imena ulaza/izlaza deonice, isto kao u atlasVias
+  let odIme = atlasCistoIme(d.od) || null, doIme = atlasCistoIme(d.do) || null;
+  if (!odIme || !doIme) { const par = atlasCistoIme(String(d.naziv || "")).split(" - "); if (par.length === 2) { odIme = odIme || par[0].trim(); doIme = doIme || par[1].trim(); } }
+  return { odIme, doIme };
+}
+function atlasIzlaz(d, poz) {   // izlaz = kraj deonice DALJI od mene (ulaz je blizi); bez pozicije - kraj po zapisu
+  if (!d || !Array.isArray(d.coords) || d.coords.length < 2) return null;
+  const cs = d.coords, u = cs[0], z = cs[cs.length - 1], k = atlasKrajevi(d);
+  let f = poz; if (!f) { try { f = window.ruteGeoPoz && window.ruteGeoPoz(); } catch (e) {} } if (!f) { try { f = lokacijaMojFix(); } catch (e) {} }
+  let kraj = z, ime = k.doIme;
+  if (f && f.lat != null && haversine(f.lat, f.lon, z[1], z[0]) < haversine(f.lat, f.lon, u[1], u[0])) { kraj = u; ime = k.odIme; }
+  return { name: ime || atlasNaslov(d.naziv), lat: kraj[1], lon: kraj[0] };
 }
 /* G7: dijalog je pravi modal - fokus ulazi u njega i ne izlazi dok traje, Escape ga zatvara
    kao i tap na zamracenje (oba znace "odustao", pa gase i naoruzanu nameru). */
@@ -28884,6 +28919,7 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
       }
       if (e.target.closest("#atlasNazadListu")) {   // G5: nazad u TU listu, sa filterima i mestom skrola
         const p = ATLAS._povratak; ATLAS._povratak = null;
+        if (p && p.ist && p.ist !== "deonice") { istPrikazi(p.ist); return; }   // 3.10.: izbor iz "Blizu tebe" se vraca u Blizu tebe
         if (p) { ATLAS.fil = p.fil; ATLAS.prikazano = p.prikazano; ATLAS._skrol = p.skrol; }
         ATLAS.lista = true; atlasSheetCrtaj();
         return;
