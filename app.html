@@ -1053,6 +1053,39 @@
     .jrow input[type=checkbox]:checked::after { transform: translate(16px, -50%); background: #fff; }
     .jnote { font-size: 11px; color: var(--fg-muted); font-weight: 400; margin-top: 10px; }
   }
+
+/* ===== 1.10.2026 NALOZI I PRIJATELJI (faza 1): Zajednica -> Prijatelji. Filipov jezik - grafit kartica,
+   tanka linija, Coast caps natpisi, jedno narandzasto dugme, crveni X. / Friends section. ===== */
+#screen-zajednica .zprij { margin-top: 10px; }
+.zpr-kart { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-lg); padding: 14px; }
+.zpr-n { font-size: 16px; font-weight: 500; color: var(--fg-strong); }
+.zpr-d { font-size: 13px; color: var(--fg-muted); margin-top: 3px; line-height: 1.45; }
+.zpr-forma { display: flex; gap: 8px; margin-top: 12px; }
+.zpr-forma input { flex: 1; min-width: 0; height: 46px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); background: var(--bg); color: var(--fg-strong); font: 400 16px var(--font-ui); }
+.zpr-forma input:focus { outline: none; border-color: var(--accent); }
+.zpr-forma input#zprKod { font-family: var(--font-num); letter-spacing: .12em; text-transform: uppercase; }
+.zpr-forma button { flex: none; height: 46px; padding: 0 16px; border: 0; border-radius: var(--r-sm); background: var(--action-gradient); color: var(--on-accent); font: 600 14px var(--font-ui); cursor: pointer; }
+.zpr-forma button:disabled { opacity: .6; }
+.zpr-greska { margin-top: 10px; font-size: 13px; color: var(--bad-fg); line-height: 1.4; }
+.zpr-greska[hidden] { display: none; }
+.zpr-kod { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.zpr-kod .zpr-cap { display: block; font-family: var(--font-cap); font-synthesis: none; font-weight: var(--fw-cap); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.zpr-kod b { font: 300 30px var(--font-num); letter-spacing: .12em; color: var(--fg-strong); }
+.zpr-kod button { height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-strong); background: none; color: var(--fg); font: 500 13px var(--font-ui); cursor: pointer; }
+.zpr-lista { margin-top: 8px; }
+.zpr-prazno { padding: 14px 4px; font-size: 13px; color: var(--fg-muted); line-height: 1.45; }
+.zpr-red { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 2px; border-bottom: 1px solid var(--line-hairline); }
+.zpr-av { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--fg-soft); display: flex; align-items: center; justify-content: center; font: 500 15px var(--font-cap); color: var(--fg-strong); flex: none; }
+.zpr-t { flex: 1; min-width: 0; }
+.zpr-t b { display: block; font-size: 15px; font-weight: 500; color: var(--fg-strong); }
+.zpr-t small { display: block; font-size: 12px; color: var(--fg-muted); margin-top: 1px; }
+.zpr-t small.akc { color: var(--accent-text); }
+.zpr-akc { display: flex; gap: 8px; flex: none; }
+.zpr-ok { height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--action-gradient); color: var(--on-accent); font: 600 13px var(--font-ui); cursor: pointer; }
+.zpr-x { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--danger-400); background: rgba(234,61,87,.12); color: var(--danger-400); font-size: 15px; cursor: pointer; }
+#jaNalog .jkod { font-family: var(--font-num); letter-spacing: .1em; }
+#jaNalog .jceka { font-style: normal; color: var(--accent-text); font-weight: 400; font-size: 12px; }
+#jaNalog .jrow .jlink { margin-left: 8px; }
   /* ===== app2 Faza 1b: HOME kao maketa (pretraga + chipovi + FAB + čist sheet) ===== */
   #homeChrome, #homeFabs, #homeSheet, #plannerClose { display: none; }
   @media (max-width: 900px), (max-height: 520px) {
@@ -2089,6 +2122,109 @@ body.kplan #bottomnav, body.mcilj #bottomnav { display: none; }
   body.planning #panel { position: relative; }
   body.planning #plannerClose { display: flex !important; }
 }
+/* ===== 2.10.2026: KAPIJA (obavezna prijava), slika korisnika, sazetak prijatelja ===== */
+#nalogKapija { display: none; }
+#nalogKapija:not([hidden]) { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; z-index: 8000; background: var(--bg); padding: 24px; }
+body.kapija #bottomnav, body.kapija #homeChrome, body.kapija #homeFabs { display: none !important; }
+.nk-telo { width: 100%; max-width: 360px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.nk-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; font-weight: 600; font-size: 18px; letter-spacing: -0.01em; color: var(--fg-strong); }
+.nk-logo svg { width: 30px; height: 30px; border-radius: 8px; }
+.nk-logo em { font-style: normal; color: var(--accent-text); }
+#nalogKapija h2 { margin: 0; font: 300 28px/1.15 var(--font-ui); color: var(--fg-strong); }
+.nk-opis { margin: 10px 0 22px; font-size: 14px; line-height: 1.5; color: var(--fg-muted); }
+.nk-av { width: 96px; height: 96px; border-radius: 50%; border: 1.5px dashed var(--fg-decor); background: var(--surface); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; padding: 0; margin-bottom: 18px; }
+.nk-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.nk-av span { font: 300 30px var(--font-num); color: var(--fg-soft); line-height: 1; }
+.nk-av small { font-family: var(--font-cap); font-synthesis: none; font-weight: var(--fw-cap); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); margin-top: 2px; }
+#nkIme { width: 100%; height: 52px; padding: 0 16px; border-radius: var(--r-lg); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg-strong); font: 400 17px var(--font-ui); text-align: center; }
+#nkIme:focus { outline: none; border-color: var(--accent); }
+.nk-motor { margin-top: 10px; font-size: 13px; color: var(--fg-muted); line-height: 1.4; }
+#nalogKapija .zpr-greska { text-align: left; width: 100%; }
+.nk-kreni { width: 100%; height: 52px; margin-top: 18px; border: 0; border-radius: var(--r-lg); background: var(--action-gradient); color: var(--on-accent); font: 600 16px var(--font-ui); cursor: pointer; box-shadow: var(--shadow-cta, 0 6px 18px rgba(255,122,46,.25)); }
+.nk-kreni:disabled { opacity: .6; }
+.nk-preskoci { margin-top: 14px; background: none; border: 0; font-size: 12px; color: var(--fg-muted); text-decoration: underline; cursor: pointer; }
+.nk-preskoci[hidden] { display: none; }
+/* slike: u redovima prijatelja i u Ja */
+.zpr-av { position: relative; overflow: hidden; }
+.zpr-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.zpr-av i { font-style: normal; }
+.zpr-av img + i { visibility: hidden; }
+.zpr-red[role="button"] { cursor: pointer; }
+#jaNalog .jrow.jav { align-items: center; }
+#jaNalog .jav-av { width: 34px; height: 34px; margin-left: auto; font-size: 14px; }
+#jaNalog .jopasno { display: block; margin-top: 10px; color: var(--danger-400); }
+/* sazetak prijatelja - isti list kao mesto na mapi */
+#prijateljList { display: none; }
+#prijateljList:not([hidden]) { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 47; background: var(--bg-veil); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+  border-top: 1px solid var(--line-strong); border-radius: 28px 28px 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -16px 40px rgba(0,0,0,.5); }
+.pl-glava { display: flex; align-items: center; gap: 14px; }
+.pl-av { width: 56px; height: 56px; border-radius: 50%; border: 1.5px solid var(--fg-soft); display: flex; align-items: center; justify-content: center; font: 500 22px var(--font-cap); color: var(--fg-strong); flex: none; position: relative; overflow: hidden; }
+.pl-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pl-av i { font-style: normal; } .pl-av img + i { visibility: hidden; }
+.pl-t { flex: 1; min-width: 0; }
+.pl-t b { display: block; font-size: 20px; font-weight: 500; color: var(--fg-strong); }
+.pl-t small { display: block; font-size: 13px; color: var(--fg-muted); margin-top: 2px; }
+.pl-stat { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 16px; }
+.pl-stat > div { background: var(--surface); border: 1px solid var(--line-hairline); border-radius: var(--r-lg); padding: 10px 8px; text-align: center; }
+.pl-stat b { display: block; font: 300 26px var(--font-num); color: var(--fg-strong); line-height: 1; }
+.pl-stat span { display: block; margin-top: 4px; font-family: var(--font-cap); font-synthesis: none; font-weight: var(--fw-cap); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.pl-stat .pl-posl { grid-column: 1 / -1; background: none; border: 0; padding: 2px 0 0; text-align: left; font-size: 12px; color: var(--fg-muted); }
+#prijateljList .kp-cta { margin-top: 14px; }
+#prijateljList .kp-cta .kp-plan[hidden] { display: none; }
+#prijateljList .kp-cta:has(.kp-plan[hidden]) .kp-x { flex: 1; }
+@media (min-width: 901px) and (min-height: 521px) { #prijateljList:not([hidden]) { left: 24px; right: auto; bottom: 24px; width: 400px; border: 1px solid var(--line-strong); border-radius: 20px; } }
+/* ===== 2.10.2026 "NADJEMO SE TAMO" (faza 2): traka na pocetnom, kartice u Zajednici, listovi ===== */
+#sastanakTraka { display: none; }
+/* 2.10. (Boskov nalaz "layer preko mape"): traka je NASTAVAK polja - ista podloga i ivica, bez narandzastog
+   okvira, zalepljena uz polje (gornji uglovi ravni), akcenat samo na tacki i na caps natpisu desno */
+#sastanakTraka:not([hidden]) { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: -6px; padding: 10px 12px 10px 10px; border-radius: 0 0 var(--r-lg) var(--r-lg); background: var(--bg-veil); border: 1px solid var(--line-strong); border-top: 1px solid var(--line-hairline); box-shadow: 0 8px 28px rgba(0,0,0,.45); text-align: left; cursor: pointer; pointer-events: auto; color: var(--fg); font: inherit; position: relative; }
+body:has(#sastanakTraka:not([hidden])) #homeSearch { border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: none; }
+#sastanakTraka .st-av { position: relative; }
+#sastanakTraka .st-av::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); }
+#sastanakTraka .st-av .st-avi { width: 32px; height: 32px; font-size: 13px; }
+#sastanakTraka .st-t { flex: 1; min-width: 0; }
+#sastanakTraka .st-t b { display: block; font-size: 13px; font-weight: 500; color: var(--fg-strong); }
+#sastanakTraka .st-t small { display: block; font-size: 12px; color: var(--fg-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.kplan #sastanakTraka, body.hasroute #sastanakTraka, body.riding #sastanakTraka { display: none !important; }
+#screen-zajednica .zsast { margin-bottom: 6px; }
+.zs-kart { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 10px; padding: 12px 14px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--accent); text-align: left; cursor: pointer; color: var(--fg); font: inherit; }
+.zs-kart .zs-t { flex: 1; min-width: 0; }
+.zs-kart .zs-t b { display: block; font-size: 15px; font-weight: 500; color: var(--fg-strong); }
+.zs-kart .zs-t small { display: block; font-size: 12px; color: var(--fg-muted); margin-top: 1px; }
+#sastanakNovi, #sastanakList { display: none; }
+#sastanakNovi:not([hidden]), #sastanakList:not([hidden]) { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 48; background: var(--bg-veil); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+  border-top: 1px solid var(--line-strong); border-radius: 28px 28px 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -16px 40px rgba(0,0,0,.5); max-height: 86dvh; overflow-y: auto; }
+#sastanakNovi .kp-cipovi, #sastanakList .kp-cipovi { margin-top: 12px; }
+#snKad { width: 100%; height: 44px; margin-top: 8px; border-radius: var(--r-lg); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg-strong); font: 500 16px var(--font-num); padding: 0 12px; box-sizing: border-box; }
+#snKad[hidden] { display: none; }
+#snPoruka { width: 100%; height: 46px; margin-top: 10px; padding: 0 14px; border-radius: var(--r-lg); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg-strong); font: 400 15px var(--font-ui); box-sizing: border-box; }
+#snPoruka:focus { outline: none; border-color: var(--accent); }
+.sn-cap { display: block; margin: 14px 2px 4px; }
+.sn-lista { max-height: 36dvh; overflow-y: auto; }
+.sn-red { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 6px 2px; border-bottom: 1px solid var(--line-hairline); cursor: pointer; }
+.sn-red input { width: 22px; height: 22px; accent-color: var(--accent); margin-left: auto; }
+.sl-ucesnici { margin-top: 12px; }
+.sl-red { display: flex; align-items: center; gap: 12px; min-height: 50px; padding: 6px 2px; border-bottom: 1px solid var(--line-hairline); }
+.sl-red .zpr-t small.akc { color: var(--accent-text); }
+#sastanakList .mc-t small:first-child { color: var(--fg-muted); }
+#sastanakList .mc-t b { font-size: 20px; }
+@media (min-width: 901px) and (min-height: 521px) { #sastanakNovi:not([hidden]), #sastanakList:not([hidden]) { left: 24px; right: auto; bottom: 24px; width: 400px; border: 1px solid var(--line-strong); border-radius: 20px; max-height: calc(100vh - 48px); } }
+/* lista "Koga zoves": <label> nasledjuje globalni stil natpisa (caps) - vrati obican tekst */
+.sn-red, .sn-red .zpr-t b, .sn-red .zpr-t small { font-family: var(--font-ui); text-transform: none; letter-spacing: 0; }
+.sn-red .zpr-t b { font-size: 15px; font-weight: 500; color: var(--fg-strong); }
+.sn-red .zpr-t small { font-size: 12px; font-weight: 400; color: var(--fg-muted); }
+/* ===== 2.10.2026 PRIJATELJI UZIVO (faza 3): prsten sa slikom/slovom + natpis, kao pinovi sazetka ===== */
+.pr-pin { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+.pr-nat { font: var(--fw-cap) 11px var(--font-cap); font-synthesis: none; letter-spacing: .08em; text-transform: uppercase; color: var(--paper-100); background: rgba(14,12,11,.92); padding: 4px 8px; border-radius: 5px; white-space: nowrap; box-shadow: 0 3px 10px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08); }
+.pr-nat b { font-weight: var(--fw-cap); }
+.pr-nat span { color: var(--ink-400); margin-left: 6px; }
+.pr-krug { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--paper-100); background: rgba(14,12,11,.9); display: flex; align-items: center; justify-content: center; font: 500 14px var(--font-cap); color: var(--paper-100); position: relative; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,.6); }
+.pr-krug.voznja { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(255,122,46,.22), 0 2px 6px rgba(0,0,0,.6); }
+.pr-krug img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.pr-krug i { font-style: normal; } .pr-krug img + i { visibility: hidden; }
+.pr-pin.levo { flex-direction: row-reverse; gap: 6px; }           /* uz desnu ivicu: natpis levo od prstena */
+.pr-pin.dole { flex-direction: column-reverse; }                 /* uz gornju ivicu: natpis ispod prstena */
+.pr-pin.levo.dole { flex-direction: row-reverse; }
     /* Oznaka test verzije: uvek se vidi u kojoj si aplikaciji i sta je u njoj novo.
        Nestaje u voznji da ne smeta. */
     #verBadge { position: fixed; left: 10px; bottom: calc(92px + env(safe-area-inset-bottom));
@@ -2404,6 +2540,10 @@ body.kplan #bottomnav, body.mcilj #bottomnav { display: none; }
     #homeSheet { transition: transform 300ms cubic-bezier(.2,.8,.2,1); touch-action: pan-y; }
     #homeSheet.collapsed { transform: translateY(calc(100% - 30px)); }
   }
+/* 2.10.2026 (faza 4 "juri ga"): tabla u HUD-u - ista porodica kao .ahead/.wx, jedan akcenat na imenu */
+#rideBar .plates .juri { display: none; }
+#rideBar .plates .juri.on { display: block; padding: 8px 12px; border-radius: var(--r-sm); background: rgba(14,12,11,.92); border: 1px solid var(--line-strong); color: var(--fg-strong); font: 500 14px var(--font-ui); }
+#rideBar .plates .juri.on::before { content: "⟶ "; color: var(--accent-text); }
   /* ===== app2 Faza 3: REZULTAT ekran (kao result2 maketa: hero + metrike + krivine) ===== */
   #resHero, #resCta { display: none; }
   @media (max-width: 900px), (max-height: 520px) {
@@ -3422,6 +3562,23 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <g fill-rule="evenodd"><path class="p1" d="M445.4 0L694.6 0A13 13 0 0 1 703.8 3.8L836.2 136.2A13 13 0 0 1 840 145.4L840 254.6A13 13 0 0 1 836.2 263.8L703.8 396.2A13 13 0 0 1 694.6 400L529.9 400A4.2 4.2 0 0 0 526.9 407.2L626.4 506.7A7.8 7.8 0 0 1 620.9 520L532 520A13 13 0 0 1 522.8 516.2L415.8 409.2A13 13 0 0 1 415.8 390.8L482.8 323.8A13 13 0 0 1 491.9 320L664 320A7 7 0 0 0 668.9 317.9L758 228.9A7 7 0 0 0 760 224L760 176A7 7 0 0 0 758 171.1L668.9 82A7 7 0 0 0 664 80L378.8 80A7.8 7.8 0 0 1 373.3 66.7L436.2 3.8A13 13 0 0 1 445.4 0Z"/><path class="p2" d="M145.4 120L537 120A13 13 0 0 1 550 133L550 194.6A13 13 0 0 1 546.2 203.8L233.8 516.2A13 13 0 0 1 224.6 520L135.7 520A7.8 7.8 0 0 1 130.2 506.7L189.7 447.2A4.2 4.2 0 0 0 186.7 440L18.8 440A7.8 7.8 0 0 1 13.3 426.7L76.2 363.8A13 13 0 0 1 85.4 360L274 360A7 7 0 0 0 278.9 357.9L309.7 327.2A4.2 4.2 0 0 0 306.7 320L48.8 320A7.8 7.8 0 0 1 43.3 306.7L106.2 243.8A13 13 0 0 1 115.4 240L394 240A7 7 0 0 0 398.9 237.9L429.7 207.2A4.2 4.2 0 0 0 426.7 200L78.8 200A7.8 7.8 0 0 1 73.3 186.7L136.2 123.8A13 13 0 0 1 145.4 120Z"/></g>
   </svg>
 </div>
+<!-- 2.10.2026 (Boskov nalog): "ako nemas nalog ne mozes da koristis app" - kapija pri paljenju: slika (po zelji),
+     ime, Kreni. Nalog je bez lozinke (anonimna sesija vezana za telefon). Nema je u ?preview=1 / ?demo (alati, snimci).
+     / Sign-in gate at launch: photo, name, go. -->
+<div id="nalogKapija" hidden role="dialog" aria-modal="true" aria-labelledby="nkNaslov">
+  <div class="nk-telo">
+    <div class="nk-logo"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="var(--surface-raised)"/><g fill="var(--fg-strong)" transform="translate(72 144.6) scale(0.42857)" fill-rule="evenodd"><path d="M445.38 0.00L694.62 0.00A110 110 0 0 1 694.62 220.00L580 220 740 520 560 520 400 220 240 220 240 520 60 520 60 0z"/></g></svg><span>Route<em>Me</em>Right</span></div>
+    <h2 id="nkNaslov" data-i18n="nk.naslov">Ko vozi?</h2>
+    <p class="nk-opis" data-i18n="nk.opis">Ime i slika su ono što prijatelji vide. Bez lozinke i mejla - nalog je vezan za ovaj telefon.</p>
+    <button type="button" class="nk-av" id="nkAv" aria-label="Izaberi sliku" data-i18n-aria="nk.slikaAria"><img id="nkAvImg" alt="" hidden><span id="nkAvIni">+</span><small data-i18n="nk.slika">slika</small></button>
+    <input id="nkIme" maxlength="32" autocomplete="name" placeholder="Tvoje ime ili nadimak" data-i18n-ph="nal.imePh">
+    <div class="nk-motor" id="nkMotor"></div>
+    <div class="zpr-greska" id="nkGreska" hidden></div>
+    <button type="button" class="nk-kreni" id="nkKreni" data-i18n="nk.kreni">Kreni</button>
+    <button type="button" class="nk-preskoci" id="nkPreskoci" hidden data-i18n="nk.preskoci">Nastavi bez naloga (bez prijatelja, do sledećeg paljenja)</button>
+  </div>
+</div>
+<input type="file" id="avatarFajl" accept="image/*" hidden>
 <div id="app">
   <aside id="panel">
     <div id="peekBar" role="button" tabindex="0" aria-label="Prikaži ili sakrij planer" data-i18n-aria="planer.aria.peekBar">
@@ -3846,6 +4003,8 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <!-- 1.10.2026 (maketa E1, Boskov nalaz "nema automatizacije"): aplikacija ne pita ono sto zna.
          Odakle (GPS), kad (sada) i kojim motorom (profil) stoje u jednom tihom redu; svaka rec se
          menja dodirom. / The planner shows what it already knows instead of asking. -->
+    <!-- 2.10.2026 (faza 2): poziv "Nadjemo se tamo" na pocetnom - jedan red, dodir otvara list sastanka -->
+    <button type="button" id="sastanakTraka" hidden></button>
     <div id="homeCtx" aria-label="Polazak, vreme i motor" data-i18n-aria="hc.aria">
       <button type="button" data-ctx="od"><span data-i18n="hc.iz">iz</span> <b id="hcOd" data-i18n="hc.mojeLokacije">moje lokacije</b></button><i>·</i>
       <button type="button" data-ctx="kad"><b id="hcKad" data-i18n="hc.sada">sada</b></button><i>·</i>
@@ -3953,6 +4112,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <p class="mc-opis" id="mcOpis" hidden></p>
     <div class="kp-cipovi mc-cipovi">
       <button type="button" class="kp-cip" id="mcSacuvaj" hidden><span data-i18n="mc.sacuvaj">Sačuvaj</span></button>
+      <button type="button" class="kp-cip on" id="mcNadjemo" hidden><span data-i18n="sas.nadjemoSe">Nađemo se tamo</span></button>
       <a class="kp-cip" id="mcIzvor" hidden target="_blank" rel="noopener"><span data-i18n="mc.izvor">Izvor ↗</span></a>
     </div>
     <div class="kp-cta">
@@ -3960,6 +4120,35 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
       <button type="button" class="kp-x" id="mcX" aria-label="Zatvori" data-i18n-aria="kp.zatvori"><svg viewBox="0 0 24 24" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <button type="button" class="mc-samo" id="mcSamo" hidden data-i18n="mc.vodiSamo">Vodi me samo tamo</button>
+  </div>
+  <!-- 2.10.2026: dodir na prijatelja = sazetak (slika, ime, motor, aktivnost, voznje) -->
+  <div id="prijateljList" hidden role="dialog" aria-modal="true" aria-label="Prijatelj" data-i18n-aria="pl.aria">
+    <div class="kp-grab" aria-hidden="true"></div>
+    <div class="pl-glava"><span class="pl-av" id="plAv"></span><div class="pl-t"><b id="plIme"></b><small id="plMotor"></small><small id="plAkt"></small></div></div>
+    <div class="pl-stat" id="plStat"></div>
+    <div class="kp-cta"><button type="button" class="kp-plan" id="plVodi" hidden><span data-i18n="pl.vodiMe">Vodi me do njega</span></button><button type="button" class="kp-x" id="plX" aria-label="Zatvori" data-i18n-aria="kp.zatvori"><svg viewBox="0 0 24 24" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <button type="button" class="mc-samo" id="plUkloni" data-i18n="nal.ukloni">Ukloni prijatelja</button>
+  </div>
+  <!-- 2.10.2026 (faza 2): NOVI SASTANAK - mesto iz lista mesta, vreme, poruka, prijatelji -->
+  <div id="sastanakNovi" hidden role="dialog" aria-modal="true" aria-label="Nađemo se tamo" data-i18n-aria="sas.nadjemoSe">
+    <div class="kp-grab" aria-hidden="true"></div>
+    <div class="mc-glava"><div class="mc-t"><b id="snIme"></b><small data-i18n="sas.novOpis">Pozovi prijatelje - svi dobiju "Vodi me tamo" i vide ko kad stiže.</small></div></div>
+    <div class="kp-cipovi"><button type="button" class="kp-cip on" id="snSada" data-tm="sada"><span data-i18n="sas.cimStignes">Čim stigneš</span></button><button type="button" class="kp-cip" id="snU" data-tm="u"><span id="snUTxt" data-i18n="sas.uVreme">U...</span></button></div>
+    <input id="snKad" type="datetime-local" hidden aria-label="Vreme sastanka" data-i18n-aria="sas.vremeAria">
+    <input id="snPoruka" maxlength="140" placeholder="Poruka (npr. kafa pa Tara)" data-i18n-ph="sas.porukaPh">
+    <div class="sn-cap rmr-cap" data-i18n="sas.koga">Koga zoveš</div>
+    <div class="sn-lista" id="snLista"></div>
+    <div class="zpr-greska" id="snGreska" hidden></div>
+    <div class="kp-cta"><button type="button" class="kp-plan" id="snPosalji"><span data-i18n="sas.posalji">Pošalji poziv</span></button><button type="button" class="kp-x" id="snX" aria-label="Zatvori" data-i18n-aria="kp.zatvori"><svg viewBox="0 0 24 24" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  </div>
+  <!-- 2.10.2026 (faza 2): DETALJ SASTANKA - mesto, vreme, ko dolazi i kad, Vodi me tamo / Dolazim / Ne mogu -->
+  <div id="sastanakList" hidden role="dialog" aria-modal="true" aria-label="Sastanak" data-i18n-aria="sas.aria">
+    <div class="kp-grab" aria-hidden="true"></div>
+    <div class="mc-glava"><div class="mc-t"><small id="slOd"></small><b id="slIme"></b><small id="slKad"></small></div><div class="mc-n" id="slDalj"></div></div>
+    <p class="mc-opis" id="slPoruka" hidden></p>
+    <div class="sl-ucesnici" id="slUcesnici"></div>
+    <div class="kp-cipovi"><button type="button" class="kp-cip" id="slNe"><span data-i18n="sas.neMogu">Ne mogu</span></button><button type="button" class="kp-cip" id="slOtkazi" hidden><span data-i18n="sas.otkazi">Otkaži sastanak</span></button></div>
+    <div class="kp-cta"><button type="button" class="kp-plan" id="slVodi"><span data-i18n="mc.vodiMe">Vodi me tamo</span></button><button type="button" class="kp-x" id="slX" aria-label="Zatvori" data-i18n-aria="kp.zatvori"><svg viewBox="0 0 24 24" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   </div>
   <div id="rideBar">
     <div class="navcard">
@@ -3977,6 +4166,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
       <div class="btns"><button id="rideMute" aria-label="Zvuk" data-i18n-aria="planer.aria.rideMute"></button><button id="rideX" aria-label="Prekini vožnju" data-i18n-aria="planer.aria.rideX"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/></svg></button></div>
     </div>
     <div class="plates">
+      <div class="juri" id="rideJuri" hidden></div>   <!-- faza 4 (2.10.): "juri ga" - razmak, njegova brzina, stizes ga za -->
       <div class="ahead" id="rideAhead"></div>
       <div class="wx" id="rideWx"></div>
     </div>
@@ -4223,8 +4413,12 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
       <div id="zFeed"><div class="stub" data-i18n="zajednica.ucitavamPrijaveZajednice">Učitavam prijave zajednice…</div></div>
       <div class="zsec" data-i18n="zajednica.tvojaNedelja">Tvoja nedelja</div>
       <div id="zNedelja" class="zpts"></div>
+      <!-- 2.10.2026 (faza 2): "Nadjemo se tamo" - zivi sastanci sa prijateljima; sema docs/supabase-sastanci.sql -->
+      <div id="zSastanci" class="zsast" hidden></div>
       <div class="zsec" data-i18n="zajednica.prijatelji">Prijatelji</div>
-      <div class="zmeet"><div class="mic"></div><div style="flex:1;min-width:0"><div class="n" data-i18n="zajednica.prijateljiNadjimoTamo">Prijatelji i "Nađimo se tamo"</div><div class="d" data-i18n="zajednica.vozaciKojePratisDeljene">Vozači koje pratiš, deljene vožnje i živa lokacija ekipe - stižu sa nalozima. Sve iznad radi i bez njih.</div></div><span class="soon" data-i18n="zajednica.uskoro">uskoro</span></div>
+      <!-- 1.10.2026 (faza 1 od 4, Boskov nalog): nalog bez lozinke + kod za dodavanje + spisak prijatelja.
+           Sema: docs/supabase-nalozi.sql. Dok server nije podesen, sekcija to kaze i nista ne pravi. -->
+      <div id="zPrijatelji" class="zprij"></div>
     </div>
   </div>
   <div class="tabscreen" id="screen-ja"><h2 data-i18n="ja.naslov">Ja</h2>
@@ -4255,6 +4449,10 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <!-- 0.9.92 (Boskov nalog 26.8.): Kuca i tri IMENOVANA omiljena mesta, svako se postavlja
          upisivanjem adrese ILI pokazivanjem na mapi. Posao vise nije fiksan slot - postao je
          jedno od tri (postojeci "Posao" se seli automatski, vidi favMigracija). -->
+    <div class="stub"><b data-i18n="ja.nalog">Moj nalog</b>
+      <div id="jaNalog" class="jset"></div>
+      <div class="jnote" data-i18n="ja.nalogNapomena">Nalog bez lozinke, vezan za ovaj telefon. Kod je ono što daješ prijateljima. Ako promeniš telefon pre nego što vežeš nalog za Apple ili mejl, prijatelji se gube.</div>
+    </div>
     <div class="stub"><b data-i18n="ja.mojaMesta">Moja mesta</b>
       <div id="jaMesta" class="jset"></div>
       <div class="jnote" data-i18n="ja.mojaMestaNapomena">Sve stoji samo na ovom telefonu. Ova mesta ti se nude u pretrazi, jednim tapom.</div>
@@ -4599,9 +4797,6 @@ const RECNIK_SR = {
   "zajednica.ucitavamPrijaveZajednice": "Učitavam prijave zajednice…",
   "zajednica.tvojaNedelja": "Tvoja nedelja",
   "zajednica.prijatelji": "Prijatelji",
-  "zajednica.prijateljiNadjimoTamo": "Prijatelji i \"Nađimo se tamo\"",
-  "zajednica.vozaciKojePratisDeljene": "Vozači koje pratiš, deljene vožnje i živa lokacija ekipe - stižu sa nalozima. Sve iznad radi i bez njih.",
-  "zajednica.uskoro": "uskoro",
   "planer.odVelika": "OD",
   "planer.doMalo": "do",
   "planer.odMalo": "od",
@@ -5814,6 +6009,126 @@ const RECNIK_SR = {
   "pl.dan.1": "dan",
   "pl.dan.2": "dana",
   "pl.dan.5": "dana",
+  // 1.10.2026: nalozi i prijatelji (faza 1)
+  "ja.nalog": "Moj nalog",
+  "ja.nalogNapomena": "Nalog bez lozinke, vezan za ovaj telefon. Kod je ono što daješ prijateljima. Ako promeniš telefon pre nego što vežeš nalog za Apple ili mejl, prijatelji se gube.",
+  "nal.nemaSesije": "Nema naloga na ovom telefonu.",
+  "nal.serverNijePodesen": "Server još nije podešen za naloge (anonimna prijava i tabele). Čim bude, ovo radi.",
+  "nal.imeKratko": "Ime mora imati bar dva slova.",
+  "nal.kodNeispravan": "Kod ima 6 znakova, npr. K7MX2A.",
+  "nal.napraviNaslov": "Napravi profil",
+  "nal.napraviOpis": "Samo ime - bez lozinke i mejla. Dobijaš kod koji daješ prijateljima.",
+  "nal.imePh": "Tvoje ime ili nadimak",
+  "nal.napravi": "Napravi",
+  "nal.tvojKod": "Tvoj kod",
+  "nal.podeliKod": "Podeli",
+  "nal.kodPrijateljaPh": "Kod prijatelja",
+  "nal.dodaj": "Dodaj",
+  "nal.nemaPrijatelja": "Još nemaš prijatelje. Podeli svoj kod ili upiši njegov.",
+  "nal.cekaNjega": "čeka da prihvati",
+  "nal.cekaTebe": "čeka tvoju potvrdu",
+  "nal.prihvati": "Prihvati",
+  "nal.ukloni": "Ukloni prijatelja",
+  "nal.povuci": "Povuci zahtev",
+  "nal.odbij": "Odbij",
+  "nal.ukloniPitanje": "Ukloniti ovog prijatelja?",
+  "nal.sadaPrijatelji": "Sada ste prijatelji.",
+  "nal.zahtevPoslat": "Zahtev poslat - čeka da prihvati.",
+  "nal.pozivTekst": "{0} te zove u RouteMeRight. Moj kod je {1}:",
+  "nal.kopirano": "Poziv je kopiran - nalepi ga u poruku.",
+  "nal.kopirajRucno": "Kopiraj ovaj tekst:",
+  "nal.nemaNaloga": "Nema naloga",
+  "nal.napraviUZajednici": "napravi u Zajednici",
+  "nal.ime": "Ime",
+  "nal.promeni": "promeni",
+  "nal.kod": "Kod",
+  "nal.podeli": "podeli",
+  "nal.prijatelji": "Prijatelji",
+  "nal.cekaN": "{0} čeka",
+  "nal.otvori": "otvori",
+  "nal.novoIme": "Novo ime:",
+  // 2.10.2026: kapija, slika, aktivnost, sazetak prijatelja
+  "nk.naslov": "Ko vozi?",
+  "nk.opis": "Ime i slika su ono što prijatelji vide. Bez lozinke i mejla - nalog je vezan za ovaj telefon.",
+  "nk.slikaAria": "Izaberi sliku",
+  "nk.slika": "slika",
+  "nk.kreni": "Kreni",
+  "nk.preskoci": "Nastavi bez naloga (bez prijatelja, do sledećeg paljenja)",
+  "nk.motor": "Motor: {0} · prijatelji ga vide",
+  "nk.motorKasnije": "Motor izabereš u Ja - prijatelji ga vide uz tvoje ime.",
+  "nal.slika": "Slika",
+  "nal.slikaSacuvana": "Slika je sačuvana.",
+  "nal.slikaNeMoze": "Ovu sliku ne mogu da otvorim.",
+  "nal.motorVide": "Motor koji vide",
+  "nal.motorNema": "nije izabran",
+  "nal.obrisiNalog": "Obriši nalog",
+  "nal.obrisiPitanje": "Obrisati nalog? Prijatelji, kod i slika nestaju. Vožnje na telefonu ostaju.",
+  "akt.sada": "aktivan sada",
+  "akt.min": "aktivan pre {0} min",
+  "akt.sati": "aktivan pre {0} h",
+  "akt.juce": "aktivan juče",
+  "akt.dana": "aktivan pre {0} {1}",
+  "akt.davno": "nije skoro bio aktivan",
+  "pl.aria": "Prijatelj",
+  "pl.vodiMe": "Vodi me do njega",
+  "pl.aktivan": "{0}",
+  "pl.voznje": "vožnji",
+  "pl.najduza": "km najduža",
+  "pl.poslednjaVoznja": "poslednja vožnja {0}",
+  // 2.10.2026: Nadjemo se tamo (faza 2)
+  "sas.nadjemoSe": "Nađemo se tamo",
+  "sas.novOpis": "Pozovi prijatelje - svi dobiju \"Vodi me tamo\" i vide ko kad stiže.",
+  "sas.cimStignes": "Čim stigneš",
+  "sas.uVreme": "U...",
+  "sas.uVremeX": "U {0}",
+  "sas.vremeAria": "Vreme sastanka",
+  "sas.porukaPh": "Poruka (npr. kafa pa Tara)",
+  "sas.koga": "Koga zoveš",
+  "sas.posalji": "Pošalji poziv",
+  "sas.izaberiNekog": "Izaberi bar jednog prijatelja.",
+  "sas.poslato": "Poziv poslat ({0} {1}).",
+  "sas.aria": "Sastanak",
+  "sas.neMogu": "Ne mogu",
+  "sas.otkazi": "Otkaži sastanak",
+  "sas.otkaziPitanje": "Otkazati sastanak za sve?",
+  "sas.naslov": "Nađemo se tamo",
+  "sas.tvojSastanak": "Tvoj sastanak",
+  "sas.nadjemoSeU": "Nađemo se u {0} · {1}",
+  "sas.odgovori": "odgovori",
+  "sas.otvori": "otvori",
+  "sas.tiZoves": "ti zoveš",
+  "sas.zove": "zove {0}",
+  "sas.dolaziN": "dolazi {0} od {1}",
+  "sas.danasU": "danas u {0}",
+  "sas.stigao": "stigao",
+  "sas.neDolazi": "ne dolazi",
+  "sas.stizeU": "stiže ~{0}",
+  "sas.dolazi": "dolazi",
+  "sas.pozvan": "nije odgovorio",
+  "sas.ti": "ti",
+  "sas.novPoziv": "{0}: Nađemo se u {1}",
+  "pl.prijatelj.1": "prijatelj",
+  "pl.prijatelj.2": "prijatelja",
+  "pl.prijatelj.5": "prijatelja",
+  // 2.10.2026: prijatelji uzivo (faza 3)
+  "lay.prijatelji": "Prijatelji uživo",
+  "lok.sada": "sada",
+  "lok.preMin": "pre {0} min",
+  "lok.preH": "pre {0} h",
+  "lok.davno": "odavno",
+  "lok.naMapi": "na mapi {0}",
+  "lok.vozi": "vozi",
+  "lok.deliPrekidac": "Deli lokaciju sa prijateljima",
+  // 2.10.2026: juri ga (faza 4)
+  "juri.krenuo": "Vodim te do {0} - ruta prati gde je on.",
+  "juri.bezSignala": "{0} · bez signala od {1}",
+  "juri.m": "{0} m",
+  "juri.km": "{0} km",
+  "juri.njegova": "on {0} km/h",
+  "juri.stizesSad": "stižeš ga sad",
+  "juri.stizesZa": "stižeš ga za ~{0} min",
+  "juri.tuJe": "tu je",
+  "juri.beziTi": "beži ti",
 };
 /* English dictionary. Same keys as sr.js - the test fails on any key missing on either side.
    Plain hyphens, no em dashes (house rule). */
@@ -6112,9 +6427,6 @@ const RECNIK_EN = {
   "zajednica.ucitavamPrijaveZajednice": "Loading community reports…",
   "zajednica.tvojaNedelja": "Your week",
   "zajednica.prijatelji": "Friends",
-  "zajednica.prijateljiNadjimoTamo": "Friends and \"Meet me there\"",
-  "zajednica.vozaciKojePratisDeljene": "Riders you follow, shared rides and the crew's live location - they arrive with accounts. Everything above works without them.",
-  "zajednica.uskoro": "soon",
   "planer.odVelika": "FROM",
   "planer.doMalo": "to",
   "planer.odMalo": "from",
@@ -7302,6 +7614,125 @@ const RECNIK_EN = {
   "kp.ocisti": "clear points",
   "pl.dan.1": "day",
   "pl.dan.n": "days",
+  // 1.10.2026: nalozi i prijatelji (faza 1)
+  "ja.nalog": "My account",
+  "ja.nalogNapomena": "A passwordless account tied to this phone. The code is what you give friends. If you change phones before linking the account to Apple or email, friends are lost.",
+  "nal.nemaSesije": "No account on this phone.",
+  "nal.serverNijePodesen": "The server is not set up for accounts yet (anonymous sign-in and tables). Once it is, this works.",
+  "nal.imeKratko": "The name needs at least two letters.",
+  "nal.kodNeispravan": "A code has 6 characters, e.g. K7MX2A.",
+  "nal.napraviNaslov": "Create a profile",
+  "nal.napraviOpis": "Just a name - no password, no email. You get a code to give friends.",
+  "nal.imePh": "Your name or nickname",
+  "nal.napravi": "Create",
+  "nal.tvojKod": "Your code",
+  "nal.podeliKod": "Share",
+  "nal.kodPrijateljaPh": "Friend's code",
+  "nal.dodaj": "Add",
+  "nal.nemaPrijatelja": "No friends yet. Share your code or enter theirs.",
+  "nal.cekaNjega": "waiting for them",
+  "nal.cekaTebe": "waiting for you",
+  "nal.prihvati": "Accept",
+  "nal.ukloni": "Remove friend",
+  "nal.povuci": "Withdraw request",
+  "nal.odbij": "Decline",
+  "nal.ukloniPitanje": "Remove this friend?",
+  "nal.sadaPrijatelji": "You are now friends.",
+  "nal.zahtevPoslat": "Request sent - waiting for them.",
+  "nal.pozivTekst": "{0} invites you to RouteMeRight. My code is {1}:",
+  "nal.kopirano": "Invite copied - paste it into a message.",
+  "nal.kopirajRucno": "Copy this text:",
+  "nal.nemaNaloga": "No account",
+  "nal.napraviUZajednici": "create in Community",
+  "nal.ime": "Name",
+  "nal.promeni": "change",
+  "nal.kod": "Code",
+  "nal.podeli": "share",
+  "nal.prijatelji": "Friends",
+  "nal.cekaN": "{0} waiting",
+  "nal.otvori": "open",
+  "nal.novoIme": "New name:",
+  // 2.10.2026: kapija, slika, aktivnost, sazetak prijatelja
+  "nk.naslov": "Who's riding?",
+  "nk.opis": "Your name and photo are what friends see. No password, no email - the account is tied to this phone.",
+  "nk.slikaAria": "Choose a photo",
+  "nk.slika": "photo",
+  "nk.kreni": "Let's go",
+  "nk.preskoci": "Continue without an account (no friends, until the next launch)",
+  "nk.motor": "Bike: {0} · friends can see it",
+  "nk.motorKasnije": "Pick your bike in Me - friends see it next to your name.",
+  "nal.slika": "Photo",
+  "nal.slikaSacuvana": "Photo saved.",
+  "nal.slikaNeMoze": "I can't open this image.",
+  "nal.motorVide": "Bike they see",
+  "nal.motorNema": "not chosen",
+  "nal.obrisiNalog": "Delete account",
+  "nal.obrisiPitanje": "Delete the account? Friends, code and photo are gone. Rides on the phone stay.",
+  "akt.sada": "active now",
+  "akt.min": "active {0} min ago",
+  "akt.sati": "active {0} h ago",
+  "akt.juce": "active yesterday",
+  "akt.dana": "active {0} {1} ago",
+  "akt.davno": "not active recently",
+  "pl.aria": "Friend",
+  "pl.vodiMe": "Take me to them",
+  "pl.aktivan": "{0}",
+  "pl.voznje": "rides",
+  "pl.najduza": "km longest",
+  "pl.poslednjaVoznja": "last ride {0}",
+  // 2.10.2026: Nadjemo se tamo (faza 2)
+  "sas.nadjemoSe": "Meet me there",
+  "sas.novOpis": "Invite friends - everyone gets \"Take me there\" and sees who arrives when.",
+  "sas.cimStignes": "When you get there",
+  "sas.uVreme": "At...",
+  "sas.uVremeX": "At {0}",
+  "sas.vremeAria": "Meeting time",
+  "sas.porukaPh": "Message (e.g. coffee, then Tara)",
+  "sas.koga": "Who you're inviting",
+  "sas.posalji": "Send invite",
+  "sas.izaberiNekog": "Pick at least one friend.",
+  "sas.poslato": "Invite sent ({0} {1}).",
+  "sas.aria": "Meet-up",
+  "sas.neMogu": "Can't make it",
+  "sas.otkazi": "Cancel meet-up",
+  "sas.otkaziPitanje": "Cancel the meet-up for everyone?",
+  "sas.naslov": "Meet me there",
+  "sas.tvojSastanak": "Your meet-up",
+  "sas.nadjemoSeU": "Meet at {0} · {1}",
+  "sas.odgovori": "reply",
+  "sas.otvori": "open",
+  "sas.tiZoves": "you're inviting",
+  "sas.zove": "{0} invites",
+  "sas.dolaziN": "{0} of {1} coming",
+  "sas.danasU": "today at {0}",
+  "sas.stigao": "arrived",
+  "sas.neDolazi": "not coming",
+  "sas.stizeU": "arriving ~{0}",
+  "sas.dolazi": "coming",
+  "sas.pozvan": "no reply yet",
+  "sas.ti": "you",
+  "sas.novPoziv": "{0}: Meet at {1}",
+  "pl.prijatelj.1": "friend",
+  "pl.prijatelj.n": "friends",
+  // 2.10.2026: prijatelji uzivo (faza 3)
+  "lay.prijatelji": "Friends live",
+  "lok.sada": "now",
+  "lok.preMin": "{0} min ago",
+  "lok.preH": "{0} h ago",
+  "lok.davno": "long ago",
+  "lok.naMapi": "on the map {0}",
+  "lok.vozi": "riding",
+  "lok.deliPrekidac": "Share location with friends",
+  // 2.10.2026: juri ga (faza 4)
+  "juri.krenuo": "Taking you to {0} - the route follows where they are.",
+  "juri.bezSignala": "{0} · no signal since {1}",
+  "juri.m": "{0} m",
+  "juri.km": "{0} km",
+  "juri.njegova": "they {0} km/h",
+  "juri.stizesSad": "catching up now",
+  "juri.stizesZa": "catching up in ~{0} min",
+  "juri.tuJe": "right here",
+  "juri.beziTi": "pulling away",
 };
 /* ---- Jezik aplikacije / app language (0.9.159) ----
    Jedan recnik po jeziku (i18n/sr.js, i18n/en.js), jedan kljuc po natpisu. Staticni HTML nosi
@@ -7434,13 +7865,13 @@ const $ = (id) => document.getElementById(id);
 const state = { planSeq: 0, _activeSeq: 0, routes: [], selected: 0, markers: [], geocode: {}, revCache: {},
   vias: [], viaMarkers: [], hazardMode: false, famousApplied: null, pendingFamous: null,
   pendingAtlas: null, atlasApplied: null, atlasCoords: null,   // 0.9.90 Atlas: naoruzana namera "Vodi me preko nje" + primenjena deonica (ogledalo famous para); coords od 0.9.91 (kurirani sav bez cene)
-  catMarkers: { fuel: [], food: [], camp: [], cam: [], pause: [], work: [], hazard: [], meet: [], mesto: [] }, editorialMarkers: [], layerVis: {},
+  catMarkers: { fuel: [], food: [], camp: [], cam: [], pause: [], work: [], hazard: [], meet: [], mesto: [], prijatelji: [] }, editorialMarkers: [], layerVis: {},
   _mestaUzRutu: new Set() };   // 13.8.: mapPoi/nearMarkers uklonjeni - POI slojevi su uvek upaljeni
 
 /* slojevi mape: koje kategorije markera se prikazuju (pamti se u localStorage) */
 const LAYER_DEFS = [["fuel", "Pumpe"], ["food", "Hrana i pauze"], ["camp", "Kampovi"],
   ["cam", "Kamere"], ["pause", "Predlog pauze"], ["work", "Radovi"], ["hazard", "Opasnosti"],
-  ["meet", T("lay.meet")], ["mesto", T("lay.mesto")]];
+  ["meet", T("lay.meet")], ["mesto", T("lay.mesto")], ["prijatelji", T("lay.prijatelji")]];   // 2.10.: prijatelji uzivo (faza 3)
 const EMOJI_CAT = { "⛽": "fuel", "🍽": "food", "⛺": "camp", "📷": "cam", "☕": "pause", "🚧": "work" };
 function loadLayerVis() {
   let saved = {};
@@ -14720,6 +15151,7 @@ function dnevnikStanji(lista) {
   return false;
 }
 function dnevnikUpisi(v) {
+  setTimeout(() => { try { nalogPing(true); } catch (e) {} }, 1500);   // 2.10.: sazetak prijateljima (voznje, km, poslednja)
   /* Petlje idu DOK dnevnikStanji ima sta da preda (svaka precka nesto izbaci, pa je kraj
      garantovan); 1000 je cvrsta ograda, ne radni broj - 30 zapisa x (halving traga + smp +
      patrljak) staje daleko ispod nje. */
@@ -15597,9 +16029,9 @@ async function zajMapaUzivo() { await zajModeOn(); }
   const nm = document.getElementById("zNaMapi");
   if (nm) nm.addEventListener("click", zajMapaUzivo);
   const link = document.querySelector('#bottomnav a[data-tab="zajednica"]');
-  if (link) link.addEventListener("click", () => { try { loadEditorial(); } catch (e) {} zajGpsAcquire(); renderPreporuke(); renderNedelja(); });   // 0.9.95: ulazak u Zajednicu je okidac za nov pokusaj (nalaz 50)
+  if (link) link.addEventListener("click", () => { try { loadEditorial(); } catch (e) {} zajGpsAcquire(); renderPreporuke(); renderNedelja(); try { renderPrijatelji(); sastanciUcitaj(true); } catch (e) {} });   // 0.9.95: ulazak u Zajednicu je okidac za nov pokusaj (nalaz 50)
   const ja = document.querySelector('#bottomnav a[data-tab="ja"]');
-  if (ja) ja.addEventListener("click", () => { try { jaPodesavanjaSync(); } catch (e) {} renderJaProfil(); renderKolekcije(); renderVoznje("jaVoznje", 10); });   // 0.9.95: prekidaci moraju da pokazu STVARNO stanje, ne ono od ucitavanja strane (nalaz 23)
+  if (ja) ja.addEventListener("click", () => { try { jaPodesavanjaSync(); } catch (e) {} try { renderJaNalog(); } catch (e) {} renderJaProfil(); renderKolekcije(); renderVoznje("jaVoznje", 10); });   // 0.9.95: prekidaci moraju da pokazu STVARNO stanje, ne ono od ucitavanja strane (nalaz 23)
 })();
 /* R7: "Jos opcija" = mali sheet (kruzna, stanica, motor) - stari formular vise ne postoji na mobilnom */
 let _optsAnchors = null;
@@ -16861,8 +17293,16 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.161";
+const APP_VERSION = "0.9.162";
 const CHANGELOG = [
+  { v: "0.9.162", d: "01.10.2026.", stavke: [
+    "<b>\"Juri ga\" (faza 4 od 4).</b> Dodir na prijatelja koji deli lokaciju → Vodi me do njega: ruta ide do mesta gde je ON, i preračunava se dok se pomera (čim ode 300 m od tačke do koje te vodi). U vožnji tabla pokazuje razmak, njegovu brzinu i \"stižeš ga za ~X min\"; ako mu nestane signal preko 10 minuta, tabla to kaže a ruta ostaje. Gasi se krajem vožnje ili novim ciljem.",
+    "<b>Prijatelji uživo na mapi (faza 3 od 4) + push obaveštenja.</b> Prijatelji koji dele lokaciju (prekidač u Ja, podrazumevano upaljen) vide se na mapi kao prsten sa slikom i imenom; narandžast dok vozi. Osvežava se na 2-3 minuta, češće kad ste blizu (do 10 s ispod kilometra), i iz džepa tokom vožnje. Dodir na prijatelja: sažetak + \"Vodi me do njega\". Poziv \"Nađemo se tamo\" i \"X je krenuo\" stižu kao push na iPhone (traži podešavanje APNs ključa - vidi supabase/README-push.md).",
+    "<b>\"Nađemo se tamo\" (faza 2 od 4).</b> Na bilo kom mestu na mapi (kafana, pumpa, zadržan prst) dodirneš \"Nađemo se tamo\", izabereš kad (čim stigneš ili u X sati), poruku i koga zoveš. Prijatelji dobiju traku na početnom i karticu u Zajednici sa \"Vodi me tamo\"; čim neko krene, svi vide kad stiže; kad stigne, piše \"stigao\". Bez push obaveštenja još - lista se osvežava pri paljenju i na minut dok je app na ekranu.",
+    "<b>Prijava pri paljenju, slika, motor i \"poslednji put aktivan\".</b> Bez naloga nema aplikacije: na prvom paljenju ekran \"Ko vozi?\" traži ime (i sliku po želji), bez lozinke i mejla. Prijatelji vide tvoje ime, sliku, motor iz profila i kad si poslednji put bio aktivan; dodir na prijatelja otvara sažetak (vožnje, km, najduža, poslednja vožnja). U Ja: promena slike i imena, brisanje naloga.",
+    "<b>Nalozi i prijatelji (faza 1 od 4).</b> U Zajednici napraviš profil samo sa imenom - bez lozinke i mejla - i dobiješ kod od 6 znakova. Daš ga prijatelju (dugme Podeli šalje poziv sa linkom), on ga upiše, ti potvrdiš, i na spisku ste. U Ja stoji tvoj nalog, ime i kod. Sledeće faze: \"Nađemo se tamo\", prijatelji uživo na mapi, \"juri ga\". Dok server nije podešen, ekran to kaže.",
+    "<b>Android: GPS radi i kad je telefon u džepu.</b> Isti pozadinski kolektor kao na iPhone-u (trag, brzina, nagib na disk, pa u vožnju kad se app vrati na ekran), kao servis sa obaveštenjem \"RouteMeRight snima vožnju\". Bez Google servisa i bez ključeva. Čeka probu na Android telefonu.",
+  ] },
   { v: "0.9.161", d: "01.10.2026.", stavke: [
     "<b>Planer je jedno pitanje: Kuda ćeš danas?</b> (tvoj izbor posle maketa A/B/C/D/E). Polje stoji gore kao kod Google Maps i Waze, a ispod njega tih red sa onim što aplikacija već zna: iz moje lokacije · sada · tvoj motor - svaka reč se menja dodirom. Formular od 14 polja više ne postoji na telefonu.",
     "<b>Pretraga nudi pre nego što otkucaš:</b> skoro voženo, sačuvane rute, mesta zajednice blizu tebe, poznate ture i krug iz grada. Dok kucaš, lista se zameni pogocima.",
@@ -19036,6 +19476,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
     if (w) { sel = { n: T("geo.pocetak", { 0: f.name }), lat: w[1], lon: w[0] }; shareToast(T("geo.polazakPocetakRute", { 0: f.name })); }
     else { shareToast(T("geo.zaPolazakTrebaTacka")); return; }
   }
+  try { if (!(sel && sel.juri) && typeof juriStani === "function") juriStani("nov cilj"); } catch (e) {}   // faza 4: drugi cilj = kraj jurenja
   /* 1.10.2026 (maketa E3): tacka IZMEDJU - ide u stanice, ne u DO. Bez koordinata nema tacke. */
   if (SEARCH_MODE === "via") {
     if (!sel || sel.lat == null) { shareToast(T("geo.zaPolazakTrebaTacka")); return; }
@@ -19382,6 +19823,7 @@ function mestoCiljOtvori(m) {
   document.getElementById("mcDalj").innerHTML = dalj;
   const imaCilj = !!(($("to").value || "").trim() || (state.routes && state.routes.length));
   document.getElementById("mcVodi").querySelector("span").textContent = imaCilj ? T("mc.dodajTacku") : T("mc.vodiMe");
+  try { const mn = document.getElementById("mcNadjemo"); if (mn) mn.hidden = !(nalogCitaj() && nalogCitaj().kod && mojiPrijateljiPrihvaceni().length); } catch (e) {}   // 2.10. (faza 2)
   document.getElementById("mcSamo").hidden = !imaCilj;
   el.hidden = false; document.body.classList.add("mcilj");
   const mapTap = () => { if (MC.m === m) mestoCiljZatvori(); };
@@ -19495,6 +19937,771 @@ const BJB2ICON_S = { kafana: "tavern", vidikovac: "viewpoint", okupljaliste: "me
   setTimeout(() => { try { homeCtxSync(); } catch (e) {} }, 600);
   document.addEventListener("rmr:jezik", () => { try { homeCtxSync(); kartaPutaSync(); } catch (e) {} });
 })();
+
+/* ======================= NALOZI I PRIJATELJI (faza 1 od 4, 1.10.2026) =======================
+   Boskov red: nalozi -> "Nadjemo se tamo" -> prijatelji uzivo -> juri ga. Nalog je anonimna Supabase
+   sesija (bez lozinke, bez mejla) + red u public.korisnici (ime, kod). Refresh token zivi u localStorage
+   (rmr2_nalog); access token se obnavlja sam. Sve sto dira bazu ide kroz supaJa() = supa() sa korisnikovim
+   tokenom umesto javnog kljuca; pravila (RLS) su u docs/supabase-nalozi.sql. Dok anonimna prijava nije
+   ukljucena u dashboardu, server vraca 422 anonymous_provider_disabled i ekran to kaze.
+   / Accounts & friends: anonymous Supabase session + profile row + friend code; RLS in the SQL file. */
+const NALOG_KEY = "rmr2_nalog";
+function nalogCitaj() { try { return JSON.parse(localStorage.getItem(NALOG_KEY) || "null"); } catch (e) { return null; } }
+function nalogUpisi(n) { try { if (n) localStorage.setItem(NALOG_KEY, JSON.stringify(n)); else localStorage.removeItem(NALOG_KEY); } catch (e) {} }
+function nalogTokenVazi(n, sad) { return !!(n && n.access && n.exp && n.exp - (sad == null ? Date.now() : sad) > 60000); }   // minut rezerve
+function nalogIzSesije(j, sad) {   // odgovor /auth/v1 (signup ili token) -> ono sto cuvamo
+  return { access: j.access_token, refresh: j.refresh_token, exp: (sad == null ? Date.now() : sad) + ((+j.expires_in || 3600) * 1000), uid: j.user && j.user.id };
+}
+function kodValidan(k) { return /^[A-HJ-NP-Z2-9]{6}$/.test(String(k || "").trim().toUpperCase()); }
+function kodOcisti(k) { return String(k || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/0/g, "O").replace(/1/g, "I").slice(0, 6); }
+function pozivLink(kod) { return "https://routemeright.app/app.html?prijatelj=" + encodeURIComponent(kod); }
+async function supaAuth(path, body) {
+  let signal; try { signal = AbortSignal.timeout(10000); } catch (e) {}
+  const r = await fetch(SUPA_URL + "/auth/v1/" + path, { method: "POST", signal,
+    headers: { apikey: SUPA_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+  let j = {}; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) { const e = new Error(j.msg || j.error_description || j.error_code || ("HTTP " + r.status)); e.status = r.status; e.kod = j.error_code || ""; throw e; }
+  return j;
+}
+async function nalogToken() {   // vazeci access token ili null kad naloga nema; obnavlja kroz refresh token
+  let n = nalogCitaj(); if (!n || !n.refresh) return null;
+  if (nalogTokenVazi(n)) return n.access;
+  const j = await supaAuth("token?grant_type=refresh_token", { refresh_token: n.refresh });
+  n = { ...n, ...nalogIzSesije(j) }; nalogUpisi(n);
+  return n.access;
+}
+async function supaJa(path, opts = {}) {
+  const t = await nalogToken();
+  if (!t) { const e = new Error(T("nal.nemaSesije")); e.nemaSesije = true; throw e; }
+  return supa(path, { ...opts, headers: { ...(opts.headers || {}), Authorization: "Bearer " + t } });
+}
+function nalogGreskaTekst(e) {   // jedna recenica za ekran, po uzroku
+  const m = String((e && e.message) || e || "");
+  if (e && (e.kod === "anonymous_provider_disabled" || /anonymous sign-ins/i.test(m))) return T("nal.serverNijePodesen");
+  if (/relation .* does not exist|Could not find the table|function .* does not exist|schema cache/i.test(m)) return T("nal.serverNijePodesen");
+  if (e && e.nemaSesije) return T("nal.nemaSesije");
+  if (/Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m)) return T("net.nema");
+  return m;
+}
+async function nalogNapravi(ime) {   // anonimna sesija + red u korisnici (kod dodeli server)
+  ime = String(ime || "").trim();
+  if (ime.length < 2) throw new Error(T("nal.imeKratko"));
+  let n = nalogCitaj();
+  if (!n || !n.refresh) {
+    const j = await supaAuth("signup", { data: { ime }, gotrue_meta_security: {} });
+    n = nalogIzSesije(j); nalogUpisi(n);
+  }
+  const red = await supaJa("korisnici?select=id,ime,kod", { method: "POST", body: JSON.stringify({ ime }), headers: { Prefer: "return=representation" } });
+  const k = Array.isArray(red) ? red[0] : red;
+  n = { ...nalogCitaj(), ime: k.ime, kod: k.kod, uid: k.id }; nalogUpisi(n);
+  return n;
+}
+async function nalogOsvezi() {   // moj red sa servera (ime/kod) - ako ga nema, nalog je nepotpun (signup prosao, insert nije)
+  const n = nalogCitaj(); if (!n || !n.refresh) return null;
+  const red = await supaJa("korisnici?select=id,ime,kod,motor,avatar_v&id=eq." + encodeURIComponent(n.uid));
+  if (!Array.isArray(red) || !red.length) return null;
+  const m = { ...n, ime: red[0].ime, kod: red[0].kod, avatar_v: red[0].avatar_v || 0 }; nalogUpisi(m); return m;
+}
+async function nalogPromeniIme(ime) {
+  ime = String(ime || "").trim(); if (ime.length < 2) throw new Error(T("nal.imeKratko"));
+  const n = nalogCitaj(); if (!n) return;
+  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ ime }) });
+  nalogUpisi({ ...n, ime });
+}
+const PRIJ_KEY = "rmr2_prijatelji";   // poslednji spisak, za prikaz bez mreze
+function prijateljiKes() { try { return JSON.parse(localStorage.getItem(PRIJ_KEY) || "[]"); } catch (e) { return []; } }
+async function prijateljiUcitaj() {
+  const rows = await supaJa("rpc/moji_prijatelji", { method: "POST", body: "{}" });
+  const l = Array.isArray(rows) ? rows : [];
+  try { localStorage.setItem(PRIJ_KEY, JSON.stringify(l)); } catch (e) {}
+  return l;
+}
+async function prijateljDodaj(kod) {
+  kod = kodOcisti(kod);
+  if (!kodValidan(kod)) throw new Error(T("nal.kodNeispravan"));
+  return supaJa("rpc/dodaj_prijatelja", { method: "POST", body: JSON.stringify({ p_kod: kod }) });
+}
+async function prijateljPrihvati(id) { return supaJa("rpc/prihvati_prijatelja", { method: "POST", body: JSON.stringify({ p_od: id }) }); }
+async function prijateljUkloni(id) { return supaJa("rpc/ukloni_prijatelja", { method: "POST", body: JSON.stringify({ p_ko: id }) }); }
+async function nalogPodeliKod() {
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  const txt = T("nal.pozivTekst", { 0: n.ime || "", 1: n.kod }) + " " + pozivLink(n.kod);
+  try { if (navigator.share) { await navigator.share({ text: txt }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(txt); tihoObavestenje(T("nal.kopirano")); } catch (e) { try { prompt(T("nal.kopirajRucno"), txt); } catch (e2) {} }
+}
+/* ---- ekran: Zajednica -> Prijatelji ---- */
+function avatarUrl(uid, v) { return (uid && v) ? SUPA_URL + "/storage/v1/object/public/avatari/" + encodeURIComponent(uid) + ".jpg?v=" + v : ""; }
+function avatarHtml(uid, v, ime, kl) {   // slika ako je ima, inace prvo slovo imena; <img> koji padne vraca slovo
+  const ini = esc(String(ime || "?").trim().charAt(0).toUpperCase());
+  const u = avatarUrl(uid, v);
+  return `<span class="${kl || "zpr-av"}">${u ? `<img src="${esc(u)}" alt="" onerror="this.remove()">` : ""}<i>${ini}</i></span>`;
+}
+function aktivanTekst(ts, sad) {   // "aktivan sada / pre 20 min / pre 3 h / juce / pre 5 dana"
+  const t = ts ? new Date(ts).getTime() : 0; if (!t) return "";
+  const d = Math.max(0, (sad == null ? Date.now() : sad) - t), min = Math.round(d / 60000);
+  if (min < 10) return T("akt.sada");
+  if (min < 60) return T("akt.min", { 0: min });
+  const h = Math.round(min / 60); if (h < 24) return T("akt.sati", { 0: h });
+  const dana = Math.round(h / 24); if (dana === 1) return T("akt.juce");
+  if (dana < 30) return T("akt.dana", { 0: dana, 1: TN(dana, "pl.dan") });
+  return T("akt.davno");
+}
+function prijateljiHtmlLista(l) {
+  if (!l.length) return '<div class="zpr-prazno">' + T("nal.nemaPrijatelja") + "</div>";
+  return l.map((f) => {
+    const st = f.stanje === "prihvaceno" ? (f.aktivan_at ? '<small>' + esc(aktivanTekst(f.aktivan_at)) + "</small>" : "")
+      : (f.od_mene ? '<small>' + T("nal.cekaNjega") + "</small>" : '<small class="akc">' + T("nal.cekaTebe") + "</small>");
+    const akc = f.stanje === "prihvaceno" ? `<button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.ukloni"))}">✕</button>`
+      : (f.od_mene ? `<button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.povuci"))}">✕</button>`
+        : `<button type="button" class="zpr-ok" data-prihvati="${esc(f.id)}">${esc(T("nal.prihvati"))}</button><button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.odbij"))}">✕</button>`);
+    return `<div class="zpr-red" data-id="${esc(f.id)}" role="button" tabindex="0">${avatarHtml(f.id, f.avatar_v, f.ime)}<div class="zpr-t"><b>${esc(f.ime)}</b>${f.motor ? "<small>" + esc(f.motor) + "</small>" : ""}${st}</div><div class="zpr-akc">${akc}</div></div>`;
+  }).join("");
+}
+async function renderPrijatelji(force) {
+  const box = document.getElementById("zPrijatelji"); if (!box) return;
+  const n = nalogCitaj();
+  if (!n || !n.kod) {   // nema naloga: poziv da se napravi (ime je jedino sto trazimo)
+    box.innerHTML = `<div class="zpr-kart"><div class="zpr-n">${T("nal.napraviNaslov")}</div><div class="zpr-d">${T("nal.napraviOpis")}</div>
+      <div class="zpr-forma"><input id="zprIme" maxlength="32" autocomplete="name" placeholder="${esc(T("nal.imePh"))}" value="${esc((n && n.ime) || "")}"><button type="button" id="zprNapravi">${esc(T("nal.napravi"))}</button></div>
+      <div class="zpr-greska" id="zprGreska" hidden></div></div>`;
+    const g = document.getElementById("zprGreska"), b = document.getElementById("zprNapravi");
+    b.addEventListener("click", async () => {
+      b.disabled = true; g.hidden = true;
+      try { await nalogNapravi(document.getElementById("zprIme").value); renderPrijatelji(true); renderJaNalog(); try { prijateljIzLinka(); } catch (e) {} }
+      catch (e) { g.textContent = nalogGreskaTekst(e); g.hidden = false; b.disabled = false; }
+    });
+    return;
+  }
+  const kes = prijateljiKes();
+  box.innerHTML = `<div class="zpr-kart">
+      <div class="zpr-kod"><div><span class="zpr-cap">${esc(T("nal.tvojKod"))}</span><b>${esc(n.kod)}</b></div><button type="button" id="zprPodeli">${esc(T("nal.podeliKod"))}</button></div>
+      <div class="zpr-forma"><input id="zprKod" maxlength="7" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="${esc(T("nal.kodPrijateljaPh"))}"><button type="button" id="zprDodaj">${esc(T("nal.dodaj"))}</button></div>
+      <div class="zpr-greska" id="zprGreska" hidden></div>
+    </div>
+    <div class="zpr-lista" id="zprLista">${prijateljiHtmlLista(kes)}</div>`;
+  const g = document.getElementById("zprGreska"), lista = document.getElementById("zprLista");
+  const greska = (e) => { g.textContent = nalogGreskaTekst(e); g.hidden = false; };
+  document.getElementById("zprPodeli").addEventListener("click", nalogPodeliKod);
+  const dodaj = async () => {
+    const inp = document.getElementById("zprKod"); g.hidden = true;
+    try { const r = await prijateljDodaj(inp.value); inp.value = "";
+      tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat"));
+      lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj());
+    } catch (e) { greska(e); }
+  };
+  document.getElementById("zprDodaj").addEventListener("click", dodaj);
+  document.getElementById("zprKod").addEventListener("keydown", (e) => { if (e.key === "Enter") dodaj(); });
+  lista.addEventListener("click", async (e) => {
+    const p = e.target.closest("[data-prihvati]"), u = e.target.closest("[data-ukloni]");
+    if (!p && !u) {   // dodir na red = sazetak prijatelja (2.10.)
+      const red = e.target.closest(".zpr-red"); if (!red) return;
+      const f = prijateljiKes().find((x) => x.id === red.dataset.id); if (f) prijateljSazetak(f);
+      return;
+    }
+    g.hidden = true;
+    try {
+      if (p) await prijateljPrihvati(p.dataset.prihvati);
+      else { if (!confirm(T("nal.ukloniPitanje"))) return; await prijateljUkloni(u.dataset.ukloni); }
+      lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj());
+      renderJaNalog();
+    } catch (er) { greska(er); }
+  });
+  try { lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj()); renderJaNalog(); }
+  catch (e) { if (!kes.length || force) greska(e); }   // bez mreze ostaje kes; prvi put se kaze zasto je prazno
+}
+/* ---- ekran: Ja -> Moj nalog ---- */
+function renderJaNalog() {
+  const box = document.getElementById("jaNalog"); if (!box) return;
+  const n = nalogCitaj();
+  if (!n || !n.kod) {
+    box.innerHTML = `<div class="jrow"><span>${esc(T("nal.nemaNaloga"))}</span><button type="button" class="jlink" id="jaNalogNapravi">${esc(T("nal.napraviUZajednici"))}</button></div>`;
+    const b = document.getElementById("jaNalogNapravi"); if (b) b.addEventListener("click", () => nasTabKlik("zajednica"));
+    return;
+  }
+  const br = prijateljiKes().filter((f) => f.stanje === "prihvaceno").length;
+  const ceka = prijateljiKes().filter((f) => f.stanje !== "prihvaceno" && !f.od_mene).length;
+  box.innerHTML = `<div class="jrow jav"><span>${esc(T("nal.slika"))}</span>${avatarHtml(n.uid, n.avatar_v, n.ime, "zpr-av jav-av")}<button type="button" class="jlink" id="jaNalogSlika">${esc(T("nal.promeni"))}</button></div>
+    <div class="jrow"><span>${esc(T("nal.ime"))}</span><b>${esc(n.ime || "")}</b><button type="button" class="jlink" id="jaNalogIme">${esc(T("nal.promeni"))}</button></div>
+    <div class="jrow"><span>${esc(T("nal.kod"))}</span><b class="jkod">${esc(n.kod)}</b><button type="button" class="jlink" id="jaNalogPodeli">${esc(T("nal.podeli"))}</button></div>
+    <div class="jrow"><span>${esc(T("nal.prijatelji"))}</span><b>${br}${ceka ? ' <i class="jceka">' + esc(T("nal.cekaN", { 0: ceka })) + "</i>" : ""}</b><button type="button" class="jlink" id="jaNalogPrij">${esc(T("nal.otvori"))}</button></div>
+    <div class="jrow"><span>${esc(T("nal.motorVide"))}</span><b>${esc((mojMotor() && mojMotor().ime) || T("nal.motorNema"))}</b></div>
+    <label class="jrow"><span>${esc(T("lok.deliPrekidac"))}</span><input type="checkbox" class="jsw" id="jaDeli" ${deliLokaciju() ? "checked" : ""}></label>
+    <button type="button" class="jlink jopasno" id="jaNalogObrisi">${esc(T("nal.obrisiNalog"))}</button>`;
+  document.getElementById("jaDeli").addEventListener("change", (e) => deliLokacijuPostavi(e.target.checked));
+  document.getElementById("jaNalogSlika").addEventListener("click", () => avatarIzaberi(() => renderJaNalog()));
+  document.getElementById("jaNalogObrisi").addEventListener("click", async () => {
+    if (!confirm(T("nal.obrisiPitanje"))) return;
+    try {   // prvo slika kroz Storage API (SQL ne sme da brise storage.objects), pa nalog
+      try { const t = await nalogToken(); await fetch(SUPA_URL + "/storage/v1/object/avatari/" + encodeURIComponent(n.uid) + ".jpg", { method: "DELETE", headers: { apikey: SUPA_KEY, Authorization: "Bearer " + t } }); } catch (e) {}
+      await supaJa("rpc/obrisi_nalog", { method: "POST", body: "{}" });
+    } catch (e) { alert(nalogGreskaTekst(e)); return; }
+    nalogUpisi(null); try { localStorage.removeItem(PRIJ_KEY); localStorage.removeItem("rmr2_nalog_ping"); } catch (e) {}
+    renderJaNalog(); try { renderPrijatelji(); } catch (e) {}
+    try { nalogKapijaPrikazi(); } catch (e) {}
+  });
+  document.getElementById("jaNalogIme").addEventListener("click", async () => {
+    const novo = prompt(T("nal.novoIme"), n.ime || ""); if (novo == null) return;
+    try { await nalogPromeniIme(novo); renderJaNalog(); } catch (e) { alert(nalogGreskaTekst(e)); }
+  });
+  document.getElementById("jaNalogPodeli").addEventListener("click", nalogPodeliKod);
+  document.getElementById("jaNalogPrij").addEventListener("click", () => nasTabKlik("zajednica"));
+}
+/* pozivni link ?prijatelj=KOD: kod se zapamti, pa se doda cim nalog postoji */
+function prijateljIzLinka() {
+  let kod = null; try { kod = localStorage.getItem("rmr2_prijatelj_kod"); } catch (e) {}
+  if (!kod) return false;
+  const n = nalogCitaj(); if (!n || !n.kod) return false;
+  try { localStorage.removeItem("rmr2_prijatelj_kod"); } catch (e) {}
+  prijateljDodaj(kod).then((r) => { tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat")); renderPrijatelji(true); })
+    .catch((e) => { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} });
+  return true;
+}
+(function(){
+  try {
+    const p = new URLSearchParams(location.search);
+    const k = p.get("prijatelj");
+    if (k && kodValidan(kodOcisti(k))) {
+      try { localStorage.setItem("rmr2_prijatelj_kod", kodOcisti(k)); } catch (e) {}
+      setTimeout(() => { try { nasTabKlik("zajednica"); if (!prijateljIzLinka()) { const i = document.getElementById("zprKod"); if (i) i.value = kodOcisti(k); } } catch (e) {} }, 900);
+    }
+  } catch (e) {}
+})();
+
+/* ---- 2.10.2026 (Boskov nalog): slika, poslednja aktivnost, sazetak prijatelja, obavezna prijava ---- */
+function avatarSmanji(file) {   // galerija/kamera -> kvadrat 256 px, JPEG ~20-40 KB (bucket prima najvise 400 KB)
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = () => {
+      try {
+        const S = 256, c = document.createElement("canvas"); c.width = S; c.height = S;
+        const m = Math.min(img.naturalWidth, img.naturalHeight), sx = (img.naturalWidth - m) / 2, sy = (img.naturalHeight - m) / 2;
+        c.getContext("2d").drawImage(img, sx, sy, m, m, 0, 0, S, S);
+        c.toBlob((b) => { URL.revokeObjectURL(url); b ? res(b) : rej(new Error("slika")); }, "image/jpeg", 0.82);
+      } catch (e) { URL.revokeObjectURL(url); rej(e); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error(T("nal.slikaNeMoze"))); };
+    img.src = url;
+  });
+}
+async function avatarPosalji(blob) {   // storage: <uid>.jpg (x-upsert), pa avatar_v + 1 u korisnici
+  const n = nalogCitaj(); if (!n || !n.uid) throw new Error(T("nal.nemaSesije"));
+  const t = await nalogToken();
+  let signal; try { signal = AbortSignal.timeout(20000); } catch (e) {}
+  const r = await fetch(SUPA_URL + "/storage/v1/object/avatari/" + encodeURIComponent(n.uid) + ".jpg", { method: "POST", signal,
+    headers: { apikey: SUPA_KEY, Authorization: "Bearer " + t, "Content-Type": "image/jpeg", "x-upsert": "true" }, body: blob });
+  if (!r.ok) { let m = ""; try { m = (await r.json()).message || ""; } catch (e) {} throw new Error(m || ("HTTP " + r.status)); }
+  const v = (n.avatar_v || 0) + 1;
+  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ avatar_v: v }) });
+  nalogUpisi({ ...nalogCitaj(), avatar_v: v });
+  return v;
+}
+function avatarIzaberi(posle) {   // otvara galeriju; kad je nalog tu, odmah salje; inace cuva blob za kapiju
+  const inp = document.getElementById("avatarFajl"); if (!inp) return;
+  inp.value = "";
+  inp.onchange = async () => {
+    const f = inp.files && inp.files[0]; if (!f) return;
+    try {
+      const b = await avatarSmanji(f);
+      const n = nalogCitaj();
+      if (n && n.kod) { await avatarPosalji(b); tihoObavestenje(T("nal.slikaSacuvana")); }
+      else { NK.blob = b; const im = document.getElementById("nkAvImg"); if (im) { im.src = URL.createObjectURL(b); im.hidden = false; const ini = document.getElementById("nkAvIni"); if (ini) ini.hidden = true; } }
+      if (posle) posle();
+    } catch (e) { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} }
+  };
+  inp.click();
+}
+function nalogStatistika() {   // ono sto prijatelji vide: vožnje, km, najduza - iz dozivotnog agregata i dnevnika
+  const p = _zajCitaj("mr_poeni", { ukupno: 0, nedelje: {} });
+  const v = _zajCitaj("mr_voznje", []);
+  const naj = v.reduce((m, r) => Math.max(m, (r && !r.tura && r.km) || 0), 0);
+  const posl = v.reduce((m, r) => Math.max(m, (r && r.ts) || 0), 0);
+  return { stat_voznje: p.voznje || v.length || 0, stat_km: Math.round(p.km || v.reduce((s2, r) => s2 + (r.km || 0), 0)),
+    stat_najduza_km: Math.round(naj * 10) / 10, stat_poslednja_at: posl ? new Date(posl).toISOString() : null };
+}
+async function nalogPing(force) {   // "poslednji put aktivan" + motor + statistika; najvise jednom na sat (bez force)
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  let zad = 0; try { zad = +localStorage.getItem("rmr2_nalog_ping") || 0; } catch (e) {}
+  if (!force && Date.now() - zad < 3600000) return;
+  const mm = (typeof mojMotor === "function") ? mojMotor() : null;
+  const telo = { aktivan_at: new Date().toISOString(), motor: mm ? mm.ime.slice(0, 48) : null, ...nalogStatistika() };
+  try { await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify(telo) });
+    try { localStorage.setItem("rmr2_nalog_ping", String(Date.now())); } catch (e) {} } catch (e) {}
+}
+function prijateljSazetak(f) {
+  const el = document.getElementById("prijateljList"); if (!el || !f) return;
+  document.getElementById("plAv").outerHTML = avatarHtml(f.id, f.avatar_v, f.ime, "pl-av").replace('class="pl-av"', 'class="pl-av" id="plAv"');
+  document.getElementById("plIme").textContent = f.ime || "";
+  document.getElementById("plMotor").textContent = f.motor || T("nal.motorNema");
+  document.getElementById("plAkt").textContent = f.aktivan_at ? T("pl.aktivan", { 0: aktivanTekst(f.aktivan_at) }) : "";
+  const st = [[f.stat_voznje || 0, T("pl.voznje")], [f.stat_km || 0, "km"], [f.stat_najduza_km ? DEC(f.stat_najduza_km) : 0, T("pl.najduza")]];
+  document.getElementById("plStat").innerHTML = st.map(([v, l]) => `<div><b>${esc(String(v))}</b><span>${esc(l)}</span></div>`).join("") +
+    (f.stat_poslednja_at ? `<div class="pl-posl">${esc(T("pl.poslednjaVoznja", { 0: new Date(f.stat_poslednja_at).toLocaleDateString(LOKAL()) }))}</div>` : "");
+  const lok = f.lok || (LOK.lista || []).find((x) => x.id === f.id);   // 2.10. (faza 3): ziva lokacija
+  const vb = document.getElementById("plVodi");
+  vb.hidden = !(lok && lok.lat != null && lokacijaSveza(lok.ts));
+  if (!vb.hidden) document.getElementById("plAkt").textContent = T("lok.naMapi", { 0: lokacijaVremeTekst(lok.ts) }) + (lok.u_voznji ? " · " + T("lok.vozi") : "");
+  vb.onclick = () => { prijateljSazetakZatvori(); juriPokreni(f, lok); };   // faza 4: ruta prati NJEGOVU tacku
+  el.hidden = false; document.body.classList.add("mcilj"); PL.f = f;
+}
+const PL = { f: null };
+function prijateljSazetakZatvori() { const el = document.getElementById("prijateljList"); if (el) el.hidden = true; document.body.classList.remove("mcilj"); PL.f = null; }
+/* KAPIJA: bez naloga nema aplikacije (Boskov nalog 2.10.). Izuzeci: ?preview=1 i ?demo (alati, snimci, testovi). */
+const NK = { blob: null };
+function nalogKapijaTreba(n, upit) {
+  let p; try { p = new URLSearchParams(upit == null ? location.search : upit); } catch (e) { p = new URLSearchParams(""); }
+  if (p.has("preview") || p.has("demo")) return false;
+  try { if (sessionStorage.getItem("rmr2_nalog_preskoci") === "1") return false; } catch (e) {}
+  return !(n && n.kod);
+}
+function nalogKapijaPrikazi() {
+  const el = document.getElementById("nalogKapija"); if (!el) return;
+  if (!nalogKapijaTreba(nalogCitaj())) { el.hidden = true; document.body.classList.remove("kapija"); return; }
+  const n = nalogCitaj();
+  document.getElementById("nkIme").value = (n && n.ime) || "";
+  const mm = (typeof mojMotor === "function") ? mojMotor() : null;
+  document.getElementById("nkMotor").textContent = mm ? T("nk.motor", { 0: mm.ime }) : T("nk.motorKasnije");
+  document.getElementById("nkGreska").hidden = true; document.getElementById("nkPreskoci").hidden = true;
+  el.hidden = false; document.body.classList.add("kapija");
+}
+(function(){
+  const g = (id) => document.getElementById(id);
+  if (!g("nalogKapija")) return;
+  g("nkAv").addEventListener("click", () => avatarIzaberi());
+  g("nkKreni").addEventListener("click", async () => {
+    const b = g("nkKreni"), gr = g("nkGreska"); b.disabled = true; gr.hidden = true;
+    try {
+      await nalogNapravi(g("nkIme").value);
+      if (NK.blob) { try { await avatarPosalji(NK.blob); } catch (e) {} NK.blob = null; }
+      try { await nalogPing(true); } catch (e) {}
+      g("nalogKapija").hidden = true; document.body.classList.remove("kapija");
+      try { renderJaNalog(); renderPrijatelji(); prijateljIzLinka(); sastanciPokreni(); lokacijePokreni(); pushRegistruj(); } catch (e) {}
+    } catch (e) {
+      gr.textContent = nalogGreskaTekst(e); gr.hidden = false; b.disabled = false;
+      /* server pao ili nema mreze: aplikacija ne sme da ostane zakljucana na putu - izlaz vazi do sledeceg paljenja */
+      const m = String(e && e.message || "");
+      if (/nije podešen|not set up|Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m) || (e && e.status >= 500)) g("nkPreskoci").hidden = false;
+    }
+  });
+  g("nkIme").addEventListener("keydown", (e) => { if (e.key === "Enter") g("nkKreni").click(); });
+  g("nkPreskoci").addEventListener("click", () => { try { sessionStorage.setItem("rmr2_nalog_preskoci", "1"); } catch (e) {} g("nalogKapija").hidden = true; document.body.classList.remove("kapija"); });
+  g("plX").addEventListener("click", prijateljSazetakZatvori);
+  g("plUkloni").addEventListener("click", async () => {
+    const f = PL.f; if (!f || !confirm(T("nal.ukloniPitanje"))) return;
+    try { await prijateljUkloni(f.id); prijateljSazetakZatvori(); renderPrijatelji(true); } catch (e) { alert(nalogGreskaTekst(e)); }
+  });
+  setTimeout(() => { try { nalogKapijaPrikazi(); } catch (e) {} }, 350);   // posle uvodne animacije; sloj je iznad nje po z-indexu
+  setTimeout(() => { try { nalogPing(); } catch (e) {} }, 6000);
+})();
+
+/* ======================= "NADJEMO SE TAMO" (faza 2 od 4, 2.10.2026) =======================
+   Sastanak = mesto + vreme + poruka, poslat izabranim prijateljima (docs/supabase-sastanci.sql). Pozvani
+   dobija traku na pocetnom i karticu u Zajednici; "Vodi me tamo" racuna rutu i salje ETA, pa svi vide ko kad
+   stize. Bez push obavestenja (jos): spisak se povlaci pri paljenju, na svakih 60 s dok je app na ekranu i
+   pri ulasku u Zajednicu. / Meet-up: place + time to friends; everyone gets "take me there" and ETAs. */
+const SAST = { lista: [], vidjeni: null, t: null, cilj: null, otvoren: null, novi: null };
+const SAST_KEY = "rmr2_sastanci", SAST_VIDJ = "rmr2_sastanci_vidjeni";
+function sastanciKes() { try { return JSON.parse(localStorage.getItem(SAST_KEY) || "[]"); } catch (e) { return []; } }
+function sastanakKadTekst(m, sad) {   // "cim stignes" ili "danas u 16:30" / "sub 4.10. 10:00"
+  if (!m || !m.kad) return T("sas.cimStignes");
+  const d = new Date(m.kad), danas = d.toDateString() === new Date(sad == null ? Date.now() : sad).toDateString();
+  const hh = d.toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
+  return danas ? T("sas.danasU", { 0: hh }) : d.toLocaleDateString(LOKAL(), { weekday: "short", day: "numeric", month: "numeric" }) + " " + hh;
+}
+function sastanakStanjeTekst(u) {
+  if (!u) return "";
+  if (u.stanje === "stigao") return T("sas.stigao");
+  if (u.stanje === "ne") return T("sas.neDolazi");
+  if (u.stanje === "dolazim") return u.eta_at ? T("sas.stizeU", { 0: new Date(u.eta_at).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" }) }) : T("sas.dolazi");
+  return T("sas.pozvan");
+}
+function mojiPrijateljiPrihvaceni() { return prijateljiKes().filter((f) => f.stanje === "prihvaceno"); }
+function sastanciNovi(lista, vidjeni, uid) {   // pozivi drugih koje jos nisam video (za tihu poruku)
+  return (lista || []).filter((m) => m.od !== uid && !(vidjeni || []).includes(m.id));
+}
+async function sastanciUcitaj(tiho) {
+  const n = nalogCitaj(); if (!n || !n.kod) return [];
+  let l = [];
+  try { const r = await supaJa("rpc/moji_sastanci", { method: "POST", body: "{}" }); l = Array.isArray(r) ? r : []; }
+  catch (e) { if (!tiho) throw e; return sastanciKes(); }
+  try { localStorage.setItem(SAST_KEY, JSON.stringify(l)); } catch (e) {}
+  SAST.lista = l;
+  let vidj = []; try { vidj = JSON.parse(localStorage.getItem(SAST_VIDJ) || "[]"); } catch (e) {}
+  const novi = sastanciNovi(l, vidj, n.uid);
+  if (novi.length && SAST.vidjeni !== null) { try { tihoObavestenje(T("sas.novPoziv", { 0: novi[0].od_ime, 1: novi[0].ime })); } catch (e) {} }   // prvo ucitavanje cuti
+  SAST.vidjeni = vidj;
+  try { localStorage.setItem(SAST_VIDJ, JSON.stringify(l.map((m) => m.id).slice(-50))); } catch (e) {}
+  sastanciCrtaj();
+  return l;
+}
+function sastanciPokreni() {   // pri paljenju + svakih 60 s dok je app vidljiv
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  SAST.lista = sastanciKes(); sastanciCrtaj();
+  sastanciUcitaj(true);
+  if (SAST.t) clearInterval(SAST.t);
+  SAST.t = setInterval(() => { if (document.visibilityState === "visible") sastanciUcitaj(true); }, 60000);
+  if (!sastanciPokreni._vis) { sastanciPokreni._vis = true; document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") sastanciUcitaj(true); }); }
+}
+function sastanciCrtaj() {
+  const n = nalogCitaj(); const uid = n && n.uid;
+  const zivi = (SAST.lista || []).filter((m) => new Date(m.istice_at).getTime() > Date.now());
+  const moj = (m) => (m.ucesnici || []).find((u) => u.id === uid);
+  const tr = document.getElementById("sastanakTraka");
+  if (tr) {   // traka na pocetnom: prvo onaj na koji nisam odgovorio, inace prvi na koji dolazim
+    const prvi = zivi.find((m) => { const u = moj(m); return u && u.stanje === "pozvan"; }) || zivi.find((m) => { const u = moj(m); return u && u.stanje !== "ne"; });
+    if (prvi) {
+      const u = moj(prvi), org = (prvi.ucesnici || []).find((x) => x.id === prvi.od) || {};
+      tr.innerHTML = `<span class="st-av">${avatarHtml(prvi.od, org.avatar_v, prvi.od_ime, "zpr-av st-avi")}</span><span class="st-t"><b>${esc(prvi.od === uid ? T("sas.tvojSastanak") : prvi.od_ime)}</b><small>${esc(T("sas.nadjemoSeU", { 0: prvi.ime, 1: sastanakKadTekst(prvi) }))}</small></span><span class="rmr-cap akc">${esc(u && u.stanje === "pozvan" ? T("sas.odgovori") : T("sas.otvori"))}</span>`;
+      tr.hidden = false; tr.dataset.id = prvi.id;
+    } else tr.hidden = true;
+  }
+  const box = document.getElementById("zSastanci");
+  if (box) {
+    if (!zivi.length) { box.hidden = true; box.innerHTML = ""; }
+    else {
+      box.hidden = false;
+      box.innerHTML = `<div class="zsec">${esc(T("sas.naslov"))}</div>` + zivi.map((m) => {
+        const dol = (m.ucesnici || []).filter((u) => u.stanje === "dolazim" || u.stanje === "stigao").length;
+        return `<button type="button" class="zs-kart" data-id="${esc(m.id)}"><div class="zs-t"><b>${esc(m.ime)}</b><small>${esc(sastanakKadTekst(m))} · ${esc(m.od === uid ? T("sas.tiZoves") : T("sas.zove", { 0: m.od_ime }))}</small><small>${esc(T("sas.dolaziN", { 0: dol, 1: (m.ucesnici || []).length }))}</small></div><span class="rmr-cap akc">${esc(T("sas.otvori"))}</span></button>`;
+      }).join("");
+    }
+  }
+}
+function sastanakDalj(m) {
+  try { const r = geoRef(); if (r && r.lat != null) { const d = haversine(r.lat, r.lon, m.lat, m.lon); return d < 1 ? T("mc.manje1") : T("mc.odTebe", { 0: Math.round(d) }); } } catch (e) {}
+  return "";
+}
+function sastanakOtvori(id) {
+  const m = (SAST.lista || []).find((x) => x.id === id) || sastanciKes().find((x) => x.id === id); if (!m) return;
+  const n = nalogCitaj(); const uid = n && n.uid; const moj = (m.ucesnici || []).find((u) => u.id === uid);
+  const el = document.getElementById("sastanakList"); if (!el) return;
+  try { mestoCiljZatvori(); } catch (e) {}
+  document.getElementById("slOd").textContent = m.od === uid ? T("sas.tiZoves") : T("sas.zove", { 0: m.od_ime });
+  document.getElementById("slIme").textContent = m.ime;
+  document.getElementById("slKad").textContent = sastanakKadTekst(m);
+  document.getElementById("slDalj").innerHTML = sastanakDalj(m);
+  const po = document.getElementById("slPoruka"); po.textContent = m.poruka || ""; po.hidden = !m.poruka;
+  document.getElementById("slUcesnici").innerHTML = (m.ucesnici || []).map((u) =>
+    `<div class="sl-red${u.id === uid ? " ja" : ""}">${avatarHtml(u.id, u.avatar_v, u.ime)}<div class="zpr-t"><b>${esc(u.id === uid ? T("sas.ti") : u.ime)}</b><small class="${u.stanje === "dolazim" || u.stanje === "stigao" ? "akc" : ""}">${esc(sastanakStanjeTekst(u))}</small></div></div>`).join("");
+  document.getElementById("slNe").classList.toggle("on", !!moj && moj.stanje === "ne");
+  document.getElementById("slNe").hidden = !!moj && moj.stanje === "stigao";
+  document.getElementById("slOtkazi").hidden = m.od !== uid;
+  el.hidden = false; document.body.classList.add("mcilj"); SAST.otvoren = m;
+}
+function sastanakZatvori() { const el = document.getElementById("sastanakList"); if (el) el.hidden = true; document.body.classList.remove("mcilj"); SAST.otvoren = null; }
+async function sastanakOdgovori(id, stanje, eta) {
+  await supaJa("rpc/sastanak_odgovori", { method: "POST", body: JSON.stringify({ p_id: id, p_stanje: stanje, p_eta: eta || null }) });
+  if (stanje !== "ne") pushPosalji(id, "odgovor");   // "X je krenuo / stigao" ostalima
+  await sastanciUcitaj(true);
+}
+function sastanakEta(route, cilj, sad) {   // ETA iz izracunate rute, SAMO ako ruta vodi bas na mesto sastanka (<500 m)
+  if (!route || !route.totalDur || !cilj || !cilj.to || cilj.to.lat == null) return null;
+  if (haversine(cilj.to.lat, cilj.to.lon, cilj.lat, cilj.lon) >= 0.5) return null;
+  return new Date((sad == null ? Date.now() : sad) + route.totalDur * 1000).toISOString();
+}
+function sastanakVodi(m) {   // Vodi me tamo + ETA cim ruta stigne (plan je asinhron; cekamo do 40 s)
+  SAST.cilj = { id: m.id, t0: Date.now(), lat: m.lat, lon: m.lon };
+  sastanakZatvori();
+  try { SEARCH_MODE = "to"; } catch (e) {}
+  pickDestination({ n: m.ime, lat: m.lat, lon: m.lon, odmah: true });
+  const seq = ++sastanakVodi._seq;
+  const cekaj = () => {
+    if (seq !== sastanakVodi._seq || !SAST.cilj) return;
+    const eta = sastanakEta(state.routes && state.routes[state.selected], { ...SAST.cilj, to: state.geocode && state.geocode.to });
+    if (eta) { sastanakOdgovori(SAST.cilj.id, "dolazim", eta).catch(() => {}); return; }
+    if (Date.now() - SAST.cilj.t0 < 40000) setTimeout(cekaj, 1500);
+  };
+  setTimeout(cekaj, 2500);
+}
+sastanakVodi._seq = 0;
+function sastanakNoviOtvori(m) {   // iz lista mesta (E4)
+  const el = document.getElementById("sastanakNovi"); if (!el || !m) return;
+  const pr = mojiPrijateljiPrihvaceni();
+  SAST.novi = { ime: m.ime, lat: m.lat, lon: m.lon, kad: null };
+  document.getElementById("snIme").textContent = m.ime;
+  document.getElementById("snPoruka").value = "";
+  document.getElementById("snKad").hidden = true; document.getElementById("snSada").classList.add("on"); document.getElementById("snU").classList.remove("on");
+  document.getElementById("snUTxt").textContent = T("sas.uVreme");
+  document.getElementById("snGreska").hidden = true;
+  document.getElementById("snLista").innerHTML = pr.map((f) => `<label class="sn-red">${avatarHtml(f.id, f.avatar_v, f.ime)}<span class="zpr-t"><b>${esc(f.ime)}</b>${f.motor ? "<small>" + esc(f.motor) + "</small>" : ""}</span><input type="checkbox" value="${esc(f.id)}" checked></label>`).join("");
+  try { mestoCiljZatvori(); } catch (e) {}
+  el.hidden = false; document.body.classList.add("mcilj");
+}
+function sastanakNoviZatvori() { const el = document.getElementById("sastanakNovi"); if (el) el.hidden = true; document.body.classList.remove("mcilj"); SAST.novi = null; }
+(function(){
+  const g = (id) => document.getElementById(id);
+  if (!g("sastanakNovi")) return;
+  g("sastanakTraka").addEventListener("click", (e) => { e.stopPropagation(); sastanakOtvori(g("sastanakTraka").dataset.id); });
+  const zs = g("zSastanci"); if (zs) zs.addEventListener("click", (e) => { const k = e.target.closest("[data-id]"); if (k) sastanakOtvori(k.dataset.id); });
+  const mcN = g("mcNadjemo"); if (mcN) mcN.addEventListener("click", () => { if (MC.m) sastanakNoviOtvori(MC.m); });
+  const pad = (n) => String(n).padStart(2, "0");
+  const hhmm = (v) => new Date(v).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
+  g("snSada").addEventListener("click", () => { SAST.novi.kad = null; g("snKad").hidden = true; g("snSada").classList.add("on"); g("snU").classList.remove("on"); g("snUTxt").textContent = T("sas.uVreme"); });
+  g("snU").addEventListener("click", () => {
+    const w = g("snKad"); w.hidden = false; g("snU").classList.add("on"); g("snSada").classList.remove("on");
+    if (!w.value) { const d = new Date(Date.now() + 60 * 60000); d.setMinutes(Math.round(d.getMinutes() / 15) * 15, 0, 0); w.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+    SAST.novi.kad = w.value; g("snUTxt").textContent = T("sas.uVremeX", { 0: hhmm(w.value) });
+    try { w.showPicker(); } catch (e) { w.focus(); }
+  });
+  g("snKad").addEventListener("change", () => { if (g("snKad").value) { SAST.novi.kad = g("snKad").value; g("snUTxt").textContent = T("sas.uVremeX", { 0: hhmm(g("snKad").value) }); } });
+  g("snPosalji").addEventListener("click", async () => {
+    const b = g("snPosalji"), gr = g("snGreska"); gr.hidden = true;
+    const ko = [...g("snLista").querySelectorAll("input:checked")].map((i) => i.value);
+    if (!ko.length) { gr.textContent = T("sas.izaberiNekog"); gr.hidden = false; return; }
+    b.disabled = true;
+    try {
+      const m = SAST.novi;
+      const id = await supaJa("rpc/nadjemo_se", { method: "POST", body: JSON.stringify({ p_ime: m.ime, p_lat: m.lat, p_lon: m.lon, p_kad: m.kad ? new Date(m.kad).toISOString() : null, p_poruka: g("snPoruka").value, p_ko: ko }) });
+      sastanakNoviZatvori();
+      tihoObavestenje(T("sas.poslato", { 0: ko.length, 1: TN(ko.length, "pl.prijatelj") }));
+      pushPosalji(id, "poziv");
+      await sastanciUcitaj(true);
+      if ((SAST.lista || []).some((x) => x.id === id)) sastanakOtvori(id);   // odmah vidis karticu - odatle "Vodi me tamo" i za sebe
+    } catch (e) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; }
+    b.disabled = false;
+  });
+  g("snX").addEventListener("click", sastanakNoviZatvori);
+  g("slX").addEventListener("click", sastanakZatvori);
+  g("slVodi").addEventListener("click", () => { if (SAST.otvoren) sastanakVodi(SAST.otvoren); });
+  g("slNe").addEventListener("click", async () => { const m = SAST.otvoren; if (!m) return; try { await sastanakOdgovori(m.id, "ne", null); sastanakOtvori(m.id); } catch (e) { tihoObavestenje(nalogGreskaTekst(e)); } });
+  g("slOtkazi").addEventListener("click", async () => { const m = SAST.otvoren; if (!m || !confirm(T("sas.otkaziPitanje"))) return;
+    try { await supaJa("rpc/sastanak_otkazi", { method: "POST", body: JSON.stringify({ p_id: m.id }) }); sastanakZatvori(); await sastanciUcitaj(true); } catch (e) { tihoObavestenje(nalogGreskaTekst(e)); } });
+  setTimeout(() => { try { sastanciPokreni(); } catch (e) {} }, 4000);
+})();
+
+/* ======================= PRIJATELJI UZIVO NA MAPI + PUSH (faza 3 od 4, 2.10.2026) =======================
+   Boskove odluke: lokacija se deli UVEK dok smo prijatelji (prekidac u Ja, podrazumevano upaljen); osvezavanje
+   2-3 min, cesce sto si blizi (>5 km 180 s, <5 km 30 s, <1 km 10 s). Slanje: u prednjem planu odavde
+   (watchPosition), u pozadini u voznji iz nativnog kolektora (cmd "deli"). Prijem: prijatelji_lokacije() na
+   isti ritam; prsten sa slikom/slovom i natpisom na mapi; dodir = sazetak + "Vodi me do njega".
+   Push: token iz nativnog sloja (window.rmrPushToken) -> uredjaj_upisi; salje Edge funkcija "push".
+   Sema: docs/supabase-lokacije.sql. / Live friends on the map + push registration. */
+const LOK = { markeri: {}, lista: [], tSalji: null, tCitaj: null, zadnje: 0, deli: null, tokenRok: 0 };
+function deliLokaciju() { if (LOK.deli == null) { try { LOK.deli = localStorage.getItem("rmr2_deli") !== "0"; } catch (e) { LOK.deli = true; } } return LOK.deli; }
+function lokacijaInterval(najbliziKm) {   // Boskovo pravilo 1.10.: 2-3 min, cesce kad si blizu
+  if (najbliziKm == null || !isFinite(najbliziKm)) return 180000;
+  if (najbliziKm < 1) return 10000;
+  if (najbliziKm < 5) return 30000;
+  return 180000;
+}
+function lokacijaNajbliziKm(mojFix, lista) {
+  if (!mojFix || mojFix.lat == null) return null;
+  let m = null;
+  for (const f of lista || []) { if (f.lat == null) continue; const d = haversine(mojFix.lat, mojFix.lon, f.lat, f.lon); if (m == null || d < m) m = d; }
+  return m;
+}
+function lokacijaMojFix() {   // u voznji: poslednji fiks voznje; inace: zivi watch sa pocetnog
+  try {
+    if (document.body.classList.contains("riding") && RIDE.lastFixObj && RIDE.lastFixObj.la != null)
+      return { lat: RIDE.lastFixObj.la, lon: RIDE.lastFixObj.lo, t: RIDE.lastFixTs || Date.now(), spd: (RIDE.spdKmh || 0) / 3.6, voznja: true };
+  } catch (e) {}
+  const h = HOMELOC.fix; if (h && !h.stale) return { lat: h.lat, lon: h.lon, acc: h.acc, t: h.t, voznja: false };
+  return null;
+}
+async function lokacijaSalji(force) {
+  const n = nalogCitaj(); if (!n || !n.kod || !deliLokaciju()) return false;
+  const f = lokacijaMojFix(); if (!f || Date.now() - f.t > 300000) return false;   // ustajao fiks se ne salje kao "sada"
+  const iv = lokacijaInterval(lokacijaNajbliziKm(f, LOK.lista));
+  if (!force && Date.now() - LOK.zadnje < iv) return false;
+  LOK.zadnje = Date.now();
+  try {
+    await supaJa("rpc/lokacija_upisi", { method: "POST", body: JSON.stringify({ p_lat: f.lat, p_lon: f.lon, p_spd: f.spd != null ? Math.round(f.spd * 10) / 10 : null, p_kurs: null, p_acc: f.acc != null ? Math.round(f.acc) : null, p_u_voznji: !!f.voznja }) });
+    return true;
+  } catch (e) { return false; }
+}
+function lokacijaVremeTekst(ts, sad) {
+  const d = Math.max(0, (sad == null ? Date.now() : sad) - new Date(ts).getTime()), min = Math.round(d / 60000);
+  if (min < 2) return T("lok.sada");
+  if (min < 60) return T("lok.preMin", { 0: min });
+  const h = Math.round(min / 60); if (h < 24) return T("lok.preH", { 0: h });
+  return T("lok.davno");
+}
+function lokacijaSveza(ts, sad) { return !!ts && ((sad == null ? Date.now() : sad) - new Date(ts).getTime()) < 30 * 60000; }
+async function prijateljiLokacijeUcitaj() {
+  const n = nalogCitaj(); if (!n || !n.kod) return [];
+  let l = [];
+  try { const r = await supaJa("rpc/prijatelji_lokacije", { method: "POST", body: "{}" }); l = Array.isArray(r) ? r : []; } catch (e) { return LOK.lista; }
+  LOK.lista = l;
+  prijateljiLokacijeCrtaj();
+  return l;
+}
+function prijateljiLokacijeCrtaj() {
+  if (!map || !state.catMarkers) return;
+  const zivi = new Set();
+  for (const f of LOK.lista) {
+    if (f.lat == null) continue;
+    zivi.add(f.id);
+    let m = LOK.markeri[f.id];
+    const html = `<div class="pr-nat"><b>${esc(f.ime)}</b><span>${esc(lokacijaVremeTekst(f.ts))}</span></div>${avatarHtml(f.id, f.avatar_v, f.ime, "pr-krug" + (f.u_voznji ? " voznja" : ""))}`;
+    if (!m) {
+      const el = document.createElement("div"); el.className = "pr-pin"; el.innerHTML = html;
+      el.addEventListener("click", (e) => { e.stopPropagation(); const ff = LOK.lista.find((x) => x.id === f.id); if (ff) prijateljSazetak({ ...(prijateljiKes().find((x) => x.id === f.id) || {}), ...ff, stanje: "prihvaceno", lok: ff }); });
+      m = new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat([f.lon, f.lat]).addTo(map);
+      LOK.markeri[f.id] = m; state.catMarkers.prijatelji.push(m);
+      if (!state.layerVis.prijatelji) el.style.display = "none";
+    } else { m.setLngLat([f.lon, f.lat]); m.getElement().innerHTML = html; }
+  }
+  prijateljiNatpisStrana();
+  if (!prijateljiLokacijeCrtaj._move) { prijateljiLokacijeCrtaj._move = true; try { map.on("moveend", prijateljiNatpisStrana); } catch (e) {} }
+  for (const id of Object.keys(LOK.markeri)) if (!zivi.has(id)) { try { LOK.markeri[id].remove(); } catch (e) {} state.catMarkers.prijatelji = state.catMarkers.prijatelji.filter((x) => x !== LOK.markeri[id]); delete LOK.markeri[id]; }
+}
+/* Natpis uz prsten ide LEVO od prstena kad je prijatelj blizu desne ivice (ispod dugmadi Slojevi/pumpa/hrana),
+   i ispod prstena kad je uz gornju ivicu - inace ga stub dugmadi i gornje polje prekriju (Boskov snimak 2.10.). */
+function prijateljiNatpisStrana() {
+  try {
+    const w = window.innerWidth;
+    for (const id of Object.keys(LOK.markeri)) {
+      const m = LOK.markeri[id], el = m.getElement(); const p = map.project(m.getLngLat());
+      el.classList.toggle("levo", p.x > w - 110);
+      el.classList.toggle("dole", p.y < 150);
+    }
+  } catch (e) {}
+}
+function lokacijeTakt() {   // jedan otkucaj: posalji svoju, povuci tudje, zakazi sledeci po blizini
+  if (LOK.tSalji) clearTimeout(LOK.tSalji);
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  if (document.visibilityState === "visible") { lokacijaSalji(false); prijateljiLokacijeUcitaj(); }
+  const iv = lokacijaInterval(lokacijaNajbliziKm(lokacijaMojFix(), LOK.lista));
+  LOK.tSalji = setTimeout(lokacijeTakt, Math.min(iv, 60000));   // citanje tudjih najmanje na minut, slanje po pravilu
+  try { if (JURI.f) juriProveri(); } catch (e) {}
+}
+function lokacijePokreni() {
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  if (!lokacijePokreni._vis) { lokacijePokreni._vis = true; document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") lokacijeTakt(); }); }
+  lokacijeTakt();
+}
+/* pozadina u voznji: nativni kolektor salje sam; token mu obnavljamo na 30 min dok voznja traje */
+async function rmrGpsDeli(on) {
+  const n = nalogCitaj();
+  const poruka = { cmd: "deli", on: !!(on && n && n.kod && deliLokaciju()), url: SUPA_URL + "/rest/v1/rpc/lokacija_upisi", apikey: SUPA_KEY, token: "", ms: 120000 };
+  if (poruka.on) { try { poruka.token = await nalogToken(); } catch (e) { poruka.on = false; } }
+  try { const h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.rmrGps; if (h) { h.postMessage(poruka); return; } } catch (e) {}
+  try { const a = rmrGpsSignal._a || (window.Capacitor && window.Capacitor.registerPlugin ? window.Capacitor.registerPlugin("RmrGps") : null); if (a && a.signal) a.signal(poruka).catch(() => {}); } catch (e) {}
+}
+function rmrGpsDeliPokreni() { rmrGpsDeli(true); if (LOK.tDeli) clearInterval(LOK.tDeli); LOK.tDeli = setInterval(() => rmrGpsDeli(true), 30 * 60000); }
+function rmrGpsDeliStani() { if (LOK.tDeli) clearInterval(LOK.tDeli); LOK.tDeli = null; rmrGpsDeli(false); }
+async function deliLokacijuPostavi(on) {
+  LOK.deli = !!on; try { localStorage.setItem("rmr2_deli", on ? "1" : "0"); } catch (e) {}
+  try { await supaJa("rpc/deli_lokaciju_postavi", { method: "POST", body: JSON.stringify({ p_deli: !!on }) }); } catch (e) {}
+  if (on) lokacijaSalji(true); else rmrGpsDeli(false);
+}
+/* ---- push ---- */
+function pushRegistruj() {
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  try { const h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.rmrPush; if (h) h.postMessage({ cmd: "register" }); } catch (e) {}
+  // Android (FCM) jos nije ozicen - vidi supabase/README-push.md
+}
+window.rmrPushToken = function (hex) {
+  try {
+    const n = nalogCitaj(); if (!n || !n.kod || !hex) return false;
+    let zad = ""; try { zad = localStorage.getItem("rmr2_push_token") || ""; } catch (e) {}
+    if (zad === hex) return true;
+    supaJa("rpc/uredjaj_upisi", { method: "POST", body: JSON.stringify({ p_token: hex, p_platforma: "ios" }) })
+      .then(() => { try { localStorage.setItem("rmr2_push_token", hex); } catch (e) {} }).catch(() => {});
+    return true;
+  } catch (e) { return false; }
+};
+window.rmrPushOtvori = function (rmr) {   // dodir na obavestenje: otvori sastanak
+  try {
+    if (!rmr || !rmr.sastanak) return false;
+    nasTabKlik("planer");
+    sastanciUcitaj(true).then(() => sastanakOtvori(rmr.sastanak)).catch(() => { try { sastanakOtvori(rmr.sastanak); } catch (e) {} });
+    return true;
+  } catch (e) { return false; }
+};
+async function pushPosalji(sastanakId, vrsta) {   // Edge funkcija salje ostalim ucesnicima; pad je tih (bez push-a app radi isto)
+  try {
+    const t = await nalogToken(); if (!t) return;
+    let signal; try { signal = AbortSignal.timeout(10000); } catch (e) {}
+    await fetch(SUPA_URL + "/functions/v1/push", { method: "POST", signal, headers: { apikey: SUPA_KEY, Authorization: "Bearer " + t, "Content-Type": "application/json" }, body: JSON.stringify({ sastanak: sastanakId, vrsta: vrsta || "poziv" }) });
+  } catch (e) {}
+}
+(function(){
+  if (!document.getElementById("kartaPuta")) return;
+  setTimeout(() => { try { lokacijePokreni(); pushRegistruj(); } catch (e) {} }, 7000);
+})();
+
+/* ======================= "JURI GA" (faza 4 od 4, 2.10.2026) =======================
+   Dodir na prijatelja sa zivom tackom -> "Vodi me do njega": ruta do NJEGOVE tacke koja se pomera. Dok traje
+   (planiranje ili voznja), prijateljeva tacka se povlaci na 15 s; kad se pomeri vise od JURI_PRAG_M od tacke do
+   koje vodi ruta, ruta se preracuna (u voznji kroz postojeci rideReroute, pre voznje novim planom). U voznji HUD
+   nosi tablu: razmak, njegova brzina, "stizes ga za ~X min" (iz razlike brzina) i starost tacke. Gasi se sa
+   krajem voznje, novim ciljem iz pretrage ili kad tacka ostari preko 10 min (tabla to kaze, ruta ostaje).
+   / Chase: route to a moving friend, replanned when they move; HUD plate with gap and catch-up time. */
+const JURI = { f: null, cilj: null, poslednje: 0, t: null };
+const JURI_PRAG_M = 300, JURI_TAKT_MS = 15000, JURI_STARO_MS = 10 * 60000;
+function juriPomeren(cilj, lok, pragM) {   // da li se prijatelj pomerio dovoljno da se ruta preracuna
+  if (!cilj || !lok || lok.lat == null) return false;
+  return haversine(cilj.lat, cilj.lon, lok.lat, lok.lon) * 1000 >= (pragM == null ? JURI_PRAG_M : pragM);
+}
+function juriStizes(razmakM, mojaMs, njegovaMs) {   // sekunde do sustizanja; null = ne stizes ga (brzi je ili stojis)
+  if (razmakM == null || !(mojaMs > 0)) return null;
+  const zatvaranje = mojaMs - (njegovaMs || 0);
+  if (zatvaranje < 1) return null;
+  return razmakM / zatvaranje;
+}
+function juriTekst(f, lok, razmakM, mojaMs, sad) {
+  const t = sad == null ? Date.now() : sad;
+  const star = lok && lok.ts ? t - new Date(lok.ts).getTime() : Infinity;
+  if (star > JURI_STARO_MS) return T("juri.bezSignala", { 0: f.ime, 1: lok && lok.ts ? new Date(lok.ts).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" }) : "?" });
+  const delovi = [];
+  if (razmakM != null) delovi.push(razmakM < 1000 ? T("juri.m", { 0: Math.round(razmakM / 10) * 10 }) : T("juri.km", { 0: DEC((razmakM / 1000).toFixed(1)) }));
+  if (lok && lok.spd != null) delovi.push(T("juri.njegova", { 0: Math.round(lok.spd * 3.6) }));
+  const s = juriStizes(razmakM, mojaMs, lok && lok.spd);
+  if (s != null && razmakM > 50) delovi.push(s < 60 ? T("juri.stizesSad") : T("juri.stizesZa", { 0: Math.round(s / 60) }));
+  else if (razmakM != null && razmakM <= 50) delovi.push(T("juri.tuJe"));
+  else if (lok && lok.spd != null && mojaMs > 0) delovi.push(T("juri.beziTi"));
+  return f.ime + " · " + delovi.join(" · ");
+}
+function juriPokreni(f, lok) {
+  if (!f || !lok || lok.lat == null) return;
+  JURI.f = f; JURI.cilj = { lat: lok.lat, lon: lok.lon }; JURI.poslednje = Date.now();
+  try { SEARCH_MODE = "to"; } catch (e) {}
+  pickDestination({ n: f.ime, lat: lok.lat, lon: lok.lon, odmah: true, juri: true });
+  if (JURI.t) clearInterval(JURI.t);
+  JURI.t = setInterval(juriTakt, JURI_TAKT_MS);
+  try { tihoObavestenje(T("juri.krenuo", { 0: f.ime })); } catch (e) {}
+}
+function juriStani(razlog) {
+  if (!JURI.f) return;
+  if (JURI.t) clearInterval(JURI.t); JURI.t = null;
+  JURI.f = null; JURI.cilj = null;
+  const pl = document.getElementById("rideJuri"); if (pl) { pl.hidden = true; pl.classList.remove("on"); }
+}
+async function juriTakt() {
+  if (!JURI.f) return;
+  if (document.visibilityState !== "visible" && !document.body.classList.contains("riding")) return;
+  await prijateljiLokacijeUcitaj();
+  juriProveri();
+}
+function juriProveri() {
+  const f = JURI.f; if (!f) return;
+  const lok = (LOK.lista || []).find((x) => x.id === f.id);
+  const riding = document.body.classList.contains("riding");
+  // HUD tabla u voznji
+  const pl = document.getElementById("rideJuri");
+  if (pl && riding) {
+    let razmak = null;
+    try { if (RIDE.total != null && RIDE.maxD != null) razmak = Math.max(0, RIDE.total - RIDE.maxD); } catch (e) {}
+    const moja = (RIDE.spdKmh || 0) / 3.6;
+    pl.textContent = juriTekst(f, lok, razmak, moja);
+    pl.hidden = false; pl.classList.add("on");
+  }
+  if (!lok || !juriPomeren(JURI.cilj, lok)) return;
+  if (lok.ts && Date.now() - new Date(lok.ts).getTime() > JURI_STARO_MS) return;   // ustajala tacka ne vuce rutu
+  JURI.cilj = { lat: lok.lat, lon: lok.lon };
+  if (riding) {
+    try {
+      state.geocode = { ...(state.geocode || {}), to: { lat: lok.lat, lon: lok.lon, name: f.ime } };
+      state.searchTo = { name: f.ime, lat: lok.lat, lon: lok.lon };
+      const route = state.routes && state.routes[state.selected];
+      const my = RIDE.lastFixObj;
+      if (route && my && my.la != null) rideReroute(route, my.lo, my.la, RIDE.maxD || 0, true);
+    } catch (e) {}
+  } else {
+    try { SEARCH_MODE = "to"; } catch (e) {}
+    pickDestination({ n: f.ime, lat: lok.lat, lon: lok.lon, odmah: true, juri: true });
+  }
+}
 
 /* ---- app2 Faza 3.1: GPS polazak + brza dugmad + sheet drag + vožnja ---- */
 function updateQuickLabels() {
@@ -21816,12 +23023,22 @@ function rmrGpsPaket(fixes) {
 }
 try { window.rmrGpsPaket = rmrGpsPaket; } catch (e) {}
 function rmrGpsSignal(cmd) {
-  /* JS -> nativni GPS kolektor (iOS). Na webu, Androidu i pre prvog Xcode Run-a handler ne
-     postoji - tihi no-op, ponasanje identicno 0.9.82. Nikad @capacitor/geolocation (ne ume
-     allowsBackgroundLocationUpdates, a 5 s timeout mu trajno ubija watch). */
+  /* JS -> nativni GPS kolektor (iOS: WKScriptMessageHandler "rmrGps"; Android od 1.10.2026: Capacitor
+     plugin "RmrGps"). Na webu i pre prvog nativnog builda handler ne postoji - tihi no-op, ponasanje
+     identicno 0.9.82. Nikad @capacitor/geolocation (ne ume allowsBackgroundLocationUpdates, a 5 s
+     timeout mu trajno ubija watch). */
   try {
     const h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.rmrGps;
-    if (h) h.postMessage({ cmd });
+    if (h) { h.postMessage({ cmd }); return; }
+  } catch (e) {}
+  /* Android (1.10.2026): isti ugovor kroz Capacitor plugin "RmrGps" (RmrGpsPlugin.java -> RmrLokacija.java,
+     servis u prednjem planu tipa location). Proxy se pravi jednom; bez nativne ljuske poziv tiho pada. */
+  try {
+    const C = window.Capacitor;
+    if (!C || !C.isNativePlatform || !C.isNativePlatform()) return;
+    if (!rmrGpsSignal._a) rmrGpsSignal._a = (C.Plugins && C.Plugins.RmrGps) || (C.registerPlugin ? C.registerPlugin("RmrGps") : null);
+    const a = rmrGpsSignal._a;
+    if (a && a.signal) a.signal({ cmd }).catch(() => {});
   } catch (e) {}
 }
 function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ rute - trag/km/brzina/nagib/kolekcije, bez instrukcija
@@ -21976,6 +23193,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} }
   RIDE.watch = navigator.geolocation.watchPosition(RIDE._onFix, RIDE._onFixErr, NAV_GPS_OPTS);
   rmrGpsSignal("start");   // nativni pozadinski kolektor (iOS) - na webu tihi no-op (0.9.83)
+  try { rmrGpsDeliPokreni(); } catch (e) {}   // 2.10. (faza 3): ziva lokacija prijateljima i iz dzepa
   clearInterval(RIDE.wdInt);
   RIDE.wdInt = setInterval(() => { try {
     /* Pre-pauza sekcija (0.9.83, W1 parnost sa navigacionim wdInt-om): auto-pauza mora da kuca i u
@@ -22376,6 +23594,7 @@ function startRide() {
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} }   // dupli tap na Kreni ne sme da ostavi dva watcher-a
   RIDE.watch = navigator.geolocation.watchPosition(RIDE._onFix, RIDE._onFixErr, NAV_GPS_OPTS);
   rmrGpsSignal("start");   // nativni pozadinski kolektor (iOS) - na webu tihi no-op (0.9.83)
+  try { rmrGpsDeliPokreni(); } catch (e) {}   // 2.10. (faza 3): ziva lokacija prijateljima i iz dzepa
   clearInterval(RIDE.wdInt);   // GPS watchdog - 5.8. je banner samouvereno cutao dok fiksevi ne stizu
   RIDE.wdInt = setInterval(() => { try {
     /* "Druga ruta" se osvezava PRE garda ispod: prag stajanja je vremenski, pa dugme mora da se
@@ -22589,6 +23808,7 @@ function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne 
 }
 function stopRide() {
   try { clearTimeout(RIDE.arrTo); } catch (e) {} RIDE.arrTo = null;
+  try { juriStani("kraj voznje"); } catch (e) {}   // faza 4
   /* Kontrolna tacka se brise SAMO kad je dnevnik potvrdjen (0.9.82 review): "upisano" ili legitimno
      "kratka"/"nista". Pad upisa (puna kvota) ili izuzetak -> tacka OSTAJE, pa sledece pokretanje
      ponovo ponudi cuvanje - voznja ne sme da nestane nemo. */
@@ -22610,6 +23830,7 @@ function stopRide() {
   try { navRideLayersOff(); } catch (e) {}   // vrati planersku (weather) liniju rute
   if (RIDE.watch != null) { try { navigator.geolocation.clearWatch(RIDE.watch); } catch (e) {} RIDE.watch = null; }
   rmrGpsSignal("stop");   // nativni kolektor se gasi sa voznjom; njegov disk-bafer se tada brise (0.9.83)
+  try { rmrGpsDeliStani(); } catch (e) {}
   try { clearInterval(RIDE.prijInt); RIDE.prijInt = null; } catch (e) {}
   try { nightRoads(false); } catch (e) {}   // svetlina mape nazad na pregledni nivo
   try { map.setPadding({ top: 0, bottom: 0, left: 0, right: 0 }); } catch (e) {}   // vrati kameru na centriranje van voznje
@@ -23724,6 +24945,10 @@ function rsPoiSet(naz, nazPoi) {
   el.hidden = !im;
 }
 function rideSumShow(sIn) {
+  try {   // 2.10. (faza 2): kraj voznje do 100 m od mesta sastanka = "stigao"
+    const c = SAST.cilj, tr = sIn && sIn.trag, z = tr && tr[tr.length - 1];
+    if (c && z && haversine(z[1], z[0], c.lat, c.lon) < 0.1) { sastanakOdgovori(c.id, "stigao", null).catch(() => {}); SAST.cilj = null; }   // 100 m (Bosko 2.10.)
+  } catch (e) {}
   // bez argumenta: svez sazetak posle voznje; sa argumentom: zapis iz dnevnika (tap na vrow - Boskov nalaz 6.8.)
   const s = sIn || RIDE.lastSummary;
   if (!sIn) RIDE.lastSummary = null;
