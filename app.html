@@ -17372,8 +17372,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.170";
+const APP_VERSION = "0.9.171";
 const CHANGELOG = [
+  { v: "0.9.171", d: "02.10.2026.", stavke: [
+    "<b>Obrisan nalog ne ostaje \"prijavljen\".</b> Pri svakom paljenju app pita server da li nalog postoji; ako je obrisan, odmah traži prijavu umesto da sat vremena radi na starom ključu. Bez mreže ništa ne dira.",
+  ] },
   { v: "0.9.170", d: "02.10.2026.", stavke: [
     "<b>Prijava kodom od 6 cifara.</b> Mejl sad stiže sa našeg servera (prijava@routemeright.app) i nosi kod, bez linka: ime, mejl, kod, i prijavljen si trajno. Isti mejl na novom telefonu vraća nalog. Stari nalozi bez mejla upisuju mejl jednom i zadržavaju kod i prijatelje.",
   ] },
@@ -20249,6 +20252,16 @@ async function nalogOsvezi() {   // moj red sa servera (ime/kod/telefon) kroz mo
   try { if (red[0].deli_lokaciju != null) { LOK.deli = !!red[0].deli_lokaciju; localStorage.setItem("rmr2_deli", LOK.deli ? "1" : "0"); } } catch (e) {}
   return m;
 }
+async function nalogProveriNaServeru() {   // 2.10. (Bosko obrisao svoj nalog u dashboardu, a app ga je i dalje pustala sat vremena na stari kljuc):
+  const n = nalogCitaj(); if (!n || !n.refresh || !n.kod) return;   // pri paljenju pitamo server da li profil POSTOJI; "nema" = sesija dole + kapija
+  try {
+    const m = await nalogOsvezi();
+    if (m === null) { nalogSesijaIstekla(); return; }   // server odgovorio, profila nema (nalog obrisan)
+  } catch (e) {
+    if (e && (e.nemaSesije || e.status === 401 || e.status === 403)) { nalogSesijaIstekla(); return; }   // kljuc odbijen
+    /* mreza/pad servera: nista ne diramo, nalog ostaje (ne sme da izbaci coveka na putu) */
+  }
+}
 async function nalogPromeniIme(ime) {
   ime = String(ime || "").trim(); if (ime.length < 2) throw new Error(T("nal.imeKratko"));
   const n = nalogCitaj(); if (!n) return;
@@ -20595,6 +20608,7 @@ function nalogKapijaPrikazi() {
   });
   if (nalogIzHasha()) setTimeout(() => { nalogIzLinkaZavrsi(); }, 400);   // link iz mejla (web)
   else setTimeout(() => { try { nalogKapijaPrikazi(); } catch (e) {} }, 350);   // posle uvodne animacije; sloj je iznad nje po z-indexu
+  setTimeout(() => { try { nalogProveriNaServeru(); } catch (e) {} }, 1500);   // nalog obrisan na serveru -> kapija, ne sat vremena laznog "prijavljen"
   setTimeout(() => { try { nalogPing(); } catch (e) {} }, 6000);
 })();
 
