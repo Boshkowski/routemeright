@@ -1063,7 +1063,11 @@
 .zpr-forma { display: flex; gap: 8px; margin-top: 12px; }
 .zpr-forma input { flex: 1; min-width: 0; height: 46px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); background: var(--bg); color: var(--fg-strong); font: 400 16px var(--font-ui); }
 .zpr-forma input:focus { outline: none; border-color: var(--accent); }
-.zpr-forma input#zprKod { font-family: var(--font-num); letter-spacing: .12em; text-transform: uppercase; }
+.zpr-forma input#zprKod { font-family: var(--font-ui); letter-spacing: 0; text-transform: none; }   /* 3.10.: kod ILI @korisnicko, pa bez velikih slova */
+.zpr-nadji { margin-top: 4px; }
+.zpr-nadji[hidden] { display: none; }
+.zpr-hit { cursor: default; }
+.zpr-jeste { font-size: 12px; color: var(--fg-muted); }
 .zpr-forma button { flex: none; height: 46px; padding: 0 16px; border: 0; border-radius: var(--r-sm); background: var(--action-gradient); color: var(--on-accent); font: 600 14px var(--font-ui); cursor: pointer; }
 .zpr-forma button:disabled { opacity: .6; }
 .zpr-greska { margin-top: 10px; font-size: 13px; color: var(--bad-fg); line-height: 1.4; }
@@ -3584,6 +3588,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <button type="button" class="nk-av" id="nkAv" aria-label="Izaberi sliku" data-i18n-aria="nk.slikaAria"><img id="nkAvImg" alt="" hidden><span id="nkAvIni">+</span><small data-i18n="nk.slika">slika</small></button>
     <div class="nk-korak1" id="nkKorak1">
       <input id="nkIme" maxlength="32" autocomplete="name" placeholder="Tvoje ime ili nadimak" data-i18n-ph="nal.imePh">
+      <input id="nkKorisnicko" maxlength="20" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Korisničko ime (npr. boshkowski)" data-i18n-ph="nal.korisnickoPh">
       <input id="nkEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="Mejl (na njega stiže kod)" data-i18n-ph="nk.emailPh">
       <input id="nkTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="Telefon (po želji)" data-i18n-ph="nk.telPh">
       <div class="nk-motor" id="nkMotor"></div>
@@ -6042,11 +6047,21 @@ const RECNIK_SR = {
   "nal.napraviOpis": "Samo ime - bez lozinke i mejla. Dobijaš kod koji daješ prijateljima.",
   "nal.imePh": "Tvoje ime ili nadimak",
   "nal.napravi": "Napravi",
+  "nal.korisnicko": "Korisničko ime",
+  "nal.korisnickoPh": "Korisničko ime (npr. boshkowski)",
+  "nal.korisnickoLos": "Korisničko ime: 3 do 20 znakova, mala slova, brojevi, tačka i donja crta.",
+  "nal.korisnickoZauzeto": "To korisničko ime je zauzeto - probaj drugo.",
+  "nal.kodIliImePh": "Kod ili @korisničko ime",
+  "nal.nadjiPrazno": "Nema nikog sa tim imenom.",
+  "nal.nalaziPrekidac": "Mogu da me nađu po korisničkom imenu",
+  "nal.novoKorisnicko": "Novo korisničko ime (mala slova, bez @):",
+  "nal.vecPrijatelj": "prijatelj",
+  "nal.cekaKratko": "čeka",
   "nal.tvojKod": "Tvoj kod",
   "nal.podeliKod": "Podeli",
   "nal.kodPrijateljaPh": "Kod prijatelja",
   "nal.dodaj": "Dodaj",
-  "nal.nemaPrijatelja": "Još nemaš prijatelje. Podeli svoj kod ili upiši njegov.",
+  "nal.nemaPrijatelja": "Još nemaš prijatelje. Upiši @korisničko ime ili kod, ili podeli svoj.",
   "nal.cekaNjega": "čeka da prihvati",
   "nal.cekaTebe": "čeka tvoju potvrdu",
   "nal.prihvati": "Prihvati",
@@ -7675,11 +7690,21 @@ const RECNIK_EN = {
   "nal.napraviOpis": "Just a name - no password, no email. You get a code to give friends.",
   "nal.imePh": "Your name or nickname",
   "nal.napravi": "Create",
+  "nal.korisnicko": "Username",
+  "nal.korisnickoPh": "Username (e.g. boshkowski)",
+  "nal.korisnickoLos": "Username: 3 to 20 characters, lowercase letters, digits, dot and underscore.",
+  "nal.korisnickoZauzeto": "That username is taken - try another.",
+  "nal.kodIliImePh": "Code or @username",
+  "nal.nadjiPrazno": "Nobody with that name.",
+  "nal.nalaziPrekidac": "People can find me by username",
+  "nal.novoKorisnicko": "New username (lowercase, no @):",
+  "nal.vecPrijatelj": "friend",
+  "nal.cekaKratko": "pending",
   "nal.tvojKod": "Your code",
   "nal.podeliKod": "Share",
   "nal.kodPrijateljaPh": "Friend's code",
   "nal.dodaj": "Add",
-  "nal.nemaPrijatelja": "No friends yet. Share your code or enter theirs.",
+  "nal.nemaPrijatelja": "No friends yet. Enter a @username or code, or share yours.",
   "nal.cekaNjega": "waiting for them",
   "nal.cekaTebe": "waiting for you",
   "nal.prihvati": "Accept",
@@ -17372,8 +17397,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.171";
+const APP_VERSION = "0.9.172";
 const CHANGELOG = [
+  { v: "0.9.172", d: "03.10.2026.", stavke: [
+    "<b>Korisničko ime i pretraga prijatelja.</b> Svako ima @korisničko ime (bira se pri pravljenju naloga, menja u Ja; postojeći nalozi ga dobijaju sami iz imena). U Zajednici u polje upišeš @ime ili deo imena i dobiješ listu sa slikom, imenom i motorom - Dodaj šalje zahtev. Kod od 6 znakova i link za poziv i dalje rade. Ko ne želi da ga nalaze, gasi prekidač u Ja.",
+  ] },
   { v: "0.9.171", d: "02.10.2026.", stavke: [
     "<b>Obrisan nalog ne ostaje \"prijavljen\".</b> Pri svakom paljenju app pita server da li nalog postoji; ako je obrisan, odmah traži prijavu umesto da sat vremena radi na starom ključu. Bez mreže ništa ne dira.",
   ] },
@@ -20108,6 +20136,8 @@ function nalogGreskaTekst(e) {   // jedna recenica za ekran, po uzroku
   if (e && (e.kod === "anonymous_provider_disabled" || /anonymous sign-ins/i.test(m))) return T("nal.serverNijePodesen");
   if (/relation .* does not exist|Could not find the table|function .* does not exist|schema cache/i.test(m)) return T("nal.serverNijePodesen");
   if (e && e.nemaSesije) return T("nal.nemaSesije");
+  if (/korisnici_korisnicko_jed|korisnicko.*(23505|duplicate)|(23505|duplicate).*korisnicko/i.test(m)) return T("nal.korisnickoZauzeto");
+  if (/korisnici_korisnicko_oblik/i.test(m)) return T("nal.korisnickoLos");
   if (/otp_expired|Token has expired|invalid|Invalid token/i.test(m)) return T("nk.kodPogresan");
   if (/rate limit|over_email_send_rate_limit|email rate/i.test(m)) return T("nk.previseMejlova");
   if (/Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m)) return T("net.nema");
@@ -20119,6 +20149,12 @@ function nalogGreskaTekst(e) {   // jedna recenica za ekran, po uzroku
    telefon) vraca se on sa prijateljima, inace se pravi nov. / Email OTP sign-up; same email restores the account. */
 const NALOG_POVRATAK = "https://routemeright.app/app.html";
 const NALOG_KOD_U_MEJLU = true;   // 2.10. 23:20: Resend SMTP upaljen + sabloni sa {{ .Token }} (docs/supabase-sabloni-mejla.html) -> mejl nosi KOD od 6 cifara; false = samo link   // kuda link iz mejla vraca (mora biti Site URL ili u Redirect URLs u Supabase-u)
+function korisnickoOcisti(k) { return String(k || "").trim().toLowerCase().replace(/^@/, ""); }
+function korisnickoValidan(k) { return /^[a-z0-9._]{3,20}$/.test(korisnickoOcisti(k)); }
+function korisnickoPredlog(ime) {   // isti recept kao server (korisnicko_iz_imena), bez provere zauzetosti
+  let b = String(ime || "").toLowerCase().replace(/[šđčćž]/g, (c) => ({ "š": "s", "đ": "d", "č": "c", "ć": "c", "ž": "z" })[c]).replace(/\s+/g, "_").replace(/[^a-z0-9._]/g, "").replace(/^[._]+|[._]+$/g, "");
+  return b.length < 3 ? "" : b.slice(0, 16);
+}
 function emailValidan(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || "").trim()); }
 async function nalogPosaljiKod(email) {
   email = String(email || "").trim().toLowerCase();
@@ -20135,7 +20171,7 @@ async function nalogVeziMejl(email) {   // postojeci nalog bez mejla (0.9.161-16
   try { localStorage.setItem("rmr2_nalog_email", email); } catch (e) {}
   return email;
 }
-async function nalogPotvrdiKod(email, kod, ime, telefon, tip) {   // tip: "email" (nov nalog / prijava) ili "email_change" (vezivanje mejla za stari nalog)
+async function nalogPotvrdiKod(email, kod, ime, telefon, tip, korisnicko) {   // tip: "email" (nov nalog / prijava) ili "email_change" (vezivanje mejla za stari nalog)
   email = String(email || "").trim().toLowerCase(); kod = String(kod || "").replace(/\D/g, "");
   if (kod.length < 6) throw new Error(T("nk.kodLos"));
   const j = await supaAuth("verify", { type: tip || "email", email, token: kod, gotrue_meta_security: {} });
@@ -20150,8 +20186,12 @@ async function nalogPotvrdiKod(email, kod, ime, telefon, tip) {   // tip: "email
   ime = String(ime || "").trim();
   if (ime.length < 2) throw new Error(T("nal.imeKratko"));
   const telo = { ime }; if (telefon && String(telefon).trim()) telo.telefon = String(telefon).trim().slice(0, 32);
+  if (korisnicko && korisnickoValidan(korisnicko)) telo.korisnicko = korisnickoOcisti(korisnicko);   // prazno = server predlozi iz imena
   try { await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
-  catch (e) { if (!(e && (e.status === 409 || /23505|duplicate key/i.test(String(e.message || ""))))) throw e; }   // red vec postoji (odgovor izgubljen) - uzmi ga
+  catch (e) {
+    if (e && /korisnici_korisnicko_jed/i.test(String(e.message || ""))) { delete telo.korisnicko; await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }   // zauzeto: server bira
+    else if (!(e && (e.status === 409 || /23505|duplicate key/i.test(String(e.message || ""))))) throw e;   // red vec postoji (odgovor izgubljen) - uzmi ga
+  }
   const m = await nalogOsvezi();
   if (!m || !m.kod) throw new Error(T("nal.serverNijePodesen"));
   return m;
@@ -20166,14 +20206,19 @@ async function nalogZavrsiProfil() {   // sesija vec postoji: vrati postojeci pr
   if (ima && ima.kod) {   // postojeci nalog (ili stari bez mejla kom je mejl sad vezan): telefon/ime iz nacrta, PATCH okida trigger koji upisuje mejl u korisnici
     try { if (d && d.telefon && !ima.telefon) await nalogPromeniTelefon(d.telefon); } catch (e) {}
     try { if (d && d.ime && String(d.ime).trim().length >= 2 && String(d.ime).trim() !== ima.ime) await nalogPromeniIme(d.ime); } catch (e) {}
+    try { if (d && d.korisnicko && korisnickoValidan(d.korisnicko) && korisnickoOcisti(d.korisnicko) !== ima.korisnicko) await nalogPromeniKorisnicko(d.korisnicko); } catch (e) {}
     try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {}
     return nalogCitaj() || ima;
   }
   const ime = String((d && d.ime) || (nalogCitaj() || {}).ime || "").trim();
   if (ime.length < 2) { const e = new Error(T("nal.imeKratko")); e.trebaIme = true; throw e; }
   const telo = { ime }; if (d && d.telefon) telo.telefon = String(d.telefon).trim().slice(0, 32);
+  if (d && d.korisnicko && korisnickoValidan(d.korisnicko)) telo.korisnicko = korisnickoOcisti(d.korisnicko);
   try { await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
-  catch (e) { if (!(e && (e.status === 409 || /23505|duplicate key/i.test(String(e.message || ""))))) throw e; }
+  catch (e) {
+    if (e && /korisnici_korisnicko_jed/i.test(String(e.message || ""))) { delete telo.korisnicko; await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
+    else if (!(e && (e.status === 409 || /23505|duplicate key/i.test(String(e.message || ""))))) throw e;
+  }
   const m = await nalogOsvezi();
   if (!m || !m.kod) throw new Error(T("nal.serverNijePodesen"));
   try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {}
@@ -20235,6 +20280,21 @@ async function nalogIzDeepLinka(rt) {   // nativna app: routemeright://prijava?r
     return true;
   } catch (e) { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} return false; }
 }
+async function nalogPromeniKorisnicko(k) {
+  k = korisnickoOcisti(k); if (!korisnickoValidan(k)) throw new Error(T("nal.korisnickoLos"));
+  const n = nalogCitaj(); if (!n) return;
+  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ korisnicko: k }) });
+  nalogUpisi({ ...n, korisnicko: k });
+}
+async function nalaziPostavi(on) {   // "Mogu da me nadju po korisnickom imenu" (podrazumevano da - Boskova odluka 2.10.)
+  const n = nalogCitaj(); if (!n) return;
+  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ nalazi: !!on }) });
+  nalogUpisi({ ...n, nalazi: !!on });
+}
+async function prijateljiNadji(upit) {   // pretraga po @korisnickom ili delu imena; server vraca najvise 10, samo one koji dozvoljavaju
+  return supaJa("rpc/nadji_korisnike", { method: "POST", body: JSON.stringify({ p_upit: String(upit || "").trim() }) });
+}
+async function prijateljDodajPoId(id) { return supaJa("rpc/dodaj_prijatelja_po_id", { method: "POST", body: JSON.stringify({ p_id: id }) }); }
 async function nalogPromeniTelefon(tel) {
   const n = nalogCitaj(); if (!n) return;
   tel = String(tel || "").trim().slice(0, 32);
@@ -20248,7 +20308,7 @@ async function nalogOsvezi() {   // moj red sa servera (ime/kod/telefon) kroz mo
   const n = nalogCitaj(); if (!n || !n.refresh) return null;
   const red = await supaJa("rpc/moj_profil", { method: "POST", body: "{}" });
   if (!Array.isArray(red) || !red.length) return null;
-  const m = { ...n, uid: red[0].id, ime: red[0].ime, kod: red[0].kod, avatar_v: red[0].avatar_v || 0, telefon: red[0].telefon || "", email: red[0].email || n.email || "" }; nalogUpisi(m);
+  const m = { ...n, uid: red[0].id, ime: red[0].ime, kod: red[0].kod, avatar_v: red[0].avatar_v || 0, telefon: red[0].telefon || "", email: red[0].email || n.email || "", korisnicko: red[0].korisnicko || "", nalazi: red[0].nalazi !== false }; nalogUpisi(m);
   try { if (red[0].deli_lokaciju != null) { LOK.deli = !!red[0].deli_lokaciju; localStorage.setItem("rmr2_deli", LOK.deli ? "1" : "0"); } } catch (e) {}
   return m;
 }
@@ -20314,7 +20374,7 @@ function prijateljiHtmlLista(l) {
     const akc = f.stanje === "prihvaceno" ? `<button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.ukloni"))}">✕</button>`
       : (f.od_mene ? `<button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.povuci"))}">✕</button>`
         : `<button type="button" class="zpr-ok" data-prihvati="${esc(f.id)}">${esc(T("nal.prihvati"))}</button><button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.odbij"))}">✕</button>`);
-    return `<div class="zpr-red" data-id="${esc(f.id)}" role="button" tabindex="0">${avatarHtml(f.id, f.avatar_v, f.ime)}<div class="zpr-t"><b>${esc(f.ime)}</b>${f.motor ? "<small>" + esc(f.motor) + "</small>" : ""}${st}</div><div class="zpr-akc">${akc}</div></div>`;
+    return `<div class="zpr-red" data-id="${esc(f.id)}" role="button" tabindex="0">${avatarHtml(f.id, f.avatar_v, f.ime)}<div class="zpr-t"><b>${esc(f.ime)}</b>${(f.korisnicko || f.motor) ? "<small>" + esc([f.korisnicko ? "@" + f.korisnicko : "", f.motor || ""].filter(Boolean).join(" · ")) + "</small>" : ""}${st}</div><div class="zpr-akc">${akc}</div></div>`;
   }).join("");
 }
 async function renderPrijatelji(force) {
@@ -20335,22 +20395,52 @@ async function renderPrijatelji(force) {
   const kes = prijateljiKes();
   box.innerHTML = `<div class="zpr-kart">
       <div class="zpr-kod"><div><span class="zpr-cap">${esc(T("nal.tvojKod"))}</span><b>${esc(n.kod)}</b></div><button type="button" id="zprPodeli">${esc(T("nal.podeliKod"))}</button></div>
-      <div class="zpr-forma"><input id="zprKod" maxlength="7" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="${esc(T("nal.kodPrijateljaPh"))}"><button type="button" id="zprDodaj">${esc(T("nal.dodaj"))}</button></div>
+      <div class="zpr-forma"><input id="zprKod" maxlength="24" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="${esc(T("nal.kodIliImePh"))}"><button type="button" id="zprDodaj">${esc(T("nal.dodaj"))}</button></div>
       <div class="zpr-greska" id="zprGreska" hidden></div>
+      <div class="zpr-nadji" id="zprNadji" hidden></div>
     </div>
     <div class="zpr-lista" id="zprLista">${prijateljiHtmlLista(kes)}</div>`;
   const g = document.getElementById("zprGreska"), lista = document.getElementById("zprLista");
   const greska = (e) => { g.textContent = nalogGreskaTekst(e); g.hidden = false; };
   document.getElementById("zprPodeli").addEventListener("click", nalogPodeliKod);
+  const nadjiBox = document.getElementById("zprNadji");
+  const nadjiHtml = (l) => !l.length ? '<div class="zpr-prazno">' + esc(T("nal.nadjiPrazno")) + "</div>" : l.map((u) => {
+    const akc = u.prijatelj === "prihvaceno" ? '<small class="zpr-jeste">' + esc(T("nal.vecPrijatelj")) + "</small>"
+      : (u.prijatelj === "ceka" ? '<small class="zpr-jeste">' + esc(T("nal.cekaKratko")) + "</small>"
+        : `<button type="button" class="zpr-ok" data-dodaj="${esc(u.id)}">${esc(T("nal.dodaj"))}</button>`);
+    return `<div class="zpr-red zpr-hit" data-id="${esc(u.id)}">${avatarHtml(u.id, u.avatar_v, u.ime)}<div class="zpr-t"><b>${esc(u.ime)}</b><small>@${esc(u.korisnicko || "")}${u.motor ? " · " + esc(u.motor) : ""}</small></div><div class="zpr-akc">${akc}</div></div>`;
+  }).join("");
+  let nadjiT = null;
+  const nadji = async (upit) => {   // @korisnicko ili deo imena (bar 2 znaka); kod od 6 znakova ide starim putem
+    upit = String(upit || "").trim();
+    if (upit.length < 2 || kodValidan(kodOcisti(upit)) && !/^@/.test(upit) && upit.length === 6 && !/[a-z]/.test(upit)) { nadjiBox.hidden = true; return; }
+    try { const l = await prijateljiNadji(upit); nadjiBox.innerHTML = nadjiHtml(Array.isArray(l) ? l : []); nadjiBox.hidden = false; }
+    catch (e) { greska(e); }
+  };
   const dodaj = async () => {
     const inp = document.getElementById("zprKod"); g.hidden = true;
-    try { const r = await prijateljDodaj(inp.value); inp.value = "";
-      tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat"));
-      lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj());
-    } catch (e) { greska(e); }
+    const v = String(inp.value || "").trim();
+    if (!/^@/.test(v) && kodValidan(kodOcisti(v)) && v.length <= 7 && !/[a-z]/.test(v)) {   // kod od 6 znakova (velika slova/cifre)
+      try { const r = await prijateljDodaj(v); inp.value = ""; nadjiBox.hidden = true;
+        tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat"));
+        lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj());
+      } catch (e) { greska(e); }
+      return;
+    }
+    await nadji(v);   // ime ili @korisnicko: pokazi pogotke, dodaje se iz liste
   };
   document.getElementById("zprDodaj").addEventListener("click", dodaj);
   document.getElementById("zprKod").addEventListener("keydown", (e) => { if (e.key === "Enter") dodaj(); });
+  document.getElementById("zprKod").addEventListener("input", (e) => { clearTimeout(nadjiT); const v = e.target.value; nadjiT = setTimeout(() => nadji(v), 350); });
+  nadjiBox.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-dodaj]"); if (!b) return;
+    b.disabled = true; g.hidden = true;
+    try { const r = await prijateljDodajPoId(b.dataset.dodaj);
+      tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat"));
+      b.outerHTML = '<small class="zpr-jeste">' + esc(r && r.stanje === "prihvaceno" ? T("nal.vecPrijatelj") : T("nal.cekaKratko")) + "</small>";
+      lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj()); renderJaNalog();
+    } catch (er) { b.disabled = false; greska(er); }
+  });
   lista.addEventListener("click", async (e) => {
     const p = e.target.closest("[data-prihvati]"), u = e.target.closest("[data-ukloni]");
     if (!p && !u) {   // dodir na red = sazetak prijatelja (2.10.)
@@ -20382,14 +20472,21 @@ function renderJaNalog() {
   const ceka = prijateljiKes().filter((f) => f.stanje !== "prihvaceno" && !f.od_mene).length;
   box.innerHTML = `<div class="jrow jav"><span>${esc(T("nal.slika"))}</span>${avatarHtml(n.uid, n.avatar_v, n.ime, "zpr-av jav-av")}<button type="button" class="jlink" id="jaNalogSlika">${esc(T("nal.promeni"))}</button></div>
     <div class="jrow"><span>${esc(T("nal.ime"))}</span><b>${esc(n.ime || "")}</b><button type="button" class="jlink" id="jaNalogIme">${esc(T("nal.promeni"))}</button></div>
+    <div class="jrow"><span>${esc(T("nal.korisnicko"))}</span><b>${n.korisnicko ? "@" + esc(n.korisnicko) : esc(T("nal.motorNema"))}</b><button type="button" class="jlink" id="jaNalogKor">${esc(T("nal.promeni"))}</button></div>
     ${n.email ? `<div class="jrow"><span>${esc(T("nk.email"))}</span><b class="jmail">${esc(n.email)}</b></div>` : ""}
     <div class="jrow"><span>${esc(T("nk.tel"))}</span><b>${esc(n.telefon || T("nal.motorNema"))}</b><button type="button" class="jlink" id="jaNalogTel">${esc(T("nal.promeni"))}</button></div>
     <div class="jrow"><span>${esc(T("nal.kod"))}</span><b class="jkod">${esc(n.kod)}</b><button type="button" class="jlink" id="jaNalogPodeli">${esc(T("nal.podeli"))}</button></div>
     <div class="jrow"><span>${esc(T("nal.prijatelji"))}</span><b>${br}${ceka ? ' <i class="jceka">' + esc(T("nal.cekaN", { 0: ceka })) + "</i>" : ""}</b><button type="button" class="jlink" id="jaNalogPrij">${esc(T("nal.otvori"))}</button></div>
     <div class="jrow"><span>${esc(T("nal.motorVide"))}</span><b>${esc((mojMotor() && mojMotor().ime) || T("nal.motorNema"))}</b></div>
     <label class="jrow"><span>${esc(T("lok.deliPrekidac"))}</span><input type="checkbox" class="jsw" id="jaDeli" ${deliLokaciju() ? "checked" : ""}></label>
+    <label class="jrow"><span>${esc(T("nal.nalaziPrekidac"))}</span><input type="checkbox" class="jsw" id="jaNalazi" ${n.nalazi === false ? "" : "checked"}></label>
     <button type="button" class="jlink jopasno" id="jaNalogObrisi">${esc(T("nal.obrisiNalog"))}</button>`;
   document.getElementById("jaDeli").addEventListener("change", (e) => deliLokacijuPostavi(e.target.checked));
+  document.getElementById("jaNalazi").addEventListener("change", async (e) => { const on = e.target.checked; try { await nalaziPostavi(on); } catch (er) { e.target.checked = !on; alert(nalogGreskaTekst(er)); } });
+  document.getElementById("jaNalogKor").addEventListener("click", async () => {
+    const novo = prompt(T("nal.novoKorisnicko"), n.korisnicko || ""); if (novo == null) return;
+    try { await nalogPromeniKorisnicko(novo); renderJaNalog(); } catch (e) { alert(nalogGreskaTekst(e)); }
+  });
   document.getElementById("jaNalogSlika").addEventListener("click", () => avatarIzaberi(() => renderJaNalog()));
   document.getElementById("jaNalogTel").addEventListener("click", async () => {
     const t = prompt(T("nk.noviTel"), n.telefon || ""); if (t == null) return;
@@ -20551,6 +20648,7 @@ function nalogKapijaPrikazi() {
   document.getElementById("nkKreni").querySelector("span, b") || (document.getElementById("nkKreni").textContent = T("nk.kreni"));
   try { document.getElementById("nkEmail").value = localStorage.getItem("rmr2_nalog_email") || ""; } catch (e) {}
   document.getElementById("nkIme").value = (n && n.ime) || "";
+  NK.korRucno = false; document.getElementById("nkKorisnicko").value = (n && n.korisnicko) || korisnickoPredlog((n && n.ime) || "");
   const mm = (typeof mojMotor === "function") ? mojMotor() : null;
   document.getElementById("nkMotor").textContent = mm ? T("nk.motor", { 0: mm.ime }) : T("nk.motorKasnije");
   document.getElementById("nkGreska").hidden = true; document.getElementById("nkPreskoci").hidden = true;
@@ -20573,7 +20671,9 @@ function nalogKapijaPrikazi() {
       if (NK.korak !== 2) {   // korak 1: ime + mejl -> posalji kod
         const ime = String(g("nkIme").value || "").trim();
         if (ime.length < 2) throw new Error(T("nal.imeKratko"));
-        try { localStorage.setItem("rmr2_nalog_draft", JSON.stringify({ ime, telefon: String(g("nkTel").value || "").trim() })); } catch (e) {}
+        const kor = korisnickoOcisti(g("nkKorisnicko").value);
+        if (kor && !korisnickoValidan(kor)) throw new Error(T("nal.korisnickoLos"));
+        try { localStorage.setItem("rmr2_nalog_draft", JSON.stringify({ ime, telefon: String(g("nkTel").value || "").trim(), korisnicko: kor })); } catch (e) {}
         if (NK.vezi && NK.veziZauzet && NK.veziZauzet === String(g("nkEmail").value || "").trim().toLowerCase()) NK.vezi = false;
         // (korak 1)   // drugi Kreni istim mejlom: prijava TIM nalogom, stari bez mejla ostaje po strani
         NK.email = NK.vezi ? await nalogVeziMejl(g("nkEmail").value) : await nalogPosaljiKod(g("nkEmail").value);
@@ -20585,7 +20685,7 @@ function nalogKapijaPrikazi() {
         NK.korak = 1; g("nkKorak1").hidden = false; g("nkKorak2").hidden = true; g("nkKreni").textContent = T("nk.kreni"); b.disabled = false; return;
       }
       if (!String(g("nkKod").value || "").replace(/\D/g, "").length) { gr.textContent = T("nk.kliknilink"); gr.hidden = false; b.disabled = false; return; }
-      await nalogPotvrdiKod(NK.email, g("nkKod").value, g("nkIme").value, g("nkTel").value, NK.vezi ? "email_change" : "email");
+      await nalogPotvrdiKod(NK.email, g("nkKod").value, g("nkIme").value, g("nkTel").value, NK.vezi ? "email_change" : "email", g("nkKorisnicko").value);
       if (NK.blob) { try { await avatarPosalji(NK.blob); } catch (e) {} NK.blob = null; }
       try { await nalogPing(true); } catch (e) {}
       g("nalogKapija").hidden = true; document.body.classList.remove("kapija");
@@ -20598,7 +20698,9 @@ function nalogKapijaPrikazi() {
       if (/nije podešen|not set up|Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m) || (e && e.status >= 500)) g("nkPreskoci").hidden = false;
     }
   });
-  ["nkIme", "nkEmail", "nkTel", "nkKod"].forEach((id) => g(id).addEventListener("keydown", (e) => { if (e.key === "Enter") g("nkKreni").click(); }));
+  ["nkIme", "nkEmail", "nkTel", "nkKod", "nkKorisnicko"].forEach((id) => g(id).addEventListener("keydown", (e) => { if (e.key === "Enter") g("nkKreni").click(); }));
+  g("nkIme").addEventListener("input", () => { if (!NK.korRucno) g("nkKorisnicko").value = korisnickoPredlog(g("nkIme").value); });   // predlog prati ime dok ga covek ne dirne
+  g("nkKorisnicko").addEventListener("input", () => { NK.korRucno = !!g("nkKorisnicko").value; g("nkKorisnicko").value = String(g("nkKorisnicko").value).toLowerCase().replace(/^@/, ""); });
   g("nkPonovo").addEventListener("click", async () => { const gr = g("nkGreska"); gr.hidden = true; try { if (NK.vezi) await nalogVeziMejl(NK.email); else await nalogPosaljiKod(NK.email); tihoObavestenje(T("nk.kodPoslatPonovo")); } catch (e) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; } });
   g("nkPreskoci").addEventListener("click", () => { try { sessionStorage.setItem("rmr2_nalog_preskoci", "1"); } catch (e) {} g("nalogKapija").hidden = true; document.body.classList.remove("kapija"); });
   g("plX").addEventListener("click", prijateljSazetakZatvori);
