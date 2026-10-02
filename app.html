@@ -3580,11 +3580,11 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
   <div class="nk-telo">
     <div class="nk-logo"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="var(--surface-raised)"/><g fill="var(--fg-strong)" transform="translate(72 144.6) scale(0.42857)" fill-rule="evenodd"><path d="M445.38 0.00L694.62 0.00A110 110 0 0 1 694.62 220.00L580 220 740 520 560 520 400 220 240 220 240 520 60 520 60 0z"/></g></svg><span>Route<em>Me</em>Right</span></div>
     <h2 id="nkNaslov" data-i18n="nk.naslov">Ko vozi?</h2>
-    <p class="nk-opis" data-i18n="nk.opis">Ime i slika su ono što prijatelji vide. Bez lozinke - na mejl stiže kod, i isti mejl vraća nalog na novom telefonu.</p>
+    <p class="nk-opis" data-i18n="nk.opis">Ime i slika su ono što prijatelji vide. Bez lozinke - na mejl stiže link za prijavu, i isti mejl vraća nalog na novom telefonu.</p>
     <button type="button" class="nk-av" id="nkAv" aria-label="Izaberi sliku" data-i18n-aria="nk.slikaAria"><img id="nkAvImg" alt="" hidden><span id="nkAvIni">+</span><small data-i18n="nk.slika">slika</small></button>
     <div class="nk-korak1" id="nkKorak1">
       <input id="nkIme" maxlength="32" autocomplete="name" placeholder="Tvoje ime ili nadimak" data-i18n-ph="nal.imePh">
-      <input id="nkEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="Mejl (na njega stiže kod)" data-i18n-ph="nk.emailPh">
+      <input id="nkEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="Mejl (na njega stiže link za prijavu)" data-i18n-ph="nk.emailPh">
       <input id="nkTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="Telefon (po želji)" data-i18n-ph="nk.telPh">
       <div class="nk-motor" id="nkMotor"></div>
       <p class="nk-opis" id="nkVezi" hidden data-i18n="nk.veziOpis">Tvoj nalog je iz starije verzije, bez mejla. Upiši mejl i klikni link iz mejla potvrde - nalog, kod i prijatelji ostaju isti.</p>
@@ -3592,8 +3592,8 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <!-- korak 2: kod od 6 cifara iz mejla (Supabase OTP) - nema lozinke; isti mejl na novom telefonu vraca nalog -->
     <div class="nk-korak2" id="nkKorak2" hidden>
       <p class="nk-opis" id="nkKodOpis"></p>
-      <input id="nkKod" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="one-time-code" placeholder="Kod iz mejla" data-i18n-ph="nk.kodPh">
-      <button type="button" class="nk-preskoci" id="nkPonovo" data-i18n="nk.ponovo">Pošalji kod ponovo</button>
+      <input id="nkKod" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="one-time-code" placeholder="Kod iz mejla (samo ako ga ima)" data-i18n-ph="nk.kodPh">
+      <button type="button" class="nk-preskoci" id="nkPonovo" data-i18n="nk.ponovo">Pošalji link ponovo</button>
     </div>
     <div class="zpr-greska" id="nkGreska" hidden></div>
     <button type="button" class="nk-kreni" id="nkKreni" data-i18n="nk.kreni">Kreni</button>
@@ -6071,7 +6071,7 @@ const RECNIK_SR = {
   "nal.novoIme": "Novo ime:",
   // 2.10.2026: kapija, slika, aktivnost, sazetak prijatelja
   "nk.naslov": "Ko vozi?",
-  "nk.opis": "Ime i slika su ono što prijatelji vide. Bez lozinke - na mejl stiže kod, i isti mejl vraća nalog na novom telefonu.",
+  "nk.opis": "Ime i slika su ono što prijatelji vide. Bez lozinke - na mejl stiže link za prijavu, i isti mejl vraća nalog na novom telefonu.",
   "nk.slikaAria": "Izaberi sliku",
   "nk.slika": "slika",
   "nk.kreni": "Kreni",
@@ -6152,28 +6152,31 @@ const RECNIK_SR = {
   "juri.tuJe": "tu je",
   "juri.beziTi": "beži ti",
   // 2.10.2026: prijava mejlom (OTP)
-  "nk.emailPh": "Mejl (na njega stiže kod)",
+  "nk.emailPh": "Mejl (na njega stiže link za prijavu)",
   "nk.telPh": "Telefon (po želji)",
-  "nk.kodPh": "Kod iz mejla",
-  "nk.ponovo": "Pošalji kod ponovo",
+  "nk.kodPh": "Kod iz mejla (samo ako ga ima)",
+  "nk.ponovo": "Pošalji link ponovo",
   "nk.emailLos": "Upiši pravu mejl adresu.",
   "nk.kodLos": "Kod ima 6 cifara.",
   "nk.kodPogresan": "Kod nije tačan ili je istekao - zatraži novi.",
   "nk.previseMejlova": "Previše mejlova u kratkom roku - sačekaj malo pa pokušaj ponovo.",
-  "nk.kodPoslat": "Kod je poslat na {0}. Pogledaj i spam.",
-  "nk.kodPoslatPonovo": "Kod je ponovo poslat.",
+  "nk.kodPoslat": "Link je poslat na {0}. Otvori mejl i klikni \"Sign in\" - to te prijavljuje. Pogledaj i spam.",
+  "nk.kodPoslatPonovo": "Nov link je poslat. Stari više ne važi.",
   "nk.potvrdi": "Potvrdi kod",
   "nk.prvoKapija": "Prvo napravi nalog.",
   "nk.email": "Mejl",
   "nk.tel": "Telefon",
   "nk.noviTel": "Telefon (po želji):",
   "nk.sesijaIstekla": "Prijava je istekla - upiši mejl i kod ponovo.",
-  "nk.iliLink": "Ako u mejlu nema koda, klikni \"Sign in\" u mejlu - to te prijavljuje.",
+  "nk.iliLink": "Ne traži novi link dok ne probaš ovaj - svaki novi poništava prethodni.",
   "nk.prijavljen": "Prijavljen si kao {0}.",
   "nk.upisiImeZaKraj": "Prijava je prošla - upiši još ime i pritisni Kreni.",
   "nk.veziOpis": "Tvoj nalog je iz starije verzije, bez mejla. Upiši mejl i klikni link iz mejla potvrde - nalog, kod i prijatelji ostaju isti.",
   "nk.veziPoslat": "Mejl potvrde je poslat na {0}. Klikni link u njemu (\"Confirm\") - vraća te prijavljenog na isti nalog. Pogledaj i spam.",
   "nk.emailZauzet": "Taj mejl već ima nalog. Pritisni Kreni još jednom da se prijaviš njim (ovaj stari nalog bez mejla ostaje po strani), ili upiši drugi mejl.",
+  "nk.kliknilink": "Klikni \"Sign in\" u mejlu - to te prijavljuje. Kod upisuješ samo ako ga mejl ima.",
+  "nk.linkNeVazi": "Link iz mejla više ne važi (istekao je ili je već iskorišćen). Pošalji nov link na {0} i klikni ga odmah.",
+  "nk.linkNeVaziBezMejla": "Link iz mejla više ne važi. Upiši mejl i zatraži nov.",
   "nk.otvoriUApp": "Otvori u aplikaciji RouteMeRight",
 };
 /* English dictionary. Same keys as sr.js - the test fails on any key missing on either side.
@@ -7700,7 +7703,7 @@ const RECNIK_EN = {
   "nal.novoIme": "New name:",
   // 2.10.2026: kapija, slika, aktivnost, sazetak prijatelja
   "nk.naslov": "Who's riding?",
-  "nk.opis": "Your name and photo are what friends see. No password - a code comes to your email, and the same email restores the account on a new phone.",
+  "nk.opis": "Your name and photo are what friends see. No password - a sign-in link comes to your email, and the same email restores the account on a new phone.",
   "nk.slikaAria": "Choose a photo",
   "nk.slika": "photo",
   "nk.kreni": "Let's go",
@@ -7780,28 +7783,31 @@ const RECNIK_EN = {
   "juri.tuJe": "right here",
   "juri.beziTi": "pulling away",
   // 2.10.2026: prijava mejlom (OTP)
-  "nk.emailPh": "Email (the code goes there)",
+  "nk.emailPh": "Email (the sign-in link goes there)",
   "nk.telPh": "Phone (optional)",
-  "nk.kodPh": "Code from the email",
-  "nk.ponovo": "Send the code again",
+  "nk.kodPh": "Code from the email (only if there is one)",
+  "nk.ponovo": "Send the link again",
   "nk.emailLos": "Enter a real email address.",
   "nk.kodLos": "The code has 6 digits.",
   "nk.kodPogresan": "The code is wrong or expired - request a new one.",
   "nk.previseMejlova": "Too many emails in a short time - wait a bit and try again.",
-  "nk.kodPoslat": "Code sent to {0}. Check spam too.",
-  "nk.kodPoslatPonovo": "Code sent again.",
+  "nk.kodPoslat": "Link sent to {0}. Open the email and tap \"Sign in\" - that signs you in. Check spam too.",
+  "nk.kodPoslatPonovo": "A new link was sent. The old one no longer works.",
   "nk.potvrdi": "Confirm code",
   "nk.prvoKapija": "Create an account first.",
   "nk.email": "Email",
   "nk.tel": "Phone",
   "nk.noviTel": "Phone (optional):",
   "nk.sesijaIstekla": "Your sign-in expired - enter your email and code again.",
-  "nk.iliLink": "If there is no code in the email, tap \"Sign in\" in the email - that signs you in.",
+  "nk.iliLink": "Don't request a new link before trying this one - each new one cancels the previous.",
   "nk.prijavljen": "Signed in as {0}.",
   "nk.upisiImeZaKraj": "Signed in - just add your name and press Go.",
   "nk.veziOpis": "Your account is from an older version, without an email. Enter your email and tap the link in the confirmation email - the account, code and friends stay the same.",
   "nk.veziPoslat": "A confirmation email was sent to {0}. Tap the link in it (\"Confirm\") - it brings you back signed in to the same account. Check spam too.",
   "nk.emailZauzet": "That email already has an account. Tap Go again to sign in with it (this old account without email is left aside), or enter another email.",
+  "nk.kliknilink": "Tap \"Sign in\" in the email - that signs you in. Enter a code only if the email has one.",
+  "nk.linkNeVazi": "The link from the email no longer works (expired or already used). Send a new link to {0} and tap it right away.",
+  "nk.linkNeVaziBezMejla": "The link from the email no longer works. Enter your email and request a new one.",
   "nk.otvoriUApp": "Open in the RouteMeRight app",
 };
 /* ---- Jezik aplikacije / app language (0.9.159) ----
@@ -17364,8 +17370,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.167";
+const APP_VERSION = "0.9.168";
 const CHANGELOG = [
+  { v: "0.9.168", d: "02.10.2026.", stavke: [
+    "<b>Prijava: link je glavni put, i app kaže kad link ne važi.</b> Ekran \"Ko vozi?\" više ne obećava kod koji ne stiže: posle Kreni piše da je poslat LINK i da se klikne \"Sign in\" u mejlu. Ako link istekne ili je već iskorišćen (svaki novi zahtev poništava prethodni), app te vrati na ekran sa objašnjenjem i jednim dugmetom za nov link. Naslovna strana prosleđuje link u aplikaciju ako tamo zaluta.",
+  ] },
   { v: "0.9.167", d: "02.10.2026.", stavke: [
     "<b>Slika na ekranu \"Ko vozi?\" se vidi čim je izabereš</b> - i kad nalog već postoji (do sada se tada slala na server, a krug ostajao prazan). Greška pri slanju slike piše na samom ekranu, ne ispod njega.",
   ] },
@@ -20097,11 +20106,12 @@ function nalogGreskaTekst(e) {   // jedna recenica za ekran, po uzroku
    1) nalogPosaljiKod(email) -> Supabase salje kod od 6 cifara (sablon Magic Link mora da nosi {{ .Token }});
    2) nalogPotvrdiKod(email, kod, ime, telefon) -> sesija; ako red u korisnici VEC postoji (isti covek, nov
    telefon) vraca se on sa prijateljima, inace se pravi nov. / Email OTP sign-up; same email restores the account. */
+const NALOG_POVRATAK = "https://routemeright.app/app.html";   // kuda link iz mejla vraca (mora biti Site URL ili u Redirect URLs u Supabase-u)
 function emailValidan(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || "").trim()); }
 async function nalogPosaljiKod(email) {
   email = String(email || "").trim().toLowerCase();
   if (!emailValidan(email)) throw new Error(T("nk.emailLos"));
-  await supaAuth("otp", { email, create_user: true, gotrue_meta_security: {} });
+  await supaAuth("otp?redirect_to=" + encodeURIComponent(NALOG_POVRATAK), { email, create_user: true, gotrue_meta_security: {} });
   try { localStorage.setItem("rmr2_nalog_email", email); } catch (e) {}
   return email;
 }
@@ -20109,7 +20119,7 @@ async function nalogVeziMejl(email) {   // postojeci nalog bez mejla (0.9.161-16
   email = String(email || "").trim().toLowerCase();   // klik na link vraca ISTI nalog (isti uid, kod, prijatelji) sa mejlom. / Link email to an anonymous account.
   if (!emailValidan(email)) throw new Error(T("nk.emailLos"));
   const t = await nalogToken(true); if (!t) { const e = new Error(T("nal.nemaSesije")); e.nemaSesije = true; throw e; }
-  await supaAuth("user", { email }, { method: "PUT", token: t });
+  await supaAuth("user?redirect_to=" + encodeURIComponent(NALOG_POVRATAK), { email }, { method: "PUT", token: t });
   try { localStorage.setItem("rmr2_nalog_email", email); } catch (e) {}
   return email;
 }
@@ -20157,9 +20167,15 @@ async function nalogZavrsiProfil() {   // sesija vec postoji: vrati postojeci pr
   try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {}
   return m;
 }
-function nalogIzHasha() {   // web: #access_token=...&refresh_token=...&expires_in=...&type=magiclink
+function nalogIzHasha() {   // web: #access_token=...&refresh_token=...&expires_in=...&type=magiclink  |  #error=...&error_code=otp_expired
   try {
     const h = String(location.hash || "");
+    if (/(^#|&)error(_code)?=/.test(h) && !/access_token=/.test(h)) {   // 2.10. (Ana): link istekao/iskoriscen -> kapija kaze sta se desilo i nudi nov link
+      const p = new URLSearchParams(h.replace(/^#/, ""));
+      NK.linkGreska = p.get("error_code") || p.get("error") || "error";
+      try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+      return false;
+    }
     if (!/access_token=/.test(h)) return false;
     const p = new URLSearchParams(h.replace(/^#/, ""));
     const at = p.get("access_token"), rt = p.get("refresh_token");
@@ -20508,6 +20524,15 @@ function nalogKapijaPrikazi() {
   const mm = (typeof mojMotor === "function") ? mojMotor() : null;
   document.getElementById("nkMotor").textContent = mm ? T("nk.motor", { 0: mm.ime }) : T("nk.motorKasnije");
   document.getElementById("nkGreska").hidden = true; document.getElementById("nkPreskoci").hidden = true;
+  if (NK.linkGreska) {   // dosao sa linka koji ne vazi: pravo na korak 2, sa mejlom koji je trazio link, i jednim dugmetom "posalji ponovo"
+    let em = ""; try { em = localStorage.getItem("rmr2_nalog_email") || ""; } catch (e) {}
+    if (em) {
+      NK.email = em; NK.korak = 2; document.getElementById("nkKorak1").hidden = true; document.getElementById("nkKorak2").hidden = false;
+      document.getElementById("nkKodOpis").textContent = T("nk.linkNeVazi", { 0: em });
+      document.getElementById("nkKreni").textContent = T("nk.potvrdi");
+    } else { const gr = document.getElementById("nkGreska"); gr.textContent = T("nk.linkNeVaziBezMejla"); gr.hidden = false; }
+    NK.linkGreska = null;
+  }
   el.hidden = false; document.body.classList.add("kapija");
 }
 (function(){
@@ -20525,10 +20550,12 @@ function nalogKapijaPrikazi() {
         NK.email = NK.vezi ? await nalogVeziMejl(g("nkEmail").value) : await nalogPosaljiKod(g("nkEmail").value);
         NK.korak = 2; g("nkKorak1").hidden = true; g("nkKorak2").hidden = false;
         g("nkKodOpis").textContent = NK.vezi ? T("nk.veziPoslat", { 0: NK.email }) : (T("nk.kodPoslat", { 0: NK.email }) + " " + T("nk.iliLink"));
+        try { g("nkKod").blur(); } catch (e) {}   // tastatura ne iskace: glavni put je link u mejlu, kod je rezerva
         g("nkKreni").textContent = T("nk.potvrdi"); b.disabled = false;
         setTimeout(() => { try { g("nkKod").focus(); } catch (e) {} }, 150);
         return;
       }
+      if (!String(g("nkKod").value || "").replace(/\D/g, "").length) { gr.textContent = T("nk.kliknilink"); gr.hidden = false; b.disabled = false; return; }
       await nalogPotvrdiKod(NK.email, g("nkKod").value, g("nkIme").value, g("nkTel").value, NK.vezi ? "email_change" : "email");
       if (NK.blob) { try { await avatarPosalji(NK.blob); } catch (e) {} NK.blob = null; }
       try { await nalogPing(true); } catch (e) {}
