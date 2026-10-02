@@ -6177,6 +6177,7 @@ const RECNIK_SR = {
   "nk.kliknilink": "Klikni \"Sign in\" u mejlu - to te prijavljuje. Kod upisuješ samo ako ga mejl ima.",
   "nk.linkNeVazi": "Link iz mejla više ne važi (istekao je ili je već iskorišćen). Pošalji nov link na {0} i klikni ga odmah.",
   "nk.linkNeVaziBezMejla": "Link iz mejla više ne važi. Upiši mejl i zatraži nov.",
+  "nk.promeniMejl": "Promeni mejl",
   "nk.otvoriUApp": "Otvori u aplikaciji RouteMeRight",
 };
 /* English dictionary. Same keys as sr.js - the test fails on any key missing on either side.
@@ -7808,6 +7809,7 @@ const RECNIK_EN = {
   "nk.kliknilink": "Tap \"Sign in\" in the email - that signs you in. Enter a code only if the email has one.",
   "nk.linkNeVazi": "The link from the email no longer works (expired or already used). Send a new link to {0} and tap it right away.",
   "nk.linkNeVaziBezMejla": "The link from the email no longer works. Enter your email and request a new one.",
+  "nk.promeniMejl": "Change email",
   "nk.otvoriUApp": "Open in the RouteMeRight app",
 };
 /* ---- Jezik aplikacije / app language (0.9.159) ----
@@ -17370,8 +17372,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.168";
+const APP_VERSION = "0.9.169";
 const CHANGELOG = [
+  { v: "0.9.169", d: "02.10.2026.", stavke: [
+    "<b>Bez polja za kod.</b> Dok mejl šalje samo link, ekran posle Kreni pokazuje samo: link je poslat, klikni ga; dugmad su \"Pošalji link ponovo\" i \"Promeni mejl\". Polje za kod se vraća kad mejl bude nosio kod.",
+  ] },
   { v: "0.9.168", d: "02.10.2026.", stavke: [
     "<b>Prijava: link je glavni put, i app kaže kad link ne važi.</b> Ekran \"Ko vozi?\" više ne obećava kod koji ne stiže: posle Kreni piše da je poslat LINK i da se klikne \"Sign in\" u mejlu. Ako link istekne ili je već iskorišćen (svaki novi zahtev poništava prethodni), app te vrati na ekran sa objašnjenjem i jednim dugmetom za nov link. Naslovna strana prosleđuje link u aplikaciju ako tamo zaluta.",
   ] },
@@ -20106,7 +20111,8 @@ function nalogGreskaTekst(e) {   // jedna recenica za ekran, po uzroku
    1) nalogPosaljiKod(email) -> Supabase salje kod od 6 cifara (sablon Magic Link mora da nosi {{ .Token }});
    2) nalogPotvrdiKod(email, kod, ime, telefon) -> sesija; ako red u korisnici VEC postoji (isti covek, nov
    telefon) vraca se on sa prijateljima, inace se pravi nov. / Email OTP sign-up; same email restores the account. */
-const NALOG_POVRATAK = "https://routemeright.app/app.html";   // kuda link iz mejla vraca (mora biti Site URL ili u Redirect URLs u Supabase-u)
+const NALOG_POVRATAK = "https://routemeright.app/app.html";
+const NALOG_KOD_U_MEJLU = false;   // 2.10. (Bosko: "ako ne saljemo kod, ne treba ni polje"): true tek kad Supabase ima Resend SMTP i sablon sa {{ .Token }}   // kuda link iz mejla vraca (mora biti Site URL ili u Redirect URLs u Supabase-u)
 function emailValidan(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || "").trim()); }
 async function nalogPosaljiKod(email) {
   email = String(email || "").trim().toLowerCase();
@@ -20510,6 +20516,14 @@ function nalogKapijaTreba(n, upit) {
 function nalogEmailIzTokena(n) {   // mejl iz JWT-a (claim email) - stara sesija ga mozda nema u localStorage
   try { const b = JSON.parse(atob(String(n && n.access || "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); return b.email || ""; } catch (e) { return ""; }
 }
+function nalogKapijaKorak2(opis) {   // korak 2: poruka o poslatom linku; polje za kod i "Potvrdi kod" samo kad mejl zaista nosi kod
+  const g = (id) => document.getElementById(id);
+  NK.korak = 2; g("nkKorak1").hidden = true; g("nkKorak2").hidden = false;
+  g("nkKodOpis").textContent = opis;
+  g("nkKod").hidden = !NALOG_KOD_U_MEJLU;
+  g("nkKreni").textContent = NALOG_KOD_U_MEJLU ? T("nk.potvrdi") : T("nk.promeniMejl");
+  if (NALOG_KOD_U_MEJLU) setTimeout(() => { try { g("nkKod").focus(); } catch (e) {} }, 150);
+}
 function nalogKapijaPrikazi() {
   const el = document.getElementById("nalogKapija"); if (!el) return;
   { const n0 = nalogCitaj(); if (n0 && n0.kod && !n0.email) { const em = nalogEmailIzTokena(n0); if (em) nalogUpisi({ ...n0, email: em }); } }
@@ -20527,9 +20541,7 @@ function nalogKapijaPrikazi() {
   if (NK.linkGreska) {   // dosao sa linka koji ne vazi: pravo na korak 2, sa mejlom koji je trazio link, i jednim dugmetom "posalji ponovo"
     let em = ""; try { em = localStorage.getItem("rmr2_nalog_email") || ""; } catch (e) {}
     if (em) {
-      NK.email = em; NK.korak = 2; document.getElementById("nkKorak1").hidden = true; document.getElementById("nkKorak2").hidden = false;
-      document.getElementById("nkKodOpis").textContent = T("nk.linkNeVazi", { 0: em });
-      document.getElementById("nkKreni").textContent = T("nk.potvrdi");
+      NK.email = em; nalogKapijaKorak2(T("nk.linkNeVazi", { 0: em }));
     } else { const gr = document.getElementById("nkGreska"); gr.textContent = T("nk.linkNeVaziBezMejla"); gr.hidden = false; }
     NK.linkGreska = null;
   }
@@ -20546,14 +20558,15 @@ function nalogKapijaPrikazi() {
         const ime = String(g("nkIme").value || "").trim();
         if (ime.length < 2) throw new Error(T("nal.imeKratko"));
         try { localStorage.setItem("rmr2_nalog_draft", JSON.stringify({ ime, telefon: String(g("nkTel").value || "").trim() })); } catch (e) {}
-        if (NK.vezi && NK.veziZauzet && NK.veziZauzet === String(g("nkEmail").value || "").trim().toLowerCase()) NK.vezi = false;   // drugi Kreni istim mejlom: prijava TIM nalogom, stari bez mejla ostaje po strani
+        if (NK.vezi && NK.veziZauzet && NK.veziZauzet === String(g("nkEmail").value || "").trim().toLowerCase()) NK.vezi = false;
+        // (korak 1)   // drugi Kreni istim mejlom: prijava TIM nalogom, stari bez mejla ostaje po strani
         NK.email = NK.vezi ? await nalogVeziMejl(g("nkEmail").value) : await nalogPosaljiKod(g("nkEmail").value);
-        NK.korak = 2; g("nkKorak1").hidden = true; g("nkKorak2").hidden = false;
-        g("nkKodOpis").textContent = NK.vezi ? T("nk.veziPoslat", { 0: NK.email }) : (T("nk.kodPoslat", { 0: NK.email }) + " " + T("nk.iliLink"));
-        try { g("nkKod").blur(); } catch (e) {}   // tastatura ne iskace: glavni put je link u mejlu, kod je rezerva
-        g("nkKreni").textContent = T("nk.potvrdi"); b.disabled = false;
-        setTimeout(() => { try { g("nkKod").focus(); } catch (e) {} }, 150);
+        nalogKapijaKorak2(NK.vezi ? T("nk.veziPoslat", { 0: NK.email }) : (T("nk.kodPoslat", { 0: NK.email }) + " " + T("nk.iliLink")));
+        b.disabled = false;
         return;
+      }
+      if (!NALOG_KOD_U_MEJLU) {   // korak 2 bez koda: glavno dugme = "Promeni mejl" (nazad na korak 1)
+        NK.korak = 1; g("nkKorak1").hidden = false; g("nkKorak2").hidden = true; g("nkKreni").textContent = T("nk.kreni"); b.disabled = false; return;
       }
       if (!String(g("nkKod").value || "").replace(/\D/g, "").length) { gr.textContent = T("nk.kliknilink"); gr.hidden = false; b.disabled = false; return; }
       await nalogPotvrdiKod(NK.email, g("nkKod").value, g("nkIme").value, g("nkTel").value, NK.vezi ? "email_change" : "email");
