@@ -1033,6 +1033,8 @@
     .tabscreen .stub > b:first-child { font-family: var(--font-cap); font-synthesis: none; display: block; font-size: 11px; font-weight: var(--fw-cap);
       text-transform: uppercase; letter-spacing: var(--tr-cap); color: var(--fg-muted); margin-bottom: 12px; }
     .jset { margin-top: 12px; }
+    .jrow.jlok { min-height: 0; padding-top: 0; }
+    .jrow.jlok small { font-size: 12px; color: var(--fg-muted); line-height: 1.4; }
     /* Red je SADRZAJ, ne natpis: globalno `label` pravilo (verzalno + prored)
        mora ovde da se ponisti - inace podesavanja vicu glasnije od naslova.
        The row is CONTENT, not a label: the global `label` rule (uppercase +
@@ -2162,6 +2164,9 @@ body.kapija #bottomnav, body.kapija #homeChrome, body.kapija #homeFabs { display
 #prijateljList:not([hidden]) { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 47; background: var(--bg-veil); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
   border-top: 1px solid var(--line-strong); border-radius: 28px 28px 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -16px 40px rgba(0,0,0,.5); }
 .pl-glava { display: flex; align-items: center; gap: 14px; }
+.pl-nazad { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 10px; padding: 8px 12px 8px 6px; border: 0; border-radius: 999px; background: none; color: var(--fg); font: 500 14px var(--font-ui); cursor: pointer; }
+.pl-nazad span[aria-hidden] { font-size: 18px; line-height: 1; }
+.pl-lok { margin-top: 10px; font-size: 13px; line-height: 1.45; color: var(--fg-muted); }
 .pl-av { width: 56px; height: 56px; border-radius: 50%; border: 1.5px solid var(--fg-soft); display: flex; align-items: center; justify-content: center; font: 500 22px var(--font-cap); color: var(--fg-strong); flex: none; position: relative; overflow: hidden; }
 .pl-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .pl-av i { font-style: normal; } .pl-av img + i { visibility: hidden; }
@@ -2236,6 +2241,9 @@ body.kplan #sastanakTraka, body.hasroute #sastanakTraka, body.riding #sastanakTr
 #nkEmail:focus, #nkTel:focus, #nkKod:focus { outline: none; border-color: var(--accent); }
 #nkKod { font: 300 28px var(--font-num); letter-spacing: .3em; height: 56px; }
 #nkKodOpis { margin: 0 0 4px; }
+.nk-korak1 input.nk-los { border-color: var(--bad-fg); }
+.nk-hint { font-size: 12px; line-height: 1.4; color: var(--bad-fg); text-align: left; margin: -6px 0 8px; }
+.nk-hint[hidden] { display: none; }
 .nk-korak2 .nk-preskoci { margin-top: 2px; text-decoration: none; color: var(--accent-text); }
 #jaNalog .jmail { font-size: 13px; word-break: break-all; }
 /* 2.10.: posle prijave linkom na webu (iPhone/Android) - dugme koje sesiju preda nativnoj aplikaciji */
@@ -3589,6 +3597,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <div class="nk-korak1" id="nkKorak1">
       <input id="nkIme" maxlength="32" autocomplete="name" placeholder="Tvoje ime ili nadimak" data-i18n-ph="nal.imePh">
       <input id="nkKorisnicko" maxlength="20" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Korisničko ime (npr. boshkowski)" data-i18n-ph="nal.korisnickoPh">
+      <div class="nk-hint" id="nkKorHint" hidden></div>
       <input id="nkEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="Mejl (na njega stiže kod)" data-i18n-ph="nk.emailPh">
       <input id="nkTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="Telefon (po želji)" data-i18n-ph="nk.telPh">
       <div class="nk-motor" id="nkMotor"></div>
@@ -4151,8 +4160,10 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
   <!-- 2.10.2026: dodir na prijatelja = sazetak (slika, ime, motor, aktivnost, voznje) -->
   <div id="prijateljList" hidden role="dialog" aria-modal="true" aria-label="Prijatelj" data-i18n-aria="pl.aria">
     <div class="kp-grab" aria-hidden="true"></div>
+    <button type="button" class="pl-nazad" id="plNazad"><span aria-hidden="true">←</span> <span data-i18n="pl.nazad">Nazad</span></button>
     <div class="pl-glava"><span class="pl-av" id="plAv"></span><div class="pl-t"><b id="plIme"></b><small id="plMotor"></small><small id="plAkt"></small></div></div>
     <div class="pl-stat" id="plStat"></div>
+    <div class="pl-lok" id="plLok"></div>
     <div class="kp-cta"><button type="button" class="kp-plan" id="plVodi" hidden><span data-i18n="pl.vodiMe">Vodi me do njega</span></button><button type="button" class="kp-x" id="plX" aria-label="Zatvori" data-i18n-aria="kp.zatvori"><svg viewBox="0 0 24 24" stroke-width="2.2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
     <button type="button" class="mc-samo" id="plUkloni" data-i18n="nal.ukloni">Ukloni prijatelja</button>
   </div>
@@ -6049,7 +6060,7 @@ const RECNIK_SR = {
   "nal.napravi": "Napravi",
   "nal.korisnicko": "Korisničko ime",
   "nal.korisnickoPh": "Korisničko ime (npr. boshkowski)",
-  "nal.korisnickoLos": "Korisničko ime: 3 do 20 znakova, mala slova, brojevi, tačka i donja crta.",
+  "nal.korisnickoLos": "Korisničko ime: 3 do 20 znakova, samo mala slova, brojevi, tačka i donja crta, bez razmaka.",
   "nal.korisnickoZauzeto": "To korisničko ime je zauzeto - probaj drugo.",
   "nal.kodIliImePh": "Kod ili @korisničko ime",
   "nal.nadjiPrazno": "Nema nikog sa tim imenom.",
@@ -6057,6 +6068,7 @@ const RECNIK_SR = {
   "nal.novoKorisnicko": "Novo korisničko ime (mala slova, bez @):",
   "nal.vecPrijatelj": "prijatelj",
   "nal.cekaKratko": "čeka",
+  "nal.korisnickoPredlog": "Predlog: {0}",
   "nal.tvojKod": "Tvoj kod",
   "nal.podeliKod": "Podeli",
   "nal.kodPrijateljaPh": "Kod prijatelja",
@@ -6107,6 +6119,14 @@ const RECNIK_SR = {
   "akt.dana": "aktivan pre {0} {1}",
   "akt.davno": "nije skoro bio aktivan",
   "pl.aria": "Prijatelj",
+  "pl.nazad": "Nazad",
+  "pl.lokSveza": "Na mapi: lokacija {0}. Sloj \"Prijatelji uživo\" mora biti upaljen.",
+  "pl.lokStara": "Poslednja lokacija {0} - starija od 30 min, pa nije na mapi.",
+  "pl.lokNema": "Lokacija nije dostupna: ne deli je, ili aplikacija nije otvorena sa dozvolom za lokaciju.",
+  "lok.mojaIskljucena": "Tvoja lokacija se ne šalje (prekidač je isključen).",
+  "lok.mojaPoslata": "Tvoja lokacija je poslata {0}.",
+  "lok.mojaCeka": "Tvoja lokacija još nije poslata - šalje se za koji trenutak.",
+  "lok.mojaNemaGps": "Tvoja lokacija još nije poslata: nema GPS fiksa (dozvola za lokaciju ili početni ekran sa mapom).",
   "pl.vodiMe": "Vodi me do njega",
   "pl.aktivan": "{0}",
   "pl.voznje": "vožnji",
@@ -7692,7 +7712,7 @@ const RECNIK_EN = {
   "nal.napravi": "Create",
   "nal.korisnicko": "Username",
   "nal.korisnickoPh": "Username (e.g. boshkowski)",
-  "nal.korisnickoLos": "Username: 3 to 20 characters, lowercase letters, digits, dot and underscore.",
+  "nal.korisnickoLos": "Username: 3 to 20 characters, lowercase letters, digits, dot and underscore only, no spaces.",
   "nal.korisnickoZauzeto": "That username is taken - try another.",
   "nal.kodIliImePh": "Code or @username",
   "nal.nadjiPrazno": "Nobody with that name.",
@@ -7700,6 +7720,7 @@ const RECNIK_EN = {
   "nal.novoKorisnicko": "New username (lowercase, no @):",
   "nal.vecPrijatelj": "friend",
   "nal.cekaKratko": "pending",
+  "nal.korisnickoPredlog": "Suggestion: {0}",
   "nal.tvojKod": "Your code",
   "nal.podeliKod": "Share",
   "nal.kodPrijateljaPh": "Friend's code",
@@ -7750,6 +7771,14 @@ const RECNIK_EN = {
   "akt.dana": "active {0} {1} ago",
   "akt.davno": "not active recently",
   "pl.aria": "Friend",
+  "pl.nazad": "Back",
+  "pl.lokSveza": "On the map: location {0}. The \"Friends live\" layer must be on.",
+  "pl.lokStara": "Last location {0} - older than 30 min, so not on the map.",
+  "pl.lokNema": "Location not available: they are not sharing it, or the app is not open with location permission.",
+  "lok.mojaIskljucena": "Your location is not being sent (switch is off).",
+  "lok.mojaPoslata": "Your location was sent {0}.",
+  "lok.mojaCeka": "Your location has not been sent yet - it goes out in a moment.",
+  "lok.mojaNemaGps": "Your location has not been sent yet: no GPS fix (location permission or the home map screen).",
   "pl.vodiMe": "Take me to them",
   "pl.aktivan": "{0}",
   "pl.voznje": "rides",
@@ -17397,8 +17426,12 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.173";
+const APP_VERSION = "0.9.174";
 const CHANGELOG = [
+  { v: "0.9.174", d: "03.10.2026.", stavke: [
+    "<b>Prijatelj: dugme Nazad i jasna lokacija.</b> List prijatelja ima \"← Nazad\" (crveni X je ličio na brisanje). Ispod statistike piše da li je na mapi, da li mu je lokacija stara, ili je nikad nije poslao. U Ja, ispod prekidača, piše kad je tvoja lokacija poslednji put poslata.",
+    "<b>Korisničko ime mora biti po pravilu.</b> Polje je obavezno; dok kucaš, loš oblik (razmak, velika slova, ćirilica) odmah dobija crven okvir i poruku sa predlogom (npr. \"ANA DIVIC\" → ana_divic). Kreni ne pušta dalje dok ime nije ispravno. Isto važi za promenu u Ja.",
+  ] },
   { v: "0.9.173", d: "02.10.2026.", stavke: [
     "<b>Ispravljen datum izdanja 0.9.172</b> (pisalo je 03.10., napravljeno je 02.10. uveče).",
   ] },
@@ -20158,6 +20191,10 @@ function korisnickoPredlog(ime) {   // isti recept kao server (korisnicko_iz_ime
   let b = String(ime || "").toLowerCase().replace(/[šđčćž]/g, (c) => ({ "š": "s", "đ": "d", "č": "c", "ć": "c", "ž": "z" })[c]).replace(/\s+/g, "_").replace(/[^a-z0-9._]/g, "").replace(/^[._]+|[._]+$/g, "");
   return b.length < 3 ? "" : b.slice(0, 16);
 }
+function korisnickoGreska(uneto) {   // poruka za los oblik + predlog ispravnog (ANA DIVIC -> ana_divic)
+  const pr = korisnickoPredlog(uneto);
+  return T("nal.korisnickoLos") + (pr && korisnickoValidan(pr) ? " " + T("nal.korisnickoPredlog", { 0: pr }) : "");
+}
 function emailValidan(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || "").trim()); }
 async function nalogPosaljiKod(email) {
   email = String(email || "").trim().toLowerCase();
@@ -20189,6 +20226,7 @@ async function nalogPotvrdiKod(email, kod, ime, telefon, tip, korisnicko) {   //
   ime = String(ime || "").trim();
   if (ime.length < 2) throw new Error(T("nal.imeKratko"));
   const telo = { ime }; if (telefon && String(telefon).trim()) telo.telefon = String(telefon).trim().slice(0, 32);
+  if (korisnicko != null && String(korisnicko).trim() && !korisnickoValidan(korisnicko)) throw new Error(korisnickoGreska(korisnicko));   // los oblik ne prolazi ni ovde
   if (korisnicko && korisnickoValidan(korisnicko)) telo.korisnicko = korisnickoOcisti(korisnicko);   // prazno = server predlozi iz imena
   try { await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
   catch (e) {
@@ -20284,7 +20322,7 @@ async function nalogIzDeepLinka(rt) {   // nativna app: routemeright://prijava?r
   } catch (e) { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} return false; }
 }
 async function nalogPromeniKorisnicko(k) {
-  k = korisnickoOcisti(k); if (!korisnickoValidan(k)) throw new Error(T("nal.korisnickoLos"));
+  if (!korisnickoValidan(k)) throw new Error(korisnickoGreska(k)); k = korisnickoOcisti(k);
   const n = nalogCitaj(); if (!n) return;
   await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ korisnicko: k }) });
   nalogUpisi({ ...n, korisnicko: k });
@@ -20482,6 +20520,7 @@ function renderJaNalog() {
     <div class="jrow"><span>${esc(T("nal.prijatelji"))}</span><b>${br}${ceka ? ' <i class="jceka">' + esc(T("nal.cekaN", { 0: ceka })) + "</i>" : ""}</b><button type="button" class="jlink" id="jaNalogPrij">${esc(T("nal.otvori"))}</button></div>
     <div class="jrow"><span>${esc(T("nal.motorVide"))}</span><b>${esc((mojMotor() && mojMotor().ime) || T("nal.motorNema"))}</b></div>
     <label class="jrow"><span>${esc(T("lok.deliPrekidac"))}</span><input type="checkbox" class="jsw" id="jaDeli" ${deliLokaciju() ? "checked" : ""}></label>
+    <div class="jrow jlok"><small id="jaLokStanje">${esc(mojaLokacijaStanjeTekst())}</small></div>
     <label class="jrow"><span>${esc(T("nal.nalaziPrekidac"))}</span><input type="checkbox" class="jsw" id="jaNalazi" ${n.nalazi === false ? "" : "checked"}></label>
     <button type="button" class="jlink jopasno" id="jaNalogObrisi">${esc(T("nal.obrisiNalog"))}</button>`;
   document.getElementById("jaDeli").addEventListener("change", (e) => deliLokacijuPostavi(e.target.checked));
@@ -20616,6 +20655,9 @@ function prijateljSazetak(f) {
   const vb = document.getElementById("plVodi");
   vb.hidden = !(lok && lok.lat != null && lokacijaSveza(lok.ts));
   if (!vb.hidden) document.getElementById("plAkt").textContent = T("lok.naMapi", { 0: lokacijaVremeTekst(lok.ts) }) + (lok.u_voznji ? " · " + T("lok.vozi") : "");
+  /* 3.10. (Bosko: "ne vidim je na mapi"): list KAZE zasto - sveza lokacija / stara / nikad poslata. Bez toga prazna mapa lici na kvar. */
+  const pl = document.getElementById("plLok");
+  if (pl) pl.textContent = (lok && lok.lat != null) ? (lokacijaSveza(lok.ts) ? T("pl.lokSveza", { 0: lokacijaVremeTekst(lok.ts) }) : T("pl.lokStara", { 0: lokacijaVremeTekst(lok.ts) })) : T("pl.lokNema");
   vb.onclick = () => { prijateljSazetakZatvori(); juriPokreni(f, lok); };   // faza 4: ruta prati NJEGOVU tacku
   el.hidden = false; document.body.classList.add("mcilj"); PL.f = f;
 }
@@ -20675,7 +20717,7 @@ function nalogKapijaPrikazi() {
         const ime = String(g("nkIme").value || "").trim();
         if (ime.length < 2) throw new Error(T("nal.imeKratko"));
         const kor = korisnickoOcisti(g("nkKorisnicko").value);
-        if (kor && !korisnickoValidan(kor)) throw new Error(T("nal.korisnickoLos"));
+        if (!korisnickoValidan(kor)) { const e = new Error(korisnickoGreska(g("nkKorisnicko").value)); e.korisnicko = true; throw e; }   // Bosko 3.10.: ne pusta dalje dok ime nije po pravilu
         try { localStorage.setItem("rmr2_nalog_draft", JSON.stringify({ ime, telefon: String(g("nkTel").value || "").trim(), korisnicko: kor })); } catch (e) {}
         if (NK.vezi && NK.veziZauzet && NK.veziZauzet === String(g("nkEmail").value || "").trim().toLowerCase()) NK.vezi = false;
         // (korak 1)   // drugi Kreni istim mejlom: prijava TIM nalogom, stari bez mejla ostaje po strani
@@ -20703,10 +20745,15 @@ function nalogKapijaPrikazi() {
   });
   ["nkIme", "nkEmail", "nkTel", "nkKod", "nkKorisnicko"].forEach((id) => g(id).addEventListener("keydown", (e) => { if (e.key === "Enter") g("nkKreni").click(); }));
   g("nkIme").addEventListener("input", () => { if (!NK.korRucno) g("nkKorisnicko").value = korisnickoPredlog(g("nkIme").value); });   // predlog prati ime dok ga covek ne dirne
-  g("nkKorisnicko").addEventListener("input", () => { NK.korRucno = !!g("nkKorisnicko").value; g("nkKorisnicko").value = String(g("nkKorisnicko").value).toLowerCase().replace(/^@/, ""); });
+  g("nkKorisnicko").addEventListener("input", () => {   // uzivo: mala slova, bez @; los oblik se vidi odmah (crven okvir + poruka sa predlogom), ne tek na Kreni
+    NK.korRucno = !!g("nkKorisnicko").value; g("nkKorisnicko").value = String(g("nkKorisnicko").value).toLowerCase().replace(/^@/, "");
+    const v = g("nkKorisnicko").value, ok = !v || korisnickoValidan(v); g("nkKorisnicko").classList.toggle("nk-los", !ok);
+    const h = g("nkKorHint"); if (h) { h.textContent = ok ? "" : korisnickoGreska(v); h.hidden = ok; }
+  });
   g("nkPonovo").addEventListener("click", async () => { const gr = g("nkGreska"); gr.hidden = true; try { if (NK.vezi) await nalogVeziMejl(NK.email); else await nalogPosaljiKod(NK.email); tihoObavestenje(T("nk.kodPoslatPonovo")); } catch (e) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; } });
   g("nkPreskoci").addEventListener("click", () => { try { sessionStorage.setItem("rmr2_nalog_preskoci", "1"); } catch (e) {} g("nalogKapija").hidden = true; document.body.classList.remove("kapija"); });
   g("plX").addEventListener("click", prijateljSazetakZatvori);
+  g("plNazad").addEventListener("click", prijateljSazetakZatvori);   // 3.10. (Bosko: "ekran ostane zamrznut, treba strelica back") - crveni X je licio na brisanje
   g("plUkloni").addEventListener("click", async () => {
     const f = PL.f; if (!f || !confirm(T("nal.ukloniPitanje"))) return;
     try { await prijateljUkloni(f.id); prijateljSazetakZatvori(); renderPrijatelji(true); } catch (e) { alert(nalogGreskaTekst(e)); }
@@ -20931,6 +20978,12 @@ async function lokacijaSalji(force) {
     await supaJa("rpc/lokacija_upisi", { method: "POST", body: JSON.stringify({ p_lat: f.lat, p_lon: f.lon, p_spd: f.spd != null ? Math.round(f.spd * 10) / 10 : null, p_kurs: null, p_acc: f.acc != null ? Math.round(f.acc) : null, p_u_voznji: !!f.voznja }) });
     return true;
   } catch (e) { return false; }
+}
+function mojaLokacijaStanjeTekst() {   // Ja: da covek vidi da li ga prijatelji uopste mogu videti (3.10.)
+  if (!deliLokaciju()) return T("lok.mojaIskljucena");
+  if (LOK.zadnje) return T("lok.mojaPoslata", { 0: lokacijaVremeTekst(new Date(LOK.zadnje).toISOString()) });
+  const f = lokacijaMojFix();
+  return f ? T("lok.mojaCeka") : T("lok.mojaNemaGps");
 }
 function lokacijaVremeTekst(ts, sad) {
   const d = Math.max(0, (sad == null ? Date.now() : sad) - new Date(ts).getTime()), min = Math.round(d / 60000);
