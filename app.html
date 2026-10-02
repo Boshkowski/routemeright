@@ -1063,7 +1063,7 @@
 .zpr-forma { display: flex; gap: 8px; margin-top: 12px; }
 .zpr-forma input { flex: 1; min-width: 0; height: 46px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line-strong); background: var(--bg); color: var(--fg-strong); font: 400 16px var(--font-ui); }
 .zpr-forma input:focus { outline: none; border-color: var(--accent); }
-.zpr-forma input#zprKod { font-family: var(--font-ui); letter-spacing: 0; text-transform: none; }   /* 3.10.: kod ILI @korisnicko, pa bez velikih slova */
+.zpr-forma input#zprKod { font-family: var(--font-ui); letter-spacing: 0; text-transform: none; }   /* 2.10.: kod ILI @korisnicko, pa bez velikih slova */
 .zpr-nadji { margin-top: 4px; }
 .zpr-nadji[hidden] { display: none; }
 .zpr-hit { cursor: default; }
@@ -17397,9 +17397,12 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.172";
+const APP_VERSION = "0.9.173";
 const CHANGELOG = [
-  { v: "0.9.172", d: "03.10.2026.", stavke: [
+  { v: "0.9.173", d: "02.10.2026.", stavke: [
+    "<b>Ispravljen datum izdanja 0.9.172</b> (pisalo je 03.10., napravljeno je 02.10. uveče).",
+  ] },
+  { v: "0.9.172", d: "02.10.2026.", stavke: [
     "<b>Korisničko ime i pretraga prijatelja.</b> Svako ima @korisničko ime (bira se pri pravljenju naloga, menja u Ja; postojeći nalozi ga dobijaju sami iz imena). U Zajednici u polje upišeš @ime ili deo imena i dobiješ listu sa slikom, imenom i motorom - Dodaj šalje zahtev. Kod od 6 znakova i link za poziv i dalje rade. Ko ne želi da ga nalaze, gasi prekidač u Ja.",
   ] },
   { v: "0.9.171", d: "02.10.2026.", stavke: [
