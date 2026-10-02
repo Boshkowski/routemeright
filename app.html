@@ -3587,6 +3587,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
       <input id="nkEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="Mejl (na njega stiže kod)" data-i18n-ph="nk.emailPh">
       <input id="nkTel" type="tel" inputmode="tel" autocomplete="tel" placeholder="Telefon (po želji)" data-i18n-ph="nk.telPh">
       <div class="nk-motor" id="nkMotor"></div>
+      <p class="nk-opis" id="nkVezi" hidden data-i18n="nk.veziOpis">Tvoj nalog je iz starije verzije, bez mejla. Upiši mejl i klikni link iz mejla potvrde - nalog, kod i prijatelji ostaju isti.</p>
     </div>
     <!-- korak 2: kod od 6 cifara iz mejla (Supabase OTP) - nema lozinke; isti mejl na novom telefonu vraca nalog -->
     <div class="nk-korak2" id="nkKorak2" hidden>
@@ -6170,6 +6171,9 @@ const RECNIK_SR = {
   "nk.iliLink": "Ako u mejlu nema koda, klikni \"Sign in\" u mejlu - to te prijavljuje.",
   "nk.prijavljen": "Prijavljen si kao {0}.",
   "nk.upisiImeZaKraj": "Prijava je prošla - upiši još ime i pritisni Kreni.",
+  "nk.veziOpis": "Tvoj nalog je iz starije verzije, bez mejla. Upiši mejl i klikni link iz mejla potvrde - nalog, kod i prijatelji ostaju isti.",
+  "nk.veziPoslat": "Mejl potvrde je poslat na {0}. Klikni link u njemu (\"Confirm\") - vraća te prijavljenog na isti nalog. Pogledaj i spam.",
+  "nk.emailZauzet": "Taj mejl već ima nalog. Pritisni Kreni još jednom da se prijaviš njim (ovaj stari nalog bez mejla ostaje po strani), ili upiši drugi mejl.",
   "nk.otvoriUApp": "Otvori u aplikaciji RouteMeRight",
 };
 /* English dictionary. Same keys as sr.js - the test fails on any key missing on either side.
@@ -7795,6 +7799,9 @@ const RECNIK_EN = {
   "nk.iliLink": "If there is no code in the email, tap \"Sign in\" in the email - that signs you in.",
   "nk.prijavljen": "Signed in as {0}.",
   "nk.upisiImeZaKraj": "Signed in - just add your name and press Go.",
+  "nk.veziOpis": "Your account is from an older version, without an email. Enter your email and tap the link in the confirmation email - the account, code and friends stay the same.",
+  "nk.veziPoslat": "A confirmation email was sent to {0}. Tap the link in it (\"Confirm\") - it brings you back signed in to the same account. Check spam too.",
+  "nk.emailZauzet": "That email already has an account. Tap Go again to sign in with it (this old account without email is left aside), or enter another email.",
   "nk.otvoriUApp": "Open in the RouteMeRight app",
 };
 /* ---- Jezik aplikacije / app language (0.9.159) ----
@@ -17357,8 +17364,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.164";
+const APP_VERSION = "0.9.165";
 const CHANGELOG = [
+  { v: "0.9.165", d: "02.10.2026.", stavke: [
+    "<b>Stari nalog bez mejla dobija mejl.</b> Ko je nalog napravio u 0.9.161-0.9.163 (samo ime, bez mejla) pri paljenju vidi ekran \"Ko vozi?\" sa objašnjenjem i upisuje mejl - stiže mejl potvrde, klik na link vezuje mejl za ISTI nalog (kod i prijatelji ostaju). Bez mejla aplikacija više ne pušta dalje.",
+  ] },
   { v: "0.9.164", d: "02.10.2026.", stavke: [
     "<b>Prijava i linkom iz mejla.</b> Supabase bez svog mejl servera šalje samo link \"Sign in\" (bez koda) - klik na njega te prijavljuje na webu, a na telefonu dugme \"Otvori u aplikaciji\" prenese prijavu u aplikaciju. Kod od 6 cifara ostaje za kad mejl bude slao i kod.",
   ] },
@@ -20026,10 +20036,10 @@ function nalogIzSesije(j, sad) {   // odgovor /auth/v1 (signup ili token) -> ono
 function kodValidan(k) { return /^[A-HJ-NP-Z2-9]{6}$/.test(String(k || "").trim().toUpperCase()); }
 function kodOcisti(k) { return String(k || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/0/g, "O").replace(/1/g, "I").slice(0, 6); }
 function pozivLink(kod) { return "https://routemeright.app/app.html?prijatelj=" + encodeURIComponent(kod); }
-async function supaAuth(path, body) {
+async function supaAuth(path, body, opts = {}) {   // opts.method (POST), opts.token (korisnikov JWT umesto javnog kljuca)
   let signal; try { signal = AbortSignal.timeout(10000); } catch (e) {}
-  const r = await fetch(SUPA_URL + "/auth/v1/" + path, { method: "POST", signal,
-    headers: { apikey: SUPA_KEY, "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+  const r = await fetch(SUPA_URL + "/auth/v1/" + path, { method: opts.method || "POST", signal,
+    headers: { apikey: SUPA_KEY, "Content-Type": "application/json", Authorization: "Bearer " + (opts.token || SUPA_KEY) }, body: JSON.stringify(body || {}) });
   let j = {}; try { j = await r.json(); } catch (e) {}
   if (!r.ok) { const e = new Error(j.msg || j.error_description || j.error_code || ("HTTP " + r.status)); e.status = r.status; e.kod = j.error_code || ""; throw e; }
   return j;
@@ -20089,10 +20099,18 @@ async function nalogPosaljiKod(email) {
   try { localStorage.setItem("rmr2_nalog_email", email); } catch (e) {}
   return email;
 }
-async function nalogPotvrdiKod(email, kod, ime, telefon) {
+async function nalogVeziMejl(email) {   // postojeci nalog bez mejla (0.9.161-163): PUT /auth/v1/user {email} -> Supabase salje mejl potvrde,
+  email = String(email || "").trim().toLowerCase();   // klik na link vraca ISTI nalog (isti uid, kod, prijatelji) sa mejlom. / Link email to an anonymous account.
+  if (!emailValidan(email)) throw new Error(T("nk.emailLos"));
+  const t = await nalogToken(true); if (!t) { const e = new Error(T("nal.nemaSesije")); e.nemaSesije = true; throw e; }
+  await supaAuth("user", { email }, { method: "PUT", token: t });
+  try { localStorage.setItem("rmr2_nalog_email", email); } catch (e) {}
+  return email;
+}
+async function nalogPotvrdiKod(email, kod, ime, telefon, tip) {   // tip: "email" (nov nalog / prijava) ili "email_change" (vezivanje mejla za stari nalog)
   email = String(email || "").trim().toLowerCase(); kod = String(kod || "").replace(/\D/g, "");
   if (kod.length < 6) throw new Error(T("nk.kodLos"));
-  const j = await supaAuth("verify", { type: "email", email, token: kod, gotrue_meta_security: {} });
+  const j = await supaAuth("verify", { type: tip || "email", email, token: kod, gotrue_meta_security: {} });
   let n = { ...nalogIzSesije(j), email }; nalogUpisi(n);
   // postojeci nalog (isti mejl, nov telefon) ili nov red
   const ima = await supaJa("rpc/moj_profil", { method: "POST", body: "{}" });
@@ -20117,7 +20135,12 @@ async function nalogPotvrdiKod(email, kod, ime, telefon) {
 async function nalogZavrsiProfil() {   // sesija vec postoji: vrati postojeci profil ili napravi nov iz nacrta
   let d = null; try { d = JSON.parse(localStorage.getItem("rmr2_nalog_draft") || "null"); } catch (e) {}
   const ima = await nalogOsvezi();
-  if (ima && ima.kod) { try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {} return ima; }
+  if (ima && ima.kod) {   // postojeci nalog (ili stari bez mejla kom je mejl sad vezan): telefon/ime iz nacrta, PATCH okida trigger koji upisuje mejl u korisnici
+    try { if (d && d.telefon && !ima.telefon) await nalogPromeniTelefon(d.telefon); } catch (e) {}
+    try { if (d && d.ime && String(d.ime).trim().length >= 2 && String(d.ime).trim() !== ima.ime) await nalogPromeniIme(d.ime); } catch (e) {}
+    try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {}
+    return nalogCitaj() || ima;
+  }
   const ime = String((d && d.ime) || (nalogCitaj() || {}).ime || "").trim();
   if (ime.length < 2) { const e = new Error(T("nal.imeKratko")); e.trebaIme = true; throw e; }
   const telo = { ime }; if (d && d.telefon) telo.telefon = String(d.telefon).trim().slice(0, 32);
@@ -20148,6 +20171,7 @@ async function nalogIzLinkaZavrsi() {   // posle hasha ili deep linka: profil, k
     await nalogZavrsiProfil();
     const el = document.getElementById("nalogKapija"); if (el) { el.hidden = true; document.body.classList.remove("kapija"); }
     try { renderJaNalog(); renderPrijatelji(); prijateljIzLinka(); sastanciPokreni(); lokacijePokreni(); pushRegistruj(); } catch (e) {}
+    try { nalogPing(true); } catch (e) {}
     try { tihoObavestenje(T("nk.prijavljen", { 0: (nalogCitaj() || {}).ime || "" })); } catch (e) {}
     nalogNativPonudi();
   } catch (e) {
@@ -20190,7 +20214,7 @@ async function nalogOsvezi() {   // moj red sa servera (ime/kod/telefon) kroz mo
   const n = nalogCitaj(); if (!n || !n.refresh) return null;
   const red = await supaJa("rpc/moj_profil", { method: "POST", body: "{}" });
   if (!Array.isArray(red) || !red.length) return null;
-  const m = { ...n, uid: red[0].id, ime: red[0].ime, kod: red[0].kod, avatar_v: red[0].avatar_v || 0, telefon: red[0].telefon || "" }; nalogUpisi(m);
+  const m = { ...n, uid: red[0].id, ime: red[0].ime, kod: red[0].kod, avatar_v: red[0].avatar_v || 0, telefon: red[0].telefon || "", email: red[0].email || n.email || "" }; nalogUpisi(m);
   try { if (red[0].deli_lokaciju != null) { LOK.deli = !!red[0].deli_lokaciju; localStorage.setItem("rmr2_deli", LOK.deli ? "1" : "0"); } } catch (e) {}
   return m;
 }
@@ -20449,12 +20473,18 @@ function nalogKapijaTreba(n, upit) {
   let p; try { p = new URLSearchParams(upit == null ? location.search : upit); } catch (e) { p = new URLSearchParams(""); }
   if (p.has("preview") || p.has("demo")) return false;
   try { if (sessionStorage.getItem("rmr2_nalog_preskoci") === "1") return false; } catch (e) {}
-  return !(n && n.kod);
+  return !(n && n.kod && n.email);   // 2.10. (Bosko: "nama treba mejl"): nalog bez mejla (anonimna prijava iz 0.9.161-163) vraca kapiju u rezimu "vezi mejl"
+}
+function nalogEmailIzTokena(n) {   // mejl iz JWT-a (claim email) - stara sesija ga mozda nema u localStorage
+  try { const b = JSON.parse(atob(String(n && n.access || "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); return b.email || ""; } catch (e) { return ""; }
 }
 function nalogKapijaPrikazi() {
   const el = document.getElementById("nalogKapija"); if (!el) return;
+  { const n0 = nalogCitaj(); if (n0 && n0.kod && !n0.email) { const em = nalogEmailIzTokena(n0); if (em) nalogUpisi({ ...n0, email: em }); } }
   if (!nalogKapijaTreba(nalogCitaj())) { el.hidden = true; document.body.classList.remove("kapija"); return; }
   const n = nalogCitaj();
+  NK.vezi = !!(n && n.kod && n.refresh && !n.email);   // postojeci nalog bez mejla: mejl se VEZUJE za isti nalog (kod i prijatelji ostaju)
+  { const v = document.getElementById("nkVezi"); if (v) v.hidden = !NK.vezi; }
   NK.korak = 1; document.getElementById("nkKorak1").hidden = false; document.getElementById("nkKorak2").hidden = true;
   document.getElementById("nkKreni").querySelector("span, b") || (document.getElementById("nkKreni").textContent = T("nk.kreni"));
   try { document.getElementById("nkEmail").value = localStorage.getItem("rmr2_nalog_email") || ""; } catch (e) {}
@@ -20475,27 +20505,29 @@ function nalogKapijaPrikazi() {
         const ime = String(g("nkIme").value || "").trim();
         if (ime.length < 2) throw new Error(T("nal.imeKratko"));
         try { localStorage.setItem("rmr2_nalog_draft", JSON.stringify({ ime, telefon: String(g("nkTel").value || "").trim() })); } catch (e) {}
-        NK.email = await nalogPosaljiKod(g("nkEmail").value);
+        if (NK.vezi && NK.veziZauzet && NK.veziZauzet === String(g("nkEmail").value || "").trim().toLowerCase()) NK.vezi = false;   // drugi Kreni istim mejlom: prijava TIM nalogom, stari bez mejla ostaje po strani
+        NK.email = NK.vezi ? await nalogVeziMejl(g("nkEmail").value) : await nalogPosaljiKod(g("nkEmail").value);
         NK.korak = 2; g("nkKorak1").hidden = true; g("nkKorak2").hidden = false;
-        g("nkKodOpis").textContent = T("nk.kodPoslat", { 0: NK.email }) + " " + T("nk.iliLink");
+        g("nkKodOpis").textContent = NK.vezi ? T("nk.veziPoslat", { 0: NK.email }) : (T("nk.kodPoslat", { 0: NK.email }) + " " + T("nk.iliLink"));
         g("nkKreni").textContent = T("nk.potvrdi"); b.disabled = false;
         setTimeout(() => { try { g("nkKod").focus(); } catch (e) {} }, 150);
         return;
       }
-      await nalogPotvrdiKod(NK.email, g("nkKod").value, g("nkIme").value, g("nkTel").value);
+      await nalogPotvrdiKod(NK.email, g("nkKod").value, g("nkIme").value, g("nkTel").value, NK.vezi ? "email_change" : "email");
       if (NK.blob) { try { await avatarPosalji(NK.blob); } catch (e) {} NK.blob = null; }
       try { await nalogPing(true); } catch (e) {}
       g("nalogKapija").hidden = true; document.body.classList.remove("kapija");
       try { renderJaNalog(); renderPrijatelji(); prijateljIzLinka(); sastanciPokreni(); lokacijePokreni(); pushRegistruj(); } catch (e) {}
     } catch (e) {
       gr.textContent = nalogGreskaTekst(e); gr.hidden = false; b.disabled = false;
+      if (NK.vezi && e && e.kod === "email_exists") { NK.veziZauzet = String(g("nkEmail").value || "").trim().toLowerCase(); gr.textContent = T("nk.emailZauzet"); }
       /* server pao ili nema mreze: aplikacija ne sme da ostane zakljucana na putu - izlaz vazi do sledeceg paljenja */
       const m = String(e && e.message || "");
       if (/nije podešen|not set up|Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m) || (e && e.status >= 500)) g("nkPreskoci").hidden = false;
     }
   });
   ["nkIme", "nkEmail", "nkTel", "nkKod"].forEach((id) => g(id).addEventListener("keydown", (e) => { if (e.key === "Enter") g("nkKreni").click(); }));
-  g("nkPonovo").addEventListener("click", async () => { const gr = g("nkGreska"); gr.hidden = true; try { await nalogPosaljiKod(NK.email); tihoObavestenje(T("nk.kodPoslatPonovo")); } catch (e) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; } });
+  g("nkPonovo").addEventListener("click", async () => { const gr = g("nkGreska"); gr.hidden = true; try { if (NK.vezi) await nalogVeziMejl(NK.email); else await nalogPosaljiKod(NK.email); tihoObavestenje(T("nk.kodPoslatPonovo")); } catch (e) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; } });
   g("nkPreskoci").addEventListener("click", () => { try { sessionStorage.setItem("rmr2_nalog_preskoci", "1"); } catch (e) {} g("nalogKapija").hidden = true; document.body.classList.remove("kapija"); });
   g("plX").addEventListener("click", prijateljSazetakZatvori);
   g("plUkloni").addEventListener("click", async () => {
