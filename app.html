@@ -2234,6 +2234,8 @@ body.kplan #sastanakTraka, body.hasroute #sastanakTraka, body.riding #sastanakTr
 #nkKodOpis { margin: 0 0 4px; }
 .nk-korak2 .nk-preskoci { margin-top: 2px; text-decoration: none; color: var(--accent-text); }
 #jaNalog .jmail { font-size: 13px; word-break: break-all; }
+/* 2.10.: posle prijave linkom na webu (iPhone/Android) - dugme koje sesiju preda nativnoj aplikaciji */
+.nk-nativ { position: fixed; left: 16px; right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 60; display: block; padding: 14px; border-radius: var(--r-lg); background: var(--action-gradient); color: var(--on-accent); font: 600 15px var(--font-ui); text-align: center; text-decoration: none; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
     /* Oznaka test verzije: uvek se vidi u kojoj si aplikaciji i sta je u njoj novo.
        Nestaje u voznji da ne smeta. */
     #verBadge { position: fixed; left: 10px; bottom: calc(92px + env(safe-area-inset-bottom));
@@ -6165,6 +6167,10 @@ const RECNIK_SR = {
   "nk.tel": "Telefon",
   "nk.noviTel": "Telefon (po želji):",
   "nk.sesijaIstekla": "Prijava je istekla - upiši mejl i kod ponovo.",
+  "nk.iliLink": "Ako u mejlu nema koda, klikni \"Sign in\" u mejlu - to te prijavljuje.",
+  "nk.prijavljen": "Prijavljen si kao {0}.",
+  "nk.upisiImeZaKraj": "Prijava je prošla - upiši još ime i pritisni Kreni.",
+  "nk.otvoriUApp": "Otvori u aplikaciji RouteMeRight",
 };
 /* English dictionary. Same keys as sr.js - the test fails on any key missing on either side.
    Plain hyphens, no em dashes (house rule). */
@@ -7786,6 +7792,10 @@ const RECNIK_EN = {
   "nk.tel": "Phone",
   "nk.noviTel": "Phone (optional):",
   "nk.sesijaIstekla": "Your sign-in expired - enter your email and code again.",
+  "nk.iliLink": "If there is no code in the email, tap \"Sign in\" in the email - that signs you in.",
+  "nk.prijavljen": "Signed in as {0}.",
+  "nk.upisiImeZaKraj": "Signed in - just add your name and press Go.",
+  "nk.otvoriUApp": "Open in the RouteMeRight app",
 };
 /* ---- Jezik aplikacije / app language (0.9.159) ----
    Jedan recnik po jeziku (i18n/sr.js, i18n/en.js), jedan kljuc po natpisu. Staticni HTML nosi
@@ -9153,6 +9163,7 @@ window.rmrOtvoriURL = function (sirovURL) {
   const upit = rmrUpitIzSheme(sirovURL);
   if (!upit) return false;
   let p; try { p = new URLSearchParams(upit); } catch (e) { return false; }
+  if (/^[a-z]+:\/\/prijava/i.test(String(sirovURL || "")) && p.get("rt")) { try { nalogIzDeepLinka(p.get("rt")); } catch (e) {} return true; }   // 2.10.: prijava iz mejla u nativnu app
   const sirovo = p.get("ll") || p.get("q") || p.get("geo");
   const ime = p.get("naziv") || p.get("name") || "";
   if (primiDeljenuLokaciju(sirovo, ime, upit)) return true;
@@ -17346,8 +17357,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.163";
+const APP_VERSION = "0.9.164";
 const CHANGELOG = [
+  { v: "0.9.164", d: "02.10.2026.", stavke: [
+    "<b>Prijava i linkom iz mejla.</b> Supabase bez svog mejl servera šalje samo link \"Sign in\" (bez koda) - klik na njega te prijavljuje na webu, a na telefonu dugme \"Otvori u aplikaciji\" prenese prijavu u aplikaciju. Kod od 6 cifara ostaje za kad mejl bude slao i kod.",
+  ] },
   { v: "0.9.163", d: "02.10.2026.", stavke: [
     "<b>Prijava mejlom.</b> Nalog se pravi sa imenom i mejlom - na mejl stigne kod od 6 cifara, bez lozinke. Isti mejl na novom telefonu vraća nalog i prijatelje. Telefon je polje u profilu, po želji.",
     "<b>Pregled koda posle četiri faze - devet popravki pre nego što iko ozbiljno krene:</b> tvoj kod za dodavanje više niko ne može da pročita iz baze (ni prijatelj); kad server odbije prijavu, aplikacija to kaže i vrati ekran za prijavu umesto da se vrti; živa lokacija iz džepa dobija svež ključ pre nego što stari istekne; prekidač za deljenje lokacije se menja tek kad server potvrdi; obaveštenje \"stigao\" se tako i zove.",
@@ -20096,6 +20110,73 @@ async function nalogPotvrdiKod(email, kod, ime, telefon) {
   if (!m || !m.kod) throw new Error(T("nal.serverNijePodesen"));
   return m;
 }
+/* MAGIC LINK (2.10., Supabase bez custom SMTP-a salje samo link "Sign in", bez koda): klik na link u mejlu
+   vodi na routemeright.app/app.html#access_token=...&refresh_token=... - web odatle pravi sesiju; nativna app
+   dobija isto kroz routemeright://prijava?rt=<refresh_token> (dugme "Otvori u aplikaciji" na webu).
+   Ime i telefon upisani na kapiji cekaju u rmr2_nalog_draft dok link ne stigne. / Magic-link sign-in. */
+async function nalogZavrsiProfil() {   // sesija vec postoji: vrati postojeci profil ili napravi nov iz nacrta
+  let d = null; try { d = JSON.parse(localStorage.getItem("rmr2_nalog_draft") || "null"); } catch (e) {}
+  const ima = await nalogOsvezi();
+  if (ima && ima.kod) { try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {} return ima; }
+  const ime = String((d && d.ime) || (nalogCitaj() || {}).ime || "").trim();
+  if (ime.length < 2) { const e = new Error(T("nal.imeKratko")); e.trebaIme = true; throw e; }
+  const telo = { ime }; if (d && d.telefon) telo.telefon = String(d.telefon).trim().slice(0, 32);
+  try { await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
+  catch (e) { if (!(e && (e.status === 409 || /23505|duplicate key/i.test(String(e.message || ""))))) throw e; }
+  const m = await nalogOsvezi();
+  if (!m || !m.kod) throw new Error(T("nal.serverNijePodesen"));
+  try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {}
+  return m;
+}
+function nalogIzHasha() {   // web: #access_token=...&refresh_token=...&expires_in=...&type=magiclink
+  try {
+    const h = String(location.hash || "");
+    if (!/access_token=/.test(h)) return false;
+    const p = new URLSearchParams(h.replace(/^#/, ""));
+    const at = p.get("access_token"), rt = p.get("refresh_token");
+    if (!at || !rt) return false;
+    const n = { ...(nalogCitaj() || {}), ...nalogIzSesije({ access_token: at, refresh_token: rt, expires_in: +p.get("expires_in") || 3600 }) };
+    try { const b = JSON.parse(atob(at.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); n.uid = b.sub || n.uid; n.email = b.email || n.email; } catch (e) {}
+    nalogUpisi(n);
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    NK.izLinka = true;
+    return true;
+  } catch (e) { return false; }
+}
+async function nalogIzLinkaZavrsi() {   // posle hasha ili deep linka: profil, kapija dole, ponuda "otvori u aplikaciji" na webu
+  try {
+    await nalogZavrsiProfil();
+    const el = document.getElementById("nalogKapija"); if (el) { el.hidden = true; document.body.classList.remove("kapija"); }
+    try { renderJaNalog(); renderPrijatelji(); prijateljIzLinka(); sastanciPokreni(); lokacijePokreni(); pushRegistruj(); } catch (e) {}
+    try { tihoObavestenje(T("nk.prijavljen", { 0: (nalogCitaj() || {}).ime || "" })); } catch (e) {}
+    nalogNativPonudi();
+  } catch (e) {
+    if (e && e.trebaIme) { try { nalogKapijaPrikazi(); const gr = document.getElementById("nkGreska"); gr.textContent = T("nk.upisiImeZaKraj"); gr.hidden = false; } catch (e2) {} }
+    else { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} }
+  }
+}
+function nalogNativPonudi() {   // na iPhone webu posle prijave: dugme koje istu sesiju preda nativnoj aplikaciji
+  try {
+    const C = window.Capacitor; if (C && C.isNativePlatform && C.isNativePlatform()) return;
+    if (!/iPhone|iPad|Android/i.test(navigator.userAgent)) return;
+    const n = nalogCitaj(); if (!n || !n.refresh) return;
+    let b = document.getElementById("nalogNativ");
+    if (!b) { b = document.createElement("a"); b.id = "nalogNativ"; b.className = "nk-nativ"; document.body.appendChild(b); }
+    b.href = "routemeright://prijava?rt=" + encodeURIComponent(n.refresh);
+    b.textContent = T("nk.otvoriUApp");
+    b.onclick = () => setTimeout(() => { try { b.remove(); } catch (e) {} }, 1500);
+  } catch (e) {}
+}
+async function nalogIzDeepLinka(rt) {   // nativna app: routemeright://prijava?rt=<refresh_token>
+  try {
+    const j = await supaAuth("token?grant_type=refresh_token", { refresh_token: rt });
+    const n = { ...(nalogCitaj() || {}), ...nalogIzSesije(j) };
+    try { const b = JSON.parse(atob(n.access.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); n.uid = b.sub || n.uid; n.email = b.email || n.email; } catch (e) {}
+    nalogUpisi(n);
+    await nalogIzLinkaZavrsi();
+    return true;
+  } catch (e) { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} return false; }
+}
 async function nalogPromeniTelefon(tel) {
   const n = nalogCitaj(); if (!n) return;
   tel = String(tel || "").trim().slice(0, 32);
@@ -20393,9 +20474,10 @@ function nalogKapijaPrikazi() {
       if (NK.korak !== 2) {   // korak 1: ime + mejl -> posalji kod
         const ime = String(g("nkIme").value || "").trim();
         if (ime.length < 2) throw new Error(T("nal.imeKratko"));
+        try { localStorage.setItem("rmr2_nalog_draft", JSON.stringify({ ime, telefon: String(g("nkTel").value || "").trim() })); } catch (e) {}
         NK.email = await nalogPosaljiKod(g("nkEmail").value);
         NK.korak = 2; g("nkKorak1").hidden = true; g("nkKorak2").hidden = false;
-        g("nkKodOpis").textContent = T("nk.kodPoslat", { 0: NK.email });
+        g("nkKodOpis").textContent = T("nk.kodPoslat", { 0: NK.email }) + " " + T("nk.iliLink");
         g("nkKreni").textContent = T("nk.potvrdi"); b.disabled = false;
         setTimeout(() => { try { g("nkKod").focus(); } catch (e) {} }, 150);
         return;
@@ -20420,7 +20502,8 @@ function nalogKapijaPrikazi() {
     const f = PL.f; if (!f || !confirm(T("nal.ukloniPitanje"))) return;
     try { await prijateljUkloni(f.id); prijateljSazetakZatvori(); renderPrijatelji(true); } catch (e) { alert(nalogGreskaTekst(e)); }
   });
-  setTimeout(() => { try { nalogKapijaPrikazi(); } catch (e) {} }, 350);   // posle uvodne animacije; sloj je iznad nje po z-indexu
+  if (nalogIzHasha()) setTimeout(() => { nalogIzLinkaZavrsi(); }, 400);   // link iz mejla (web)
+  else setTimeout(() => { try { nalogKapijaPrikazi(); } catch (e) {} }, 350);   // posle uvodne animacije; sloj je iznad nje po z-indexu
   setTimeout(() => { try { nalogPing(); } catch (e) {} }, 6000);
 })();
 
