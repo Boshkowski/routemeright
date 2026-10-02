@@ -2132,7 +2132,7 @@ body.kapija #bottomnav, body.kapija #homeChrome, body.kapija #homeFabs { display
 .nk-logo em { font-style: normal; color: var(--accent-text); }
 #nalogKapija h2 { margin: 0; font: 300 28px/1.15 var(--font-ui); color: var(--fg-strong); }
 .nk-opis { margin: 10px 0 22px; font-size: 14px; line-height: 1.5; color: var(--fg-muted); }
-.nk-av { width: 96px; height: 96px; border-radius: 50%; border: 1.5px dashed var(--fg-decor); background: var(--surface); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; padding: 0; margin-bottom: 18px; }
+.nk-av { width: 96px; height: 96px; border-radius: 50%; border: 2px dashed var(--accent); background: var(--surface); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; padding: 0; margin-bottom: 18px; }
 .nk-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .nk-av span { font: 300 30px var(--font-num); color: var(--fg-soft); line-height: 1; }
 .nk-av small { font-family: var(--font-cap); font-synthesis: none; font-weight: var(--fw-cap); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); margin-top: 2px; }
@@ -17364,8 +17364,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.165";
+const APP_VERSION = "0.9.166";
 const CHANGELOG = [
+  { v: "0.9.166", d: "02.10.2026.", stavke: [
+    "<b>Krug za sliku na ekranu \"Ko vozi?\" je narandžast</b> (Boškov nalog 2.10.), da se vidi da je dodirljiv.",
+  ] },
   { v: "0.9.165", d: "02.10.2026.", stavke: [
     "<b>Stari nalog bez mejla dobija mejl.</b> Ko je nalog napravio u 0.9.161-0.9.163 (samo ime, bez mejla) pri paljenju vidi ekran \"Ko vozi?\" sa objašnjenjem i upisuje mejl - stiže mejl potvrde, klik na link vezuje mejl za ISTI nalog (kod i prijatelji ostaju). Bez mejla aplikacija više ne pušta dalje.",
   ] },
