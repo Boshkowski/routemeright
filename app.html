@@ -1507,6 +1507,9 @@
   /* od/do kartica gore na mapi dok je rezultat otvoren (sheet .planning); kad je sheet skupljen stoji #routePill */
   body.qplan.planning.hasroute #riOdDo { display: block; position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top)); z-index: 41; background: var(--bg-veil); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--line-strong); border-radius: var(--r-lg); padding: 2px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
   body.qplan.planning.hasroute.searching #riOdDo, body.qplan.planning.hasroute.riding #riOdDo { display: none; }
+  /* 3.10. (Boskove slike 09:55-10:03): kartica Od/Do je ostajala preko Zajednice, Ja i Istrazi - klase qplan/planning/hasroute
+     ostaju na body dok se tab menja. Kartica pripada samo planeru, pa se gasi cim je drugi tab na ekranu. */
+  body.atlas #riOdDo, body:has(.tabscreen.on) #riOdDo { display: none; }
   body.qplan.planning.hasroute #riOdDo { padding-right: 52px; }
   .ri-zameni { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--surface); color: var(--fg); display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .ri-zameni svg { width: 20px; height: 20px; }
@@ -17702,8 +17705,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.181";
+const APP_VERSION = "0.9.182";
 const CHANGELOG = [
+  { v: "0.9.182", d: "03.10.2026.", stavke: [
+    "<b>Kartica Od/Do više ne ostaje preko Zajednice, Ja i Istraži</b> kad pređeš sa isplanirane rute na drugi tab.",
+  ] },
   { v: "0.9.181", d: "03.10.2026.", stavke: [
     "<b>Lokacija prijateljima iz svakog taba.</b> Dok je app otvorena i deljenje upaljeno, GPS se traži i u Zajednici i u Ja, ne samo na mapi. (Ana zato nije bila na mapi.)",
     "<b>Vožnje se čuvaju i na serveru.</b> Sažetak svake vožnje (bez traga) ide u tvoj nalog; na novom telefonu ili pregledaču Dnevnik se vraća. Vidiš samo svoje.",
