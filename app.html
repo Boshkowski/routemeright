@@ -511,6 +511,13 @@
     #bootUvod.kreni .p2 { animation: bootUvodTiho 520ms ease-out both !important; }
   }
   @keyframes bootUvodTiho { from { opacity: 0; } to { opacity: 1; } }
+
+/* 3.10. (ui-ux-pro-max, Boskov nalog): svaki mali interaktivni element nosi hit-oblast >= 44 px kroz ::before, bez promene izgleda;
+   fokus tastaturom vidljiv. / Expand tap area of small controls to >= 44 px without changing visuals; visible keyboard focus. */
+.jchev, .ri-kad, .ri-cip, .jn-uredi, .jn-chip, .pl-nazad, .sl-x, .rsnazad, .zpr-x, .zpr-ok, .kp-cip, .nk-preskoci { position: relative; }
+.jchev::before, .ri-kad::before, .ri-cip::before, .jn-uredi::before, .jn-chip::before, .pl-nazad::before, .sl-x::before, .rsnazad::before, .zpr-x::before, .zpr-ok::before, .kp-cip::before, .nk-preskoci::before { content: ""; position: absolute; inset: -7px; }
+.jchev:focus-visible, .ri-kad:focus-visible, .ri-cip:focus-visible, .jn-uredi:focus-visible, .jn-chip:focus-visible, .pl-nazad:focus-visible, .sl-x:focus-visible, .rsnazad:focus-visible, .kp-plan:focus-visible, .pl-ghost:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
   html, body { height: 100%; }
   body {
     font-family: var(--font-ui); font-variation-settings: "wdth" var(--font-ui-wdth);
@@ -1500,6 +1507,10 @@
   /* od/do kartica gore na mapi dok je rezultat otvoren (sheet .planning); kad je sheet skupljen stoji #routePill */
   body.qplan.planning.hasroute #riOdDo { display: block; position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top)); z-index: 41; background: var(--bg-veil); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--line-strong); border-radius: var(--r-lg); padding: 2px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
   body.qplan.planning.hasroute.searching #riOdDo, body.qplan.planning.hasroute.riding #riOdDo { display: none; }
+  body.qplan.planning.hasroute #riOdDo { padding-right: 52px; }
+  .ri-zameni { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--surface); color: var(--fg); display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ri-zameni svg { width: 20px; height: 20px; }
+  .ri-zameni:active { color: var(--accent-text); }
   .ri-odred { display: flex; align-items: center; gap: 10px; width: 100%; height: 44px; border: 0; border-bottom: 1px solid var(--line-hairline); background: none; color: var(--fg-strong); font: 500 15px var(--font-ui); text-align: left; cursor: pointer; padding: 0; }
   .ri-odred:last-child { border-bottom: 0; }
   .ri-odred span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -3832,7 +3843,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
         <div class="jrow"><span data-i18n="planer.vremeRuti">Vreme na ruti</span><b class="ri-v" id="riVreme">–</b></div>
         <div class="jrow"><span data-i18n="planer.trosak">Trošak</span><b class="ri-trosak" id="riTrosak">–</b></div>
         <div class="jrow ri-ruta" id="riRutaRed"><span data-i18n="planer.riRuta">Ruta</span><b id="riRute"></b></div>
-        <div class="ri-cipovi"><button type="button" class="ri-cip" id="riPovratno">⇄ <span data-i18n="planer.riPovratno">Povratno</span></button><button type="button" class="ri-cip" id="riJos"><span data-i18n="planer.riJos">Još</span></button></div>
+        <div class="ri-cipovi"><button type="button" class="ri-cip" id="riPovratno">⇄ <span data-i18n="planer.riPovratno">Povratno</span></button><button type="button" class="ri-cip" id="riBezAutoputa"><span data-i18n="planer.riBezAutoputa">Bez autoputa</span></button><button type="button" class="ri-cip" id="riJos"><span data-i18n="planer.riJos">Još</span></button></div>
       </div>
       <!-- Faza 3: mobilni rezultat kao maketa (hero + metrike + krivine); desktop ga ne vidi -->
       <div id="resHero">
@@ -4176,7 +4187,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     </div>
   </div>
   <!-- 3.10. (maketa 3, gornji deo iz B): Od -> Do kartica na mapi dok je rezultat otvoren; dodir na red menja to polje -->
-  <div id="riOdDo" aria-label="Polazak i cilj"><button type="button" class="ri-odred" id="riOd"><i class="ri-tacka od"></i><span></span></button><button type="button" class="ri-odred" id="riDo"><i class="ri-tacka do"></i><span></span></button></div>
+  <div id="riOdDo" aria-label="Polazak i cilj"><button type="button" class="ri-odred" id="riOd"><i class="ri-tacka od"></i><span></span></button><button type="button" class="ri-odred" id="riDo"><i class="ri-tacka do"></i><span></span></button><button type="button" class="ri-zameni" id="riZameni" aria-label="Zameni polazak i cilj" data-i18n-aria="planer.riZameniAria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg></button></div>
   <div id="routePill"><div class="rpin"><b id="rpTxt">-</b><span id="rpSub"></span></div><button id="rpX" aria-label="Poništi rutu" data-i18n-aria="planer.aria.rpX">✕</button></div>
   <!-- Faza 4: cist ekran pretrage (kao Google/Waze + nasa baza) -->
   <div id="searchOverlay">
@@ -4728,6 +4739,8 @@ const RECNIK_SR = {
   "planer.riBezPutarine": "bez putarine",
   "planer.riPutarina": "putarina {0} €",
   "planer.riPutarinaNepoznata": "samo gorivo, putarina nepoznata",
+  "planer.riZameniAria": "Zameni polazak i cilj",
+  "planer.riBezAutoputa": "Bez autoputa",
   "planer.polazakSada": "Polazak: sada",
   "planer.polazak2": "Polazak u...",
   "planer.stigni2": "Stigni do...",
@@ -6301,6 +6314,8 @@ const RECNIK_SR = {
   "sas.stigaoTi": "stigao si",
   "sas.pozvanTi": "nisi odgovorio",
   "sas.stizesTi": "stižeš ~{0}",
+  "sas.gdeSeNalazimo": "Gde se nalazimo?",
+  "sas.izaberiMesto": "Izaberi mesto sastanka sa {0}.",
   "sas.nadjemoSe": "Nađemo se tamo",
   "sas.novOpis": "Pozovi prijatelje - svi dobiju \"Vodi me tamo\" i vide ko kad stiže.",
   "sas.cimStignes": "Ko kad stigne",
@@ -6446,6 +6461,8 @@ const RECNIK_EN = {
   "planer.riBezPutarine": "no tolls",
   "planer.riPutarina": "tolls {0} €",
   "planer.riPutarinaNepoznata": "fuel only, tolls unknown",
+  "planer.riZameniAria": "Swap start and destination",
+  "planer.riBezAutoputa": "No motorway",
   "planer.polazakSada": "Leaving: now",
   "planer.polazak2": "Leave at...",
   "planer.stigni2": "Arrive by...",
@@ -7993,6 +8010,8 @@ const RECNIK_EN = {
   "sas.stigaoTi": "you arrived",
   "sas.pozvanTi": "you haven't replied",
   "sas.stizesTi": "you arrive ~{0}",
+  "sas.gdeSeNalazimo": "Where do we meet?",
+  "sas.izaberiMesto": "Pick a meeting place with {0}.",
   "sas.nadjemoSe": "Meet me there",
   "sas.novOpis": "Invite friends - everyone gets \"Take me there\" and sees who arrives when.",
   "sas.cimStignes": "Whenever each arrives",
@@ -10327,7 +10346,7 @@ async function valhallaRoute(from, to, style, netOpts) {
     locations,
     costing: "motorcycle",
     // asfalt je pravilo, ne opcija: makadam sme samo kad je fizički neizbežan (prilaz kampu, obilazak)
-    costing_options: { motorcycle: { use_highways: style.uh, use_tolls: style.ut, exclude_unpaved: true } },
+    costing_options: { motorcycle: { use_highways: state.bezAutoputa ? Math.min(style.uh, 0.02) : style.uh, use_tolls: state.bezAutoputa ? Math.min(style.ut, 0.05) : style.ut, exclude_unpaved: true } },   // 3.10.: cip "Bez autoputa"
     units: "kilometers",
   };
   const j = await fetchJSON("https://valhalla1.openstreetmap.de/route", { method: "POST", body: JSON.stringify(body),
@@ -17638,8 +17657,13 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.178";
+const APP_VERSION = "0.9.179";
 const CHANGELOG = [
+  { v: "0.9.179", d: "03.10.2026.", stavke: [
+    "<b>Pregled rute: strelica za zamenu polaska i cilja</b> na gornjoj kartici (kao Google), i čip <b>\"Bez autoputa\"</b> koji sve varijante preračuna bez autoputa i putarine.",
+    "<b>\"Nađemo se\" iz kartice prijatelja</b> otvara pretragu mesta; izabrano mesto postaje mesto sastanka, a taj prijatelj je već štikliran.",
+    "<b>Dodir od 44 px</b> na svim malim dugmićima (strelice, čipovi, Nazad, X) i vidljiv fokus - pravila iz liste provere pre isporuke.",
+  ] },
   { v: "0.9.178", d: "03.10.2026.", stavke: [
     "<b>Pregled rute po maketi 3 (B+C).</b> Gore na mapi kartica Od → Do (dodir menja polje); u listu naslov sa čipom \"⏱ sada\" koji otvara izbor polaska (sada / u određeno vreme / stigni do), tri broja (minuti, km, ocena), redovi Stižeš / Vreme / Trošak / Ruta (varijante kao čipovi), čipovi Povratno i Još, pa Kreni / Čuvaj / Deli.",
     "<b>Sažetak vožnje po maketi 2B.</b> Mapa sa tragom je gornja traka, sažetak zauzima ostatak kao svoja strana sa strelicom Nazad; ništa se ne skriva iza skrola koji guta mapu.",
@@ -19867,6 +19891,13 @@ async function pickMapPotvrdi() {
   pickDestination({ n: naziv, lat: c.lat, lon: c.lng });
 }
 async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
+  if (typeof SAST !== "undefined" && SAST.zaSastanak && sel && sel.lat != null) {   // 3.10.: izbor iz pretrage je MESTO SASTANKA, ne cilj voznje
+    const fid = SAST.zaSastanak; SAST.zaSastanak = null;
+    try { closeSearch(); } catch (e) {}
+    try { const si = document.getElementById("sInput"); if (si && si.dataset.ph0) si.placeholder = si.dataset.ph0; } catch (e) {}
+    SAST.predizbor = fid; sastanakNoviOtvori({ ime: sel.n, lat: sel.lat, lon: sel.lon });
+    return;
+  }
   /* 0.9.95 (QA nalaz 17): red bez koordinata (poznata ruta iz FAMOUS_ROUTES, ili stari "nedavno"
      zapis bez tp) je kao POLAZAK zavrsavao u polju OD kao golo IME, bez ijedne koordinate, pa je
      plan geokodirao ime rute. Cuvar stoji na SAMOM VRHU, pre closeSearch - inace se pretraga
@@ -20996,8 +21027,12 @@ function nalogKapijaPrikazi() {
   g("nkPonovo").addEventListener("click", async () => { const gr = g("nkGreska"); gr.hidden = true; try { if (NK.vezi) await nalogVeziMejl(NK.email); else await nalogPosaljiKod(NK.email); tihoObavestenje(T("nk.kodPoslatPonovo")); } catch (e) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; } });
   g("nkPreskoci").addEventListener("click", () => { try { sessionStorage.setItem("rmr2_nalog_preskoci", "1"); } catch (e) {} g("nalogKapija").hidden = true; document.body.classList.remove("kapija"); });
   g("plNazad").addEventListener("click", prijateljSazetakZatvori);   // 3.10. (Bosko: "ekran ostane zamrznut, treba strelica back") - crveni X je licio na brisanje
-  g("plNadjemo").addEventListener("click", () => {   // 4B: "Nadjemo se" - mesto se bira na mapi ili iz liste, pa "Nadjemo se tamo" (prijatelj je vec stikliran)
-    prijateljSazetakZatvori(); try { nasTabKlik("planer"); } catch (e) {} try { tihoObavestenje(T("pl.nadjemoHint")); } catch (e) {}
+  g("plNadjemo").addEventListener("click", () => {   // 4B (3.10., Bosko: "ovo nadjemo se"): pretraga bira MESTO sastanka, pa nov sastanak sa ovim prijateljem
+    const f = PL.f; prijateljSazetakZatvori(); if (!f) return;
+    SAST.zaSastanak = f.id; try { nasTabKlik("planer"); } catch (e) {}
+    try { openSearch("to"); } catch (e) {}
+    try { const si = document.getElementById("sInput"); if (si) { if (!si.dataset.ph0) si.dataset.ph0 = si.placeholder; si.placeholder = T("sas.gdeSeNalazimo"); } } catch (e) {}
+    try { tihoObavestenje(T("sas.izaberiMesto", { 0: f.ime })); } catch (e) {}
   });
   g("plUkloni").addEventListener("click", async () => {
     const f = PL.f; if (!f || !confirm(T("nal.ukloniPitanje"))) return;
@@ -21141,7 +21176,8 @@ function sastanakNoviOtvori(m) {   // iz lista mesta (E4)
   document.getElementById("snKad").hidden = true; document.getElementById("snSada").classList.add("on"); document.getElementById("snU").classList.remove("on");
   document.getElementById("snUTxt").textContent = T("sas.uVreme");
   document.getElementById("snGreska").hidden = true;
-  document.getElementById("snLista").innerHTML = pr.map((f) => `<label class="sn-red">${avatarHtml(f.id, f.avatar_v, f.ime)}<span class="zpr-t"><b>${esc(f.ime)}</b>${f.motor ? "<small>" + esc(f.motor) + "</small>" : ""}</span><input type="checkbox" value="${esc(f.id)}" checked></label>`).join("");
+  const samo = SAST.predizbor; SAST.predizbor = null;   // iz kartice prijatelja: stikliran je samo on
+  document.getElementById("snLista").innerHTML = pr.map((f) => `<label class="sn-red">${avatarHtml(f.id, f.avatar_v, f.ime)}<span class="zpr-t"><b>${esc(f.ime)}</b>${f.motor ? "<small>" + esc(f.motor) + "</small>" : ""}</span><input type="checkbox" value="${esc(f.id)}"${(!samo || samo === f.id) ? " checked" : ""}></label>`).join("");
   try { mestoCiljZatvori(); } catch (e) {}
   el.hidden = false; document.body.classList.add("mcilj");
 }
@@ -26747,8 +26783,21 @@ function rezInstCrtaj(route) {
   rr.innerHTML = (state.routes || []).map((r, i) => `<button type="button" class="ri-cip${i === state.selected ? " on" : ""}" data-i="${i}">${esc(String(rutaNaziv(r.label)).split(" · ")[0])}${i === state.selected ? "" : " · " + esc(fmtDur(r.totalDur))}</button>`).join("");
   document.getElementById("riRutaRed").hidden = !(state.routes && state.routes.length > 1);
   const qr = document.getElementById("qRet"); document.getElementById("riPovratno").classList.toggle("on", !!(qr && qr.classList.contains("on")));
+  document.getElementById("riBezAutoputa").classList.toggle("on", !!state.bezAutoputa);
   box.hidden = false;
   try { riOdDoCrtaj(od, do_); } catch (e) {}
+}
+function rezZameni() {   // 3.10. (Bosko: "strelica"): zameni polazak i cilj; koordinate idu sa imenima (GPS polazak postaje cilj sa istim koordinatama)
+  const fe = document.getElementById("from"), te = document.getElementById("to"); if (!fe || !te) return;
+  const fQ = fe.value.trim(), tQ = te.value.trim(); if (!fQ || !tQ) return;
+  const g = state.geocode || {};
+  const fObj = (state.fromOverride && fQ === state.fromOverride.name) ? state.fromOverride : (state.gpsFrom && (fQ === state.gpsFrom.name || /^moja lokacija$/i.test(fQ))) ? state.gpsFrom : (g.from && g.from.lat != null ? g.from : null);
+  const tObj = (state.searchTo && tQ === state.searchTo.name) ? state.searchTo : (state.homeTo && tQ === state.homeTo.name) ? state.homeTo : (g.to && g.to.lat != null ? g.to : null);
+  fe.value = tQ; te.value = fQ;
+  state.fromOverride = tObj ? { name: tQ, lat: tObj.lat, lon: tObj.lon } : null;
+  state.searchTo = fObj ? { name: fQ, lat: fObj.lat, lon: fObj.lon } : null;
+  state.vias = []; try { renderViaChips(); } catch (e) {}   // usputne tacke su bile u starom smeru
+  plan();
 }
 function riOdDoCrtaj(od, do_) {   // od/do kartica gore na mapi (iz makete B): dodir na red otvara pretragu tog polja
   const el = document.getElementById("riOdDo"); if (!el) return;
@@ -26773,6 +26822,10 @@ function riOdDoCrtaj(od, do_) {   // od/do kartica gore na mapi (iz makete B): d
   g("riPovratno").addEventListener("click", () => { const qr = g("qRet"); if (qr) qr.click(); });
   g("riJos").addEventListener("click", () => { const qa = g("qAdv"); if (qa) qa.click(); });
   g("riOd").addEventListener("click", () => { try { openSearch("from"); } catch (e) {} });
+  g("riZameni").addEventListener("click", rezZameni);
+  g("riBezAutoputa").addEventListener("click", () => {   // 3.10.: ponder autoputa i putarine na nulu za SVE varijante, pa ponovo plan
+    state.bezAutoputa = !state.bezAutoputa; g("riBezAutoputa").classList.toggle("on", !!state.bezAutoputa); plan();
+  });
   g("riDo").addEventListener("click", () => { try { openSearch("to"); } catch (e) {} });
 })();
 function renderResultHero(route) {
