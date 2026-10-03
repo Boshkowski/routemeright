@@ -2455,6 +2455,7 @@ body.kplan #sastanakTraka, body.hasroute #sastanakTraka, body.riding #sastanakTr
        tabovima (Rute, Zajednica, Ja). Vidi se na mapi, gde nikome ne smeta.
        The version badge covered the open planner sheet and the tab lists; it stays on the map. */
     body:has(.tabscreen.on) #verBadge, body.planning:has(#panel.open) #verBadge { display: none; }
+    body.planning.hasroute #verBadge { display: none; }   /* 3.10. (Boskova slika): znacka je lezala preko niske trake; sa rutom na ekranu je ne pokazujemo */
     body.qplan.planning #verBadge { bottom: calc(142px + env(safe-area-inset-bottom)); }   /* iznad usidrene CTA trake (7.8.) */
     /* teren 27.8.: bedz koji zna da vozi stariji build to i pokazuje (v0.9.99 -> 0.9.102).
        Bez treptanja i bez crvenog - ovo nije opasnost, nego cinjenica koju treba videti. */
@@ -17905,8 +17906,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.186";
+const APP_VERSION = "0.9.187";
 const CHANGELOG = [
+  { v: "0.9.187", d: "03.10.2026.", stavke: [
+    "<b>Značka verzije više ne leži preko niske trake</b> kad je ruta na ekranu (vidi se na početnoj mapi kao i do sada).",
+  ] },
   { v: "0.9.186", d: "03.10.2026.", stavke: [
     "<b>Vrućina kao upozorenje na ruti:</b> od 32° u satu prolaska app javlja gde i kad (voda, pauza u hladu, mek asfalt u krivinama); ulazi u Upozorenja, predlog polaska i Šta obući.",
     "<b>Obaveštenja u Ja → Moj nalog:</b> dva prekidača, Mejl (novosti i saveti) i SMS (novosti i ponude), oba ugašena dok ih sam ne upališ. SMS traži broj telefona; bez broja ostaje ugašen. Datum pristanka se pamti.",
