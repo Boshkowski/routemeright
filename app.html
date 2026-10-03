@@ -16798,7 +16798,7 @@ function planWarnCrtaj() {
   try {
     const pw = $("planWarn");
     if (!pw) return;
-    const u = state.upoz || [];
+    const u = (state.upoz || []).filter((x) => !/Style is not done loading|is not done loading/i.test(String(x)));   // 3.10.: sirova poruka MapLibre-a (stil se jos ucitava) nije upozorenje vozacu
     pw.hidden = !u.length;
     pw.textContent = u.length ? "⚠︎ " + u.join(" · ") : "";
   } catch (e) {}
@@ -17226,6 +17226,7 @@ function setPeek(worst, routeTxt, metaTxt, cov) {
   $("peekBadge").textContent = cls === "na" ? "?" : cls === "ok" ? "✓" : cls === "warn" ? "⚠︎" : "✖︎";
   $("peekRoute").textContent = routeTxt;
   $("peekMeta").textContent = metaTxt;
+  try { const rm = document.getElementById("riMeta"); if (rm) rm.textContent = metaTxt; } catch (e) {}   // 3.10.: instrument nosi isti opis varijante, svez
   $("peekSum").classList.remove("hidden");
 }
 function relKey() {   // identitet relacije = STA JE KORISNIK UNEO (polja Od/Do): opcije/stanice/vreme ga ne menjaju,
@@ -17657,8 +17658,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.179";
+const APP_VERSION = "0.9.180";
 const CHANGELOG = [
+  { v: "0.9.180", d: "03.10.2026.", stavke: [
+    "<b>Dve sitnice u pregledu rute:</b> opis varijante ispod naslova se osvežava sa svakim novim planom; tehnička poruka mape o učitavanju stila više ne iskače kao upozorenje.",
+  ] },
   { v: "0.9.179", d: "03.10.2026.", stavke: [
     "<b>Pregled rute: strelica za zamenu polaska i cilja</b> na gornjoj kartici (kao Google), i čip <b>\"Bez autoputa\"</b> koji sve varijante preračuna bez autoputa i putarine.",
     "<b>\"Nađemo se\" iz kartice prijatelja</b> otvara pretragu mesta; izabrano mesto postaje mesto sastanka, a taj prijatelj je već štikliran.",
