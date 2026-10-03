@@ -50,4 +50,10 @@ jobs:
           git config user.email "boskodjurica@gmail.com"
           git add data/road_status.json data/prices.json
           git diff --cached --quiet && echo "nema promena" || git commit -m "auto: stanje na putevima + meteo upozorenja [skip ci]"
-          git push
+          # 3.10.2026: push je pao ("fetch first") jer je deploy 0.9.176 stigao na main dok je robot radio (1,5 min).
+          # Robot menja samo data/road_status.json i data/prices.json, pa svoj komit prebacuje na vrh i proba tri puta.
+          for i in 1 2 3; do
+            git pull --rebase -q origin main && git push && break
+            echo "push nije prosao (pokusaj $i), cekam 20 s"; sleep 20
+            [ "$i" = 3 ] && exit 1
+          done
