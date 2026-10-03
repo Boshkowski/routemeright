@@ -1332,6 +1332,9 @@
     body.qplan.planning #panel > *:not(#peekBar):not(#plannerClose):not(#qbar):not(#status):not(#results):not(#resCta) { display: none !important; }
     body.qplan.planning #panel { height: 54vh; height: 54dvh; padding-bottom: 0; display: flex; flex-direction: column; }   /* do pola kao Google; detalji sire; flex kolona = CTA footer uvek na dnu */
     body.qplan.planning.qdetails #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); height: calc(100dvh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); }   /* 3.10. uvece: pun ekran (bilo 86dvh) - list povucen do vrha, kao Istrazi 'pun' */
+    /* 3.10. 20:30 (Boskova slika: kartica Od/Do preko reda VOZNJA/DALJINA/OCENA): list "do vrha" staje ISPOD kartice Od/Do (8 px razmaka),
+       kao Google Maps - kartica je zaglavlje, ne sloj preko lista. Dokaz: tools/provera-riOdDo-list-pregledac.mjs (pre: kartica 148 px, list 0). */
+    body.qplan.planning.hasroute.qdetails:not(.searching):not(.riding) #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top) - var(--riOdDo-h, 150px) - 18px); height: calc(100dvh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top) - var(--riOdDo-h, 150px) - 18px); }
     body.qplan.planning #resCta { margin-top: auto; }   /* kratak sadrzaj (kompaktni mod): traka svejedno na dnu sheeta */
     /* 11.8.: uz Rute stoji i presuda. Do sada je posle planiranja bila otvorena SAMO kartica Rute
        (186 px), a presuda je jedino mesto gde pise KAD STIZES - taj podatak je bio sakriven iza
@@ -3502,6 +3505,10 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #peekBar .grabber { width: 4.5px; height: 34px; margin: 0 0 0 auto; }   /* handle uspravan: sheet se povlaci U STRANU */
     #resCta { margin: 10px -14px 0; padding: 10px 14px calc(8px + var(--sb)); }   /* landscape: stub drzi dno ekrana pa traka nosi safe-area */
     body.qplan.planning #panel, body.qplan.planning.qdetails #panel { padding-bottom: 0; }   /* dok usidren i u landscape-u; .qdetails MORA da stoji tu - njegov selektor je specificniji (review 9.8.) */
+    /* 3.10. 20:30: u pejzazu kartica Od/Do lezi u levom stubu preko lista (izmereno: kartica do 146 px, list od 0) - stub dobija gornji odmak = kartica + 8 px */
+    body.qplan.planning.hasroute:not(.searching):not(.riding) #panel { padding-top: calc(var(--riOdDo-h, 150px) + 16px); }
+    /* isti selektor kao uspravno pravilo "do vrha" (07-planner), inace ono sabije stub na 170 px (izmereno 3.10. 20:40): u pejzazu stub je uvek pune visine */
+    body.qplan.planning.hasroute.qdetails:not(.searching):not(.riding) #panel { height: 100dvh; }
     body.qplan.planning:not(.qdetails) #resHero .rslide { height: 176px; }
     #resHero .rslide { flex: 0 0 92%; }
     /* 3.10. (pregled, pejzaz): kartica Od/Do je bila fiksna preko CELOG vrha (07-planner), pa je lezala preko #plannerClose (34x34 u
@@ -18585,8 +18592,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.192";
+const APP_VERSION = "0.9.193";
 const CHANGELOG = [
+  { v: "0.9.193", d: "03.10.2026.", stavke: [
+    "<b>Kartica Od/Do više ne leži preko pregleda rute.</b> Tvoja slika 20:30: list povučen do vrha, a kartica preko reda VOŽNJA / DALJINA / OCENA. Kartica je bila fiksirana iznad svega, a list je u 0.9.192 dobio visinu do samog vrha ekrana. Sada list \"do vrha\" staje 8 px ispod kartice, kao polje Od/Do u Google Maps - kartica je zaglavlje, ne sloj. Izmereno u sva tri položaja lista i u pejzažu, gde je kartica isto ležala preko lista od 0.9.178."
+  ] },
   { v: "0.9.192", d: "03.10.2026.", stavke: [
     "<b>Kartica Od/Do stvarno ostaje samo u planeru.</b> Tvoj nalaz: posle sačuvanog mesta stajala je zaleđena preko Istraži, Zajednice i Ja. Jutrošnje pravilo koje je sakriva nikad nije delovalo, jer je pravilo koje je prikazuje bilo jače (CSS specifičnost). Sada je izmereno u sva četiri taba: planer da, ostala tri ne.",
     "<b>Gradska relacija bira najbržu, i kad autoputska varijanta nije najbrža.</b> Tvoja relacija Breza - Vukmir: 12 km kroz Beograd, a podrazumevana je bila vijugava od 22 km. Grad se merio na varijanti \"autoput\" (38 min, sa brzom deonicom), pa grad nije prepoznat; sada se meri na onoj koja je stvarno najbrža (Balans, 32 min). Vijugava ostaje u ponudi.",
@@ -26998,6 +27008,11 @@ function riLokacijaBroj(dodatnih) { return 2 + (state.vias || []).length + (doda
     try { openSearch("via"); } catch (e) {}
   });
   const sk = g("riStaniceSk"); if (sk) sk.addEventListener("click", () => { g("riOdDo").classList.toggle("ri-otvoreno"); });
+  /* 3.10. 20:30: visina kartice (--riOdDo-h) pomera stub alata I vrh lista "do vrha" - meri se na SVAKU promenu visine
+     (stanice, sklapanje, okret telefona), ne samo pri crtanju; inace list stane ispod stare visine */
+  if (typeof ResizeObserver === "function") {
+    try { new ResizeObserver(() => { const h = g("riOdDo").getBoundingClientRect().height; if (h) document.documentElement.style.setProperty("--riOdDo-h", Math.round(h) + "px"); }).observe(g("riOdDo")); } catch (e) {}
+  }
   const host = g("riStanice");
   if (host) {
     host.addEventListener("click", (e) => { const x = e.target.closest("[data-x]"); if (x) { riStanicaUkloni(+x.dataset.x); } });
