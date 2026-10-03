@@ -1491,7 +1491,9 @@
   .pk-metrics b { font-size: 26px; }
   .pk-metrics span { font-size: 10px; margin-top: 4px; }
   body.qplan.planning.hasroute #panel:not(.open) .pk-red { display: flex; }
-  body.qplan.planning.hasroute #panel:not(.open) .pk-red #peekGo { display: inline-flex; flex: 0 0 auto; min-height: 46px; padding: 0 20px; margin: 0; }
+  /* 1A (Boskov izbor 3.10.2026, Filipov primarni: natpis levo, ikona desno, radius md): Kreni u traci */
+  body.qplan.planning.hasroute #panel:not(.open) .pk-red #peekGo { display: inline-flex; align-items: center; justify-content: space-between; gap: 12px; flex: 0 0 auto; min-height: 48px; padding: 0 14px 0 16px; margin: 0; border-radius: 8px; font: 600 15px var(--font-ui); }
+  #peekGo svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: butt; stroke-linejoin: miter; }
   body.qplan.planning.hasroute #panel:not(.open) .pk-kad { display: inline-flex; }
   #peekSum { display: block; }
   #peekSum.hidden { display: none; }
@@ -3387,13 +3389,36 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
   #rideSum .tags span { font: 500 11px var(--font-cap); font-synthesis: none; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-muted); background: none; padding: 0; border-radius: 0; }
   #rideSum .tags span.pts { color: var(--accent-text); background: none; }
   #rideSum .tags span + span::before { content: "·"; margin-right: 14px; color: var(--fg-muted); }
-  /* jedno glavno dugme; ostalo tekstualne radnje u jednom redu */
-  #rideSum .btns { display: grid; grid-template-columns: 1fr; gap: 0; margin-top: 14px; }
-  #rideSum .btns .shr { height: 52px; border-radius: 14px; font: 500 16px var(--font-ui); background: linear-gradient(180deg, var(--orange-300), var(--orange-600)); color: var(--orange-ink); }
-  #rideSum .btns .cls, #rideSum .rsxtra button { height: 44px; flex: 1 1 auto; border: 0; background: none; color: var(--fg-soft); font: 500 14px var(--font-ui); border-radius: 0; padding: 0 4px; }
-  #rideSum .btns .cls { order: 2; }
-  #rideSum .rsxtra { margin-top: 2px; gap: 0 12px; justify-content: space-between; }
-  #rideSum .btns .cls:active, #rideSum .rsxtra button:active { color: var(--fg-strong); }
+  /* 3B (Boskov izbor 3.10.2026, maketa redizajn-03-10/3B): JEDAN primarni po Filipu (natpis levo, ikona desno,
+     50 px, radius md), radnje kao tri plocice sa ikonom i Coast natpisom izmedju dve hairline linije, Gotovo
+     tiha rec ispod. Ranije: Podeli centriran + Gotovo/GPX/Sacuvaj/Dodaj u dva reda bez reda. */
+  #rideSum .btns { display: block; margin-top: 14px; }
+  #rideSum .btns .shr { display: flex; align-items: center; justify-content: space-between; width: 100%; height: auto; min-height: 50px; padding: 0 16px; border-radius: 8px; border: 0; font: 600 16px var(--font-ui); background: linear-gradient(180deg, var(--orange-300), var(--orange-600)); color: var(--orange-ink); }
+  #rideSum .btns .shr svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: butt; stroke-linejoin: miter; }
+  #rideSum .rsxtra { display: flex; margin: 14px 20px 0; padding: 0; gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); flex-wrap: nowrap; }
+  #rideSum .rsxtra button { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 8px; height: auto; min-height: 84px; padding: 14px 6px 12px; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: none; color: var(--fg-strong); font: 500 10px var(--font-cap); font-synthesis: none; letter-spacing: .1em; text-transform: uppercase; text-align: center; line-height: 1.3; }
+  #rideSum .rsxtra button:first-child, #rideSum .rsxtra button[hidden] + button:not([hidden]):nth-child(2) { border-left: 0; }
+  #rideSum .rsxtra button[hidden] { display: none; }
+  #rideSum .rsxtra button svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: butt; stroke-linejoin: miter; }
+  #rideSum .rsxtra button span { display: block; }
+  #rideSum .cls { display: block; width: 100%; margin: 4px 0 0; min-height: 44px; border: 0; background: none; color: var(--fg-muted); font: 500 12px var(--font-cap); font-synthesis: none; letter-spacing: .1em; text-transform: uppercase; }
+  #rideSum .cls:active, #rideSum .rsxtra button:active { color: var(--fg-strong); }
+  /* 2B (Boskov izbor 3.10.2026, maketa redizajn-03-10/2B): kartica Od/Do se sklanja dok je sazetak otvoren - mapa
+     nosi trag; stub alata i kompas se vracaju na svoj gornji polozaj. Tri trenutka na ivici mape iznad kartice. */
+  body:has(#rideSum.on) #riOdDo { display: none !important; }
+  /* izmereno 3.10. (uzivo-2B-3B.png): stub alata (Slojevi, pumpa, hrana, obelezivac) i kompas su lezali preko trake
+     trenutaka; u sazetku mapa prica samo voznju, pa se stub i kompas sklanjaju dok je sazetak otvoren */
+  body:has(#rideSum.on) #homeFabs, body:has(#rideSum.on) .compass-btn { display: none !important; }
+  #rideSum .rsmom { position: absolute; left: 12px; right: 12px; bottom: calc(var(--rs-card-h, 50dvh) + 10px); display: flex; gap: 8px; pointer-events: auto; z-index: 1; }
+  #rideSum .rsmom[hidden] { display: none; }
+  #rideSum .rsmom button { flex: 1 1 0; min-height: 56px; text-align: left; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: var(--r-lg); background: var(--bg-veil); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: var(--fg-strong); font-family: var(--font-ui); cursor: pointer; }
+  #rideSum .rsmom button[disabled] { cursor: default; opacity: .75; }
+  #rideSum .rsmom button.akc { border-color: rgba(255,122,46,.55); }
+  #rideSum .rsmom b { display: block; font: 300 20px var(--font-num); font-synthesis: none; line-height: 1; letter-spacing: .02em; }
+  #rideSum .rsmom b small { font: 500 11px var(--font-num); color: var(--fg-muted); margin-left: 2px; }
+  #rideSum .rsmom span { display: block; margin-top: 4px; font: 500 9px var(--font-cap); font-synthesis: none; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #rideSum .rsmom button.akc span { color: var(--accent-text); }
+  @media (max-height: 520px) { #rideSum .rsmom { display: none; } }   /* pejzaz: kartica je desna kolona, traka bi legla preko nje - ceka svoj raspored */
   /* zbijanje da sve do Podeli stane bez skrola na 390x844 (izmereno 1.10.: 766 px -> cilj ispod 590) */
   #rideSum .card { max-height: 72dvh; }   /* Podeli ceo u kadru na 844 px */
   #rideSum h3 { padding-top: 12px; }
@@ -3832,7 +3857,7 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
         </div>
         <div class="pk-red">
           <div class="jn-metrics pk-metrics"><div><b id="pkMin">–</b><span data-i18n="planer.riVoznja">vožnja</span></div><div><b id="pkKm">–</b><span data-i18n="planer.riDaljina">daljina</span></div><div><b id="pkOcena">–</b><span data-i18n="planer.riOcena">ocena</span></div></div>
-          <button id="peekGo" type="button" aria-label="Kreni u vožnju" data-i18n="planer.peekGo" data-i18n-aria="planer.aria.peekGo">Kreni</button>
+          <button id="peekGo" type="button" aria-label="Kreni u vožnju" data-i18n-aria="planer.aria.peekGo"><span data-i18n="planer.peekGo">Kreni</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
         </div>
       </div>
     </div>
@@ -4463,7 +4488,10 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
        vremena - tada prvo mesto zauzima proteklo vreme, da red nikad ne pocne separatorom. -->
   <div id="rideEtaRow"><div class="eta"><div class="d" id="rideRemT">-</div><div class="t" id="rideRem">-</div><div class="t" id="rideEta">-</div></div></div>
   <div id="rideRoad"></div>
-  <div id="rideSum" role="dialog" aria-label="Sažetak vožnje" data-i18n-aria="planer.aria.rideSum"><div class="card">
+  <div id="rideSum" role="dialog" aria-label="Sažetak vožnje" data-i18n-aria="planer.aria.rideSum">
+  <!-- 2B (Boskov izbor 3.10.2026): tri trenutka na ivici mape, iznad kartice; dodir leti na mesto -->
+  <div class="rsmom" id="rsMom" hidden></div>
+  <div class="card">
     <div class="grab"></div>
     <div class="rsmap" id="rsMap" hidden><span class="chip" data-i18n="planer.voznjaZavrsena">Vožnja završena</span></div>
     <div class="rskick"><button type="button" class="rsnazad" id="rsNazad" aria-label="Nazad" data-i18n-aria="pl.nazad">←</button><h3 id="rsKick" data-i18n="planer.rsKick">Vožnja završena</h3></div>
@@ -4519,13 +4547,15 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
     <div class="rsetape" id="rsEtape" hidden></div>
     <div class="rskol" id="rsKol" hidden></div>
     <div class="tags" id="rsTags"></div>
+    <!-- 3B (Boskov izbor 3.10.2026): JEDAN primarni po Filipu (natpis levo, ikona desno), radnje kao tri plocice, Gotovo tiho -->
     <div class="btns">
-      <button class="shr" id="rsShare" data-i18n="planer.rsShare">Podeli</button><button class="cls" id="rsClose" data-i18n="planer.rsClose">Gotovo</button>
+      <button class="shr" id="rsShare"><span data-i18n="planer.rsShare">Podeli</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M8 7L12 3L16 7M5 11V19L7 21H17L19 19V11"/></svg></button>
     </div>
     <!-- OCENE DEONICA (0.9.89): posle sveze voznje - do 3 kurirane deonice koje je trag pokrio;
          tiho, preskocivo, nikad ne blokira sazetak i nikad se ne vraca za istu voznju -->
     <div class="rsocene" id="rsOcene" aria-live="polite" hidden></div>
-    <div class="rsxtra"><button id="rsNazadTura" type="button" hidden data-i18n="planer.rsNazadTura">‹ Nazad na turu</button><button id="rsGpx" type="button" data-i18n="planer.rsGpx">Izvezi GPX</button><button id="rsRuta" type="button" data-i18n="planer.rsRuta">Sačuvaj kao rutu</button><button id="rsTura" type="button" hidden data-i18n="planer.rsTura">Dodaj u turu</button><button id="rsRazdvoji" type="button" hidden data-i18n="planer.rsRazdvoji">Razdvoji turu</button><button id="rsPreim" type="button" hidden data-i18n="planer.rsPreim">Preimenuj</button></div>
+    <div class="rsxtra"><button id="rsNazadTura" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5L8 12L15 19"/></svg><span data-i18n="planer.rsNazadTura">‹ Nazad na turu</span></button><button id="rsGpx" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3V14M8 10L12 14L16 10M4 14V19L5 20H19L20 19V14"/></svg><span data-i18n="planer.rsGpx">Izvezi GPX</span></button><button id="rsRuta" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3H18V21L12 16L6 21Z"/></svg><span data-i18n="planer.rsRuta">Sačuvaj kao rutu</span></button><button id="rsTura" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V14L9 9H15L20 4M15 4H20V9"/></svg><span data-i18n="planer.rsTura">Dodaj u turu</span></button><button id="rsRazdvoji" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5V20H8M16 4H19V20H16"/></svg><span data-i18n="planer.rsRazdvoji">Razdvoji turu</span></button><button id="rsPreim" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20L5 15L16 4L20 8L9 19Z M13 7L17 11"/></svg><span data-i18n="planer.rsPreim">Preimenuj</span></button></div>
+    <button class="cls" id="rsClose" type="button" data-i18n="planer.rsClose">Gotovo</button>
   </div></div>
   <!-- Izmena stanica (11.8., Boskov zahtev "kao kod Google Maps-a"): pun ekran sa spiskom
        Od / A / B / C / Do, hvataljka za prevlacenje redosleda, X za brisanje, red za dodavanje,
@@ -5812,6 +5842,10 @@ const RECNIK_SR = {
   "sum.najduzaPauza": "Najduža od {0} pauza: {1} min",
   "sum.pauzaOvdeStao": "Pauza {0} min - ovde si stao",
   "sum.poenaUkupno": "{0} poena ukupno",
+  "sum.momNagibL": "max nagib levo",
+  "sum.momNagibD": "max nagib desno",
+  "sum.momBrz": "najbrže",
+  "sum.momPauze": "pauze",
   "sum.plusPoena": "+{0} poena",
   "pl.novaTackaKol.1": "nova tačka kolekcije",
   "pl.novaTackaKol.2": "nove tačke kolekcija",
@@ -7825,6 +7859,10 @@ const RECNIK_EN = {
   "sum.najduzaPauza": "Longest of {0} breaks: {1} min",
   "sum.pauzaOvdeStao": "Break {0} min - you stopped here",
   "sum.poenaUkupno": "{0} points total",
+  "sum.momNagibL": "max lean left",
+  "sum.momNagibD": "max lean right",
+  "sum.momBrz": "fastest",
+  "sum.momPauze": "pauses",
   "sum.plusPoena": "+{0} points",
   "pl.novaTackaKol.1": "new collection point",
   "pl.novaTackaKol.n": "new collection points",
@@ -18527,8 +18565,14 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.190";
+const APP_VERSION = "0.9.191";
 const CHANGELOG = [
+  { v: "0.9.191", d: "03.10.2026.", stavke: [
+    "<b>Nagib se meri kao na fabričkom instrumentu.</b> Tvoj nalog: maksimum mora da uhvati i krivinu od pola sekunde. Do sada je u maksimum ulazio samo ugao držan pun sekund. Pogledali smo kako rade BMW, Ducati i KTM (Bosch IMU): oni ne drže ugao, nego spajaju žiroskop i kinematiku (brzina puta skretanje) i uzimaju vrh tog spojenog signala. Sada je prozor 0,4 s, a ljuljanje telefona bez skretanja obara kinematika, ne dužina prozora. Bez žiroskopa prozor je 0,7 s.",
+    "<b>Kreni je Filipovo dugme</b> (tvoj izbor 1A): natpis levo, strelica desno, u traci odmah posle pretrage.",
+    "<b>Sažetak bez kartice Od/Do</b> (tvoj izbor 2B): mapa nosi trag, a iznad kartice stoje tri trenutka - najveći nagib, najbrža tačka, pauze; dodir leti na mesto. Stub alata i kompas se sklanjaju dok je sažetak otvoren.",
+    "<b>Podeli i radnje po Filipu</b> (tvoj izbor 3B): jedna osvetljena traka Podeli, ispod nje pločice Izvezi GPX, Sačuvaj kao rutu, Dodaj u turu sa ikonama iz Filipove porodice, a Gotovo je tiha reč ispod."
+  ] },
   { v: "0.9.190", d: "03.10.2026.", stavke: [
     "<b>Posle pretrage traka sa Kreni je odmah na ekranu.</b> Tvoj nalaz sa telefona: iznad tabova je virila samo hvataljka, pa se list morao prevući da bi se videlo Kreni. Uzrok: pomak skupljenog lista se računao dok je traka bila prazna (23 px), a posle naraste na 118 px sa brojkama i dugmetom. Sada svaka promena visine trake ponovo polaže list.",
     "<b>Pretraga: blizu pobeđuje tačno ime na drugom kraju regiona.</b> \"Zoo vrt\" iz Beograda je davao rentiranje bicikala \"ZOO vrt\" na 163 km kao prvi red, a Beo zoo vrt na 7 km kao treći. Ime koje nosi upit sada vredi, blizina do 15 km vredi više od tačnog imena, a ćirilična imena iz OSM-a (\"Бео зоо врт\") se čitaju kao latinična. Zoo i zabavni park su odredišta izleta."
@@ -21382,6 +21426,16 @@ const RIDE = { watch: null, nav: null, lock: null, lastFix: 0, offCount: 0, last
      ~100 % obicna voznja, aplikacija na ekranu    97 % kratak poziv usred voznje
         75 % pet minuta u Spotifaju na 20 min       6 % Boskova voznja 14.9. (skoro cela u pozadini) */
 const LEAN_POKR_DOSTA = 70;
+/* Prozor odrzanog maksimuma nagiba (3.10.2026, kao fabricki IMU): 0,4 s. Fizika: sportski motor
+   legne 25 stepeni za ~0,3-0,5 s (roll rate 50-90 deg/s), kraci "vrh" je ljuljanje telefona ili rupa.
+   Granica (izmereno 3.10., fikstura +-3 stepena na 10 Hz iz pozadine): u 0,4 s min-filter vidi 4-5 uzoraka
+   pa sum ume da ostavi do +2 stepena; na ekranu (60 Hz, 24 uzorka) toga nema. Fabricki IMU ne bias-uje
+   nadole - prihvaceno uz Boskov nalog (pola sekunde ili manje).
+   Bez ziroskopa nema kinematicke kape pa prozor ostaje 0,7 s. Margina kape: ziroskop +-5 deg/s daje
+   +4,5 stepena (izmereno 0.9.121), pa kapa pusta 6 preko kinematike. */
+const LEAN_HOLD_MS = 400;   // 0,4 s (izmereno 3.10.: 0,5 s uz kasnjenje medijane od 0,3 s PROPUSTA pravu krivinu od pola sekunde na 10 Hz)
+const LEAN_HOLD_BEZ_MS = 700;
+const LEAN_KIN_MARGIN = 6;
 const LEAN = { on: false, uB: null, rB: null, fB: null, uB0: null, cal: [], buf: [], u: null,
   cur: 0, maxL: 0, maxR: 0, momL: null, momR: null, msMer: 0, tPret: 0, kinEma: 0, kinV: null, strT: 0, crvT: 0, dir: 0, dirW: 0, lastUi: 0, suppressUntil: 0, hold: [],
   rekal: false, rekalOk: false, rekalStrT: 0, rekalV: null, rekalMirT: 0, rekalGyro: false,
@@ -21391,7 +21445,7 @@ function leanReset() { LEAN.on = false; LEAN.uB = null; LEAN.rB = null; LEAN.fB 
   LEAN.msMer = 0; LEAN.tPret = 0;
   LEAN.kinEma = 0; LEAN.kinV = null; LEAN.strT = 0; LEAN.crvT = 0; LEAN.dir = 0; LEAN.dirW = 0; LEAN.suppressUntil = 0; LEAN.hold = [];
   LEAN.rekal = false; LEAN.rekalOk = false; LEAN.rekalStrT = 0; LEAN.rekalV = null; LEAN.rekalMirT = 0; LEAN.rekalGyro = false;
-  LEAN.calT0 = 0; LEAN.kinT = 0; LEAN.kinHold = []; LEAN.replaySeen = null;   // 0.9.121: pozadinske kante prosle voznje ne smeju da se preskoce kao 'vec vidjene'
+  LEAN.calT0 = 0; LEAN.kinT = 0; LEAN.kinHold = []; LEAN.kinHist = []; LEAN.attMin = null; LEAN.replaySeen = null;   // 0.9.121: pozadinske kante prosle voznje ne smeju da se preskoce kao 'vec vidjene'
   /* Rezervna kopija okvira i rok NE smeju da prezive kraj voznje: sledeca voznja bi nasledila
      nulu sa tudjeg nosaca (ili sa istog, ali drugacije namestenog). 30.8. */
   LEAN._uBSave = null; LEAN._uB0Save = null; LEAN._fBSave = null; LEAN._rBSave = null; LEAN.rekalRok = 0; }
@@ -21521,22 +21575,33 @@ function leanTickU(u, now, ctx) {
   LEAN.tPret = now;
   const bufOk = LEAN.buf.length >= 12 || (LEAN.buf.length >= 3 && now - LEAN.buf[0][0] >= 200);   // dosta uzoraka ILI dosta vremena (10 Hz)
   if (bufOk && (ctx.spdKmh || 0) > 15 && now > LEAN.suppressUntil) {
-    // ODRZANI max (Boskov fidbek 6.8.: brzo lelujanje levo-desno ne sme da naduvava max):
-    // u max ulazi tek ugao drzan pun sekund u ISTOM smeru - min |med| kroz 1 s prozor
+    /* ODRZANI max, od 3.10.2026 kao fabricki IMU (Boskov nalog: "i kad je pola sekunde, ne pun sekund").
+       Bosch MM5/MM7 u BMW/Ducati/KTM ne drzi ugao sekund: spaja ziroskop i kinematiku atan(v*omega/g)
+       (Kalman, Sensors 2022 PMC9694013) i max je vrh SPOJENOG signala. Nas ekvivalent: prozor LEAN_HOLD_MS
+       (0,4 s - motor fizicki ne legne i ne ustane za krace), a lazni vrh (telefon se ljulja, motor ne
+       skrece - Boskov nalaz 6.8.) obara KINEMATIKA: ugao ne sme preko najveceg kinematickog ugla iz
+       istog prozora + LEAN_KIN_MARGIN. Bez ziroskopa (nema kinematike) prozor ostaje duzi (LEAN_HOLD_BEZ_MS). */
     LEAN.hold.push([now, med]);
-    while (LEAN.hold.length && now - LEAN.hold[0][0] > 1100) LEAN.hold.shift();
-    if (LEAN.hold.length && now - LEAN.hold[0][0] >= 950) {
+    const kinZiv = LEAN.kinHist && LEAN.kinHist.length && now - LEAN.kinHist[LEAN.kinHist.length - 1][0] < 600;
+    const holdMs = kinZiv ? LEAN_HOLD_MS : LEAN_HOLD_BEZ_MS;
+    while (LEAN.hold.length && now - LEAN.hold[0][0] > holdMs + 150) LEAN.hold.shift();
+    if (LEAN.hold.length && now - LEAN.hold[0][0] >= holdMs) {
       const sgn = Math.sign(med);
       let mn = 1e9, ok = sgn !== 0;
       for (const hv of LEAN.hold) { if (Math.sign(hv[1]) !== sgn) { ok = false; break; } const a = Math.abs(hv[1]); if (a < mn) mn = a; }
+      if (ok && kinZiv) {   // kinematicka kapa: najveci atan(v*omega/g) iz prozora + margina
+        let kMax = 0; for (const kh of LEAN.kinHist) if (kh[0] >= now - holdMs - 150 && kh[1] > kMax) kMax = kh[1];
+        if (mn > kMax + LEAN_KIN_MARGIN) mn = kMax + LEAN_KIN_MARGIN;
+      }
+      if (ok) LEAN.attMin = [now, mn];   // sta attitude kanal kaze za ovaj prozor - kapa za kinematicki kanal (fuzija u oba smera)
       if (ok && mn >= 8 && mn < 65) {
         /* JEDINI pisci maksimuma i njegovog MESTA (0.9.82): pozicija se hvata u ISTOM if-u koji
            postavlja max, pa se pin, plocica i recenica slazu PO KONSTRUKCIJI (52-vs-29 klasa bagova).
            Bez SVEZEG fiksa (<10 s - review nalaz: ustajali fiks iz tunela bi lagao mesto): momenat
            se izostavlja, ugao i dalje zivi u maxL/maxR koje prikazuju sve plocice. */
         const fxT = (ctx.lastFixObj && now - ctx.lastFixObj.ts < 10000) ? ctx.lastFixObj : null;
-        if (sgn < 0 && mn > LEAN.maxL) { LEAN.maxL = mn; LEAN.momL = fxT ? [fxT.lo, fxT.la, Math.round(mn)] : null; }
-        if (sgn > 0 && mn > LEAN.maxR) { LEAN.maxR = mn; LEAN.momR = fxT ? [fxT.lo, fxT.la, Math.round(mn)] : null; }
+        if (sgn < 0 && mn > LEAN.maxL) { LEAN.maxL = mn; LEAN.momL = fxT ? [fxT.lo, fxT.la, Math.round(mn)] : null; LEAN.maxSrc = "att"; }
+        if (sgn > 0 && mn > LEAN.maxR) { LEAN.maxR = mn; LEAN.momR = fxT ? [fxT.lo, fxT.la, Math.round(mn)] : null; LEAN.maxSrc = "att"; }
       }
     }
   }
@@ -21591,6 +21656,8 @@ function leanMotionG(gy, now, ctx) {
   if (vMs < 4.2 || now < LEAN.suppressUntil) return;   // ispod ~15 km/h kanal ne vredi
   if (!ctx.lastFixTs || now - ctx.lastFixTs > 1500) return;   // ustajao GPS fiks = nepouzdana brzina, ne meri max
   const kin = Math.min(65, Math.abs(Math.atan(vMs * omega / 9.81) * 180 / Math.PI));
+  (LEAN.kinHist || (LEAN.kinHist = [])).push([now, kin]);   // kapa za attitude kanal (3.10.): sta kinematika kaze u istom prozoru
+  while (LEAN.kinHist.length && now - LEAN.kinHist[0][0] > 1000) LEAN.kinHist.shift();
   // smer: histereza - dok je attitude jasan pamti se smer + znak yaw-a; kad attitude u dugoj
   // krivini sklizne ka nuli, isti znak yaw-a = ISTA krivina (smer ostaje), suprotan = nova (obrni)
   const ys = Math.sign(yawB);
@@ -21607,21 +21674,28 @@ function leanMotionG(gy, now, ctx) {
     RIDE.leanChk = RIDE.leanChk || { n: 0, sum: 0 };
     RIDE.leanChk.n++; RIDE.leanChk.sum += Math.abs(kin - Math.abs(LEAN.cur));
   }
-  const crvOld = LEAN.crvT && now - LEAN.crvT > 1000;   // odrzana krivina (>1 s) - trzaj volanom ne pravi max
+  const crvOld = LEAN.crvT && now - LEAN.crvT >= LEAN_HOLD_MS;   // odrzana krivina (0,4 s od 3.10.) - trzaj volanom ne pravi max
   if (!crvOld) return;
   /* ODRZANI max i ovde (0.9.121, isti princip kao attitude kanal - Boskov fidbek 6.8.: lelujanje ne sme da
      naduvava max): u max ulazi NAJMANJI kinM iz poslednje sekunde, ne vrh. Vrh sumnog signala je uvek
      iznad istine (izmereno: ziroskop +-5 deg/s daje +4,5 stepena), najmanja vrednost u sekundi je ispod
      ili na istini - radije manje nego naduvano. */
   (LEAN.kinHold || (LEAN.kinHold = [])).push([now, kinM]);   // i za hidriran/stariji LEAN bez polja
-  while (LEAN.kinHold.length && now - LEAN.kinHold[0][0] > 1100) LEAN.kinHold.shift();
-  if (!LEAN.kinHold.length || now - LEAN.kinHold[0][0] < 950) return;
+  while (LEAN.kinHold.length && now - LEAN.kinHold[0][0] > LEAN_HOLD_MS + 150) LEAN.kinHold.shift();
+  if (!LEAN.kinHold.length || now - LEAN.kinHold[0][0] < LEAN_HOLD_MS) return;
   let kinMin = 1e9; for (const h of LEAN.kinHold) if (h[1] < kinMin) kinMin = h[1];
+  /* Fuzija (3.10.): u MLADOJ krivini attitude je tacan, pa kinematika (ziroskop +-5 deg/s = +4,5 stepena
+     naduvavanja) ne sme preko njega; u dugoj krivini attitude je odlutao ka nuli i kapa se pusta. */
+  if (!longCrv) {
+    const attSvez = LEAN.attMin && now - LEAN.attMin[0] < 600;
+    if (!attSvez) return;   // mlada krivina bez attitude potvrde: kinematika sama ne upisuje (naduvava +4,5)
+    if (LEAN.attMin[1] < kinMin) kinMin = LEAN.attMin[1];
+  }
   if (kinMin < 8) return;
   // isti princip kao u attitude kanalu: max i njegovo MESTO u istom if-u; samo SVEZ fiks daje mesto (0.9.82)
   const fxM = (ctx.lastFixObj && now - ctx.lastFixObj.ts < 10000) ? ctx.lastFixObj : null;
-  if (LEAN.dir < 0 && kinMin > LEAN.maxL) { LEAN.maxL = kinMin; LEAN.momL = fxM ? [fxM.lo, fxM.la, Math.round(kinMin)] : null; }
-  if (LEAN.dir > 0 && kinMin > LEAN.maxR) { LEAN.maxR = kinMin; LEAN.momR = fxM ? [fxM.lo, fxM.la, Math.round(kinMin)] : null; }
+  if (LEAN.dir < 0 && kinMin > LEAN.maxL) { LEAN.maxL = kinMin; LEAN.momL = fxM ? [fxM.lo, fxM.la, Math.round(kinMin)] : null; LEAN.maxSrc = "kin"; }
+  if (LEAN.dir > 0 && kinMin > LEAN.maxR) { LEAN.maxR = kinMin; LEAN.momR = fxM ? [fxM.lo, fxM.la, Math.round(kinMin)] : null; LEAN.maxSrc = "kin"; }
 }
 /* NAGIB U POZADINI (0.9.121, Boskov nalaz 14.9.: "nije mi snimao uglove" - devicemotion pregledaca staje
    cim app ode sa ekrana). Nativni most (RmrLokacija.swift) u pozadini uz svaki GPS fiks upisuje i uzorke
@@ -21639,7 +21713,7 @@ function leanReplayPaket(mot, batch, t0) {
   if (!Array.isArray(mot) || !mot.length || !Array.isArray(batch) || !batch.length) return 0;
   const seen = LEAN.replaySeen || (LEAN.replaySeen = new Set());
   const zivSup = LEAN.suppressUntil || 0;
-  LEAN.suppressUntil = 0; LEAN.hold = []; LEAN.kinHold = []; LEAN.buf = []; LEAN.tPret = 0; LEAN.kinT = 0;   // zidni sat napolje, jezgro u vremenu uzoraka
+  LEAN.suppressUntil = 0; LEAN.hold = []; LEAN.kinHold = []; LEAN.kinHist = []; LEAN.attMin = null; LEAN.buf = []; LEAN.tPret = 0; LEAN.kinT = 0;   // zidni sat napolje, jezgro u vremenu uzoraka
   let fi = 0, n = 0, gre = 0, prvaGre = null;
   const kut = [];   // [ts, cur (sa znakom, + = desno)] na ~1 s - popuna `ln` u uzorcima grafika nastalim u pozadini
   const buckets = mot.filter((b) => b && Array.isArray(b.g) && isFinite(+b.ts)).sort((a, b) => a.ts - b.ts);
@@ -25557,6 +25631,37 @@ function sumReplayInit(s, pts) {
 /* Ime odredista kao PODNASLOV (19.8.): naslov nosi mesto, kafic ostaje vidljiv ispod. Krije se
    samo kad ga nema ili kad je VEC u naslovu (pa bi se ponavljao). Stari zapisi nemaju nazPoi -
    njima red ostaje prazan. Zove se dvaput: na prikazu sazetka i posle asinhrone preimene naslova. */
+/* 2B (Boskov izbor 3.10.2026): tri trenutka na ivici mape iznad kartice sazetka - najveci nagib, najbrza
+   tacka, pauze. Dodir leti na mesto. Traka zivi u #rideSum pored .card, pa nestaje sa sazetkom; visina
+   kartice ide u --rs-card-h (ResizeObserver) da traka sedi tacno iznad nje. Bez mape iza (stari zapis
+   iz dnevnika) trake nema - ne pokazuje se "trenutak" na koji ne moze da se odleti. */
+function rsMomCrtaj(s, naMapi) {
+  const el = document.getElementById("rsMom"), card = document.querySelector("#rideSum .card");
+  if (!el) return;
+  const cards = [];
+  const ln = Math.max(s.lnL || 0, s.lnR || 0);
+  if (ln >= 8) {
+    const desno = (s.lnR || 0) >= (s.lnL || 0);
+    const mom = desno ? s.momLnR : s.momLnL;
+    cards.push({ v: Math.round(ln), u: "°", cap: T(desno ? "sum.momNagibD" : "sum.momNagibL"), at: mom, akc: true });
+  }
+  if (s.maxK > 0) cards.push({ v: Math.round(s.maxK), u: " km/h", cap: T("sum.momBrz"), at: s.momBrz });
+  const pz = (s.pauzeNa && s.pauzeNa.length) ? s.pauzeNa[0] : null;
+  cards.push({ v: Math.round(s.pauz || 0), u: " min", cap: T("sum.momPauze"), at: pz });
+  if (!naMapi || cards.length < 2) { el.hidden = true; el.innerHTML = ""; return; }
+  el.innerHTML = cards.map((c, i) => `<button type="button" class="${c.akc ? "akc" : ""}" data-i="${i}"${c.at ? "" : " disabled"}><b>${c.v}<small>${c.u}</small></b><span>${c.cap}</span></button>`).join("");
+  el.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
+    const c = cards[+b.dataset.i];
+    if (!c || !c.at || c.at[0] == null) return;
+    try { map.flyTo({ center: [c.at[0], c.at[1]], zoom: Math.max(map.getZoom(), 15), duration: 700 }); } catch (e) {}
+  }));
+  el.hidden = false;
+  if (card && typeof ResizeObserver === "function" && !card._rsMomRo) {
+    card._rsMomRo = new ResizeObserver(() => { const h = card.offsetHeight; if (h) el.parentElement.style.setProperty("--rs-card-h", h + "px"); });
+    card._rsMomRo.observe(card);
+  }
+  if (card) el.parentElement.style.setProperty("--rs-card-h", card.offsetHeight + "px");
+}
 function rsPoiSet(naz, nazPoi) {
   const el = document.getElementById("rsPoi");
   if (!el) return;
@@ -25624,8 +25729,8 @@ function rideSumShow(sIn) {
     : (s.tip ? s.tip + " · " : "") + d.toLocaleDateString(LOKAL()) + " · " + d.toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
   const kickEl = document.getElementById("rsKick");
   if (kickEl) kickEl.textContent = T("planer.rsKick") + (uDnevniku ? " · " + T("sum.uDnevniku") : "");
-  // "Gotovo" je tekstualna radnja u istom redu sa GPX/Sacuvaj (jedno glavno dugme je Podeli) - DOM se seli jednom
-  try { const _c = document.getElementById("rsClose"), _x = document.querySelector("#rideSum .rsxtra"); if (_c && _x && _c.parentElement !== _x) _x.prepend(_c); } catch (e) {}
+  // 3B (3.10.): "Gotovo" je tiha rec ISPOD plocica, u markup-u - vise se ne seli u red sa GPX/Sacuvaj
+  try { rsMomCrtaj(s, naMapi); } catch (e) {}
   /* Blok brojki po maketi B (13.8.): tacno dva reda.
      Red 1: pređeno · ukupno · u pokretu · pauza.  Red 2: najbrže · prosek (u pokretu) · levo° · desno°.
      "ukupno" nosi pauze, a "prosek" se racuna SAMO iz vremena u pokretu - zato stoje jedno do
