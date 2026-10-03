@@ -1612,6 +1612,11 @@
     padding-bottom: env(safe-area-inset-bottom); }
   /* Dok prst vodi list, nema prelaza - inace list kasni za prstom. */
   body.atlas #atlasSheet.vuce { transition: none; }
+  /* 3.10.2026 (spec Istrazi, tacka 1): dva mirna polozaja. U punom stanju list ide do vrha (ispod
+     sistemske zone) - traka mape od 15% nije imala nijednu radnju. Stanje "kartica" = rucka + kartica
+     izabrane deonice; zaglavlje, tabovi i poruka baze se tada ne vide (lista ceka ispod, na povlacenje). */
+  body.atlas #atlasSheet.pun { border-radius: 0; border-top-color: transparent; }
+  body.atlas #atlasSheet.kartica .ahd, body.atlas #atlasSheet.kartica .ichips, body.atlas #atlasSheet.kartica .aporuka { display: none; }
   /* 1.9.2026 (Boskov nalaz): izlog je zauzimao 58dvh, pa je mapa - koja je ovde ceo smisao ekrana -
      bila tanka traka na vrhu. Sada je obrnuto: mapa dobija oko dve trecine, izlog donju trecinu,
      a tri stanja ostaju ista (traka / trecina / 88dvh kad se povuce gore). */
@@ -1641,6 +1646,24 @@
     font-size: 12px; font-weight: 600; letter-spacing: var(--tr-cap); text-transform: uppercase; }
   #atlasSheet .afbtn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-linecap: round; }
   #atlasSheet .afbtn.on { color: var(--accent-text); border-color: var(--accent); }
+  /* 3.10.2026 (maketa 6A): cip "Blizu tebe" u zaglavlju - isti oblik kao Filter, nosi broj deonica u krugu. */
+  #atlasSheet .ablizu { flex: none; display: inline-flex; align-items: center; gap: 5px; min-height: 40px; padding: 0 10px;
+    border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: var(--surface-raised); color: var(--fg-soft);
+    font-size: 13px; font-weight: 600; }
+  #atlasSheet .ablizu svg { width: 15px; height: 15px; stroke: currentColor; fill: none; }
+  #atlasSheet .ablizu .n { font-family: var(--font-num); font-synthesis: none; font-weight: 400; color: var(--fg-muted); margin-left: 2px; }
+  #atlasSheet .ablizu .n:empty { display: none; }
+  #atlasSheet .ablizu[aria-pressed="true"] { color: var(--accent-text); border-color: var(--accent); }
+  /* spusten red (6A) = rucka + zaglavlje; tabovi se vide tek kad se list podigne */
+  #atlasSheet.peek .ichips { display: none; }
+  /* spusten = JEDAN red: telo liste se ne vidi ni kad merenje visine zakasni (poruka baze, pismo) */
+  #atlasSheet.peek .atelo, #atlasSheet.peek .ipane { display: none; }
+  /* "Mapa" u punom stanju je plutajuca pilula na dnu lista (maketa 6B), ne cetvrti element zaglavlja koji ga gnjeci */
+  body.atlas #atlasSheet.pun .ahd .amapa { position: absolute; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+    z-index: 3; border-radius: var(--r-full); background: var(--fg-strong); color: var(--bg); border: 0; padding: 0 16px; min-height: 40px;
+    font-weight: 600; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+  body.atlas #atlasSheet.pun .ahd .amapa svg { stroke: var(--bg); }
+  #atlasSheet .selcard .ksl .mini .mnem { font-size: 12px; }
   #atlasSheet .afbtn .kolko { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px;
     border-radius: var(--r-full); background: var(--accent); color: var(--on-accent); font-size: 11px; letter-spacing: 0; }
 
@@ -1789,42 +1812,46 @@
   #atlasSheet .atelo { overflow-y: auto; padding: 0 0 14px; -webkit-overflow-scrolling: touch; }
   #atlasSheet .ipane { overflow-y: auto; -webkit-overflow-scrolling: touch; }
   #atlasSheet .ipane[hidden], #atlasSheet .atelo[hidden] { display: none; }
-  /* kartica izabrane deonice = vrh sheeta (maketa .selcard) */
-  #atlasSheet .selcard { margin: 0 16px 12px; background: var(--surface); border: 1px solid rgba(255,122,46,.4);
-    border-radius: var(--r-lg); padding: 11px 13px; box-shadow: var(--shadow-md); }
-  #atlasSheet .selcard .metarow { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  /* 0.9.92 (Boskovo pitanje 26.8.: "sta ako greskom izaberemo?"): izlaz iz izbora mora da se VIDI.
-     Tap na prazan deo mape ga otpusta od 0.9.90, ali to niko ne moze da pogodi - a otkad je cela
-     kartica dugme za "Vodi me preko nje", slucajan tap vise i kosta. Meta je 44 px sa negativnim
-     marginama, pa ne gura naslov. */
-  #atlasSheet .selcard .selx { flex: none; width: 44px; height: 44px; margin: -12px -10px -12px 0;
-    background: none; border: 0; color: var(--fg-muted); font: 400 17px var(--font-ui); cursor: pointer;
-    display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
+  /* kartica izabrane deonice (3.10.2026, maketa 6C2): natpis + "Lista", naslov, tri instrumenta (duzina, do ulaza,
+     ocena), red teksta samo kad nema ocene, cipovi SAMO za podatke koji postoje, traka "sledece blizu tebe",
+     "Vodi me preko nje". Kartica je vrh lista u stanju "kartica". */
+  #atlasSheet .selcard { margin: 0 16px 12px; padding: 2px 2px 4px; }
+  #atlasSheet .selcard .kcap { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  #atlasSheet .selcard .sellbl { font-family: var(--font-cap); font-synthesis: none; font-size: 10px; font-weight: var(--fw-cap);
+    letter-spacing: var(--tr-cap); text-transform: uppercase; color: var(--fg-faint); }
+  #atlasSheet .selcard .selx { flex: none; min-width: 44px; min-height: 44px; margin: -6px -8px -6px 0; padding: 0 8px; border: 0; background: none;
+    font-family: var(--font-cap); font-synthesis: none; font-size: 11px; font-weight: var(--fw-cap); letter-spacing: var(--tr-cap);
+    text-transform: uppercase; color: var(--fg-muted); cursor: pointer; }
   #atlasSheet .selcard .selx:active { color: var(--fg-strong); }
-  #atlasSheet .selcard .sellbl { font-family: var(--font-cap); font-synthesis: none; font-size: 10px; font-weight: var(--fw-cap); letter-spacing: var(--tr-cap); text-transform: uppercase; color: var(--fg-faint); }
-  #atlasSheet .selcard .roadref { font-family: var(--font-cap); font-synthesis: none; font-weight: var(--fw-cap); font-family: var(--font-num); font-size: 10px; color: var(--fg-faint); letter-spacing: var(--tr-cap); text-transform: uppercase; }
-  #atlasSheet .selcard h2 { font-size: 17px; font-weight: 800; letter-spacing: -.01em; color: var(--fg-strong); margin: 4px 0 0; }
-  #atlasSheet .selcard .statrow { display: flex; align-items: baseline; justify-content: space-between; margin-top: 4px; gap: 8px; }
-  #atlasSheet .selcard .akm { font-family: var(--font-num); font-size: 24px; font-weight: 700; color: var(--cyan); letter-spacing: -.02em; }
-  #atlasSheet .selcard .akm small { font-size: 11px; font-weight: 400; color: var(--fg-muted); margin-left: 3px; }
-  #atlasSheet .arate { display: flex; align-items: center; gap: 6px; }
+  #atlasSheet .selcard h2 { font-size: 21px; font-weight: 600; letter-spacing: -.01em; color: var(--fg-strong); margin: 2px 0 0; }
+  #atlasSheet .selcard .kinst { display: flex; margin: 12px 0 4px; }
+  #atlasSheet .selcard .kinst > div { flex: 1; min-width: 0; border-left: 1px solid var(--line); padding-left: 12px; }
+  #atlasSheet .selcard .kinst > div:first-child { border-left: 0; padding-left: 0; }
+  #atlasSheet .selcard .kinst .num { font-family: var(--font-num); font-synthesis: none; font-weight: 300; font-size: 30px; line-height: 1;
+    color: var(--fg-strong); letter-spacing: .02em; white-space: nowrap; }
+  #atlasSheet .selcard .kinst .num small { font-family: var(--font-num); font-size: 12px; color: var(--fg-muted); margin-left: 3px; }
+  #atlasSheet .selcard .kinst .num.nema { color: var(--fg-faint); }
+  #atlasSheet .selcard .kinst .cap { display: block; margin-top: 6px; font-family: var(--font-cap); font-synthesis: none; font-size: 10px;
+    font-weight: var(--fw-cap); letter-spacing: var(--tr-cap); text-transform: uppercase; color: var(--fg-faint); }
+  #atlasSheet .selcard .arate { display: inline-flex; align-items: center; gap: 6px; }
   #atlasSheet .arate .stars { display: flex; gap: 1px; color: var(--accent-text); }
   #atlasSheet .arate .stars .ri { width: 13px; height: 13px; display: inline-flex; }
   #atlasSheet .arate .stars .ri.prazna { color: var(--fill-muted); }
-  #atlasSheet .arate .rnum { font-family: var(--font-num); font-size: 14px; font-weight: 700; color: var(--fg-strong); }
-  #atlasSheet .arate .rword { font-family: var(--font-cap); font-synthesis: none; font-size: 10px; font-weight: var(--fw-cap); letter-spacing: var(--tr-cap); text-transform: uppercase; color: var(--ok-fg); }
-  /* 0.9.94: pecen koridor nema ocenu - tako i pise, umesto cetiri zvezdice iz skripte */
-  #atlasSheet .selcard .anemaoc { font-size: 11px; font-weight: 600; letter-spacing: .04em; color: var(--fg-muted);
-    border: 1px dashed var(--line-strong); border-radius: var(--r-sm); padding: 4px 9px; }
-  #atlasSheet .mini .mnem, #atlasSheet .arow .mnem { font-size: 10px; font-weight: 600; color: var(--fg-faint); letter-spacing: .02em; }
+  #atlasSheet .arate .rword { font-family: var(--font-cap); font-synthesis: none; font-size: 10px; font-weight: var(--fw-cap);
+    letter-spacing: var(--tr-cap); text-transform: uppercase; color: var(--fg-muted); }
   #atlasSheet .achips { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-  #atlasSheet .achip { font-family: var(--font-cap); font-synthesis: none; font-size: 10px; font-weight: var(--fw-cap); letter-spacing: var(--tr-cap); text-transform: uppercase;
-    padding: 4px 8px; border-radius: var(--r-xs); background: var(--fill-wash); border: 1px solid var(--line-hairline); color: var(--fg-soft); }
+  #atlasSheet .achips:empty { display: none; }
+  #atlasSheet .achip { font-family: var(--font-cap); font-synthesis: none; font-size: 10px; font-weight: var(--fw-cap); letter-spacing: var(--tr-cap);
+    text-transform: uppercase; color: var(--fg-muted); background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 5px 8px; }
   #atlasSheet .achip b { font-weight: 700; color: var(--fg-strong); }
   #atlasSheet .achip.hot { background: var(--accent-wash); border-color: rgba(255,122,46,.3); }
   #atlasSheet .achip.hot b { color: var(--accent-label); }
-  #atlasSheet .achip.nema b { color: var(--fg-faint); font-weight: 600; }   /* "nema podatka" je posten podatak, ne isticemo ga */
-  /* ocene zajednice: agregat ili "budi prvi" - nikad greska */
+  #atlasSheet .selcard .ksled { margin: 10px 0 0; }
+  #atlasSheet .selcard .ksled .cap { display: block; margin-bottom: 6px; font-family: var(--font-cap); font-synthesis: none; font-size: 10px;
+    font-weight: var(--fw-cap); letter-spacing: var(--tr-cap); text-transform: uppercase; color: var(--fg-faint); }
+  #atlasSheet .selcard .ksl { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; margin: 0 -2px; padding: 0 2px 2px; }
+  #atlasSheet .selcard .ksl::-webkit-scrollbar { display: none; }
+  #atlasSheet .selcard .ksl .mini { flex: 0 0 150px; }
   #atlasSheet .urate { margin-top: 9px; display: flex; align-items: baseline; gap: 8px; background: var(--bg);
     border: 1px solid var(--line-hairline); border-radius: var(--r-xs); padding: 8px 11px; flex-wrap: wrap; }
   #atlasSheet .urate .lab { font-family: var(--font-cap); font-synthesis: none; font-size: 10px; font-weight: var(--fw-cap); letter-spacing: var(--tr-cap); text-transform: uppercase; color: var(--fg-muted); }
@@ -4067,7 +4094,9 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
   <div id="atlasSheet" role="region" aria-label="Istraži - deonice, mesta i rute" data-i18n-aria="planer.aria.atlasSheet">
     <div class="grab" id="atlasGrab" role="separator" aria-label="Povuci da razviješ ili skupiš listu" tabindex="0" data-i18n-aria="planer.aria.atlasGrab"></div>
     <div class="ahd">
-      <button class="asve" id="atlasSveBtn" type="button"><svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg><span id="atlasSveT" data-i18n="planer.atlasSveT">Sve deonice</span><span class="an" id="atlasSveN"></span></button>
+      <button class="asve" id="atlasSveBtn" type="button"><svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg><span id="atlasSveT" data-i18n="planer.atlasSveT">Deonice</span><span class="an" id="atlasSveN"></span></button>
+      <!-- 3.10.2026 (maketa 6A): "Blizu tebe" je cip u zaglavlju, vidljiv i u spustenom redu; iz reda tabova je otisao. -->
+      <button class="ablizu" id="atlasBlizuBtn" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg><span data-i18n="planer.blizuTebe">Blizu tebe</span><span class="n" id="istN-blizu"></span></button>
       <button class="amapa" id="atlasMapaBtn" type="button" hidden><svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor"><path d="M12 19V5m0 14-5-5m5 5 5-5"/></svg>Mapa</button>
       <button class="afbtn" id="istraziFilterBtn" type="button" aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" stroke-width="2" fill="none" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Filter<span class="kolko" id="istraziFilterN" hidden></span></button>
       <!-- 0.9.138: ikona GPX-a je otisla iz zaglavlja u peti cip "Moje rute", gde ima i ime i
@@ -4076,7 +4105,6 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     <div class="ichips" id="istraziChips" role="tablist" aria-label="Šta istražuješ" data-i18n-aria="planer.aria.istraziChips">
       <button type="button" data-ist="deonice" aria-pressed="true" role="tab" data-i18n-tn="planer.deonice">Deonice<span class="n" id="istN-deonice"></span></button>
       <button type="button" data-ist="mesta" aria-pressed="false" role="tab" data-i18n-tn="planer.mesta">Mesta<span class="n" id="istN-mesta"></span></button>
-      <button type="button" data-ist="blizu" aria-pressed="false" role="tab" data-i18n="planer.blizuTebe">Blizu tebe</button>
       <button type="button" data-ist="ture" aria-pressed="false" role="tab" data-i18n-tn="planer.ture">Ture<span class="n" id="istN-ture"></span></button>
       <button type="button" data-ist="moje" aria-pressed="false" role="tab" data-i18n-tn="planer.mojeRute">Moje rute<span class="n" id="istN-moje"></span></button>
     </div>
@@ -4846,7 +4874,7 @@ const RECNIK_SR = {
   "planer.sve": "Sve",
   "planer.aria.atlasSheet": "Istraži - deonice, mesta i rute",
   "planer.aria.atlasGrab": "Povuci da razviješ ili skupiš listu",
-  "planer.atlasSveT": "Sve deonice",
+  "planer.atlasSveT": "Deonice",
   "planer.aria.istraziChips": "Šta istražuješ",
   "planer.deonice": "Deonice",
   "planer.mesta": "Mesta",
@@ -5861,7 +5889,13 @@ const RECNIK_SR = {
   "atl.oceneNisuUcitane": "<span class=\"lab\">Ocene zajednice</span><span class=\"cnt\">nisu učitane - proveri vezu</span>",
   "atl.josBezOcene": "<span class=\"lab\">Ocene zajednice</span><span class=\"prvi\">Još bez ocene - provozaj je, pa je oceni na kraju vožnje.</span>",
   "atl.nemaPodatka": "nema podatka",
-  "atl.otpustiIzbor": "<button class=\"selx\" id=\"atlasSelX\" type=\"button\" aria-label=\"Otpusti izbor, vrati se na sve deonice\">✕</button></div>",
+  "atl.otpustiIzbor": "<button class=\"selx\" id=\"atlasSelX\" type=\"button\" aria-label=\"Nazad na listu deonica\">‹ Lista</button></div>",
+  "atl.kartDeonica": "Deonica",
+  "atl.kartDuzina": "dužina",
+  "atl.kartDoUlaza": "do ulaza",
+  "atl.kartOcena": "ocena",
+  "atl.kartSledece": "Sledeće blizu tebe",
+  "atl.kartBezOcene": "Još bez ocene zajednice. Provozaj je i oceni na kraju vožnje.",
   "atl.tvojaOcenaSpan": "<span class=\"rword\">tvoja ocena</span>",
   "atl.nedovoljnoOcena": "<span class=\"anemaoc\">Nedovoljno ocena za realnu ocenu</span>",
   "atl.bezOcene": "<span class=\"mnem\">bez ocene</span>",
@@ -6568,7 +6602,7 @@ const RECNIK_EN = {
   "planer.sve": "All",
   "planer.aria.atlasSheet": "Explore - sections, places and routes",
   "planer.aria.atlasGrab": "Drag to expand or collapse the list",
-  "planer.atlasSveT": "All sections",
+  "planer.atlasSveT": "Segments",
   "planer.aria.istraziChips": "What you are exploring",
   "planer.deonice": "Sections",
   "planer.mesta": "Places",
@@ -7559,7 +7593,13 @@ const RECNIK_EN = {
   "atl.oceneNisuUcitane": "<span class=\"lab\">Community ratings</span><span class=\"cnt\">not loaded - check the connection</span>",
   "atl.josBezOcene": "<span class=\"lab\">Community ratings</span><span class=\"prvi\">No rating yet - ride it, then rate it at the end of the ride.</span>",
   "atl.nemaPodatka": "no data",
-  "atl.otpustiIzbor": "<button class=\"selx\" id=\"atlasSelX\" type=\"button\" aria-label=\"Release the selection, back to all sections\">✕</button></div>",
+  "atl.otpustiIzbor": "<button class=\"selx\" id=\"atlasSelX\" type=\"button\" aria-label=\"Back to the list of segments\">‹ List</button></div>",
+  "atl.kartDeonica": "Segment",
+  "atl.kartDuzina": "length",
+  "atl.kartDoUlaza": "to entry",
+  "atl.kartOcena": "rating",
+  "atl.kartSledece": "Next near you",
+  "atl.kartBezOcene": "No community rating yet. Ride it and rate it at the end.",
   "atl.tvojaOcenaSpan": "<span class=\"rword\">your rating</span>",
   "atl.nedovoljnoOcena": "<span class=\"anemaoc\">Not enough ratings for a real score</span>",
   "atl.bezOcene": "<span class=\"mnem\">no rating</span>",
@@ -17705,8 +17745,12 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.182";
+const APP_VERSION = "0.9.183";
 const CHANGELOG = [
+  { v: "0.9.183", d: "03.10.2026.", stavke: [
+    "<b>Istraži ima dva položaja:</b> spušten (jedan red preko cele mape: Deonice, Blizu tebe, Filter) i podignut (cela lista preko ekrana). Polovina je ukinuta, kao i traka mape iznad podignute liste.",
+    "<b>Izabrana deonica</b> spušta list i pokazuje karticu: dužina, do ulaza, ocena; samo podaci koji postoje (bez \"nema podatka\"); tri sledeće deonice blizu tebe; \"Lista\" vraća tačno gde si bio.",
+  ] },
   { v: "0.9.182", d: "03.10.2026.", stavke: [
     "<b>Kartica Od/Do više ne ostaje preko Zajednice, Ja i Istraži</b> kad pređeš sa isplanirane rute na drugi tab.",
   ] },
@@ -27066,34 +27110,53 @@ function poljePravo(d, polje) {
   if (polje === "asfalt") return d.azurirano === OCENA_MOJA;   // asfalt vozač ocenjuje
   return false;                                     // krivine i saobraćaj se za pečene nikad ne mere
 }
-function atlasCipovi(d) {
+function atlasCipovi(d) {   // 3.10.2026 (Bosko: "asfalt krivine saobracaj deluje nabacano"): SAMO podatak koji postoji; "nema podatka" ne zauzima mesto
   return ATLAS_CIPOVI.map(([lbl, polje]) => {
     const v = poljePravo(d, polje) ? (d && d[polje]) : null;   // konstanta iz skripte nije merenje
-    const hot = polje === "krivine" && v && /odli/i.test(v);
-    return '<span class="achip' + (hot ? " hot" : "") + (v ? "" : " nema") + '">' + lbl +
-      " <b>" + esc(v || T("atl.nemaPodatka")) + "</b></span>";
+    if (!v) return "";
+    const hot = polje === "krivine" && /odli/i.test(v);
+    return '<span class="achip' + (hot ? " hot" : "") + '">' + lbl + " <b>" + esc(v) + "</b></span>";
   }).join("");
 }
+/** Km od mene do ulaza u deonicu (najbliza tacka trase), ili null bez lokacije. Isti racun kao "Blizu tebe". */
+function atlasDoUlazaKm(d) {
+  let geo = null; try { geo = window.ruteGeoPoz && window.ruteGeoPoz(); } catch (e) {}
+  if (!geo || !d || !d.coords || d.coords.length < 2) return null;
+  try { const x = blizuLista([d], geo, 1e6).find((r) => r.d === d || (r.d && r.d.kljuc === d.kljuc)); return x ? x.km : null; } catch (e) { return null; }
+}
+/** Do n deonica najblizih meni, bez tekuce - traka "sledece blizu tebe" na kartici (maketa 6C2). */
+function atlasSledece(d, n) {
+  let geo = null; try { geo = window.ruteGeoPoz && window.ruteGeoPoz(); } catch (e) {}
+  if (!geo) return [];
+  try { return blizuLista((ATLAS.baza || []).filter((x) => x.kljuc !== d.kljuc), geo, BLIZU.r).slice(0, n || 3); } catch (e) { return []; }
+}
 function atlasKartica(d, agg) {   // JEDNA kartica za sve puteve izbora (mapa/pretraga/kolekcija/lista); bez porekla
+  /* 3.10.2026 (maketa 6C2, Boskov izbor): natpis + "Lista", naslov, tri instrumenta (duzina / do ulaza / ocena),
+     red teksta samo kad nema ocene, cipovi samo za podatke koji postoje, traka "sledece blizu tebe", CTA. */
   const ref = atlasRoadref(d);   // UVEK samo zemlja - nikad broj puta (vidi atlasRoadref: sinteticki br bi izmislio put i odao poreklo)
   const oc = d.ocena != null ? Math.round(d.ocena * 10) / 10 : null;
   const ocTx = oc != null ? DEC(oc.toFixed(1)) : null;
+  const imaOc = oc != null && ocenaPrava(d);
+  const doUl = atlasDoUlazaKm(d);
+  const kmT = (v) => (v < 10 ? DEC((Math.round(v * 10) / 10).toFixed(1)) : String(Math.round(v)));
+  const cip = atlasCipovi(d);
+  const sled = atlasSledece(d, 3);
   return '<div class="selcard" data-k="' + esc(d.kljuc) + '" role="button" tabindex="0" aria-label="Izabrana deonica ' + esc(atlasNaslov(d.naziv)) + ' - vodi me preko nje">' +
-    '<div class="metarow"><span class="sellbl">Izabrana deonica</span><span class="roadref">' + esc(ref) + "</span>" +
+    '<div class="kcap"><span class="sellbl">' + T("atl.kartDeonica") + ' · <span class="roadref">' + esc(ref) + "</span></span>" +
     T("atl.otpustiIzbor") +
     "<h2>" + esc(atlasNaslov(d.naziv)) + "</h2>" +
-    '<div class="statrow"><span class="akm">' + atlasKmTx(d.km) + "<small>km</small></span>" +
-    (oc != null && ocenaPrava(d)
-      ? '<span class="arate"><span class="stars">' + atlasZvezde(oc) + '</span><span class="rnum">' + ocTx + "</span>" +
-        /* 0.9.102 (QA nalaz 35): tvoj tap posle voznje postajao je zvezdica same deonice, bez ijedne
-           reci da je to TVOJA ocena - pa se nije razlikovala od ocene zajednice. Isti span .rword,
-           bez ijednog novog CSS pravila. */
+    '<div class="kinst">' +
+      '<div><span class="num">' + atlasKmTx(d.km) + '<small>km</small></span><span class="cap">' + T("atl.kartDuzina") + "</span></div>" +
+      "<div>" + (doUl != null ? '<span class="num">' + kmT(doUl) + "<small>km</small></span>" : '<span class="num nema">–</span>') + '<span class="cap">' + T("atl.kartDoUlaza") + "</span></div>" +
+      "<div>" + (imaOc ? '<span class="num">' + ocTx + '<small>★</small></span>' : '<span class="num nema">–</span>') + '<span class="cap">' + T("atl.kartOcena") + "</span></div>" +
+    "</div>" +
+    (imaOc ? '<div class="arate"><span class="stars">' + atlasZvezde(oc) + "</span>" +
         (d.azurirano === OCENA_MOJA ? T("atl.tvojaOcenaSpan")
-          : ATLAS_OCENA_REC[Math.round(oc)] ? '<span class="rword">' + ATLAS_OCENA_REC[Math.round(oc)] + "</span>" : "") + "</span>"
-      : T("atl.nedovoljnoOcena")) + "</div>" +
-    '<div class="achips">' + atlasCipovi(d) + "</div>" +
+          : ATLAS_OCENA_REC[Math.round(oc)] ? '<span class="rword">' + ATLAS_OCENA_REC[Math.round(oc)] + "</span>" : "") + "</div>" : "") +
+    '<div class="achips">' + cip + "</div>" +
     '<div class="urate" id="atlasUrate" aria-live="polite">' + (agg === undefined
       ? '<span class="lab">Ocene zajednice</span><span class="cnt">…</span>' : atlasOcenaRed(agg)) + "</div>" +
+    (sled.length ? '<div class="ksled"><span class="cap">' + T("atl.kartSledece") + '</span><div class="ksl">' + sled.map((x) => atlasMini(x.d)).join("") + "</div></div>" : "") +
     '<button class="acta" id="atlasVodi" type="button">' +
     '<svg viewBox="0 0 24 24" stroke-linecap="round"><path d="M5 20c6 0 6.5-4.5 1.5-6.5S4 6.5 10 6.5c5 0 6.5 2 11-2.5"/><circle cx="5" cy="20" r="1.6"/><circle cx="21" cy="4" r="1.6"/></svg>' +
     "Vodi me preko nje</button></div>";
@@ -27256,11 +27319,13 @@ function atlasIzaberi(kljuc) {
      "pun" (88dvh) bi izabrana deonica ostala ispod sheeta. Kadar zna i za donju traku. */
   /* 0.9.133: rezervna grana koja je samo skidala klasu je UKLONJENA. Otkad je stanje visina, ona bi
      ostavila list na staroj visini pod novim imenom - tise i gore od toga da se nista ne desi. */
-  if (typeof ATLAS._stanje === "function") ATLAS._stanje("");
   atlasSheetCrtaj();
+  /* 3.10.2026 (spec Istrazi tacka 2): izbor SPUSTA list na karticu - mapa uokviri celu deonicu, kartica
+     stoji dole. Stanje se postavlja POSLE crtanja jer se visina kartice meri. */
+  if (typeof ATLAS._stanje === "function") ATLAS._stanje("kartica");
   const telo = document.getElementById("atlasTelo"); if (telo) telo.scrollTop = 0;
   atlasAggOsvezi();
-  atlasUokviri(d.coords, atlasDno(0.5));
+  atlasUokviri(d.coords, atlasDno(Math.min(0.6, (IST_V.kartica || 0) / (window.innerHeight || 800))));
 }
 function atlasDeselektuj() {   // G6: tap na prazan deo mape otpusta izbor - bez izlaska iz rezima
   if (!ATLAS.on || !ATLAS.sel) return;
@@ -27268,6 +27333,9 @@ function atlasDeselektuj() {   // G6: tap na prazan deo mape otpusta izbor - bez
   try { istBrojevi(); } catch (e) {}
   try { atlasIstakni(null); } catch (e) {}
   atlasSheetCrtaj();
+  /* 3.10.2026: bez izbora "kartica" ne postoji - list se vraca na traku (tap na mapu) ili u listu
+     (dugme "Lista" na kartici zove atlasDeselektuj pa sam dize list). */
+  try { if (typeof ATLAS._stanje === "function" && !document.getElementById("atlasSheet").classList.contains("pun")) ATLAS._stanje("peek"); } catch (e) {}
 }
 function atlasAggOsvezi() {   // red "Ocene zajednice" stize naknadno; bajat odgovor se ne crta
   if (!ATLAS.sel) return;
@@ -27300,7 +27368,7 @@ function atlasNavOznaci() {
    ================================================================================================= */
 const IST = { list: "deonice", _seljeno: false };
 const IST_LISTE = {
-  deonice: { ime: "Sve deonice", blok: null },
+  deonice: { ime: "Deonice", blok: null },   // 3.10.: "Sve deonice" se u spustenom redu nije ni videlo ("Sve de…")
   mesta: { ime: "Mesta zajednice", blok: "mesta" },
   blizu: { ime: "Blizu tebe", blok: "blizu" },   /* 0.9.135: svoja lista (deonice u prstenu), ne vise ista lista tura */
   ture: { ime: "Probrane ture", blok: "rute" },
@@ -27776,7 +27844,7 @@ function atlasPorukaBaze(n, nepotpuno) {
    Od 0.9.133 postoji jedna funkcija koja racuna sve tri visine u pikselima, i jedan nacin da se one
    primene: --ah. Odstup od dna (donja navigacija) se MERI iz polozaja samog lista, pa se racunica u
    JS-u ne moze raziđi sa pravilom u CSS-u. */
-const IST_V = { peek: 0, srednje: 0, pun: 0, _sat: null };
+const IST_V = { peek: 0, kartica: 0, pun: 0, _sat: null };
 /** Visina sistemske zone na vrhu ekrana, merena sondom - env() se iz JS-a ne moze procitati. */
 function istSafeTop() {
   if (IST_V._sat != null) return IST_V._sat;
@@ -27794,7 +27862,7 @@ function istSafeTop() {
 function istPeekSadrzaj() {
   const sh = document.getElementById("atlasSheet"); if (!sh) return 0;
   let h = 0;
-  for (const sel of [".grab", ".ahd", ".ichips", ".aporuka"]) {
+  for (const sel of [".grab", ".ahd", ".aporuka"]) {   // 3.10.: tabovi (.ichips) se u spustenom redu ne vide (maketa 6A)
     const el = sh.querySelector(sel);
     if (!el || el.hidden) continue;
     const r = el.getBoundingClientRect();
@@ -27805,7 +27873,25 @@ function istPeekSadrzaj() {
   try { h += parseFloat(getComputedStyle(sh).paddingBottom) || 0; } catch (e) {}
   return h > 40 ? Math.ceil(h + 6) : 0;   // 6 px da se vidi da lista ide dalje
 }
-/** Sve tri visine u pikselima. peek <= srednje <= pun je ugradjeno, ne pretpostavljeno. */
+/** Visina stanja "kartica": rucka + kartica izabrane deonice (meri se, kao i peek). */
+function istKarticaSadrzaj() {
+  const sh = document.getElementById("atlasSheet"); if (!sh) return 0;
+  let h = 0;
+  for (const sel of [".grab", ".selcard"]) {
+    const el = sh.querySelector(sel);
+    if (!el || el.hidden) continue;
+    const r = el.getBoundingClientRect();
+    if (!r.height) continue;
+    const cs = getComputedStyle(el);
+    h += r.height + (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0);
+  }
+  try { h += parseFloat(getComputedStyle(sh).paddingBottom) || 0; } catch (e) {}
+  return h > 40 ? Math.ceil(h + 8) : 0;
+}
+/** Sve tri visine u pikselima. peek <= kartica <= pun je ugradjeno, ne pretpostavljeno.
+    3.10.2026 (Boskove slike, spec Istrazi tacka 1): "srednje" (34dvh) je UKINUTO - u polovini ni mapa
+    ni lista nisu bile upotrebljive; puno stanje ide do vrha (ispod sistemske zone), bez trake mape od
+    84 px koja nije imala nijednu radnju. Trece stanje je sada "kartica": izabrana deonica. */
 function istVisine() {
   const sh = document.getElementById("atlasSheet");
   if (!sh) return IST_V;
@@ -27814,10 +27900,10 @@ function istVisine() {
   /* Koliko je list odignut od dna ekrana. Na mobilnom je to donja navigacija plus safe-area; ovde
      se MERI umesto da se ponavlja sabirak iz CSS-a - tako se dve racunice ne mogu raziđi. */
   const dno = Math.max(0, Math.round(vh - r.bottom));
-  const pun = Math.max(180, Math.round(vh - dno - istSafeTop() - 84));
-  const srednje = Math.max(120, Math.min(pun, Math.round(vh * 0.34)));
-  const peek = Math.max(56, Math.min(srednje, istPeekSadrzaj() || 132));
-  IST_V.peek = peek; IST_V.srednje = srednje; IST_V.pun = pun;
+  const pun = Math.max(180, Math.round(vh - dno - istSafeTop() - 8));
+  const peek = Math.max(56, Math.min(pun, istPeekSadrzaj() || 72));
+  const kartica = Math.max(peek, Math.min(pun, istKarticaSadrzaj() || Math.round(vh * 0.42)));
+  IST_V.peek = peek; IST_V.kartica = kartica; IST_V.pun = pun;
   sh.style.setProperty("--ah-max", pun + "px");
   return IST_V;
 }
@@ -27843,6 +27929,11 @@ function istBrojevi() {
   try { set("istN-moje", mojeCitaj().length); } catch (e) {}
   try { set("istN-mesta", (state.editorial || []).filter((e) => e.type !== "ruta" && e.type !== "upozorenje" && e.lat != null).length); } catch (e) {}
   try { set("istN-ture", (FAMOUS_ROUTES || []).length); } catch (e) {}
+  try {   // 3.10.: cip "Blizu tebe" nosi broj deonica u tekucem krugu (bez lokacije ostaje bez broja, ne "0")
+    let geo = null; try { geo = window.ruteGeoPoz && window.ruteGeoPoz(); } catch (e) {}
+    set("istN-blizu", geo ? blizuLista(ATLAS.baza || [], geo, BLIZU.r).length : 0);
+    const bb = document.getElementById("atlasBlizuBtn"); if (bb) bb.setAttribute("aria-pressed", IST.list === "blizu" ? "true" : "false");
+  } catch (e) {}
   const n = document.getElementById("atlasSveN");
   if (n) {
     const k = IST.list === "deonice" ? (ATLAS.baza || []).length : "";
@@ -27868,6 +27959,11 @@ function istPocetak() {
 (function () {
   const ch = document.getElementById("istraziChips");
   if (ch) ch.addEventListener("click", (e) => { const b = e.target.closest("[data-ist]"); if (!b) return; istPrikazi(b.dataset.ist); });
+  /* 3.10.2026 (maketa 6A): "Blizu tebe" je cip u zaglavlju - vidi se i u spustenom redu; dodir otvara tu listu i dize list. */
+  try { const bb = document.getElementById("atlasBlizuBtn"); if (bb) bb.addEventListener("click", () => {
+    istPrikazi("blizu");
+    if (typeof ATLAS._stanje === "function") ATLAS._stanje("pun");
+  }); } catch (e) {}
   const sve = document.getElementById("atlasSveBtn");
   if (sve) sve.addEventListener("click", () => {   // "Sve deonice": iz detalja nazad na ceo spisak
     if (IST.list === "deonice") { ATLAS.sel = null; ATLAS._povratak = null; try { atlasIstakni(null); } catch (er) {} atlasSheetCrtaj(); }
@@ -28089,19 +28185,26 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
      otvoren (58dvh) i pun (88dvh) - puna lista od 301 reda u 58dvh je bila tesna. Prst vodi
      sheet u realnom vremenu, a puštanje bira najblizi klik po pozicij i brzini; pointercancel
      (poziv, sistemski gest) vraca stanje kakvo je bilo. */
-  const ATLAS_STANJA = ["peek", "", "pun"];
+  const ATLAS_STANJA = ["peek", "kartica", "pun"];
   function atlasStanje(s) {
     if (!sh) return;
+    /* 3.10.2026: dva mirna polozaja (peek / pun) + "kartica" kad je deonica izabrana. Stari pozivi sa ""
+       ("normalno") sada znace: kartica ako ima izbora, inace traka. */
+    if (s === "" || s == null) s = ATLAS.sel ? "kartica" : "peek";
     sh.classList.toggle("peek", s === "peek");
+    sh.classList.toggle("kartica", s === "kartica");
     sh.classList.toggle("pun", s === "pun");
     ATLAS._stanjeTx = s;
     /* 0.9.133: stanje je VISINA, ne klasa. Klase ostaju samo kao ime stanja za ostatak koda
        (atlasIzaberi, istPocetak) i za dugme "Mapa". */
-    const v = istVisine();
-    sh.style.setProperty("--ah", (s === "peek" ? v.peek : s === "pun" ? v.pun : v.srednje) + "px");
+    const primeni = () => { const v = istVisine(); sh.style.setProperty("--ah", (s === "peek" ? v.peek : s === "pun" ? v.pun : v.kartica) + "px"); };
+    primeni();
+    /* 3.10.2026 (izmereno u pregledacu): klasa stanja menja sta se u listu vidi (tabovi, telo), pa prva mera
+       moze da zateke staru sliku (141 px umesto 80). Drugi prolaz u sledecem kadru meri nad novim rasporedom. */
+    try { requestAnimationFrame(() => { if (ATLAS._stanjeTx === s) primeni(); }); } catch (e) {}
     /* "Mapa" u zaglavlju je isto sto i povlacenje nadole, za palac koji ne voli gestove; postoji
-       SAMO dok lista zaklanja mapu (maketa C). */
-    const mb = document.getElementById("atlasMapaBtn"); if (mb) mb.hidden = s === "peek";
+       SAMO dok lista zaklanja mapu. */
+    const mb = document.getElementById("atlasMapaBtn"); if (mb) mb.hidden = s !== "pun";
   }
   ATLAS._stanje = atlasStanje;   // 0.9.91: i atlasIzaberi mora da vrati sheet u normalno stanje
   if (sh && gb) {
@@ -28133,9 +28236,9 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
          uhvacen, pregledac isporucuje click elementu koji drzi hvat, a ne dugmetu ispod prsta.
          Zato tap nad dugmetom izvrsavamo sami, u pusti(). */
       cilj = (e.target && e.target.closest) ? e.target.closest("button, a, [role=button]") : null;
-      pre = sh.classList.contains("peek") ? "peek" : sh.classList.contains("pun") ? "pun" : "";
+      pre = sh.classList.contains("peek") ? "peek" : sh.classList.contains("pun") ? "pun" : "kartica";
       V = istVisine();
-      h0 = sh.getBoundingClientRect().height || V.srednje;
+      h0 = sh.getBoundingClientRect().height || V.kartica;
       /* Hvat se uzima ODMAH, i na rucki i na zaglavlju. Izmereno 16.9.2026: rucka je visoka 4 px a
          zaglavlje oko 54 px, dok jedan pokret prsta lako predje 30-40 px - bez hvata prvi pointermove
          promasi element i gest umre pre nego sto pocne, pa se list vrati tamo odakle je krenuo.
@@ -28152,20 +28255,22 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
         sh.classList.add("vuce");
         if (!hvat) { try { const el = e.currentTarget; el.setPointerCapture(e.pointerId); hvat = { el, id: e.pointerId }; } catch (er) {} }
       }
-      sh.style.setProperty("--ah", Math.round(Math.max(V.peek, Math.min(V.pun, h0 - dy))) + "px");
+      sh.style.setProperty("--ah", Math.round(Math.max(ATLAS.sel ? V.kartica : V.peek, Math.min(V.pun, h0 - dy))) + "px");
     };
     const pusti = (e) => {
       if (y0 == null) return;
       const dy = e.clientY - y0, brzo = Date.now() - t0 < 260, bioVuce = vuce, bioCilj = cilj;
-      const h = Math.max(V.peek, Math.min(V.pun, h0 - dy));
+      const dnoSt = ATLAS.sel ? "kartica" : "peek";
+      const h = Math.max(ATLAS.sel ? V.kartica : V.peek, Math.min(V.pun, h0 - dy));
       kraj();   // gasi i cilj, pa ga pamtimo iznad
       if (!bioVuce) {
         /* Cist tap: ako je pod prstom bilo dugme, ono radi svoj posao; inace se prebacuje stanje. */
         if (bioCilj) { try { bioCilj.click(); } catch (er) {} return; }
-        atlasStanje(pre === "peek" ? "" : pre === "" ? "peek" : "");
+        atlasStanje(pre === "pun" ? dnoSt : "pun");
         return;
       }
-      const lestve = [["peek", V.peek], ["", V.srednje], ["pun", V.pun]];
+      /* 3.10.2026: dve lestvice umesto tri - traka ili cela lista; sa izabranom deonicom kartica ili cela lista. */
+      const lestve = ATLAS.sel ? [["kartica", V.kartica], ["pun", V.pun]] : [["peek", V.peek], ["pun", V.pun]];
       let i2 = 0, naj = Infinity;
       lestve.forEach(([, hv], k) => { const d = Math.abs(hv - h); if (d < naj) { naj = d; i2 = k; } });
       /* Brz potez ("flick") pomera BAR jedno stanje od onog iz kog je krenuo. Nije "najblize plus
@@ -28173,7 +28278,7 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
          (130 / 227 / 517) pa je vec 60 px preslo preko srednjeg. Uzima se ono sto je DALJE u smeru
          kretanja - tako kratak flick ide tacno jedno stanje, a dug brz potez ide do kraja. */
       if (brzo && Math.abs(dy) > 24) {
-        const odStart = Math.max(0, Math.min(2, lestve.findIndex(([k]) => k === pre) + (dy < 0 ? 1 : -1)));
+        const odStart = Math.max(0, Math.min(lestve.length - 1, Math.max(0, lestve.findIndex(([k]) => k === pre)) + (dy < 0 ? 1 : -1)));
         i2 = dy < 0 ? Math.max(i2, odStart) : Math.min(i2, odStart);
       }
       atlasStanje(lestve[i2][0]);
@@ -28190,15 +28295,14 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
     /* Tastatura: rucka ima role=separator i tabindex=0 jos od 0.9.90, ali nikad nije imala nijedan
        slusalac - fokusiran element nije radio nista. */
     gb.addEventListener("keydown", (e) => {
-      const lestve = ["peek", "", "pun"];
-      let k = lestve.indexOf(sh.classList.contains("peek") ? "peek" : sh.classList.contains("pun") ? "pun" : "");
-      if (k < 0) k = 1;
+      const lestve = ATLAS.sel ? ["kartica", "pun"] : ["peek", "pun"];
+      let k = sh.classList.contains("pun") ? 1 : 0;
       if (e.key === "ArrowUp") k++;
       else if (e.key === "ArrowDown") k--;
       else if (e.key === "Enter" || e.key === " ") k = k === 0 ? 1 : 0;
       else return;
       e.preventDefault();
-      atlasStanje(lestve[Math.max(0, Math.min(2, k))]);
+      atlasStanje(lestve[Math.max(0, Math.min(1, k))]);
     });
     /* Drugi sloj odbrane (31.8.): kraj gesta se hvata i na PROZORU. Kad hvat ne uspe, otpustanje
        stigne na drugi element i rukovaoci iznad se nikad ne pozovu - bez ovoga bi list ostao tamo
@@ -28220,7 +28324,14 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
          cela kartica izabrane deonice je dugme, ne samo traka "Vodi me preko nje". Kartica je
          od 0.9.90 nosila role="button", ali je klik padao u granu [data-k] koja preskace vec
          izabranu deonicu - pa se nista nije desavalo. */
-      if (e.target.closest("#atlasSelX")) { atlasDeselektuj(); return; }   // izlaz iz izbora ide PRE grane koja hvata celu karticu
+      if (e.target.closest("#atlasSelX")) {   // 3.10.: "‹ Lista" na kartici = nazad u listu tacno gde si bio, list podignut
+        const p = ATLAS._povratak; ATLAS._povratak = null;
+        atlasDeselektuj();
+        if (p && p.ist && p.ist !== "deonice") istPrikazi(p.ist);
+        else { if (p) { ATLAS.fil = p.fil; ATLAS.prikazano = p.prikazano; ATLAS._skrol = p.skrol; } ATLAS.lista = !!p; atlasSheetCrtaj(); }
+        if (typeof ATLAS._stanje === "function") ATLAS._stanje("pun");
+        return;
+      }
       if (e.target.closest("#atlasVodi") || e.target.closest(".selcard")) { atlasVodiMe(); return; }
       const fb = e.target.closest("[data-fg]");
       if (fb) {
