@@ -15542,7 +15542,51 @@ function dnevnikUpisi(v) {
     if (!dnevnikStanji(lista)) break;
     upis = _zajPisi("mr_voznje", lista);
   }
+  try { if (typeof voznjeNaServer === "function") setTimeout(() => voznjeNaServer(lista), 800); } catch (e) {}   // 3.10.: sazetak i u bazu (bez traga)
   return upis;
+}
+/* ---- VOZNJE NA SERVERU (3.10.2026, Boskova odluka): sazetak svake voznje ide u tabelu voznje (docs/supabase-voznje.sql),
+   trag ostaje na telefonu. Na novom telefonu/pregledacu dnevnik se vraca iz baze. Vlasnik vidi samo svoje (RLS). ---- */
+const VOZ_POLJA = ["naz", "tip", "km", "min", "maxK", "avgK", "lnL", "lnR", "poeni", "serp", "kriv", "pauz", "mov"];
+const VOZ_KOL = { maxK: "max_k", avgK: "avg_k", lnL: "ln_l", lnR: "ln_r" };
+function voznjaZaServer(r) {   // dnevnik zapis -> red tabele (samo skalari); tura = jedan red sa zbirom
+  if (!r || !r.ts) return null;
+  const o = { ts: Math.round(r.ts), tura: !!r.tura };
+  for (const k of VOZ_POLJA) { const v = r[k]; if (v == null || v === "") continue; o[VOZ_KOL[k] || k] = typeof v === "number" ? (k === "km" ? Math.round(v * 10) / 10 : Math.round(v)) : String(v); }
+  return o;
+}
+function voznjaSaServera(z) {   // red tabele -> dnevnik zapis (bez traga; Dnevnik ga prikazuje, replay nema)
+  const r = { ts: Number(z.ts), tura: !!z.tura, _server: true };
+  for (const k of VOZ_POLJA) { const kol = VOZ_KOL[k] || k; if (z[kol] != null) r[k] = z[kol]; }
+  return r;
+}
+async function voznjeNaServer(lista) {   // upsert: isti (korisnik, ts) se prepise; salje se najvise 50 poslednjih
+  const n = nalogCitaj(); if (!n || !n.kod || !n.refresh) return false;
+  const redovi = (Array.isArray(lista) ? lista : _zajCitaj("mr_voznje", [])).slice(0, 50).map(voznjaZaServer).filter(Boolean);
+  if (!redovi.length) return false;
+  try {
+    await supaJa("voznje?on_conflict=korisnik,ts", { method: "POST", body: JSON.stringify(redovi), headers: { Prefer: "resolution=merge-duplicates,return=minimal" } });
+    try { localStorage.setItem("rmr2_voznje_sync", String(Date.now())); } catch (e) {}
+    return true;
+  } catch (e) { return false; }
+}
+async function voznjeSaServera() {   // povuci i SPOJI po ts: lokalni zapis (sa tragom) pobedjuje, serverski popunjava rupe
+  const n = nalogCitaj(); if (!n || !n.kod || !n.refresh) return 0;
+  let z; try { z = await supaJa("voznje?select=*&order=ts.desc&limit=200"); } catch (e) { return 0; }
+  if (!Array.isArray(z) || !z.length) return 0;
+  const v = _zajCitaj("mr_voznje", []); const ima = new Set(v.map((r) => String(Math.round(r.ts || 0))));
+  const novi = z.filter((x) => !ima.has(String(Number(x.ts)))).map(voznjaSaServera);
+  if (!novi.length) return 0;
+  const sve = v.concat(novi).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  _zajPisi("mr_voznje", sve);
+  try { renderVoznje("jaVoznje"); } catch (e) {}
+  return novi.length;
+}
+async function voznjeSinhronizuj() {   // pri prijavi i jednom dnevno: gore pa dole
+  const n = nalogCitaj(); if (!n || !n.kod || !n.refresh) return;
+  let zad = 0; try { zad = +localStorage.getItem("rmr2_voznje_sync") || 0; } catch (e) {}
+  if (Date.now() - zad < 6 * 3600000) return;
+  await voznjeNaServer(); await voznjeSaServera();
 }
 function dnevnikNadji(v, ts) {
   // zapis po ts - i KROZ etape tura (asinhrona preimena mora da nadje etapu u turi); vraca { rec, tura }
@@ -17658,8 +17702,14 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.180";
+const APP_VERSION = "0.9.181";
 const CHANGELOG = [
+  { v: "0.9.181", d: "03.10.2026.", stavke: [
+    "<b>Lokacija prijateljima iz svakog taba.</b> Dok je app otvorena i deljenje upaljeno, GPS se traži i u Zajednici i u Ja, ne samo na mapi. (Ana zato nije bila na mapi.)",
+    "<b>Vožnje se čuvaju i na serveru.</b> Sažetak svake vožnje (bez traga) ide u tvoj nalog; na novom telefonu ili pregledaču Dnevnik se vraća. Vidiš samo svoje.",
+    "<b>Uz \"Bez autoputa\" varijanta se tako i zove</b>, umesto imena stila \"Najbrža\".",
+    "<b>Ispod haube:</b> nalozi, prijatelji, sastanci i lokacije uživo preseljeni u svoj fajl (web/src/nalozi.js), ponašanje isto; probni test pravila pristupa na serveru (tools/provera-server.mjs).",
+  ] },
   { v: "0.9.180", d: "03.10.2026.", stavke: [
     "<b>Dve sitnice u pregledu rute:</b> opis varijante ispod naslova se osvežava sa svakim novim planom; tehnička poruka mape o učitavanju stila više ne iskače kao upozorenje.",
   ] },
@@ -20374,1107 +20424,6 @@ const BJB2ICON_S = { kafana: "tavern", vidikovac: "viewpoint", okupljaliste: "me
   document.addEventListener("rmr:jezik", () => { try { homeCtxSync(); kartaPutaSync(); } catch (e) {} });
 })();
 
-/* ======================= NALOZI I PRIJATELJI (faza 1 od 4, 1.10.2026) =======================
-   Boskov red: nalozi -> "Nadjemo se tamo" -> prijatelji uzivo -> juri ga. Nalog je anonimna Supabase
-   sesija (bez lozinke, bez mejla) + red u public.korisnici (ime, kod). Refresh token zivi u localStorage
-   (rmr2_nalog); access token se obnavlja sam. Sve sto dira bazu ide kroz supaJa() = supa() sa korisnikovim
-   tokenom umesto javnog kljuca; pravila (RLS) su u docs/supabase-nalozi.sql. Dok anonimna prijava nije
-   ukljucena u dashboardu, server vraca 422 anonymous_provider_disabled i ekran to kaze.
-   / Accounts & friends: anonymous Supabase session + profile row + friend code; RLS in the SQL file. */
-const NALOG_KEY = "rmr2_nalog";
-function nalogCitaj() { try { return JSON.parse(localStorage.getItem(NALOG_KEY) || "null"); } catch (e) { return null; } }
-function nalogUpisi(n) { try { if (n) localStorage.setItem(NALOG_KEY, JSON.stringify(n)); else localStorage.removeItem(NALOG_KEY); } catch (e) {} }
-function nalogTokenVazi(n, sad) { return !!(n && n.access && n.exp && n.exp - (sad == null ? Date.now() : sad) > 60000); }   // minut rezerve
-function nalogIzSesije(j, sad) {   // odgovor /auth/v1 (signup ili token) -> ono sto cuvamo
-  return { access: j.access_token, refresh: j.refresh_token, exp: (sad == null ? Date.now() : sad) + ((+j.expires_in || 3600) * 1000), uid: j.user && j.user.id };
-}
-function kodValidan(k) { return /^[A-HJ-NP-Z2-9]{6}$/.test(String(k || "").trim().toUpperCase()); }
-function kodOcisti(k) { return String(k || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/0/g, "O").replace(/1/g, "I").slice(0, 6); }
-function pozivLink(kod) { return "https://routemeright.app/app.html?prijatelj=" + encodeURIComponent(kod); }
-async function supaAuth(path, body, opts = {}) {   // opts.method (POST), opts.token (korisnikov JWT umesto javnog kljuca)
-  let signal; try { signal = AbortSignal.timeout(10000); } catch (e) {}
-  const r = await fetch(SUPA_URL + "/auth/v1/" + path, { method: opts.method || "POST", signal,
-    headers: { apikey: SUPA_KEY, "Content-Type": "application/json", Authorization: "Bearer " + (opts.token || SUPA_KEY) }, body: JSON.stringify(body || {}) });
-  let j = {}; try { j = await r.json(); } catch (e) {}
-  if (!r.ok) { const e = new Error(j.msg || j.error_description || j.error_code || ("HTTP " + r.status)); e.status = r.status; e.kod = j.error_code || ""; throw e; }
-  return j;
-}
-async function nalogToken(svez) {   // vazeci access token ili null kad naloga nema; obnavlja kroz refresh token
-  let n = nalogCitaj(); if (!n || !n.refresh) return null;
-  if (!svez && nalogTokenVazi(n)) return n.access;
-  if (nalogToken._u) return nalogToken._u;   // dva paralelna poziva ne smeju da potrose isti refresh token (rotacija)
-  nalogToken._u = (async () => {
-    try {
-      const j = await supaAuth("token?grant_type=refresh_token", { refresh_token: n.refresh });
-      n = { ...n, ...nalogIzSesije(j) }; nalogUpisi(n);
-      return n.access;
-    } catch (e) {
-      /* Pregled koda 2.10.: refresh koji je server odbio (opozvan/potrosen token) ne sme da se vrti u krug - sesija
-         se brise, kapija se vraca, kesirani spiskovi ostaju za citanje. Mrezni pad NE brise sesiju. */
-      if (e && (e.status === 400 || e.status === 401 || /refresh_token|invalid_grant|session_not_found/i.test(String(e.kod || e.message || "")))) {
-        nalogSesijaIstekla();
-        const er = new Error(T("nal.nemaSesije")); er.nemaSesije = true; throw er;
-      }
-      throw e;
-    } finally { nalogToken._u = null; }
-  })();
-  return nalogToken._u;
-}
-function nalogSesijaIstekla() {
-  const n = nalogCitaj();
-  nalogUpisi(n ? { ime: n.ime, email: n.email } : null);   // ime i mejl ostaju za kapiju, sesija ne
-  try { if (LOK.tSalji) clearTimeout(LOK.tSalji); if (SAST.t) clearInterval(SAST.t); } catch (e) {}
-  try { tihoObavestenje(T("nk.sesijaIstekla")); } catch (e) {}
-  try { nalogKapijaPrikazi(); } catch (e) {}
-}
-async function supaJa(path, opts = {}) {
-  const t = await nalogToken();
-  if (!t) { const e = new Error(T("nal.nemaSesije")); e.nemaSesije = true; throw e; }
-  return supa(path, { ...opts, headers: { ...(opts.headers || {}), Authorization: "Bearer " + t } });
-}
-function nalogGreskaTekst(e) {   // jedna recenica za ekran, po uzroku
-  const m = String((e && e.message) || e || "");
-  if (e && (e.kod === "anonymous_provider_disabled" || /anonymous sign-ins/i.test(m))) return T("nal.serverNijePodesen");
-  if (/relation .* does not exist|Could not find the table|function .* does not exist|schema cache/i.test(m)) return T("nal.serverNijePodesen");
-  if (e && e.nemaSesije) return T("nal.nemaSesije");
-  if (/korisnici_korisnicko_jed|korisnicko.*(23505|duplicate)|(23505|duplicate).*korisnicko/i.test(m)) return T("nal.korisnickoZauzeto");
-  if (/korisnici_korisnicko_oblik/i.test(m)) return T("nal.korisnickoLos");
-  if (/otp_expired|Token has expired|invalid|Invalid token/i.test(m)) return T("nk.kodPogresan");
-  if (/rate limit|over_email_send_rate_limit|email rate/i.test(m)) return T("nk.previseMejlova");
-  if (/Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m)) return T("net.nema");
-  return m;
-}
-/* 2.10.2026 (Boskov nalog "nama treba mejl, da odrade sign up"): nalog je vezan za MEJL, bez lozinke.
-   1) nalogPosaljiKod(email) -> Supabase salje kod od 6 cifara (sablon Magic Link mora da nosi {{ .Token }});
-   2) nalogPotvrdiKod(email, kod, ime, telefon) -> sesija; ako red u korisnici VEC postoji (isti covek, nov
-   telefon) vraca se on sa prijateljima, inace se pravi nov. / Email OTP sign-up; same email restores the account. */
-const NALOG_POVRATAK = "https://routemeright.app/app.html";
-const NALOG_KOD_U_MEJLU = true;   // 2.10. 23:20: Resend SMTP upaljen + sabloni sa {{ .Token }} (docs/supabase-sabloni-mejla.html) -> mejl nosi KOD od 6 cifara; false = samo link   // kuda link iz mejla vraca (mora biti Site URL ili u Redirect URLs u Supabase-u)
-function korisnickoOcisti(k) { return String(k || "").trim().toLowerCase().replace(/^@/, ""); }
-function korisnickoValidan(k) { return /^[a-z0-9._]{3,20}$/.test(korisnickoOcisti(k)); }
-function korisnickoPredlog(ime) {   // isti recept kao server (korisnicko_iz_imena), bez provere zauzetosti
-  let b = String(ime || "").toLowerCase().replace(/[šđčćž]/g, (c) => ({ "š": "s", "đ": "d", "č": "c", "ć": "c", "ž": "z" })[c]).replace(/\s+/g, "_").replace(/[^a-z0-9._]/g, "").replace(/^[._]+|[._]+$/g, "");
-  return b.length < 3 ? "" : b.slice(0, 16);
-}
-function korisnickoGreska(uneto) {   // poruka za los oblik + predlog ispravnog (ANA DIVIC -> ana_divic)
-  const pr = korisnickoPredlog(uneto);
-  return T("nal.korisnickoLos") + (pr && korisnickoValidan(pr) ? " " + T("nal.korisnickoPredlog", { 0: pr }) : "");
-}
-function emailValidan(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || "").trim()); }
-async function nalogPosaljiKod(email) {
-  email = String(email || "").trim().toLowerCase();
-  if (!emailValidan(email)) throw new Error(T("nk.emailLos"));
-  await supaAuth("otp?redirect_to=" + encodeURIComponent(NALOG_POVRATAK), { email, create_user: true, gotrue_meta_security: {} });
-  try { localStorage.setItem("rmr2_nalog_email", email); } catch (e) {}
-  return email;
-}
-async function nalogVeziMejl(email) {   // postojeci nalog bez mejla (0.9.161-163): PUT /auth/v1/user {email} -> Supabase salje mejl potvrde,
-  email = String(email || "").trim().toLowerCase();   // klik na link vraca ISTI nalog (isti uid, kod, prijatelji) sa mejlom. / Link email to an anonymous account.
-  if (!emailValidan(email)) throw new Error(T("nk.emailLos"));
-  const t = await nalogToken(true); if (!t) { const e = new Error(T("nal.nemaSesije")); e.nemaSesije = true; throw e; }
-  await supaAuth("user?redirect_to=" + encodeURIComponent(NALOG_POVRATAK), { email }, { method: "PUT", token: t });
-  try { localStorage.setItem("rmr2_nalog_email", email); } catch (e) {}
-  return email;
-}
-async function nalogPotvrdiKod(email, kod, ime, telefon, tip, korisnicko) {   // tip: "email" (nov nalog / prijava) ili "email_change" (vezivanje mejla za stari nalog)
-  email = String(email || "").trim().toLowerCase(); kod = String(kod || "").replace(/\D/g, "");
-  if (kod.length < 6) throw new Error(T("nk.kodLos"));
-  const j = await supaAuth("verify", { type: tip || "email", email, token: kod, gotrue_meta_security: {} });
-  let n = { ...nalogIzSesije(j), email }; nalogUpisi(n);
-  // postojeci nalog (isti mejl, nov telefon) ili nov red
-  const ima = await supaJa("rpc/moj_profil", { method: "POST", body: "{}" });
-  if (Array.isArray(ima) && ima.length) {
-    n = { ...n, ime: ima[0].ime, kod: ima[0].kod, avatar_v: ima[0].avatar_v || 0, telefon: ima[0].telefon || "" }; nalogUpisi(n);
-    if (ime && String(ime).trim().length >= 2 && String(ime).trim() !== n.ime) { try { await nalogPromeniIme(ime); n = nalogCitaj(); } catch (e) {} }
-    return n;
-  }
-  ime = String(ime || "").trim();
-  if (ime.length < 2) throw new Error(T("nal.imeKratko"));
-  const telo = { ime }; if (telefon && String(telefon).trim()) telo.telefon = String(telefon).trim().slice(0, 32);
-  if (korisnicko != null && String(korisnicko).trim() && !korisnickoValidan(korisnicko)) throw new Error(korisnickoGreska(korisnicko));   // los oblik ne prolazi ni ovde
-  if (korisnicko && korisnickoValidan(korisnicko)) telo.korisnicko = korisnickoOcisti(korisnicko);   // prazno = server predlozi iz imena
-  try { await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
-  catch (e) {
-    if (e && /korisnici_korisnicko_jed/i.test(String(e.message || ""))) { delete telo.korisnicko; await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }   // zauzeto: server bira
-    else if (!(e && (e.status === 409 || /23505|duplicate key/i.test(String(e.message || ""))))) throw e;   // red vec postoji (odgovor izgubljen) - uzmi ga
-  }
-  const m = await nalogOsvezi();
-  if (!m || !m.kod) throw new Error(T("nal.serverNijePodesen"));
-  return m;
-}
-/* MAGIC LINK (2.10., Supabase bez custom SMTP-a salje samo link "Sign in", bez koda): klik na link u mejlu
-   vodi na routemeright.app/app.html#access_token=...&refresh_token=... - web odatle pravi sesiju; nativna app
-   dobija isto kroz routemeright://prijava?rt=<refresh_token> (dugme "Otvori u aplikaciji" na webu).
-   Ime i telefon upisani na kapiji cekaju u rmr2_nalog_draft dok link ne stigne. / Magic-link sign-in. */
-async function nalogZavrsiProfil() {   // sesija vec postoji: vrati postojeci profil ili napravi nov iz nacrta
-  let d = null; try { d = JSON.parse(localStorage.getItem("rmr2_nalog_draft") || "null"); } catch (e) {}
-  const ima = await nalogOsvezi();
-  if (ima && ima.kod) {   // postojeci nalog (ili stari bez mejla kom je mejl sad vezan): telefon/ime iz nacrta, PATCH okida trigger koji upisuje mejl u korisnici
-    try { if (d && d.telefon && !ima.telefon) await nalogPromeniTelefon(d.telefon); } catch (e) {}
-    try { if (d && d.ime && String(d.ime).trim().length >= 2 && String(d.ime).trim() !== ima.ime) await nalogPromeniIme(d.ime); } catch (e) {}
-    try { if (d && d.korisnicko && korisnickoValidan(d.korisnicko) && korisnickoOcisti(d.korisnicko) !== ima.korisnicko) await nalogPromeniKorisnicko(d.korisnicko); } catch (e) {}
-    try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {}
-    return nalogCitaj() || ima;
-  }
-  const ime = String((d && d.ime) || (nalogCitaj() || {}).ime || "").trim();
-  if (ime.length < 2) { const e = new Error(T("nal.imeKratko")); e.trebaIme = true; throw e; }
-  const telo = { ime }; if (d && d.telefon) telo.telefon = String(d.telefon).trim().slice(0, 32);
-  if (d && d.korisnicko && korisnickoValidan(d.korisnicko)) telo.korisnicko = korisnickoOcisti(d.korisnicko);
-  try { await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
-  catch (e) {
-    if (e && /korisnici_korisnicko_jed/i.test(String(e.message || ""))) { delete telo.korisnicko; await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
-    else if (!(e && (e.status === 409 || /23505|duplicate key/i.test(String(e.message || ""))))) throw e;
-  }
-  const m = await nalogOsvezi();
-  if (!m || !m.kod) throw new Error(T("nal.serverNijePodesen"));
-  try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {}
-  return m;
-}
-function nalogIzHasha() {   // web: #access_token=...&refresh_token=...&expires_in=...&type=magiclink  |  #error=...&error_code=otp_expired
-  try {
-    const h = String(location.hash || "");
-    if (/(^#|&)error(_code)?=/.test(h) && !/access_token=/.test(h)) {   // 2.10. (Ana): link istekao/iskoriscen -> kapija kaze sta se desilo i nudi nov link
-      const p = new URLSearchParams(h.replace(/^#/, ""));
-      NK.linkGreska = p.get("error_code") || p.get("error") || "error";
-      try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
-      return false;
-    }
-    if (!/access_token=/.test(h)) return false;
-    const p = new URLSearchParams(h.replace(/^#/, ""));
-    const at = p.get("access_token"), rt = p.get("refresh_token");
-    if (!at || !rt) return false;
-    const n = { ...(nalogCitaj() || {}), ...nalogIzSesije({ access_token: at, refresh_token: rt, expires_in: +p.get("expires_in") || 3600 }) };
-    try { const b = JSON.parse(atob(at.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); n.uid = b.sub || n.uid; n.email = b.email || n.email; } catch (e) {}
-    nalogUpisi(n);
-    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
-    NK.izLinka = true;
-    return true;
-  } catch (e) { return false; }
-}
-async function nalogIzLinkaZavrsi() {   // posle hasha ili deep linka: profil, kapija dole, ponuda "otvori u aplikaciji" na webu
-  try {
-    await nalogZavrsiProfil();
-    const el = document.getElementById("nalogKapija"); if (el) { el.hidden = true; document.body.classList.remove("kapija"); }
-    try { renderJaNalog(); renderPrijatelji(); prijateljIzLinka(); sastanciPokreni(); lokacijePokreni(); pushRegistruj(); } catch (e) {}
-    try { nalogPing(true); } catch (e) {}
-    try { tihoObavestenje(T("nk.prijavljen", { 0: (nalogCitaj() || {}).ime || "" })); } catch (e) {}
-    nalogNativPonudi();
-  } catch (e) {
-    if (e && e.trebaIme) { try { nalogKapijaPrikazi(); const gr = document.getElementById("nkGreska"); gr.textContent = T("nk.upisiImeZaKraj"); gr.hidden = false; } catch (e2) {} }
-    else { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} }
-  }
-}
-function nalogNativPonudi() {   // na iPhone webu posle prijave: dugme koje istu sesiju preda nativnoj aplikaciji
-  try {
-    const C = window.Capacitor; if (C && C.isNativePlatform && C.isNativePlatform()) return;
-    if (!/iPhone|iPad|Android/i.test(navigator.userAgent)) return;
-    const n = nalogCitaj(); if (!n || !n.refresh) return;
-    let b = document.getElementById("nalogNativ");
-    if (!b) { b = document.createElement("a"); b.id = "nalogNativ"; b.className = "nk-nativ"; document.body.appendChild(b); }
-    b.href = "routemeright://prijava?rt=" + encodeURIComponent(n.refresh);
-    b.textContent = T("nk.otvoriUApp");
-    b.onclick = () => setTimeout(() => { try { b.remove(); } catch (e) {} }, 1500);
-  } catch (e) {}
-}
-async function nalogIzDeepLinka(rt) {   // nativna app: routemeright://prijava?rt=<refresh_token>
-  try {
-    const j = await supaAuth("token?grant_type=refresh_token", { refresh_token: rt });
-    const n = { ...(nalogCitaj() || {}), ...nalogIzSesije(j) };
-    try { const b = JSON.parse(atob(n.access.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); n.uid = b.sub || n.uid; n.email = b.email || n.email; } catch (e) {}
-    nalogUpisi(n);
-    await nalogIzLinkaZavrsi();
-    return true;
-  } catch (e) { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} return false; }
-}
-async function nalogPromeniKorisnicko(k) {
-  if (!korisnickoValidan(k)) throw new Error(korisnickoGreska(k)); k = korisnickoOcisti(k);
-  const n = nalogCitaj(); if (!n) return;
-  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ korisnicko: k }) });
-  nalogUpisi({ ...n, korisnicko: k });
-}
-async function nalaziPostavi(on) {   // "Mogu da me nadju po korisnickom imenu" (podrazumevano da - Boskova odluka 2.10.)
-  const n = nalogCitaj(); if (!n) return;
-  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ nalazi: !!on }) });
-  nalogUpisi({ ...n, nalazi: !!on });
-}
-async function prijateljiNadji(upit) {   // pretraga po @korisnickom ili delu imena; server vraca najvise 10, samo one koji dozvoljavaju
-  return supaJa("rpc/nadji_korisnike", { method: "POST", body: JSON.stringify({ p_upit: String(upit || "").trim() }) });
-}
-async function prijateljDodajPoId(id) { return supaJa("rpc/dodaj_prijatelja_po_id", { method: "POST", body: JSON.stringify({ p_id: id }) }); }
-async function nalogPromeniTelefon(tel) {
-  const n = nalogCitaj(); if (!n) return;
-  tel = String(tel || "").trim().slice(0, 32);
-  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ telefon: tel || null }) });
-  nalogUpisi({ ...n, telefon: tel });
-}
-async function nalogNapravi(ime) {   // ostaje za Zajednicu bez naloga: samo preusmeri na kapiju (nalog se pravi mejlom)
-  nalogKapijaPrikazi(); throw new Error(T("nk.prvoKapija"));
-}
-async function nalogOsvezi() {   // moj red sa servera (ime/kod/telefon) kroz moj_profil - kod se NE cita iz tabele
-  const n = nalogCitaj(); if (!n || !n.refresh) return null;
-  const red = await supaJa("rpc/moj_profil", { method: "POST", body: "{}" });
-  if (!Array.isArray(red) || !red.length) return null;
-  const m = { ...n, uid: red[0].id, ime: red[0].ime, kod: red[0].kod, avatar_v: red[0].avatar_v || 0, telefon: red[0].telefon || "", email: red[0].email || n.email || "", korisnicko: red[0].korisnicko || "", nalazi: red[0].nalazi !== false }; nalogUpisi(m);
-  try { if (red[0].deli_lokaciju != null) { LOK.deli = !!red[0].deli_lokaciju; localStorage.setItem("rmr2_deli", LOK.deli ? "1" : "0"); } } catch (e) {}
-  return m;
-}
-async function nalogProveriNaServeru() {   // 2.10. (Bosko obrisao svoj nalog u dashboardu, a app ga je i dalje pustala sat vremena na stari kljuc):
-  const n = nalogCitaj(); if (!n || !n.refresh || !n.kod) return;   // pri paljenju pitamo server da li profil POSTOJI; "nema" = sesija dole + kapija
-  try {
-    const m = await nalogOsvezi();
-    if (m === null) { nalogSesijaIstekla(); return; }   // server odgovorio, profila nema (nalog obrisan)
-  } catch (e) {
-    if (e && (e.nemaSesije || e.status === 401 || e.status === 403)) { nalogSesijaIstekla(); return; }   // kljuc odbijen
-    /* mreza/pad servera: nista ne diramo, nalog ostaje (ne sme da izbaci coveka na putu) */
-  }
-}
-async function nalogPromeniIme(ime) {
-  ime = String(ime || "").trim(); if (ime.length < 2) throw new Error(T("nal.imeKratko"));
-  const n = nalogCitaj(); if (!n) return;
-  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ ime }) });
-  nalogUpisi({ ...n, ime });
-}
-const PRIJ_KEY = "rmr2_prijatelji";   // poslednji spisak, za prikaz bez mreze
-function prijateljiKes() { try { return JSON.parse(localStorage.getItem(PRIJ_KEY) || "[]"); } catch (e) { return []; } }
-async function prijateljiUcitaj() {
-  const rows = await supaJa("rpc/moji_prijatelji", { method: "POST", body: "{}" });
-  const l = Array.isArray(rows) ? rows : [];
-  try { localStorage.setItem(PRIJ_KEY, JSON.stringify(l)); } catch (e) {}
-  return l;
-}
-async function prijateljDodaj(kod) {
-  kod = kodOcisti(kod);
-  if (!kodValidan(kod)) throw new Error(T("nal.kodNeispravan"));
-  return supaJa("rpc/dodaj_prijatelja", { method: "POST", body: JSON.stringify({ p_kod: kod }) });
-}
-async function prijateljPrihvati(id) { return supaJa("rpc/prihvati_prijatelja", { method: "POST", body: JSON.stringify({ p_od: id }) }); }
-async function prijateljUkloni(id) { return supaJa("rpc/ukloni_prijatelja", { method: "POST", body: JSON.stringify({ p_ko: id }) }); }
-async function nalogPodeliKod() {
-  const n = nalogCitaj(); if (!n || !n.kod) return;
-  const txt = T("nal.pozivTekst", { 0: n.ime || "", 1: n.kod }) + " " + pozivLink(n.kod);
-  try { if (navigator.share) { await navigator.share({ text: txt }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
-  try { await navigator.clipboard.writeText(txt); tihoObavestenje(T("nal.kopirano")); } catch (e) { try { prompt(T("nal.kopirajRucno"), txt); } catch (e2) {} }
-}
-/* ---- ekran: Zajednica -> Prijatelji ---- */
-function avatarUrl(uid, v) { return (uid && v) ? SUPA_URL + "/storage/v1/object/public/avatari/" + encodeURIComponent(uid) + ".jpg?v=" + v : ""; }
-function avatarHtml(uid, v, ime, kl) {   // slika ako je ima, inace prvo slovo imena; <img> koji padne vraca slovo
-  const ini = esc(String(ime || "?").trim().charAt(0).toUpperCase());
-  const u = avatarUrl(uid, v);
-  return `<span class="${kl || "zpr-av"}">${u ? `<img src="${esc(u)}" alt="" onerror="this.remove()">` : ""}<i>${ini}</i></span>`;
-}
-function aktivanTekst(ts, sad) {   // "aktivan sada / pre 20 min / pre 3 h / juce / pre 5 dana"
-  const t = ts ? new Date(ts).getTime() : 0; if (!t) return "";
-  const d = Math.max(0, (sad == null ? Date.now() : sad) - t), min = Math.round(d / 60000);
-  if (min < 10) return T("akt.sada");
-  if (min < 60) return T("akt.min", { 0: min });
-  const h = Math.round(min / 60); if (h < 24) return T("akt.sati", { 0: h });
-  const dana = Math.round(h / 24); if (dana === 1) return T("akt.juce");
-  if (dana < 30) return T("akt.dana", { 0: dana, 1: TN(dana, "pl.dan") });
-  return T("akt.davno");
-}
-function prijateljiHtmlLista(l) {
-  if (!l.length) return '<div class="zpr-prazno">' + T("nal.nemaPrijatelja") + "</div>";
-  return l.map((f) => {
-    const st = f.stanje === "prihvaceno" ? (f.aktivan_at ? '<small>' + esc(aktivanTekst(f.aktivan_at)) + "</small>" : "")
-      : (f.od_mene ? '<small>' + T("nal.cekaNjega") + "</small>" : '<small class="akc">' + T("nal.cekaTebe") + "</small>");
-    const akc = f.stanje === "prihvaceno" ? `<button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.ukloni"))}">✕</button>`
-      : (f.od_mene ? `<button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.povuci"))}">✕</button>`
-        : `<button type="button" class="zpr-ok" data-prihvati="${esc(f.id)}">${esc(T("nal.prihvati"))}</button><button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.odbij"))}">✕</button>`);
-    return `<div class="zpr-red" data-id="${esc(f.id)}" role="button" tabindex="0">${avatarHtml(f.id, f.avatar_v, f.ime)}<div class="zpr-t"><b>${esc(f.ime)}</b>${(f.korisnicko || f.motor) ? "<small>" + esc([f.korisnicko ? "@" + f.korisnicko : "", f.motor || ""].filter(Boolean).join(" · ")) + "</small>" : ""}${st}</div><div class="zpr-akc">${akc}</div></div>`;
-  }).join("");
-}
-async function renderPrijatelji(force) {
-  const box = document.getElementById("zPrijatelji"); if (!box) return;
-  const n = nalogCitaj();
-  if (!n || !n.kod) {   // nema naloga: poziv da se napravi (ime je jedino sto trazimo)
-    box.innerHTML = `<div class="zpr-kart"><div class="zpr-n">${T("nal.napraviNaslov")}</div><div class="zpr-d">${T("nal.napraviOpis")}</div>
-      <div class="zpr-forma"><input id="zprIme" maxlength="32" autocomplete="name" placeholder="${esc(T("nal.imePh"))}" value="${esc((n && n.ime) || "")}"><button type="button" id="zprNapravi">${esc(T("nal.napravi"))}</button></div>
-      <div class="zpr-greska" id="zprGreska" hidden></div></div>`;
-    const g = document.getElementById("zprGreska"), b = document.getElementById("zprNapravi");
-    b.addEventListener("click", async () => {
-      b.disabled = true; g.hidden = true;
-      try { const nn = nalogCitaj(); nalogUpisi({ ...(nn || {}), ime: document.getElementById("zprIme").value }); nalogKapijaPrikazi(); b.disabled = false; }
-      catch (e) { g.textContent = nalogGreskaTekst(e); g.hidden = false; b.disabled = false; }
-    });
-    return;
-  }
-  const kes = prijateljiKes();
-  box.innerHTML = `<div class="zpr-kart">
-      <div class="zpr-kod"><div><span class="zpr-cap">${esc(T("nal.tvojKod"))}</span><b>${esc(n.kod)}</b></div><button type="button" id="zprPodeli">${esc(T("nal.podeliKod"))}</button></div>
-      <div class="zpr-forma"><input id="zprKod" maxlength="24" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="${esc(T("nal.kodIliImePh"))}"><button type="button" id="zprDodaj">${esc(T("nal.dodaj"))}</button></div>
-      <div class="zpr-greska" id="zprGreska" hidden></div>
-      <div class="zpr-nadji" id="zprNadji" hidden></div>
-    </div>
-    <div class="zpr-lista" id="zprLista">${prijateljiHtmlLista(kes)}</div>`;
-  const g = document.getElementById("zprGreska"), lista = document.getElementById("zprLista");
-  const greska = (e) => { g.textContent = nalogGreskaTekst(e); g.hidden = false; };
-  document.getElementById("zprPodeli").addEventListener("click", nalogPodeliKod);
-  const nadjiBox = document.getElementById("zprNadji");
-  const nadjiHtml = (l) => !l.length ? '<div class="zpr-prazno">' + esc(T("nal.nadjiPrazno")) + "</div>" : l.map((u) => {
-    const akc = u.prijatelj === "prihvaceno" ? '<small class="zpr-jeste">' + esc(T("nal.vecPrijatelj")) + "</small>"
-      : (u.prijatelj === "ceka" ? '<small class="zpr-jeste">' + esc(T("nal.cekaKratko")) + "</small>"
-        : `<button type="button" class="zpr-ok" data-dodaj="${esc(u.id)}">${esc(T("nal.dodaj"))}</button>`);
-    return `<div class="zpr-red zpr-hit" data-id="${esc(u.id)}">${avatarHtml(u.id, u.avatar_v, u.ime)}<div class="zpr-t"><b>${esc(u.ime)}</b><small>@${esc(u.korisnicko || "")}${u.motor ? " · " + esc(u.motor) : ""}</small></div><div class="zpr-akc">${akc}</div></div>`;
-  }).join("");
-  let nadjiT = null;
-  const nadji = async (upit) => {   // @korisnicko ili deo imena (bar 2 znaka); kod od 6 znakova ide starim putem
-    upit = String(upit || "").trim();
-    if (upit.length < 2 || kodValidan(kodOcisti(upit)) && !/^@/.test(upit) && upit.length === 6 && !/[a-z]/.test(upit)) { nadjiBox.hidden = true; return; }
-    try { const l = await prijateljiNadji(upit); nadjiBox.innerHTML = nadjiHtml(Array.isArray(l) ? l : []); nadjiBox.hidden = false; }
-    catch (e) { greska(e); }
-  };
-  const dodaj = async () => {
-    const inp = document.getElementById("zprKod"); g.hidden = true;
-    const v = String(inp.value || "").trim();
-    if (!/^@/.test(v) && kodValidan(kodOcisti(v)) && v.length <= 7 && !/[a-z]/.test(v)) {   // kod od 6 znakova (velika slova/cifre)
-      try { const r = await prijateljDodaj(v); inp.value = ""; nadjiBox.hidden = true;
-        tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat"));
-        lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj());
-      } catch (e) { greska(e); }
-      return;
-    }
-    await nadji(v);   // ime ili @korisnicko: pokazi pogotke, dodaje se iz liste
-  };
-  document.getElementById("zprDodaj").addEventListener("click", dodaj);
-  document.getElementById("zprKod").addEventListener("keydown", (e) => { if (e.key === "Enter") dodaj(); });
-  document.getElementById("zprKod").addEventListener("input", (e) => { clearTimeout(nadjiT); const v = e.target.value; nadjiT = setTimeout(() => nadji(v), 350); });
-  nadjiBox.addEventListener("click", async (e) => {
-    const b = e.target.closest("[data-dodaj]"); if (!b) return;
-    b.disabled = true; g.hidden = true;
-    try { const r = await prijateljDodajPoId(b.dataset.dodaj);
-      tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat"));
-      b.outerHTML = '<small class="zpr-jeste">' + esc(r && r.stanje === "prihvaceno" ? T("nal.vecPrijatelj") : T("nal.cekaKratko")) + "</small>";
-      lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj()); renderJaNalog();
-    } catch (er) { b.disabled = false; greska(er); }
-  });
-  lista.addEventListener("click", async (e) => {
-    const p = e.target.closest("[data-prihvati]"), u = e.target.closest("[data-ukloni]");
-    if (!p && !u) {   // dodir na red = sazetak prijatelja (2.10.)
-      const red = e.target.closest(".zpr-red"); if (!red) return;
-      const f = prijateljiKes().find((x) => x.id === red.dataset.id); if (f) prijateljSazetak(f);
-      return;
-    }
-    g.hidden = true;
-    try {
-      if (p) await prijateljPrihvati(p.dataset.prihvati);
-      else { if (!confirm(T("nal.ukloniPitanje"))) return; await prijateljUkloni(u.dataset.ukloni); }
-      lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj());
-      renderJaNalog();
-    } catch (er) { greska(er); }
-  });
-  try { lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj()); renderJaNalog(); }
-  catch (e) { if (!kes.length || force) greska(e); }   // bez mreze ostaje kes; prvi put se kaze zasto je prazno
-}
-/* ---- ekran: Ja -> Moj nalog ---- */
-function renderJaNalog() {   // 3.10. (Boskov izbor 1B "instrument"): zaglavlje sa slikom i @imenom, tri Coast broja, redovi sa strelicom, kod kao karta, prekidaci, tiho brisanje
-  const box = document.getElementById("jaNalog"); if (!box) return;
-  const n = nalogCitaj();
-  if (!n || !n.kod) {
-    box.innerHTML = `<div class="jrow"><span>${esc(T("nal.nemaNaloga"))}</span><button type="button" class="jlink" id="jaNalogNapravi">${esc(T("nal.napraviUZajednici"))}</button></div>`;
-    const b = document.getElementById("jaNalogNapravi"); if (b) b.addEventListener("click", () => nasTabKlik("zajednica"));
-    return;
-  }
-  const br = prijateljiKes().filter((f) => f.stanje === "prihvaceno").length;
-  const ceka = prijateljiKes().filter((f) => f.stanje !== "prihvaceno" && !f.od_mene).length;
-  const st = nalogStatistika(); const mm = mojMotor();
-  const chev = (id, aria) => `<button type="button" class="jchev" id="${id}" aria-label="${esc(aria)}">›</button>`;
-  box.innerHTML = `<div class="jn-top">${avatarHtml(n.uid, n.avatar_v, n.ime, "zpr-av jn-av")}<div class="jn-t"><b>${esc(n.ime || "")}</b>${n.korisnicko ? `<small class="jn-cap">@${esc(n.korisnicko)}</small>` : ""}${mm && mm.ime ? `<small class="jn-sub">${esc(mm.ime)}</small>` : ""}</div><button type="button" class="jn-uredi" id="jaUredi" aria-expanded="false">${esc(T("nal.uredi"))}</button></div>
-    <div class="jn-metrics"><div><b>${st.stat_voznje || 0}</b><span>${esc(T("pl.voznje"))}</span></div><div><b>${DEC(String(st.stat_km || 0))}<i>km</i></b><span>${esc(T("nal.ukupnoKm"))}</span></div><div><b>${st.stat_najduza_km ? DEC(String(st.stat_najduza_km)) : 0}<i>km</i></b><span>${esc(T("nal.najduzaKm"))}</span></div></div>
-    <div class="jn-uredi-blok" id="jaUrediBlok" hidden>
-      <div class="jrow"><span>${esc(T("nal.slika"))}</span><b></b>${chev("jaNalogSlika", T("nal.promeni"))}</div>
-      <div class="jrow"><span>${esc(T("nal.ime"))}</span><b>${esc(n.ime || "")}</b>${chev("jaNalogIme", T("nal.promeni"))}</div>
-      <div class="jrow"><span>${esc(T("nal.korisnicko"))}</span><b>${n.korisnicko ? "@" + esc(n.korisnicko) : esc(T("nal.motorNema"))}</b>${chev("jaNalogKor", T("nal.promeni"))}</div>
-      <div class="jrow"><span>${esc(T("nal.motorVide"))}</span><b>${esc((mm && mm.ime) || T("nal.motorNema"))}</b>${chev("jaNalogMotor", T("nal.otvori"))}</div>
-    </div>
-    ${n.email ? `<div class="jrow"><span>${esc(T("nk.email"))}</span><b class="jmail">${esc(n.email)}</b></div>` : ""}
-    <div class="jrow"><span>${esc(T("nk.tel"))}</span><b>${esc(n.telefon || T("nal.motorNema"))}</b>${chev("jaNalogTel", T("nal.promeni"))}</div>
-    <div class="jrow"><span>${esc(T("nal.prijatelji"))}</span><b>${br}${ceka ? ' <i class="jceka">' + esc(T("nal.cekaN", { 0: ceka })) + "</i>" : ""}</b>${chev("jaNalogPrij", T("nal.otvori"))}</div>
-    <div class="jn-ticket"><div><span class="jn-cap">${esc(T("nal.tvojKod"))}</span><b class="jkod">${esc(n.kod)}</b></div><button type="button" class="jn-chip" id="jaNalogPodeli">${esc(T("nal.podeliKod"))}</button></div>
-    <label class="jrow"><span>${esc(T("lok.deliPrekidac"))}</span><input type="checkbox" class="jsw" id="jaDeli" ${deliLokaciju() ? "checked" : ""}></label>
-    <label class="jrow"><span>${esc(T("nal.nalaziPrekidac"))}</span><input type="checkbox" class="jsw" id="jaNalazi" ${n.nalazi === false ? "" : "checked"}></label>
-    <div class="jnote"><span id="jaLokStanje">${esc(mojaLokacijaStanjeTekst())}</span> ${esc(T("nal.staVide"))}</div>
-    <button type="button" class="jlink jopasno" id="jaNalogObrisi">${esc(T("nal.obrisiNalog"))}</button>`;
-  document.getElementById("jaUredi").addEventListener("click", (e) => { const b = document.getElementById("jaUrediBlok"); b.hidden = !b.hidden; e.currentTarget.setAttribute("aria-expanded", String(!b.hidden)); });
-  document.getElementById("jaDeli").addEventListener("change", (e) => deliLokacijuPostavi(e.target.checked));
-  document.getElementById("jaNalazi").addEventListener("change", async (e) => { const on = e.target.checked; try { await nalaziPostavi(on); } catch (er) { e.target.checked = !on; alert(nalogGreskaTekst(er)); } });
-  document.getElementById("jaNalogKor").addEventListener("click", async () => {
-    const novo = prompt(T("nal.novoKorisnicko"), n.korisnicko || ""); if (novo == null) return;
-    try { await nalogPromeniKorisnicko(novo); renderJaNalog(); } catch (e) { alert(nalogGreskaTekst(e)); }
-  });
-  document.getElementById("jaNalogSlika").addEventListener("click", () => avatarIzaberi(() => renderJaNalog()));
-  document.getElementById("jaNalogMotor").addEventListener("click", () => { try { const h = document.getElementById("jaMotorHost"); if (h) h.scrollIntoView({ block: "start", behavior: "smooth" }); } catch (e) {} });
-  document.getElementById("jaNalogTel").addEventListener("click", async () => {
-    const t = prompt(T("nk.noviTel"), n.telefon || ""); if (t == null) return;
-    try { await nalogPromeniTelefon(t); renderJaNalog(); } catch (e) { alert(nalogGreskaTekst(e)); }
-  });
-  document.getElementById("jaNalogObrisi").addEventListener("click", async () => {
-    if (!confirm(T("nal.obrisiPitanje"))) return;
-    try {   // prvo slika kroz Storage API (SQL ne sme da brise storage.objects), pa nalog
-      try { const t = await nalogToken(); await fetch(SUPA_URL + "/storage/v1/object/avatari/" + encodeURIComponent(n.uid) + ".jpg", { method: "DELETE", headers: { apikey: SUPA_KEY, Authorization: "Bearer " + t } }); } catch (e) {}
-      await supaJa("rpc/obrisi_nalog", { method: "POST", body: "{}" });
-    } catch (e) { alert(nalogGreskaTekst(e)); return; }
-    nalogUpisi(null); try { localStorage.removeItem(PRIJ_KEY); localStorage.removeItem("rmr2_nalog_ping"); localStorage.removeItem("rmr2_push_token"); } catch (e) {}
-    renderJaNalog(); try { renderPrijatelji(); } catch (e) {}
-    try { nalogKapijaPrikazi(); } catch (e) {}
-  });
-  document.getElementById("jaNalogIme").addEventListener("click", async () => {
-    const novo = prompt(T("nal.novoIme"), n.ime || ""); if (novo == null) return;
-    try { await nalogPromeniIme(novo); renderJaNalog(); } catch (e) { alert(nalogGreskaTekst(e)); }
-  });
-  document.getElementById("jaNalogPodeli").addEventListener("click", nalogPodeliKod);
-  document.getElementById("jaNalogPrij").addEventListener("click", () => nasTabKlik("zajednica"));
-}
-/* pozivni link ?prijatelj=KOD: kod se zapamti, pa se doda cim nalog postoji */
-function prijateljIzLinka() {
-  let kod = null; try { kod = localStorage.getItem("rmr2_prijatelj_kod"); } catch (e) {}
-  if (!kod) return false;
-  const n = nalogCitaj(); if (!n || !n.kod) return false;
-  try { localStorage.removeItem("rmr2_prijatelj_kod"); } catch (e) {}
-  prijateljDodaj(kod).then((r) => { tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat")); renderPrijatelji(true); })
-    .catch((e) => { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} });
-  return true;
-}
-(function(){
-  try {
-    const p = new URLSearchParams(location.search);
-    const k = p.get("prijatelj");
-    if (k && kodValidan(kodOcisti(k))) {
-      try { localStorage.setItem("rmr2_prijatelj_kod", kodOcisti(k)); } catch (e) {}
-      setTimeout(() => { try { nasTabKlik("zajednica"); if (!prijateljIzLinka()) { const i = document.getElementById("zprKod"); if (i) i.value = kodOcisti(k); } } catch (e) {} }, 900);
-    }
-  } catch (e) {}
-})();
-
-/* ---- 2.10.2026 (Boskov nalog): slika, poslednja aktivnost, sazetak prijatelja, obavezna prijava ---- */
-function avatarSmanji(file) {   // galerija/kamera -> kvadrat 256 px, JPEG ~20-40 KB (bucket prima najvise 400 KB)
-  return new Promise((res, rej) => {
-    const url = URL.createObjectURL(file); const img = new Image();
-    img.onload = () => {
-      try {
-        const S = 256, c = document.createElement("canvas"); c.width = S; c.height = S;
-        const m = Math.min(img.naturalWidth, img.naturalHeight), sx = (img.naturalWidth - m) / 2, sy = (img.naturalHeight - m) / 2;
-        c.getContext("2d").drawImage(img, sx, sy, m, m, 0, 0, S, S);
-        c.toBlob((b) => { URL.revokeObjectURL(url); b ? res(b) : rej(new Error("slika")); }, "image/jpeg", 0.82);
-      } catch (e) { URL.revokeObjectURL(url); rej(e); }
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error(T("nal.slikaNeMoze"))); };
-    img.src = url;
-  });
-}
-async function avatarPosalji(blob) {   // storage: <uid>.jpg (x-upsert), pa avatar_v + 1 u korisnici
-  const n = nalogCitaj(); if (!n || !n.uid) throw new Error(T("nal.nemaSesije"));
-  const t = await nalogToken();
-  let signal; try { signal = AbortSignal.timeout(20000); } catch (e) {}
-  const r = await fetch(SUPA_URL + "/storage/v1/object/avatari/" + encodeURIComponent(n.uid) + ".jpg", { method: "POST", signal,
-    headers: { apikey: SUPA_KEY, Authorization: "Bearer " + t, "Content-Type": "image/jpeg", "x-upsert": "true" }, body: blob });
-  if (!r.ok) { let m = ""; try { m = (await r.json()).message || ""; } catch (e) {} throw new Error(m || ("HTTP " + r.status)); }
-  const v = (n.avatar_v || 0) + 1;
-  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ avatar_v: v }) });
-  nalogUpisi({ ...nalogCitaj(), avatar_v: v });
-  return v;
-}
-function avatarIzaberi(posle) {   // otvara galeriju; kad je nalog tu, odmah salje; inace cuva blob za kapiju
-  const inp = document.getElementById("avatarFajl"); if (!inp) return;
-  inp.value = "";
-  inp.onchange = async () => {
-    const f = inp.files && inp.files[0]; if (!f) return;
-    const kap = document.getElementById("nalogKapija"), naKapiji = !!(kap && !kap.hidden);
-    const gr = document.getElementById("nkGreska");
-    try {
-      if (naKapiji && gr) gr.hidden = true;
-      const b = await avatarSmanji(f);
-      const n = nalogCitaj();
-      /* 2.10. (Bosko: "nece da mi prikaci sliku"): krug na kapiji se osvezava UVEK kad je kapija na ekranu - i kad nalog
-         vec postoji (stari nalog bez mejla), jer se tada slika salje odmah, a krug je ostajao prazan; poruke o uspehu/gresci
-         idu u polje kapije, jer je obicna poruka (z-index 300) ISPOD kapije (8000) pa se ne vidi. */
-      if (naKapiji) { const im = document.getElementById("nkAvImg"); if (im) { im.src = URL.createObjectURL(b); im.hidden = false; const ini = document.getElementById("nkAvIni"); if (ini) ini.hidden = true; } }
-      if (n && n.kod) { NK.blob = null; await avatarPosalji(b); if (!naKapiji) tihoObavestenje(T("nal.slikaSacuvana")); }
-      else NK.blob = b;
-      if (posle) posle();
-    } catch (e) {
-      if (naKapiji && gr) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; }
-      else { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} }
-    }
-  };
-  inp.click();
-}
-function nalogStatistika() {   // ono sto prijatelji vide: vožnje, km, najduza - iz dozivotnog agregata i dnevnika
-  const p = _zajCitaj("mr_poeni", { ukupno: 0, nedelje: {} });
-  const v = _zajCitaj("mr_voznje", []);
-  const naj = v.reduce((m, r) => Math.max(m, (r && !r.tura && r.km) || 0), 0);
-  const posl = v.reduce((m, r) => Math.max(m, (r && r.ts) || 0), 0);
-  return { stat_voznje: p.voznje || v.length || 0, stat_km: Math.round(p.km || v.reduce((s2, r) => s2 + (r.km || 0), 0)),
-    stat_najduza_km: Math.round(naj * 10) / 10, stat_poslednja_at: posl ? new Date(posl).toISOString() : null };
-}
-async function nalogPing(force) {   // "poslednji put aktivan" + motor + statistika; najvise jednom na sat (bez force)
-  const n = nalogCitaj(); if (!n || !n.kod) return;
-  let zad = 0; try { zad = +localStorage.getItem("rmr2_nalog_ping") || 0; } catch (e) {}
-  if (!force && Date.now() - zad < 3600000) return;
-  const mm = (typeof mojMotor === "function") ? mojMotor() : null;
-  const telo = { aktivan_at: new Date().toISOString(), motor: mm ? mm.ime.slice(0, 48) : null, ...nalogStatistika() };
-  try { await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify(telo) });
-    try { localStorage.setItem("rmr2_nalog_ping", String(Date.now())); } catch (e) {} } catch (e) {}
-}
-function prijateljSazetak(f) {   // 3.10. (Boskov izbor 4B "lista"): zaglavlje sa @imenom, redovi Lokacija / Poslednja voznja / Ukupno / Sastanci, dve radnje, tiho uklanjanje
-  const el = document.getElementById("prijateljList"); if (!el || !f) return;
-  document.getElementById("plAv").outerHTML = avatarHtml(f.id, f.avatar_v, f.ime, "pl-av").replace('class="pl-av"', 'class="pl-av" id="plAv"');
-  document.getElementById("plIme").textContent = f.ime || "";
-  document.getElementById("plKor").textContent = [f.korisnicko ? "@" + f.korisnicko : "", f.aktivan_at ? aktivanTekst(f.aktivan_at) : ""].filter(Boolean).join(" · ");
-  document.getElementById("plMotor").textContent = f.motor || T("nal.motorNema");
-  const lok = f.lok || (LOK.lista || []).find((x) => x.id === f.id);   // 2.10. (faza 3): ziva lokacija
-  const sveza = !!(lok && lok.lat != null && lokacijaSveza(lok.ts));
-  const pl = document.getElementById("plLok"), plr = document.getElementById("plLokRed"), pln = document.getElementById("plLokNapomena");
-  pl.textContent = (lok && lok.lat != null) ? (sveza ? T("pl.lokNaMapi", { 0: lokacijaVremeTekst(lok.ts) }) + (lok.u_voznji ? " · " + T("lok.vozi") : "") : T("pl.lokStaraKratko", { 0: lokacijaVremeTekst(lok.ts) })) : T("pl.lokNemaKratko");
-  pl.classList.toggle("akc", sveza);
-  plr.classList.toggle("jrow-dodir", sveza); plr.querySelector(".jchev").hidden = !sveza;
-  pln.textContent = sveza ? "" : ((lok && lok.lat != null) ? T("pl.lokStara", { 0: lokacijaVremeTekst(lok.ts) }) : T("pl.lokNema")); pln.hidden = sveza;
-  plr.onclick = sveza ? () => { prijateljSazetakZatvori(); try { nasTabKlik("planer"); if (map && map.flyTo) map.flyTo({ center: [lok.lon, lok.lat], zoom: Math.max(map.getZoom(), 13), duration: 900 }); } catch (e) {} } : null;
-  document.getElementById("plPosl").textContent = f.stat_poslednja_at ? new Date(f.stat_poslednja_at).toLocaleDateString(LOKAL()) + (f.stat_najduza_km ? " · " + DEC(String(f.stat_najduza_km)) + " km" : "") : T("pl.nijeVozio");
-  document.getElementById("plStat").innerHTML = `<i>${esc(String(f.stat_voznje || 0))}</i> ${esc(TN(f.stat_voznje || 0, "pl.voznja"))} · <i>${esc(DEC(String(f.stat_km || 0)))}</i> km`;
-  const sast = (SAST.lista || []).filter((m) => (m.ucesnici || []).some((u) => u.id === f.id));
-  const sr = document.getElementById("plSastRed"); sr.hidden = !sast.length;
-  if (sast.length) { document.getElementById("plSast").textContent = sast[0].ime + " · " + sastanakKadTekst(sast[0]); sr.onclick = () => { prijateljSazetakZatvori(); sastanakOtvori(sast[0].id); }; }
-  const vb = document.getElementById("plVodi");
-  vb.hidden = !sveza;
-  vb.onclick = () => { prijateljSazetakZatvori(); juriPokreni(f, lok); };   // faza 4: ruta prati NJEGOVU tacku
-  el.hidden = false; document.body.classList.add("mcilj"); PL.f = f;
-}
-const PL = { f: null };
-function prijateljSazetakZatvori() { const el = document.getElementById("prijateljList"); if (el) el.hidden = true; document.body.classList.remove("mcilj"); PL.f = null; }
-/* KAPIJA: bez naloga nema aplikacije (Boskov nalog 2.10.). Izuzeci: ?preview=1 i ?demo (alati, snimci, testovi). */
-const NK = { blob: null };
-function nalogKapijaTreba(n, upit) {
-  let p; try { p = new URLSearchParams(upit == null ? location.search : upit); } catch (e) { p = new URLSearchParams(""); }
-  if (p.has("preview") || p.has("demo")) return false;
-  try { if (sessionStorage.getItem("rmr2_nalog_preskoci") === "1") return false; } catch (e) {}
-  return !(n && n.kod && n.email);   // 2.10. (Bosko: "nama treba mejl"): nalog bez mejla (anonimna prijava iz 0.9.161-163) vraca kapiju u rezimu "vezi mejl"
-}
-function nalogEmailIzTokena(n) {   // mejl iz JWT-a (claim email) - stara sesija ga mozda nema u localStorage
-  try { const b = JSON.parse(atob(String(n && n.access || "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); return b.email || ""; } catch (e) { return ""; }
-}
-function nalogKapijaKorak2(opis) {   // korak 2: poruka o poslatom linku; polje za kod i "Potvrdi kod" samo kad mejl zaista nosi kod
-  const g = (id) => document.getElementById(id);
-  NK.korak = 2; g("nkKorak1").hidden = true; g("nkKorak2").hidden = false;
-  g("nkKodOpis").textContent = opis;
-  g("nkKod").hidden = !NALOG_KOD_U_MEJLU;
-  g("nkKreni").textContent = NALOG_KOD_U_MEJLU ? T("nk.potvrdi") : T("nk.promeniMejl");
-  if (NALOG_KOD_U_MEJLU) setTimeout(() => { try { g("nkKod").focus(); } catch (e) {} }, 150);
-}
-function nalogKapijaPrikazi() {
-  const el = document.getElementById("nalogKapija"); if (!el) return;
-  { const n0 = nalogCitaj(); if (n0 && n0.kod && !n0.email) { const em = nalogEmailIzTokena(n0); if (em) nalogUpisi({ ...n0, email: em }); } }
-  if (!nalogKapijaTreba(nalogCitaj())) { el.hidden = true; document.body.classList.remove("kapija"); return; }
-  const n = nalogCitaj();
-  NK.vezi = !!(n && n.kod && n.refresh && !n.email);   // postojeci nalog bez mejla: mejl se VEZUJE za isti nalog (kod i prijatelji ostaju)
-  { const v = document.getElementById("nkVezi"); if (v) v.hidden = !NK.vezi; }
-  NK.korak = 1; document.getElementById("nkKorak1").hidden = false; document.getElementById("nkKorak2").hidden = true;
-  document.getElementById("nkKreni").querySelector("span, b") || (document.getElementById("nkKreni").textContent = T("nk.kreni"));
-  try { document.getElementById("nkEmail").value = localStorage.getItem("rmr2_nalog_email") || ""; } catch (e) {}
-  document.getElementById("nkIme").value = (n && n.ime) || "";
-  NK.korRucno = false; document.getElementById("nkKorisnicko").value = (n && n.korisnicko) || korisnickoPredlog((n && n.ime) || "");
-  const mm = (typeof mojMotor === "function") ? mojMotor() : null;
-  document.getElementById("nkMotor").textContent = mm ? T("nk.motor", { 0: mm.ime }) : T("nk.motorKasnije");
-  document.getElementById("nkGreska").hidden = true; document.getElementById("nkPreskoci").hidden = true;
-  if (NK.linkGreska) {   // dosao sa linka koji ne vazi: pravo na korak 2, sa mejlom koji je trazio link, i jednim dugmetom "posalji ponovo"
-    let em = ""; try { em = localStorage.getItem("rmr2_nalog_email") || ""; } catch (e) {}
-    if (em) {
-      NK.email = em; nalogKapijaKorak2(T("nk.linkNeVazi", { 0: em }));
-    } else { const gr = document.getElementById("nkGreska"); gr.textContent = T("nk.linkNeVaziBezMejla"); gr.hidden = false; }
-    NK.linkGreska = null;
-  }
-  el.hidden = false; document.body.classList.add("kapija");
-}
-(function(){
-  const g = (id) => document.getElementById(id);
-  if (!g("nalogKapija")) return;
-  g("nkAv").addEventListener("click", () => avatarIzaberi());
-  g("nkKreni").addEventListener("click", async () => {
-    const b = g("nkKreni"), gr = g("nkGreska"); b.disabled = true; gr.hidden = true;
-    try {
-      if (NK.korak !== 2) {   // korak 1: ime + mejl -> posalji kod
-        const ime = String(g("nkIme").value || "").trim();
-        if (ime.length < 2) throw new Error(T("nal.imeKratko"));
-        const kor = korisnickoOcisti(g("nkKorisnicko").value);
-        if (!korisnickoValidan(kor)) { const e = new Error(korisnickoGreska(g("nkKorisnicko").value)); e.korisnicko = true; throw e; }   // Bosko 3.10.: ne pusta dalje dok ime nije po pravilu
-        try { localStorage.setItem("rmr2_nalog_draft", JSON.stringify({ ime, telefon: String(g("nkTel").value || "").trim(), korisnicko: kor })); } catch (e) {}
-        if (NK.vezi && NK.veziZauzet && NK.veziZauzet === String(g("nkEmail").value || "").trim().toLowerCase()) NK.vezi = false;
-        // (korak 1)   // drugi Kreni istim mejlom: prijava TIM nalogom, stari bez mejla ostaje po strani
-        NK.email = NK.vezi ? await nalogVeziMejl(g("nkEmail").value) : await nalogPosaljiKod(g("nkEmail").value);
-        nalogKapijaKorak2(NK.vezi ? T("nk.veziPoslat", { 0: NK.email }) : (T("nk.kodPoslat", { 0: NK.email }) + " " + T("nk.iliLink")));
-        b.disabled = false;
-        return;
-      }
-      if (!NALOG_KOD_U_MEJLU) {   // korak 2 bez koda: glavno dugme = "Promeni mejl" (nazad na korak 1)
-        NK.korak = 1; g("nkKorak1").hidden = false; g("nkKorak2").hidden = true; g("nkKreni").textContent = T("nk.kreni"); b.disabled = false; return;
-      }
-      if (!String(g("nkKod").value || "").replace(/\D/g, "").length) { gr.textContent = T("nk.kliknilink"); gr.hidden = false; b.disabled = false; return; }
-      await nalogPotvrdiKod(NK.email, g("nkKod").value, g("nkIme").value, g("nkTel").value, NK.vezi ? "email_change" : "email", g("nkKorisnicko").value);
-      if (NK.blob) { try { await avatarPosalji(NK.blob); } catch (e) {} NK.blob = null; }
-      try { await nalogPing(true); } catch (e) {}
-      g("nalogKapija").hidden = true; document.body.classList.remove("kapija");
-      try { renderJaNalog(); renderPrijatelji(); prijateljIzLinka(); sastanciPokreni(); lokacijePokreni(); pushRegistruj(); } catch (e) {}
-    } catch (e) {
-      gr.textContent = nalogGreskaTekst(e); gr.hidden = false; b.disabled = false;
-      if (NK.vezi && e && e.kod === "email_exists") { NK.veziZauzet = String(g("nkEmail").value || "").trim().toLowerCase(); gr.textContent = T("nk.emailZauzet"); }
-      /* server pao ili nema mreze: aplikacija ne sme da ostane zakljucana na putu - izlaz vazi do sledeceg paljenja */
-      const m = String(e && e.message || "");
-      if (/nije podešen|not set up|Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m) || (e && e.status >= 500)) g("nkPreskoci").hidden = false;
-    }
-  });
-  ["nkIme", "nkEmail", "nkTel", "nkKod", "nkKorisnicko"].forEach((id) => g(id).addEventListener("keydown", (e) => { if (e.key === "Enter") g("nkKreni").click(); }));
-  g("nkIme").addEventListener("input", () => { if (!NK.korRucno) g("nkKorisnicko").value = korisnickoPredlog(g("nkIme").value); });   // predlog prati ime dok ga covek ne dirne
-  g("nkKorisnicko").addEventListener("input", () => {   // uzivo: mala slova, bez @; los oblik se vidi odmah (crven okvir + poruka sa predlogom), ne tek na Kreni
-    NK.korRucno = !!g("nkKorisnicko").value; g("nkKorisnicko").value = String(g("nkKorisnicko").value).toLowerCase().replace(/^@/, "");
-    const v = g("nkKorisnicko").value, ok = !v || korisnickoValidan(v); g("nkKorisnicko").classList.toggle("nk-los", !ok);
-    const h = g("nkKorHint"); if (h) { h.textContent = ok ? "" : korisnickoGreska(v); h.hidden = ok; }
-  });
-  g("nkPonovo").addEventListener("click", async () => { const gr = g("nkGreska"); gr.hidden = true; try { if (NK.vezi) await nalogVeziMejl(NK.email); else await nalogPosaljiKod(NK.email); tihoObavestenje(T("nk.kodPoslatPonovo")); } catch (e) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; } });
-  g("nkPreskoci").addEventListener("click", () => { try { sessionStorage.setItem("rmr2_nalog_preskoci", "1"); } catch (e) {} g("nalogKapija").hidden = true; document.body.classList.remove("kapija"); });
-  g("plNazad").addEventListener("click", prijateljSazetakZatvori);   // 3.10. (Bosko: "ekran ostane zamrznut, treba strelica back") - crveni X je licio na brisanje
-  g("plNadjemo").addEventListener("click", () => {   // 4B (3.10., Bosko: "ovo nadjemo se"): pretraga bira MESTO sastanka, pa nov sastanak sa ovim prijateljem
-    const f = PL.f; prijateljSazetakZatvori(); if (!f) return;
-    SAST.zaSastanak = f.id; try { nasTabKlik("planer"); } catch (e) {}
-    try { openSearch("to"); } catch (e) {}
-    try { const si = document.getElementById("sInput"); if (si) { if (!si.dataset.ph0) si.dataset.ph0 = si.placeholder; si.placeholder = T("sas.gdeSeNalazimo"); } } catch (e) {}
-    try { tihoObavestenje(T("sas.izaberiMesto", { 0: f.ime })); } catch (e) {}
-  });
-  g("plUkloni").addEventListener("click", async () => {
-    const f = PL.f; if (!f || !confirm(T("nal.ukloniPitanje"))) return;
-    try { await prijateljUkloni(f.id); prijateljSazetakZatvori(); renderPrijatelji(true); } catch (e) { alert(nalogGreskaTekst(e)); }
-  });
-  if (nalogIzHasha()) setTimeout(() => { nalogIzLinkaZavrsi(); }, 400);   // link iz mejla (web)
-  else setTimeout(() => { try { nalogKapijaPrikazi(); } catch (e) {} }, 350);   // posle uvodne animacije; sloj je iznad nje po z-indexu
-  window.addEventListener("hashchange", () => {   // 3.10. (QA ISSUE-005): link stigao u VEC otvorenu aplikaciju (isti tab, bez ucitavanja)
-    if (nalogIzHasha()) nalogIzLinkaZavrsi(); else if (NK.linkGreska) { try { nalogKapijaPrikazi(); } catch (e) {} }
-  });
-  setTimeout(() => { try { nalogProveriNaServeru(); } catch (e) {} }, 1500);   // nalog obrisan na serveru -> kapija, ne sat vremena laznog "prijavljen"
-  setTimeout(() => { try { nalogPing(); } catch (e) {} }, 6000);
-})();
-
-/* ======================= "NADJEMO SE TAMO" (faza 2 od 4, 2.10.2026) =======================
-   Sastanak = mesto + vreme + poruka, poslat izabranim prijateljima (docs/supabase-sastanci.sql). Pozvani
-   dobija traku na pocetnom i karticu u Zajednici; "Vodi me tamo" racuna rutu i salje ETA, pa svi vide ko kad
-   stize. Bez push obavestenja (jos): spisak se povlaci pri paljenju, na svakih 60 s dok je app na ekranu i
-   pri ulasku u Zajednicu. / Meet-up: place + time to friends; everyone gets "take me there" and ETAs. */
-const SAST = { lista: [], vidjeni: null, t: null, cilj: null, otvoren: null, novi: null };
-const SAST_KEY = "rmr2_sastanci", SAST_VIDJ = "rmr2_sastanci_vidjeni";
-function sastanciKes() { try { return JSON.parse(localStorage.getItem(SAST_KEY) || "[]"); } catch (e) { return []; } }
-function sastanakKadTekst(m, sad) {   // "ko kad stigne" ili "danas u 16:30" / "sub 4.10. 10:00"
-  if (!m || !m.kad) return T("sas.bezVremena");
-  const d = new Date(m.kad), danas = d.toDateString() === new Date(sad == null ? Date.now() : sad).toDateString();
-  const hh = d.toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
-  return danas ? T("sas.danasU", { 0: hh }) : d.toLocaleDateString(LOKAL(), { weekday: "short", day: "numeric", month: "numeric" }) + " " + hh;
-}
-function sastanakStanjeTekst(u, ja) {   // ja=true: drugo lice ("dolazis", "nisi odgovorio") - 3.10., "ti dolazi" je bilo nepismeno
-  if (!u) return "";
-  if (u.stanje === "stigao") return T(ja ? "sas.stigaoTi" : "sas.stigao");
-  if (u.stanje === "ne") return T(ja ? "sas.neDolazisTi" : "sas.neDolazi");
-  if (u.stanje === "dolazim") return u.eta_at ? T(ja ? "sas.stizesTi" : "sas.stizeU", { 0: new Date(u.eta_at).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" }) }) : T(ja ? "sas.dolazisTi" : "sas.dolazi");
-  return T(ja ? "sas.pozvanTi" : "sas.pozvan");
-}
-function mojiPrijateljiPrihvaceni() { return prijateljiKes().filter((f) => f.stanje === "prihvaceno"); }
-function sastanciNovi(lista, vidjeni, uid) {   // pozivi drugih koje jos nisam video (za tihu poruku)
-  return (lista || []).filter((m) => m.od !== uid && !(vidjeni || []).includes(m.id));
-}
-async function sastanciUcitaj(tiho) {
-  const n = nalogCitaj(); if (!n || !n.kod) return [];
-  let l = [];
-  try { const r = await supaJa("rpc/moji_sastanci", { method: "POST", body: "{}" }); l = Array.isArray(r) ? r : []; }
-  catch (e) { if (!tiho) throw e; return sastanciKes(); }
-  try { localStorage.setItem(SAST_KEY, JSON.stringify(l)); } catch (e) {}
-  SAST.lista = l;
-  let vidj = []; try { vidj = JSON.parse(localStorage.getItem(SAST_VIDJ) || "[]"); } catch (e) {}
-  const novi = sastanciNovi(l, vidj, n.uid);
-  if (novi.length && SAST.vidjeni !== null) { try { tihoObavestenje(T("sas.novPoziv", { 0: novi[0].od_ime, 1: novi[0].ime })); } catch (e) {} }   // prvo ucitavanje cuti
-  SAST.vidjeni = vidj;
-  try { localStorage.setItem(SAST_VIDJ, JSON.stringify(l.map((m) => m.id).slice(-50))); } catch (e) {}
-  sastanciCrtaj();
-  return l;
-}
-function sastanciPokreni() {   // pri paljenju + svakih 60 s dok je app vidljiv
-  const n = nalogCitaj(); if (!n || !n.kod) return;
-  SAST.lista = sastanciKes(); sastanciCrtaj();
-  sastanciUcitaj(true);
-  if (SAST.t) clearInterval(SAST.t);
-  SAST.t = setInterval(() => { if (document.visibilityState === "visible") sastanciUcitaj(true); }, 60000);
-  if (!sastanciPokreni._vis) { sastanciPokreni._vis = true; document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") sastanciUcitaj(true); }); }
-}
-function sastanciCrtaj() {
-  const n = nalogCitaj(); const uid = n && n.uid;
-  const zivi = (SAST.lista || []).filter((m) => new Date(m.istice_at).getTime() > Date.now());
-  const moj = (m) => (m.ucesnici || []).find((u) => u.id === uid);
-  const tr = document.getElementById("sastanakTraka");
-  if (tr) {   // traka na pocetnom: prvo onaj na koji nisam odgovorio, inace prvi na koji dolazim
-    const prvi = zivi.find((m) => { const u = moj(m); return u && u.stanje === "pozvan"; }) || zivi.find((m) => { const u = moj(m); return u && u.stanje !== "ne"; });
-    if (prvi) {
-      const u = moj(prvi), org = (prvi.ucesnici || []).find((x) => x.id === prvi.od) || {};
-      tr.innerHTML = `<span class="st-av">${avatarHtml(prvi.od, org.avatar_v, prvi.od_ime, "zpr-av st-avi")}</span><span class="st-t"><b>${esc(prvi.od === uid ? T("sas.tvojSastanak") : prvi.od_ime)}</b><small>${esc(T("sas.nadjemoSeU", { 0: prvi.ime, 1: sastanakKadTekst(prvi) }))}</small></span><span class="rmr-cap akc">${esc(u && u.stanje === "pozvan" ? T("sas.odgovori") : T("sas.otvori"))}</span>`;
-      tr.hidden = false; tr.dataset.id = prvi.id;
-    } else tr.hidden = true;
-  }
-  const box = document.getElementById("zSastanci");
-  if (box) {
-    if (!zivi.length) { box.hidden = true; box.innerHTML = ""; }
-    else {
-      box.hidden = false;
-      box.innerHTML = `<div class="zsec">${esc(T("sas.naslov"))}</div>` + zivi.map((m) => {
-        const dol = (m.ucesnici || []).filter((u) => u.stanje === "dolazim" || u.stanje === "stigao").length;
-        return `<button type="button" class="zs-kart" data-id="${esc(m.id)}"><div class="zs-t"><b>${esc(m.ime)}</b><small>${esc(sastanakKadTekst(m))} · ${esc(m.od === uid ? T("sas.tiZoves") : T("sas.zove", { 0: m.od_ime }))}</small><small>${esc(T("sas.dolaziN", { 0: dol, 1: (m.ucesnici || []).length }))}</small></div><span class="rmr-cap akc">${esc(T("sas.otvori"))}</span></button>`;
-      }).join("");
-    }
-  }
-}
-function sastanakDalj(m) {
-  try { const r = geoRef(); if (r && r.lat != null) { const d = haversine(r.lat, r.lon, m.lat, m.lon); return d < 1 ? T("mc.manje1") : T("mc.odTebe", { 0: Math.round(d) }); } } catch (e) {}
-  return "";
-}
-function sastanakOtvori(id) {
-  const m = (SAST.lista || []).find((x) => x.id === id) || sastanciKes().find((x) => x.id === id); if (!m) return;
-  const n = nalogCitaj(); const uid = n && n.uid; const moj = (m.ucesnici || []).find((u) => u.id === uid);
-  const el = document.getElementById("sastanakList"); if (!el) return;
-  try { mestoCiljZatvori(); } catch (e) {}
-  document.getElementById("slOd").textContent = m.od === uid ? T("sas.tiZoves") : T("sas.zove", { 0: m.od_ime });   // 5A: "Organizuje Ana Divic · Vreme: ko kad stigne"
-  document.getElementById("slIme").textContent = m.ime;
-  document.getElementById("slKad").textContent = T("sas.vreme", { 0: sastanakKadTekst(m) });   // "Vreme: ko kad stigne" / "Vreme: danas u 16:30"
-  document.getElementById("slDalj").innerHTML = sastanakDalj(m);
-  const po = document.getElementById("slPoruka"); po.textContent = m.poruka || ""; po.hidden = !m.poruka;
-  document.getElementById("slUcesnici").innerHTML = (m.ucesnici || []).map((u) =>
-    `<div class="sl-red${u.id === uid ? " ja" : ""}">${avatarHtml(u.id, u.avatar_v, u.ime)}<b class="sl-ime">${esc(u.id === uid ? T("sas.ti") : u.ime)}</b><small class="sl-st${u.stanje === "dolazim" || u.stanje === "stigao" ? " akc" : ""}">${esc(sastanakStanjeTekst(u, u.id === uid))}</small></div>`).join("");
-  document.getElementById("slNe").classList.toggle("on", !!moj && moj.stanje === "ne");
-  document.getElementById("slNe").hidden = !!moj && moj.stanje === "stigao";
-  document.getElementById("slOtkazi").hidden = m.od !== uid;
-  el.hidden = false; document.body.classList.add("mcilj"); SAST.otvoren = m;
-}
-function sastanakZatvori() { const el = document.getElementById("sastanakList"); if (el) el.hidden = true; document.body.classList.remove("mcilj"); SAST.otvoren = null; }
-async function sastanakOdgovori(id, stanje, eta) {
-  await supaJa("rpc/sastanak_odgovori", { method: "POST", body: JSON.stringify({ p_id: id, p_stanje: stanje, p_eta: eta || null }) });
-  if (stanje !== "ne") pushPosalji(id, "odgovor", stanje);   // "X je krenuo / stigao" ostalima
-  await sastanciUcitaj(true);
-}
-function sastanakEta(route, cilj, sad) {   // ETA iz izracunate rute, SAMO ako ruta vodi bas na mesto sastanka (<500 m)
-  if (!route || !route.totalDur || !cilj || !cilj.to || cilj.to.lat == null) return null;
-  if (haversine(cilj.to.lat, cilj.to.lon, cilj.lat, cilj.lon) >= 0.5) return null;
-  return new Date((sad == null ? Date.now() : sad) + route.totalDur * 1000).toISOString();
-}
-function sastanakVodi(m) {   // Vodi me tamo + ETA cim ruta stigne (plan je asinhron; cekamo do 40 s)
-  SAST.cilj = { id: m.id, t0: Date.now(), lat: m.lat, lon: m.lon };
-  sastanakZatvori();
-  try { SEARCH_MODE = "to"; } catch (e) {}
-  pickDestination({ n: m.ime, lat: m.lat, lon: m.lon, odmah: true });
-  const seq = ++sastanakVodi._seq;
-  const cekaj = () => {
-    if (seq !== sastanakVodi._seq || !SAST.cilj) return;
-    const eta = sastanakEta(state.routes && state.routes[state.selected], { ...SAST.cilj, to: state.geocode && state.geocode.to });
-    if (eta) { sastanakOdgovori(SAST.cilj.id, "dolazim", eta).catch(() => {}); return; }
-    if (Date.now() - SAST.cilj.t0 < 40000) setTimeout(cekaj, 1500);
-  };
-  setTimeout(cekaj, 2500);
-}
-sastanakVodi._seq = 0;
-function sastanakNoviOtvori(m) {   // iz lista mesta (E4)
-  const el = document.getElementById("sastanakNovi"); if (!el || !m) return;
-  const pr = mojiPrijateljiPrihvaceni();
-  SAST.novi = { ime: m.ime, lat: m.lat, lon: m.lon, kad: null };
-  document.getElementById("snIme").textContent = m.ime;
-  document.getElementById("snPoruka").value = "";
-  document.getElementById("snKad").hidden = true; document.getElementById("snSada").classList.add("on"); document.getElementById("snU").classList.remove("on");
-  document.getElementById("snUTxt").textContent = T("sas.uVreme");
-  document.getElementById("snGreska").hidden = true;
-  const samo = SAST.predizbor; SAST.predizbor = null;   // iz kartice prijatelja: stikliran je samo on
-  document.getElementById("snLista").innerHTML = pr.map((f) => `<label class="sn-red">${avatarHtml(f.id, f.avatar_v, f.ime)}<span class="zpr-t"><b>${esc(f.ime)}</b>${f.motor ? "<small>" + esc(f.motor) + "</small>" : ""}</span><input type="checkbox" value="${esc(f.id)}"${(!samo || samo === f.id) ? " checked" : ""}></label>`).join("");
-  try { mestoCiljZatvori(); } catch (e) {}
-  el.hidden = false; document.body.classList.add("mcilj");
-}
-function sastanakNoviZatvori() { const el = document.getElementById("sastanakNovi"); if (el) el.hidden = true; document.body.classList.remove("mcilj"); SAST.novi = null; }
-(function(){
-  const g = (id) => document.getElementById(id);
-  if (!g("sastanakNovi")) return;
-  g("sastanakTraka").addEventListener("click", (e) => { e.stopPropagation(); sastanakOtvori(g("sastanakTraka").dataset.id); });
-  const zs = g("zSastanci"); if (zs) zs.addEventListener("click", (e) => { const k = e.target.closest("[data-id]"); if (k) sastanakOtvori(k.dataset.id); });
-  const mcN = g("mcNadjemo"); if (mcN) mcN.addEventListener("click", () => { if (MC.m) sastanakNoviOtvori(MC.m); });
-  const pad = (n) => String(n).padStart(2, "0");
-  const hhmm = (v) => new Date(v).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
-  g("snSada").addEventListener("click", () => { SAST.novi.kad = null; g("snKad").hidden = true; g("snSada").classList.add("on"); g("snU").classList.remove("on"); g("snUTxt").textContent = T("sas.uVreme"); });
-  g("snU").addEventListener("click", () => {
-    const w = g("snKad"); w.hidden = false; g("snU").classList.add("on"); g("snSada").classList.remove("on");
-    if (!w.value) { const d = new Date(Date.now() + 60 * 60000); d.setMinutes(Math.round(d.getMinutes() / 15) * 15, 0, 0); w.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
-    SAST.novi.kad = w.value; g("snUTxt").textContent = T("sas.uVremeX", { 0: hhmm(w.value) });
-    try { w.showPicker(); } catch (e) { w.focus(); }
-  });
-  g("snKad").addEventListener("change", () => { if (g("snKad").value) { SAST.novi.kad = g("snKad").value; g("snUTxt").textContent = T("sas.uVremeX", { 0: hhmm(g("snKad").value) }); } });
-  g("snPosalji").addEventListener("click", async () => {
-    const b = g("snPosalji"), gr = g("snGreska"); gr.hidden = true;
-    const ko = [...g("snLista").querySelectorAll("input:checked")].map((i) => i.value);
-    if (!ko.length) { gr.textContent = T("sas.izaberiNekog"); gr.hidden = false; return; }
-    b.disabled = true;
-    try {
-      const m = SAST.novi;
-      const id = await supaJa("rpc/nadjemo_se", { method: "POST", body: JSON.stringify({ p_ime: m.ime, p_lat: m.lat, p_lon: m.lon, p_kad: m.kad ? new Date(m.kad).toISOString() : null, p_poruka: g("snPoruka").value, p_ko: ko }) });
-      sastanakNoviZatvori();
-      tihoObavestenje(T("sas.poslato", { 0: ko.length, 1: TN(ko.length, "pl.prijatelj") }));
-      pushPosalji(id, "poziv");
-      await sastanciUcitaj(true);
-      if ((SAST.lista || []).some((x) => x.id === id)) sastanakOtvori(id);   // odmah vidis karticu - odatle "Vodi me tamo" i za sebe
-    } catch (e) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; }
-    b.disabled = false;
-  });
-  g("snX").addEventListener("click", sastanakNoviZatvori);
-  g("slX").addEventListener("click", sastanakZatvori);
-  g("slVodi").addEventListener("click", () => { if (SAST.otvoren) sastanakVodi(SAST.otvoren); });
-  g("slNe").addEventListener("click", async () => { const m = SAST.otvoren; if (!m) return; try { await sastanakOdgovori(m.id, "ne", null); sastanakOtvori(m.id); } catch (e) { tihoObavestenje(nalogGreskaTekst(e)); } });
-  g("slOtkazi").addEventListener("click", async () => { const m = SAST.otvoren; if (!m || !confirm(T("sas.otkaziPitanje"))) return;
-    try { await supaJa("rpc/sastanak_otkazi", { method: "POST", body: JSON.stringify({ p_id: m.id }) }); sastanakZatvori(); await sastanciUcitaj(true); } catch (e) { tihoObavestenje(nalogGreskaTekst(e)); } });
-  setTimeout(() => { try { sastanciPokreni(); } catch (e) {} }, 4000);
-})();
-
-/* ======================= PRIJATELJI UZIVO NA MAPI + PUSH (faza 3 od 4, 2.10.2026) =======================
-   Boskove odluke: lokacija se deli UVEK dok smo prijatelji (prekidac u Ja, podrazumevano upaljen); osvezavanje
-   2-3 min, cesce sto si blizi (>5 km 180 s, <5 km 30 s, <1 km 10 s). Slanje: u prednjem planu odavde
-   (watchPosition), u pozadini u voznji iz nativnog kolektora (cmd "deli"). Prijem: prijatelji_lokacije() na
-   isti ritam; prsten sa slikom/slovom i natpisom na mapi; dodir = sazetak + "Vodi me do njega".
-   Push: token iz nativnog sloja (window.rmrPushToken) -> uredjaj_upisi; salje Edge funkcija "push".
-   Sema: docs/supabase-lokacije.sql. / Live friends on the map + push registration. */
-const LOK = { markeri: {}, lista: [], tSalji: null, tCitaj: null, zadnje: 0, deli: null, tokenRok: 0 };
-function deliLokaciju() { if (LOK.deli == null) { try { LOK.deli = localStorage.getItem("rmr2_deli") !== "0"; } catch (e) { LOK.deli = true; } } return LOK.deli; }
-function lokacijaInterval(najbliziKm) {   // Boskovo pravilo 1.10.: 2-3 min, cesce kad si blizu
-  if (najbliziKm == null || !isFinite(najbliziKm)) return 180000;
-  if (najbliziKm < 1) return 10000;
-  if (najbliziKm < 5) return 30000;
-  return 180000;
-}
-function lokacijaNajbliziKm(mojFix, lista) {
-  if (!mojFix || mojFix.lat == null) return null;
-  let m = null;
-  for (const f of lista || []) { if (f.lat == null) continue; const d = haversine(mojFix.lat, mojFix.lon, f.lat, f.lon); if (m == null || d < m) m = d; }
-  return m;
-}
-function lokacijaMojFix() {   // u voznji: poslednji fiks voznje; inace: zivi watch sa pocetnog
-  try {
-    if (document.body.classList.contains("riding") && RIDE.lastFixObj && RIDE.lastFixObj.la != null)
-      return { lat: RIDE.lastFixObj.la, lon: RIDE.lastFixObj.lo, t: RIDE.lastFixTs || Date.now(), spd: (RIDE.spdKmh || 0) / 3.6, voznja: true };
-  } catch (e) {}
-  const h = HOMELOC.fix; if (h && !h.stale) return { lat: h.lat, lon: h.lon, acc: h.acc, t: h.t, voznja: false };
-  return null;
-}
-async function lokacijaSalji(force) {
-  const n = nalogCitaj(); if (!n || !n.kod || !deliLokaciju()) return false;
-  const f = lokacijaMojFix(); if (!f || Date.now() - f.t > 300000) return false;   // ustajao fiks se ne salje kao "sada"
-  const iv = lokacijaInterval(lokacijaNajbliziKm(f, LOK.lista));
-  if (!force && Date.now() - LOK.zadnje < iv) return false;
-  LOK.zadnje = Date.now();
-  try {
-    await supaJa("rpc/lokacija_upisi", { method: "POST", body: JSON.stringify({ p_lat: f.lat, p_lon: f.lon, p_spd: f.spd != null ? Math.round(f.spd * 10) / 10 : null, p_kurs: null, p_acc: f.acc != null ? Math.round(f.acc) : null, p_u_voznji: !!f.voznja }) });
-    return true;
-  } catch (e) { return false; }
-}
-function mojaLokacijaStanjeTekst() {   // Ja: da covek vidi da li ga prijatelji uopste mogu videti (3.10.)
-  if (!deliLokaciju()) return T("lok.mojaIskljucena");
-  if (LOK.zadnje) return T("lok.mojaPoslata", { 0: lokacijaVremeTekst(new Date(LOK.zadnje).toISOString()) });
-  const f = lokacijaMojFix();
-  return f ? T("lok.mojaCeka") : T("lok.mojaNemaGps");
-}
-function lokacijaVremeTekst(ts, sad) {
-  const d = Math.max(0, (sad == null ? Date.now() : sad) - new Date(ts).getTime()), min = Math.round(d / 60000);
-  if (min < 2) return T("lok.sada");
-  if (min < 60) return T("lok.preMin", { 0: min });
-  const h = Math.round(min / 60); if (h < 24) return T("lok.preH", { 0: h });
-  return T("lok.davno");
-}
-function lokacijaSveza(ts, sad) { return !!ts && ((sad == null ? Date.now() : sad) - new Date(ts).getTime()) < 30 * 60000; }
-async function prijateljiLokacijeUcitaj() {
-  const n = nalogCitaj(); if (!n || !n.kod) return [];
-  let l = [];
-  try { const r = await supaJa("rpc/prijatelji_lokacije", { method: "POST", body: "{}" }); l = Array.isArray(r) ? r : []; } catch (e) { return LOK.lista; }
-  LOK.lista = l;
-  prijateljiLokacijeCrtaj();
-  return l;
-}
-function prijateljiLokacijeCrtaj() {
-  if (!map || !state.catMarkers) return;
-  const zivi = new Set();
-  for (const f of LOK.lista) {
-    if (f.lat == null) continue;
-    zivi.add(f.id);
-    let m = LOK.markeri[f.id];
-    const html = `<div class="pr-nat"><b>${esc(f.ime)}</b><span>${esc(lokacijaVremeTekst(f.ts))}</span></div>${avatarHtml(f.id, f.avatar_v, f.ime, "pr-krug" + (f.u_voznji ? " voznja" : ""))}`;
-    if (!m) {
-      const el = document.createElement("div"); el.className = "pr-pin"; el.innerHTML = html;
-      el.addEventListener("click", (e) => { e.stopPropagation(); const ff = LOK.lista.find((x) => x.id === f.id); if (ff) prijateljSazetak({ ...(prijateljiKes().find((x) => x.id === f.id) || {}), ...ff, stanje: "prihvaceno", lok: ff }); });
-      m = new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat([f.lon, f.lat]).addTo(map);
-      LOK.markeri[f.id] = m; state.catMarkers.prijatelji.push(m);
-      if (!state.layerVis.prijatelji) el.style.display = "none";
-    } else { m.setLngLat([f.lon, f.lat]); m.getElement().innerHTML = html; }
-  }
-  prijateljiNatpisStrana();
-  if (!prijateljiLokacijeCrtaj._move) { prijateljiLokacijeCrtaj._move = true; try { map.on("moveend", prijateljiNatpisStrana); } catch (e) {} }
-  for (const id of Object.keys(LOK.markeri)) if (!zivi.has(id)) { try { LOK.markeri[id].remove(); } catch (e) {} state.catMarkers.prijatelji = state.catMarkers.prijatelji.filter((x) => x !== LOK.markeri[id]); delete LOK.markeri[id]; }
-}
-/* Natpis uz prsten ide LEVO od prstena kad je prijatelj blizu desne ivice (ispod dugmadi Slojevi/pumpa/hrana),
-   i ispod prstena kad je uz gornju ivicu - inace ga stub dugmadi i gornje polje prekriju (Boskov snimak 2.10.). */
-function prijateljiNatpisStrana() {
-  try {
-    const w = window.innerWidth;
-    for (const id of Object.keys(LOK.markeri)) {
-      const m = LOK.markeri[id], el = m.getElement(); const p = map.project(m.getLngLat());
-      el.classList.toggle("levo", p.x > w - 110);
-      el.classList.toggle("dole", p.y < 150);
-    }
-  } catch (e) {}
-}
-function lokacijeTakt() {   // jedan otkucaj: posalji svoju, povuci tudje, zakazi sledeci po blizini
-  if (LOK.tSalji) clearTimeout(LOK.tSalji);
-  const n = nalogCitaj(); if (!n || !n.kod) return;
-  if (document.visibilityState === "visible") { lokacijaSalji(false); prijateljiLokacijeUcitaj(); }
-  const iv = lokacijaInterval(lokacijaNajbliziKm(lokacijaMojFix(), LOK.lista));
-  LOK.tSalji = setTimeout(lokacijeTakt, Math.min(iv, 60000));   // citanje tudjih najmanje na minut, slanje po pravilu
-  try { if (JURI.f) juriProveri(); } catch (e) {}
-}
-function lokacijePokreni() {
-  const n = nalogCitaj(); if (!n || !n.kod) return;
-  if (!lokacijePokreni._vis) { lokacijePokreni._vis = true; document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") lokacijeTakt(); }); }
-  lokacijeTakt();
-}
-/* pozadina u voznji: nativni kolektor salje sam; token mu obnavljamo na 30 min dok voznja traje */
-async function rmrGpsDeli(on) {
-  const n = nalogCitaj();
-  const poruka = { cmd: "deli", on: !!(on && n && n.kod && deliLokaciju()), url: SUPA_URL + "/rest/v1/rpc/lokacija_upisi", apikey: SUPA_KEY, token: "", ms: 120000 };
-  if (poruka.on) { try { const nn = nalogCitaj(); poruka.token = await nalogToken(!!(nn && nn.exp && nn.exp - Date.now() < 35 * 60000)); } catch (e) { poruka.on = false; } }   // pregled koda: token mora da nadzivi 30 min u dzepu
-  try { const h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.rmrGps; if (h) { h.postMessage(poruka); return; } } catch (e) {}
-  try { const a = rmrGpsSignal._a || (window.Capacitor && window.Capacitor.registerPlugin ? window.Capacitor.registerPlugin("RmrGps") : null); if (a && a.signal) a.signal(poruka).catch(() => {}); } catch (e) {}
-}
-function rmrGpsDeliPokreni() { rmrGpsDeli(true); if (LOK.tDeli) clearInterval(LOK.tDeli); LOK.tDeli = setInterval(() => rmrGpsDeli(true), 30 * 60000); }
-function rmrGpsDeliStani() { if (LOK.tDeli) clearInterval(LOK.tDeli); LOK.tDeli = null; rmrGpsDeli(false); }
-async function deliLokacijuPostavi(on) {
-  const pre = deliLokaciju();
-  try { await supaJa("rpc/deli_lokaciju_postavi", { method: "POST", body: JSON.stringify({ p_deli: !!on }) }); }
-  catch (e) {   // server nije primio: prekidac se vraca, covek cuje zasto (pregled koda 2.10.)
-    LOK.deli = pre; try { const c = document.getElementById("jaDeli"); if (c) c.checked = pre; } catch (e2) {}
-    try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {}
-    return;
-  }
-  LOK.deli = !!on; try { localStorage.setItem("rmr2_deli", on ? "1" : "0"); } catch (e) {}
-  if (on) lokacijaSalji(true); else rmrGpsDeli(false);
-}
-/* ---- push ---- */
-function pushRegistruj() {
-  const n = nalogCitaj(); if (!n || !n.kod) return;
-  try { const h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.rmrPush; if (h) h.postMessage({ cmd: "register" }); } catch (e) {}
-  // Android (FCM) jos nije ozicen - vidi supabase/README-push.md
-}
-window.rmrPushToken = function (hex) {
-  try {
-    const n = nalogCitaj(); if (!n || !n.kod || !hex) return false;
-    let zad = ""; try { zad = sessionStorage.getItem("rmr2_push_token") || ""; } catch (e) {}   // po paljenju, ne zauvek (server ume da obrise mrtav token)
-    if (zad === hex) return true;
-    supaJa("rpc/uredjaj_upisi", { method: "POST", body: JSON.stringify({ p_token: hex, p_platforma: "ios" }) })
-      .then(() => { try { sessionStorage.setItem("rmr2_push_token", hex); } catch (e) {} }).catch(() => {});
-    return true;
-  } catch (e) { return false; }
-};
-window.rmrPushOtvori = function (rmr) {   // dodir na obavestenje: otvori sastanak
-  try {
-    if (!rmr || !rmr.sastanak) return false;
-    nasTabKlik("planer");
-    sastanciUcitaj(true).then(() => sastanakOtvori(rmr.sastanak)).catch(() => { try { sastanakOtvori(rmr.sastanak); } catch (e) {} });
-    return true;
-  } catch (e) { return false; }
-};
-async function pushPosalji(sastanakId, vrsta, stanje) {   // Edge funkcija salje ostalim ucesnicima; pad je tih (bez push-a app radi isto)
-  try {
-    const t = await nalogToken(); if (!t) return;
-    let signal; try { signal = AbortSignal.timeout(10000); } catch (e) {}
-    await fetch(SUPA_URL + "/functions/v1/push", { method: "POST", signal, headers: { apikey: SUPA_KEY, Authorization: "Bearer " + t, "Content-Type": "application/json" }, body: JSON.stringify({ sastanak: sastanakId, vrsta: vrsta || "poziv", stanje: stanje || null }) });
-  } catch (e) {}
-}
-(function(){
-  if (!document.getElementById("kartaPuta")) return;
-  setTimeout(() => { try { lokacijePokreni(); pushRegistruj(); } catch (e) {} }, 7000);
-})();
-
-/* ======================= "JURI GA" (faza 4 od 4, 2.10.2026) =======================
-   Dodir na prijatelja sa zivom tackom -> "Vodi me do njega": ruta do NJEGOVE tacke koja se pomera. Dok traje
-   (planiranje ili voznja), prijateljeva tacka se povlaci na 15 s; kad se pomeri vise od JURI_PRAG_M od tacke do
-   koje vodi ruta, ruta se preracuna (u voznji kroz postojeci rideReroute, pre voznje novim planom). U voznji HUD
-   nosi tablu: razmak, njegova brzina, "stizes ga za ~X min" (iz razlike brzina) i starost tacke. Gasi se sa
-   krajem voznje, novim ciljem iz pretrage ili kad tacka ostari preko 10 min (tabla to kaze, ruta ostaje).
-   / Chase: route to a moving friend, replanned when they move; HUD plate with gap and catch-up time. */
-const JURI = { f: null, cilj: null, poslednje: 0, t: null };
-const JURI_PRAG_M = 300, JURI_TAKT_MS = 15000, JURI_STARO_MS = 10 * 60000;
-function juriPomeren(cilj, lok, pragM) {   // da li se prijatelj pomerio dovoljno da se ruta preracuna
-  if (!cilj || !lok || lok.lat == null) return false;
-  return haversine(cilj.lat, cilj.lon, lok.lat, lok.lon) * 1000 >= (pragM == null ? JURI_PRAG_M : pragM);
-}
-function juriStizes(razmakM, mojaMs, njegovaMs) {   // sekunde do sustizanja; null = ne stizes ga (brzi je ili stojis)
-  if (razmakM == null || !(mojaMs > 0)) return null;
-  const zatvaranje = mojaMs - (njegovaMs || 0);
-  if (zatvaranje < 1) return null;
-  return razmakM / zatvaranje;
-}
-function juriTekst(f, lok, razmakM, mojaMs, sad) {
-  const t = sad == null ? Date.now() : sad;
-  const star = lok && lok.ts ? t - new Date(lok.ts).getTime() : Infinity;
-  if (star > JURI_STARO_MS) return T("juri.bezSignala", { 0: f.ime, 1: lok && lok.ts ? new Date(lok.ts).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" }) : "?" });
-  const delovi = [];
-  if (razmakM != null) delovi.push(razmakM < 1000 ? T("juri.m", { 0: Math.round(razmakM / 10) * 10 }) : T("juri.km", { 0: DEC((razmakM / 1000).toFixed(1)) }));
-  if (lok && lok.spd != null) delovi.push(T("juri.njegova", { 0: Math.round(lok.spd * 3.6) }));
-  const s = juriStizes(razmakM, mojaMs, lok && lok.spd);
-  if (s != null && razmakM > 50) delovi.push(s < 60 ? T("juri.stizesSad") : T("juri.stizesZa", { 0: Math.round(s / 60) }));
-  else if (razmakM != null && razmakM <= 50) delovi.push(T("juri.tuJe"));
-  else if (lok && lok.spd != null && mojaMs > 0) delovi.push(T("juri.beziTi"));
-  return f.ime + " · " + delovi.join(" · ");
-}
-function juriPokreni(f, lok) {
-  if (!f || !lok || lok.lat == null) return;
-  JURI.f = f; JURI.cilj = { lat: lok.lat, lon: lok.lon }; JURI.poslednje = Date.now();
-  try { SEARCH_MODE = "to"; } catch (e) {}
-  pickDestination({ n: f.ime, lat: lok.lat, lon: lok.lon, odmah: true, juri: true });
-  if (JURI.t) clearInterval(JURI.t);
-  JURI.t = setInterval(juriTakt, JURI_TAKT_MS);
-  try { tihoObavestenje(T("juri.krenuo", { 0: f.ime })); } catch (e) {}
-}
-function juriStani(razlog) {
-  if (!JURI.f) return;
-  if (JURI.t) clearInterval(JURI.t); JURI.t = null;
-  JURI.f = null; JURI.cilj = null;
-  const pl = document.getElementById("rideJuri"); if (pl) { pl.hidden = true; pl.classList.remove("on"); }
-}
-async function juriTakt() {
-  if (!JURI.f) return;
-  if (document.visibilityState !== "visible" && !document.body.classList.contains("riding")) return;
-  await prijateljiLokacijeUcitaj();
-  juriProveri();
-}
-function juriProveri() {
-  const f = JURI.f; if (!f) return;
-  const lok = (LOK.lista || []).find((x) => x.id === f.id);
-  const riding = document.body.classList.contains("riding");
-  // HUD tabla u voznji
-  const pl = document.getElementById("rideJuri");
-  if (pl && riding) {
-    let razmak = null;
-    try { if (RIDE.total != null && RIDE.maxD != null) razmak = Math.max(0, RIDE.total - RIDE.maxD); } catch (e) {}
-    const moja = (RIDE.spdKmh || 0) / 3.6;
-    pl.textContent = juriTekst(f, lok, razmak, moja);
-    pl.hidden = false; pl.classList.add("on");
-  }
-  if (!lok || !juriPomeren(JURI.cilj, lok)) return;
-  if (lok.ts && Date.now() - new Date(lok.ts).getTime() > JURI_STARO_MS) return;   // ustajala tacka ne vuce rutu
-  JURI.cilj = { lat: lok.lat, lon: lok.lon };
-  if (riding) {
-    try {
-      state.geocode = { ...(state.geocode || {}), to: { lat: lok.lat, lon: lok.lon, name: f.ime } };
-      state.searchTo = { name: f.ime, lat: lok.lat, lon: lok.lon };
-      const route = state.routes && state.routes[state.selected];
-      const my = RIDE.lastFixObj;
-      if (route && my && my.la != null) rideReroute(route, my.lo, my.la, RIDE.maxD || 0, true);
-    } catch (e) {}
-  } else {
-    try { SEARCH_MODE = "to"; } catch (e) {}
-    pickDestination({ n: f.ime, lat: lok.lat, lon: lok.lon, odmah: true, juri: true });
-  }
-}
-
-/* ---- app2 Faza 3.1: GPS polazak + brza dugmad + sheet drag + vožnja ---- */
 function updateQuickLabels() {
   try {
     const h = mestoCitaj("home");
@@ -26784,8 +25733,8 @@ function rezInstCrtaj(route) {
   document.getElementById("riTrosak").innerHTML = fuel != null
     ? `<i>${Math.round(fuel + (toll || 0))}</i> € <small>${toll == null ? T("planer.riPutarinaNepoznata") : (toll > 0 ? T("planer.riPutarina", { 0: Math.round(toll) }) : T("planer.riBezPutarine"))}</small>` : "…";
   const rr = document.getElementById("riRute");
-  rr.innerHTML = (state.routes || []).map((r, i) => `<button type="button" class="ri-cip${i === state.selected ? " on" : ""}" data-i="${i}">${esc(String(rutaNaziv(r.label)).split(" · ")[0])}${i === state.selected ? "" : " · " + esc(fmtDur(r.totalDur))}</button>`).join("");
-  document.getElementById("riRutaRed").hidden = !(state.routes && state.routes.length > 1);
+  rr.innerHTML = (state.routes || []).map((r, i) => `<button type="button" class="ri-cip${i === state.selected ? " on" : ""}" data-i="${i}">${esc(state.bezAutoputa && (state.routes.length === 1 || /najbr/i.test(r.label)) ? T("planer.riBezAutoputa") : String(rutaNaziv(r.label)).split(" · ")[0])}${i === state.selected ? "" : " · " + esc(fmtDur(r.totalDur))}</button>`).join("");   // 3.10.: uz "Bez autoputa" ime stila "Najbrza" bi lagalo
+  document.getElementById("riRutaRed").hidden = !(state.routes && state.routes.length);
   const qr = document.getElementById("qRet"); document.getElementById("riPovratno").classList.toggle("on", !!(qr && qr.classList.contains("on")));
   document.getElementById("riBezAutoputa").classList.toggle("on", !!state.bezAutoputa);
   box.hidden = false;
@@ -29826,6 +28775,1121 @@ setTimeout(() => { try { mestaZaleci(); } catch (e) {} }, 1800);
   new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
 })();
 
+/* ===================================================================================================================
+   NALOZI, PRIJATELJI, SASTANCI, LOKACIJE UZIVO, JURI GA - drustveni blok aplikacije (3.10.2026, Boskov nalog: "preseli").
+   Izdvojen iz app.js u svoj fajl; ucitava se u ISTOM <script> bloku ODMAH POSLE app.js (web/app.html), pa je opseg isti:
+   funkcije iz app.js su dostupne ovde i obrnuto (deklaracije se dizu), a stanje (NK, SAST, LOK, JURI, PL) zivi ovde.
+   Pravilo: app.js sme da zove ove funkcije samo iz rukovalaca dogadjaja i tajmera, ne pri ucitavanju (const bi bio
+   nedefinisan dok ovaj fajl ne prodje). Graf koda (graphify, 3.10.) pokazao je 11 poziva napolje i 8 ulaza - cist sav.
+   / Social block split out of app.js; same script scope, loaded right after app.js. ================================= */
+/* ======================= NALOZI I PRIJATELJI (faza 1 od 4, 1.10.2026) =======================
+   Boskov red: nalozi -> "Nadjemo se tamo" -> prijatelji uzivo -> juri ga. Nalog je anonimna Supabase
+   sesija (bez lozinke, bez mejla) + red u public.korisnici (ime, kod). Refresh token zivi u localStorage
+   (rmr2_nalog); access token se obnavlja sam. Sve sto dira bazu ide kroz supaJa() = supa() sa korisnikovim
+   tokenom umesto javnog kljuca; pravila (RLS) su u docs/supabase-nalozi.sql. Dok anonimna prijava nije
+   ukljucena u dashboardu, server vraca 422 anonymous_provider_disabled i ekran to kaze.
+   / Accounts & friends: anonymous Supabase session + profile row + friend code; RLS in the SQL file. */
+const NALOG_KEY = "rmr2_nalog";
+function nalogCitaj() { try { return JSON.parse(localStorage.getItem(NALOG_KEY) || "null"); } catch (e) { return null; } }
+function nalogUpisi(n) { try { if (n) localStorage.setItem(NALOG_KEY, JSON.stringify(n)); else localStorage.removeItem(NALOG_KEY); } catch (e) {} }
+function nalogTokenVazi(n, sad) { return !!(n && n.access && n.exp && n.exp - (sad == null ? Date.now() : sad) > 60000); }   // minut rezerve
+function nalogIzSesije(j, sad) {   // odgovor /auth/v1 (signup ili token) -> ono sto cuvamo
+  return { access: j.access_token, refresh: j.refresh_token, exp: (sad == null ? Date.now() : sad) + ((+j.expires_in || 3600) * 1000), uid: j.user && j.user.id };
+}
+function kodValidan(k) { return /^[A-HJ-NP-Z2-9]{6}$/.test(String(k || "").trim().toUpperCase()); }
+function kodOcisti(k) { return String(k || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/0/g, "O").replace(/1/g, "I").slice(0, 6); }
+function pozivLink(kod) { return "https://routemeright.app/app.html?prijatelj=" + encodeURIComponent(kod); }
+async function supaAuth(path, body, opts = {}) {   // opts.method (POST), opts.token (korisnikov JWT umesto javnog kljuca)
+  let signal; try { signal = AbortSignal.timeout(10000); } catch (e) {}
+  const r = await fetch(SUPA_URL + "/auth/v1/" + path, { method: opts.method || "POST", signal,
+    headers: { apikey: SUPA_KEY, "Content-Type": "application/json", Authorization: "Bearer " + (opts.token || SUPA_KEY) }, body: JSON.stringify(body || {}) });
+  let j = {}; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) { const e = new Error(j.msg || j.error_description || j.error_code || ("HTTP " + r.status)); e.status = r.status; e.kod = j.error_code || ""; throw e; }
+  return j;
+}
+async function nalogToken(svez) {   // vazeci access token ili null kad naloga nema; obnavlja kroz refresh token
+  let n = nalogCitaj(); if (!n || !n.refresh) return null;
+  if (!svez && nalogTokenVazi(n)) return n.access;
+  if (nalogToken._u) return nalogToken._u;   // dva paralelna poziva ne smeju da potrose isti refresh token (rotacija)
+  nalogToken._u = (async () => {
+    try {
+      const j = await supaAuth("token?grant_type=refresh_token", { refresh_token: n.refresh });
+      n = { ...n, ...nalogIzSesije(j) }; nalogUpisi(n);
+      return n.access;
+    } catch (e) {
+      /* Pregled koda 2.10.: refresh koji je server odbio (opozvan/potrosen token) ne sme da se vrti u krug - sesija
+         se brise, kapija se vraca, kesirani spiskovi ostaju za citanje. Mrezni pad NE brise sesiju. */
+      if (e && (e.status === 400 || e.status === 401 || /refresh_token|invalid_grant|session_not_found/i.test(String(e.kod || e.message || "")))) {
+        nalogSesijaIstekla();
+        const er = new Error(T("nal.nemaSesije")); er.nemaSesije = true; throw er;
+      }
+      throw e;
+    } finally { nalogToken._u = null; }
+  })();
+  return nalogToken._u;
+}
+function nalogSesijaIstekla() {
+  const n = nalogCitaj();
+  nalogUpisi(n ? { ime: n.ime, email: n.email } : null);   // ime i mejl ostaju za kapiju, sesija ne
+  try { if (LOK.tSalji) clearTimeout(LOK.tSalji); if (SAST.t) clearInterval(SAST.t); } catch (e) {}
+  try { tihoObavestenje(T("nk.sesijaIstekla")); } catch (e) {}
+  try { nalogKapijaPrikazi(); } catch (e) {}
+}
+async function supaJa(path, opts = {}) {
+  const t = await nalogToken();
+  if (!t) { const e = new Error(T("nal.nemaSesije")); e.nemaSesije = true; throw e; }
+  return supa(path, { ...opts, headers: { ...(opts.headers || {}), Authorization: "Bearer " + t } });
+}
+function nalogGreskaTekst(e) {   // jedna recenica za ekran, po uzroku
+  const m = String((e && e.message) || e || "");
+  if (e && (e.kod === "anonymous_provider_disabled" || /anonymous sign-ins/i.test(m))) return T("nal.serverNijePodesen");
+  if (/relation .* does not exist|Could not find the table|function .* does not exist|schema cache/i.test(m)) return T("nal.serverNijePodesen");
+  if (e && e.nemaSesije) return T("nal.nemaSesije");
+  if (/korisnici_korisnicko_jed|korisnicko.*(23505|duplicate)|(23505|duplicate).*korisnicko/i.test(m)) return T("nal.korisnickoZauzeto");
+  if (/korisnici_korisnicko_oblik/i.test(m)) return T("nal.korisnickoLos");
+  if (/otp_expired|Token has expired|invalid|Invalid token/i.test(m)) return T("nk.kodPogresan");
+  if (/rate limit|over_email_send_rate_limit|email rate/i.test(m)) return T("nk.previseMejlova");
+  if (/Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m)) return T("net.nema");
+  return m;
+}
+/* 2.10.2026 (Boskov nalog "nama treba mejl, da odrade sign up"): nalog je vezan za MEJL, bez lozinke.
+   1) nalogPosaljiKod(email) -> Supabase salje kod od 6 cifara (sablon Magic Link mora da nosi {{ .Token }});
+   2) nalogPotvrdiKod(email, kod, ime, telefon) -> sesija; ako red u korisnici VEC postoji (isti covek, nov
+   telefon) vraca se on sa prijateljima, inace se pravi nov. / Email OTP sign-up; same email restores the account. */
+const NALOG_POVRATAK = "https://routemeright.app/app.html";
+const NALOG_KOD_U_MEJLU = true;   // 2.10. 23:20: Resend SMTP upaljen + sabloni sa {{ .Token }} (docs/supabase-sabloni-mejla.html) -> mejl nosi KOD od 6 cifara; false = samo link   // kuda link iz mejla vraca (mora biti Site URL ili u Redirect URLs u Supabase-u)
+function korisnickoOcisti(k) { return String(k || "").trim().toLowerCase().replace(/^@/, ""); }
+function korisnickoValidan(k) { return /^[a-z0-9._]{3,20}$/.test(korisnickoOcisti(k)); }
+function korisnickoPredlog(ime) {   // isti recept kao server (korisnicko_iz_imena), bez provere zauzetosti
+  let b = String(ime || "").toLowerCase().replace(/[šđčćž]/g, (c) => ({ "š": "s", "đ": "d", "č": "c", "ć": "c", "ž": "z" })[c]).replace(/\s+/g, "_").replace(/[^a-z0-9._]/g, "").replace(/^[._]+|[._]+$/g, "");
+  return b.length < 3 ? "" : b.slice(0, 16);
+}
+function korisnickoGreska(uneto) {   // poruka za los oblik + predlog ispravnog (ANA DIVIC -> ana_divic)
+  const pr = korisnickoPredlog(uneto);
+  return T("nal.korisnickoLos") + (pr && korisnickoValidan(pr) ? " " + T("nal.korisnickoPredlog", { 0: pr }) : "");
+}
+function emailValidan(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || "").trim()); }
+async function nalogPosaljiKod(email) {
+  email = String(email || "").trim().toLowerCase();
+  if (!emailValidan(email)) throw new Error(T("nk.emailLos"));
+  await supaAuth("otp?redirect_to=" + encodeURIComponent(NALOG_POVRATAK), { email, create_user: true, gotrue_meta_security: {} });
+  try { localStorage.setItem("rmr2_nalog_email", email); } catch (e) {}
+  return email;
+}
+async function nalogVeziMejl(email) {   // postojeci nalog bez mejla (0.9.161-163): PUT /auth/v1/user {email} -> Supabase salje mejl potvrde,
+  email = String(email || "").trim().toLowerCase();   // klik na link vraca ISTI nalog (isti uid, kod, prijatelji) sa mejlom. / Link email to an anonymous account.
+  if (!emailValidan(email)) throw new Error(T("nk.emailLos"));
+  const t = await nalogToken(true); if (!t) { const e = new Error(T("nal.nemaSesije")); e.nemaSesije = true; throw e; }
+  await supaAuth("user?redirect_to=" + encodeURIComponent(NALOG_POVRATAK), { email }, { method: "PUT", token: t });
+  try { localStorage.setItem("rmr2_nalog_email", email); } catch (e) {}
+  return email;
+}
+async function nalogPotvrdiKod(email, kod, ime, telefon, tip, korisnicko) {   // tip: "email" (nov nalog / prijava) ili "email_change" (vezivanje mejla za stari nalog)
+  email = String(email || "").trim().toLowerCase(); kod = String(kod || "").replace(/\D/g, "");
+  if (kod.length < 6) throw new Error(T("nk.kodLos"));
+  const j = await supaAuth("verify", { type: tip || "email", email, token: kod, gotrue_meta_security: {} });
+  let n = { ...nalogIzSesije(j), email }; nalogUpisi(n);
+  // postojeci nalog (isti mejl, nov telefon) ili nov red
+  const ima = await supaJa("rpc/moj_profil", { method: "POST", body: "{}" });
+  if (Array.isArray(ima) && ima.length) {
+    n = { ...n, ime: ima[0].ime, kod: ima[0].kod, avatar_v: ima[0].avatar_v || 0, telefon: ima[0].telefon || "" }; nalogUpisi(n);
+    if (ime && String(ime).trim().length >= 2 && String(ime).trim() !== n.ime) { try { await nalogPromeniIme(ime); n = nalogCitaj(); } catch (e) {} }
+    return n;
+  }
+  ime = String(ime || "").trim();
+  if (ime.length < 2) throw new Error(T("nal.imeKratko"));
+  const telo = { ime }; if (telefon && String(telefon).trim()) telo.telefon = String(telefon).trim().slice(0, 32);
+  if (korisnicko != null && String(korisnicko).trim() && !korisnickoValidan(korisnicko)) throw new Error(korisnickoGreska(korisnicko));   // los oblik ne prolazi ni ovde
+  if (korisnicko && korisnickoValidan(korisnicko)) telo.korisnicko = korisnickoOcisti(korisnicko);   // prazno = server predlozi iz imena
+  try { await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
+  catch (e) {
+    if (e && /korisnici_korisnicko_jed/i.test(String(e.message || ""))) { delete telo.korisnicko; await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }   // zauzeto: server bira
+    else if (!(e && (e.status === 409 || /23505|duplicate key/i.test(String(e.message || ""))))) throw e;   // red vec postoji (odgovor izgubljen) - uzmi ga
+  }
+  const m = await nalogOsvezi();
+  if (!m || !m.kod) throw new Error(T("nal.serverNijePodesen"));
+  return m;
+}
+/* MAGIC LINK (2.10., Supabase bez custom SMTP-a salje samo link "Sign in", bez koda): klik na link u mejlu
+   vodi na routemeright.app/app.html#access_token=...&refresh_token=... - web odatle pravi sesiju; nativna app
+   dobija isto kroz routemeright://prijava?rt=<refresh_token> (dugme "Otvori u aplikaciji" na webu).
+   Ime i telefon upisani na kapiji cekaju u rmr2_nalog_draft dok link ne stigne. / Magic-link sign-in. */
+async function nalogZavrsiProfil() {   // sesija vec postoji: vrati postojeci profil ili napravi nov iz nacrta
+  let d = null; try { d = JSON.parse(localStorage.getItem("rmr2_nalog_draft") || "null"); } catch (e) {}
+  const ima = await nalogOsvezi();
+  if (ima && ima.kod) {   // postojeci nalog (ili stari bez mejla kom je mejl sad vezan): telefon/ime iz nacrta, PATCH okida trigger koji upisuje mejl u korisnici
+    try { if (d && d.telefon && !ima.telefon) await nalogPromeniTelefon(d.telefon); } catch (e) {}
+    try { if (d && d.ime && String(d.ime).trim().length >= 2 && String(d.ime).trim() !== ima.ime) await nalogPromeniIme(d.ime); } catch (e) {}
+    try { if (d && d.korisnicko && korisnickoValidan(d.korisnicko) && korisnickoOcisti(d.korisnicko) !== ima.korisnicko) await nalogPromeniKorisnicko(d.korisnicko); } catch (e) {}
+    try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {}
+    return nalogCitaj() || ima;
+  }
+  const ime = String((d && d.ime) || (nalogCitaj() || {}).ime || "").trim();
+  if (ime.length < 2) { const e = new Error(T("nal.imeKratko")); e.trebaIme = true; throw e; }
+  const telo = { ime }; if (d && d.telefon) telo.telefon = String(d.telefon).trim().slice(0, 32);
+  if (d && d.korisnicko && korisnickoValidan(d.korisnicko)) telo.korisnicko = korisnickoOcisti(d.korisnicko);
+  try { await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
+  catch (e) {
+    if (e && /korisnici_korisnicko_jed/i.test(String(e.message || ""))) { delete telo.korisnicko; await supaJa("korisnici", { method: "POST", body: JSON.stringify(telo), headers: { Prefer: "return=minimal" } }); }
+    else if (!(e && (e.status === 409 || /23505|duplicate key/i.test(String(e.message || ""))))) throw e;
+  }
+  const m = await nalogOsvezi();
+  if (!m || !m.kod) throw new Error(T("nal.serverNijePodesen"));
+  try { localStorage.removeItem("rmr2_nalog_draft"); } catch (e) {}
+  return m;
+}
+function nalogIzHasha() {   // web: #access_token=...&refresh_token=...&expires_in=...&type=magiclink  |  #error=...&error_code=otp_expired
+  try {
+    const h = String(location.hash || "");
+    if (/(^#|&)error(_code)?=/.test(h) && !/access_token=/.test(h)) {   // 2.10. (Ana): link istekao/iskoriscen -> kapija kaze sta se desilo i nudi nov link
+      const p = new URLSearchParams(h.replace(/^#/, ""));
+      NK.linkGreska = p.get("error_code") || p.get("error") || "error";
+      try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+      return false;
+    }
+    if (!/access_token=/.test(h)) return false;
+    const p = new URLSearchParams(h.replace(/^#/, ""));
+    const at = p.get("access_token"), rt = p.get("refresh_token");
+    if (!at || !rt) return false;
+    const n = { ...(nalogCitaj() || {}), ...nalogIzSesije({ access_token: at, refresh_token: rt, expires_in: +p.get("expires_in") || 3600 }) };
+    try { const b = JSON.parse(atob(at.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); n.uid = b.sub || n.uid; n.email = b.email || n.email; } catch (e) {}
+    nalogUpisi(n);
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+    NK.izLinka = true;
+    return true;
+  } catch (e) { return false; }
+}
+async function nalogIzLinkaZavrsi() {   // posle hasha ili deep linka: profil, kapija dole, ponuda "otvori u aplikaciji" na webu
+  try {
+    await nalogZavrsiProfil();
+    const el = document.getElementById("nalogKapija"); if (el) { el.hidden = true; document.body.classList.remove("kapija"); }
+    try { renderJaNalog(); renderPrijatelji(); prijateljIzLinka(); sastanciPokreni(); lokacijePokreni(); pushRegistruj(); } catch (e) {}
+    try { nalogPing(true); } catch (e) {}
+    try { localStorage.removeItem("rmr2_voznje_sync"); voznjeSinhronizuj(); } catch (e) {}   // 3.10.: dnevnik sa servera na novom telefonu
+    try { tihoObavestenje(T("nk.prijavljen", { 0: (nalogCitaj() || {}).ime || "" })); } catch (e) {}
+    nalogNativPonudi();
+  } catch (e) {
+    if (e && e.trebaIme) { try { nalogKapijaPrikazi(); const gr = document.getElementById("nkGreska"); gr.textContent = T("nk.upisiImeZaKraj"); gr.hidden = false; } catch (e2) {} }
+    else { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} }
+  }
+}
+function nalogNativPonudi() {   // na iPhone webu posle prijave: dugme koje istu sesiju preda nativnoj aplikaciji
+  try {
+    const C = window.Capacitor; if (C && C.isNativePlatform && C.isNativePlatform()) return;
+    if (!/iPhone|iPad|Android/i.test(navigator.userAgent)) return;
+    const n = nalogCitaj(); if (!n || !n.refresh) return;
+    let b = document.getElementById("nalogNativ");
+    if (!b) { b = document.createElement("a"); b.id = "nalogNativ"; b.className = "nk-nativ"; document.body.appendChild(b); }
+    b.href = "routemeright://prijava?rt=" + encodeURIComponent(n.refresh);
+    b.textContent = T("nk.otvoriUApp");
+    b.onclick = () => setTimeout(() => { try { b.remove(); } catch (e) {} }, 1500);
+  } catch (e) {}
+}
+async function nalogIzDeepLinka(rt) {   // nativna app: routemeright://prijava?rt=<refresh_token>
+  try {
+    const j = await supaAuth("token?grant_type=refresh_token", { refresh_token: rt });
+    const n = { ...(nalogCitaj() || {}), ...nalogIzSesije(j) };
+    try { const b = JSON.parse(atob(n.access.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); n.uid = b.sub || n.uid; n.email = b.email || n.email; } catch (e) {}
+    nalogUpisi(n);
+    await nalogIzLinkaZavrsi();
+    return true;
+  } catch (e) { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} return false; }
+}
+async function nalogPromeniKorisnicko(k) {
+  if (!korisnickoValidan(k)) throw new Error(korisnickoGreska(k)); k = korisnickoOcisti(k);
+  const n = nalogCitaj(); if (!n) return;
+  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ korisnicko: k }) });
+  nalogUpisi({ ...n, korisnicko: k });
+}
+async function nalaziPostavi(on) {   // "Mogu da me nadju po korisnickom imenu" (podrazumevano da - Boskova odluka 2.10.)
+  const n = nalogCitaj(); if (!n) return;
+  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ nalazi: !!on }) });
+  nalogUpisi({ ...n, nalazi: !!on });
+}
+async function prijateljiNadji(upit) {   // pretraga po @korisnickom ili delu imena; server vraca najvise 10, samo one koji dozvoljavaju
+  return supaJa("rpc/nadji_korisnike", { method: "POST", body: JSON.stringify({ p_upit: String(upit || "").trim() }) });
+}
+async function prijateljDodajPoId(id) { return supaJa("rpc/dodaj_prijatelja_po_id", { method: "POST", body: JSON.stringify({ p_id: id }) }); }
+async function nalogPromeniTelefon(tel) {
+  const n = nalogCitaj(); if (!n) return;
+  tel = String(tel || "").trim().slice(0, 32);
+  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ telefon: tel || null }) });
+  nalogUpisi({ ...n, telefon: tel });
+}
+async function nalogNapravi(ime) {   // ostaje za Zajednicu bez naloga: samo preusmeri na kapiju (nalog se pravi mejlom)
+  nalogKapijaPrikazi(); throw new Error(T("nk.prvoKapija"));
+}
+async function nalogOsvezi() {   // moj red sa servera (ime/kod/telefon) kroz moj_profil - kod se NE cita iz tabele
+  const n = nalogCitaj(); if (!n || !n.refresh) return null;
+  const red = await supaJa("rpc/moj_profil", { method: "POST", body: "{}" });
+  if (!Array.isArray(red) || !red.length) return null;
+  const m = { ...n, uid: red[0].id, ime: red[0].ime, kod: red[0].kod, avatar_v: red[0].avatar_v || 0, telefon: red[0].telefon || "", email: red[0].email || n.email || "", korisnicko: red[0].korisnicko || "", nalazi: red[0].nalazi !== false }; nalogUpisi(m);
+  try { if (red[0].deli_lokaciju != null) { LOK.deli = !!red[0].deli_lokaciju; localStorage.setItem("rmr2_deli", LOK.deli ? "1" : "0"); } } catch (e) {}
+  return m;
+}
+async function nalogProveriNaServeru() {   // 2.10. (Bosko obrisao svoj nalog u dashboardu, a app ga je i dalje pustala sat vremena na stari kljuc):
+  const n = nalogCitaj(); if (!n || !n.refresh || !n.kod) return;   // pri paljenju pitamo server da li profil POSTOJI; "nema" = sesija dole + kapija
+  try {
+    const m = await nalogOsvezi();
+    if (m === null) { nalogSesijaIstekla(); return; }   // server odgovorio, profila nema (nalog obrisan)
+  } catch (e) {
+    if (e && (e.nemaSesije || e.status === 401 || e.status === 403)) { nalogSesijaIstekla(); return; }   // kljuc odbijen
+    /* mreza/pad servera: nista ne diramo, nalog ostaje (ne sme da izbaci coveka na putu) */
+  }
+}
+async function nalogPromeniIme(ime) {
+  ime = String(ime || "").trim(); if (ime.length < 2) throw new Error(T("nal.imeKratko"));
+  const n = nalogCitaj(); if (!n) return;
+  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ ime }) });
+  nalogUpisi({ ...n, ime });
+}
+const PRIJ_KEY = "rmr2_prijatelji";   // poslednji spisak, za prikaz bez mreze
+function prijateljiKes() { try { return JSON.parse(localStorage.getItem(PRIJ_KEY) || "[]"); } catch (e) { return []; } }
+async function prijateljiUcitaj() {
+  const rows = await supaJa("rpc/moji_prijatelji", { method: "POST", body: "{}" });
+  const l = Array.isArray(rows) ? rows : [];
+  try { localStorage.setItem(PRIJ_KEY, JSON.stringify(l)); } catch (e) {}
+  return l;
+}
+async function prijateljDodaj(kod) {
+  kod = kodOcisti(kod);
+  if (!kodValidan(kod)) throw new Error(T("nal.kodNeispravan"));
+  return supaJa("rpc/dodaj_prijatelja", { method: "POST", body: JSON.stringify({ p_kod: kod }) });
+}
+async function prijateljPrihvati(id) { return supaJa("rpc/prihvati_prijatelja", { method: "POST", body: JSON.stringify({ p_od: id }) }); }
+async function prijateljUkloni(id) { return supaJa("rpc/ukloni_prijatelja", { method: "POST", body: JSON.stringify({ p_ko: id }) }); }
+async function nalogPodeliKod() {
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  const txt = T("nal.pozivTekst", { 0: n.ime || "", 1: n.kod }) + " " + pozivLink(n.kod);
+  try { if (navigator.share) { await navigator.share({ text: txt }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(txt); tihoObavestenje(T("nal.kopirano")); } catch (e) { try { prompt(T("nal.kopirajRucno"), txt); } catch (e2) {} }
+}
+/* ---- ekran: Zajednica -> Prijatelji ---- */
+function avatarUrl(uid, v) { return (uid && v) ? SUPA_URL + "/storage/v1/object/public/avatari/" + encodeURIComponent(uid) + ".jpg?v=" + v : ""; }
+function avatarHtml(uid, v, ime, kl) {   // slika ako je ima, inace prvo slovo imena; <img> koji padne vraca slovo
+  const ini = esc(String(ime || "?").trim().charAt(0).toUpperCase());
+  const u = avatarUrl(uid, v);
+  return `<span class="${kl || "zpr-av"}">${u ? `<img src="${esc(u)}" alt="" onerror="this.remove()">` : ""}<i>${ini}</i></span>`;
+}
+function aktivanTekst(ts, sad) {   // "aktivan sada / pre 20 min / pre 3 h / juce / pre 5 dana"
+  const t = ts ? new Date(ts).getTime() : 0; if (!t) return "";
+  const d = Math.max(0, (sad == null ? Date.now() : sad) - t), min = Math.round(d / 60000);
+  if (min < 10) return T("akt.sada");
+  if (min < 60) return T("akt.min", { 0: min });
+  const h = Math.round(min / 60); if (h < 24) return T("akt.sati", { 0: h });
+  const dana = Math.round(h / 24); if (dana === 1) return T("akt.juce");
+  if (dana < 30) return T("akt.dana", { 0: dana, 1: TN(dana, "pl.dan") });
+  return T("akt.davno");
+}
+function prijateljiHtmlLista(l) {
+  if (!l.length) return '<div class="zpr-prazno">' + T("nal.nemaPrijatelja") + "</div>";
+  return l.map((f) => {
+    const st = f.stanje === "prihvaceno" ? (f.aktivan_at ? '<small>' + esc(aktivanTekst(f.aktivan_at)) + "</small>" : "")
+      : (f.od_mene ? '<small>' + T("nal.cekaNjega") + "</small>" : '<small class="akc">' + T("nal.cekaTebe") + "</small>");
+    const akc = f.stanje === "prihvaceno" ? `<button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.ukloni"))}">✕</button>`
+      : (f.od_mene ? `<button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.povuci"))}">✕</button>`
+        : `<button type="button" class="zpr-ok" data-prihvati="${esc(f.id)}">${esc(T("nal.prihvati"))}</button><button type="button" class="zpr-x" data-ukloni="${esc(f.id)}" aria-label="${esc(T("nal.odbij"))}">✕</button>`);
+    return `<div class="zpr-red" data-id="${esc(f.id)}" role="button" tabindex="0">${avatarHtml(f.id, f.avatar_v, f.ime)}<div class="zpr-t"><b>${esc(f.ime)}</b>${(f.korisnicko || f.motor) ? "<small>" + esc([f.korisnicko ? "@" + f.korisnicko : "", f.motor || ""].filter(Boolean).join(" · ")) + "</small>" : ""}${st}</div><div class="zpr-akc">${akc}</div></div>`;
+  }).join("");
+}
+async function renderPrijatelji(force) {
+  const box = document.getElementById("zPrijatelji"); if (!box) return;
+  const n = nalogCitaj();
+  if (!n || !n.kod) {   // nema naloga: poziv da se napravi (ime je jedino sto trazimo)
+    box.innerHTML = `<div class="zpr-kart"><div class="zpr-n">${T("nal.napraviNaslov")}</div><div class="zpr-d">${T("nal.napraviOpis")}</div>
+      <div class="zpr-forma"><input id="zprIme" maxlength="32" autocomplete="name" placeholder="${esc(T("nal.imePh"))}" value="${esc((n && n.ime) || "")}"><button type="button" id="zprNapravi">${esc(T("nal.napravi"))}</button></div>
+      <div class="zpr-greska" id="zprGreska" hidden></div></div>`;
+    const g = document.getElementById("zprGreska"), b = document.getElementById("zprNapravi");
+    b.addEventListener("click", async () => {
+      b.disabled = true; g.hidden = true;
+      try { const nn = nalogCitaj(); nalogUpisi({ ...(nn || {}), ime: document.getElementById("zprIme").value }); nalogKapijaPrikazi(); b.disabled = false; }
+      catch (e) { g.textContent = nalogGreskaTekst(e); g.hidden = false; b.disabled = false; }
+    });
+    return;
+  }
+  const kes = prijateljiKes();
+  box.innerHTML = `<div class="zpr-kart">
+      <div class="zpr-kod"><div><span class="zpr-cap">${esc(T("nal.tvojKod"))}</span><b>${esc(n.kod)}</b></div><button type="button" id="zprPodeli">${esc(T("nal.podeliKod"))}</button></div>
+      <div class="zpr-forma"><input id="zprKod" maxlength="24" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="${esc(T("nal.kodIliImePh"))}"><button type="button" id="zprDodaj">${esc(T("nal.dodaj"))}</button></div>
+      <div class="zpr-greska" id="zprGreska" hidden></div>
+      <div class="zpr-nadji" id="zprNadji" hidden></div>
+    </div>
+    <div class="zpr-lista" id="zprLista">${prijateljiHtmlLista(kes)}</div>`;
+  const g = document.getElementById("zprGreska"), lista = document.getElementById("zprLista");
+  const greska = (e) => { g.textContent = nalogGreskaTekst(e); g.hidden = false; };
+  document.getElementById("zprPodeli").addEventListener("click", nalogPodeliKod);
+  const nadjiBox = document.getElementById("zprNadji");
+  const nadjiHtml = (l) => !l.length ? '<div class="zpr-prazno">' + esc(T("nal.nadjiPrazno")) + "</div>" : l.map((u) => {
+    const akc = u.prijatelj === "prihvaceno" ? '<small class="zpr-jeste">' + esc(T("nal.vecPrijatelj")) + "</small>"
+      : (u.prijatelj === "ceka" ? '<small class="zpr-jeste">' + esc(T("nal.cekaKratko")) + "</small>"
+        : `<button type="button" class="zpr-ok" data-dodaj="${esc(u.id)}">${esc(T("nal.dodaj"))}</button>`);
+    return `<div class="zpr-red zpr-hit" data-id="${esc(u.id)}">${avatarHtml(u.id, u.avatar_v, u.ime)}<div class="zpr-t"><b>${esc(u.ime)}</b><small>@${esc(u.korisnicko || "")}${u.motor ? " · " + esc(u.motor) : ""}</small></div><div class="zpr-akc">${akc}</div></div>`;
+  }).join("");
+  let nadjiT = null;
+  const nadji = async (upit) => {   // @korisnicko ili deo imena (bar 2 znaka); kod od 6 znakova ide starim putem
+    upit = String(upit || "").trim();
+    if (upit.length < 2 || kodValidan(kodOcisti(upit)) && !/^@/.test(upit) && upit.length === 6 && !/[a-z]/.test(upit)) { nadjiBox.hidden = true; return; }
+    try { const l = await prijateljiNadji(upit); nadjiBox.innerHTML = nadjiHtml(Array.isArray(l) ? l : []); nadjiBox.hidden = false; }
+    catch (e) { greska(e); }
+  };
+  const dodaj = async () => {
+    const inp = document.getElementById("zprKod"); g.hidden = true;
+    const v = String(inp.value || "").trim();
+    if (!/^@/.test(v) && kodValidan(kodOcisti(v)) && v.length <= 7 && !/[a-z]/.test(v)) {   // kod od 6 znakova (velika slova/cifre)
+      try { const r = await prijateljDodaj(v); inp.value = ""; nadjiBox.hidden = true;
+        tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat"));
+        lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj());
+      } catch (e) { greska(e); }
+      return;
+    }
+    await nadji(v);   // ime ili @korisnicko: pokazi pogotke, dodaje se iz liste
+  };
+  document.getElementById("zprDodaj").addEventListener("click", dodaj);
+  document.getElementById("zprKod").addEventListener("keydown", (e) => { if (e.key === "Enter") dodaj(); });
+  document.getElementById("zprKod").addEventListener("input", (e) => { clearTimeout(nadjiT); const v = e.target.value; nadjiT = setTimeout(() => nadji(v), 350); });
+  nadjiBox.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-dodaj]"); if (!b) return;
+    b.disabled = true; g.hidden = true;
+    try { const r = await prijateljDodajPoId(b.dataset.dodaj);
+      tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat"));
+      b.outerHTML = '<small class="zpr-jeste">' + esc(r && r.stanje === "prihvaceno" ? T("nal.vecPrijatelj") : T("nal.cekaKratko")) + "</small>";
+      lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj()); renderJaNalog();
+    } catch (er) { b.disabled = false; greska(er); }
+  });
+  lista.addEventListener("click", async (e) => {
+    const p = e.target.closest("[data-prihvati]"), u = e.target.closest("[data-ukloni]");
+    if (!p && !u) {   // dodir na red = sazetak prijatelja (2.10.)
+      const red = e.target.closest(".zpr-red"); if (!red) return;
+      const f = prijateljiKes().find((x) => x.id === red.dataset.id); if (f) prijateljSazetak(f);
+      return;
+    }
+    g.hidden = true;
+    try {
+      if (p) await prijateljPrihvati(p.dataset.prihvati);
+      else { if (!confirm(T("nal.ukloniPitanje"))) return; await prijateljUkloni(u.dataset.ukloni); }
+      lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj());
+      renderJaNalog();
+    } catch (er) { greska(er); }
+  });
+  try { lista.innerHTML = prijateljiHtmlLista(await prijateljiUcitaj()); renderJaNalog(); }
+  catch (e) { if (!kes.length || force) greska(e); }   // bez mreze ostaje kes; prvi put se kaze zasto je prazno
+}
+/* ---- ekran: Ja -> Moj nalog ---- */
+function renderJaNalog() {   // 3.10. (Boskov izbor 1B "instrument"): zaglavlje sa slikom i @imenom, tri Coast broja, redovi sa strelicom, kod kao karta, prekidaci, tiho brisanje
+  const box = document.getElementById("jaNalog"); if (!box) return;
+  const n = nalogCitaj();
+  if (!n || !n.kod) {
+    box.innerHTML = `<div class="jrow"><span>${esc(T("nal.nemaNaloga"))}</span><button type="button" class="jlink" id="jaNalogNapravi">${esc(T("nal.napraviUZajednici"))}</button></div>`;
+    const b = document.getElementById("jaNalogNapravi"); if (b) b.addEventListener("click", () => nasTabKlik("zajednica"));
+    return;
+  }
+  const br = prijateljiKes().filter((f) => f.stanje === "prihvaceno").length;
+  const ceka = prijateljiKes().filter((f) => f.stanje !== "prihvaceno" && !f.od_mene).length;
+  const st = nalogStatistika(); const mm = mojMotor();
+  const chev = (id, aria) => `<button type="button" class="jchev" id="${id}" aria-label="${esc(aria)}">›</button>`;
+  box.innerHTML = `<div class="jn-top">${avatarHtml(n.uid, n.avatar_v, n.ime, "zpr-av jn-av")}<div class="jn-t"><b>${esc(n.ime || "")}</b>${n.korisnicko ? `<small class="jn-cap">@${esc(n.korisnicko)}</small>` : ""}${mm && mm.ime ? `<small class="jn-sub">${esc(mm.ime)}</small>` : ""}</div><button type="button" class="jn-uredi" id="jaUredi" aria-expanded="false">${esc(T("nal.uredi"))}</button></div>
+    <div class="jn-metrics"><div><b>${st.stat_voznje || 0}</b><span>${esc(T("pl.voznje"))}</span></div><div><b>${DEC(String(st.stat_km || 0))}<i>km</i></b><span>${esc(T("nal.ukupnoKm"))}</span></div><div><b>${st.stat_najduza_km ? DEC(String(st.stat_najduza_km)) : 0}<i>km</i></b><span>${esc(T("nal.najduzaKm"))}</span></div></div>
+    <div class="jn-uredi-blok" id="jaUrediBlok" hidden>
+      <div class="jrow"><span>${esc(T("nal.slika"))}</span><b></b>${chev("jaNalogSlika", T("nal.promeni"))}</div>
+      <div class="jrow"><span>${esc(T("nal.ime"))}</span><b>${esc(n.ime || "")}</b>${chev("jaNalogIme", T("nal.promeni"))}</div>
+      <div class="jrow"><span>${esc(T("nal.korisnicko"))}</span><b>${n.korisnicko ? "@" + esc(n.korisnicko) : esc(T("nal.motorNema"))}</b>${chev("jaNalogKor", T("nal.promeni"))}</div>
+      <div class="jrow"><span>${esc(T("nal.motorVide"))}</span><b>${esc((mm && mm.ime) || T("nal.motorNema"))}</b>${chev("jaNalogMotor", T("nal.otvori"))}</div>
+    </div>
+    ${n.email ? `<div class="jrow"><span>${esc(T("nk.email"))}</span><b class="jmail">${esc(n.email)}</b></div>` : ""}
+    <div class="jrow"><span>${esc(T("nk.tel"))}</span><b>${esc(n.telefon || T("nal.motorNema"))}</b>${chev("jaNalogTel", T("nal.promeni"))}</div>
+    <div class="jrow"><span>${esc(T("nal.prijatelji"))}</span><b>${br}${ceka ? ' <i class="jceka">' + esc(T("nal.cekaN", { 0: ceka })) + "</i>" : ""}</b>${chev("jaNalogPrij", T("nal.otvori"))}</div>
+    <div class="jn-ticket"><div><span class="jn-cap">${esc(T("nal.tvojKod"))}</span><b class="jkod">${esc(n.kod)}</b></div><button type="button" class="jn-chip" id="jaNalogPodeli">${esc(T("nal.podeliKod"))}</button></div>
+    <label class="jrow"><span>${esc(T("lok.deliPrekidac"))}</span><input type="checkbox" class="jsw" id="jaDeli" ${deliLokaciju() ? "checked" : ""}></label>
+    <label class="jrow"><span>${esc(T("nal.nalaziPrekidac"))}</span><input type="checkbox" class="jsw" id="jaNalazi" ${n.nalazi === false ? "" : "checked"}></label>
+    <div class="jnote"><span id="jaLokStanje">${esc(mojaLokacijaStanjeTekst())}</span> ${esc(T("nal.staVide"))}</div>
+    <button type="button" class="jlink jopasno" id="jaNalogObrisi">${esc(T("nal.obrisiNalog"))}</button>`;
+  document.getElementById("jaUredi").addEventListener("click", (e) => { const b = document.getElementById("jaUrediBlok"); b.hidden = !b.hidden; e.currentTarget.setAttribute("aria-expanded", String(!b.hidden)); });
+  document.getElementById("jaDeli").addEventListener("change", (e) => deliLokacijuPostavi(e.target.checked));
+  document.getElementById("jaNalazi").addEventListener("change", async (e) => { const on = e.target.checked; try { await nalaziPostavi(on); } catch (er) { e.target.checked = !on; alert(nalogGreskaTekst(er)); } });
+  document.getElementById("jaNalogKor").addEventListener("click", async () => {
+    const novo = prompt(T("nal.novoKorisnicko"), n.korisnicko || ""); if (novo == null) return;
+    try { await nalogPromeniKorisnicko(novo); renderJaNalog(); } catch (e) { alert(nalogGreskaTekst(e)); }
+  });
+  document.getElementById("jaNalogSlika").addEventListener("click", () => avatarIzaberi(() => renderJaNalog()));
+  document.getElementById("jaNalogMotor").addEventListener("click", () => { try { const h = document.getElementById("jaMotorHost"); if (h) h.scrollIntoView({ block: "start", behavior: "smooth" }); } catch (e) {} });
+  document.getElementById("jaNalogTel").addEventListener("click", async () => {
+    const t = prompt(T("nk.noviTel"), n.telefon || ""); if (t == null) return;
+    try { await nalogPromeniTelefon(t); renderJaNalog(); } catch (e) { alert(nalogGreskaTekst(e)); }
+  });
+  document.getElementById("jaNalogObrisi").addEventListener("click", async () => {
+    if (!confirm(T("nal.obrisiPitanje"))) return;
+    try {   // prvo slika kroz Storage API (SQL ne sme da brise storage.objects), pa nalog
+      try { const t = await nalogToken(); await fetch(SUPA_URL + "/storage/v1/object/avatari/" + encodeURIComponent(n.uid) + ".jpg", { method: "DELETE", headers: { apikey: SUPA_KEY, Authorization: "Bearer " + t } }); } catch (e) {}
+      await supaJa("rpc/obrisi_nalog", { method: "POST", body: "{}" });
+    } catch (e) { alert(nalogGreskaTekst(e)); return; }
+    nalogUpisi(null); try { localStorage.removeItem(PRIJ_KEY); localStorage.removeItem("rmr2_nalog_ping"); localStorage.removeItem("rmr2_push_token"); } catch (e) {}
+    renderJaNalog(); try { renderPrijatelji(); } catch (e) {}
+    try { nalogKapijaPrikazi(); } catch (e) {}
+  });
+  document.getElementById("jaNalogIme").addEventListener("click", async () => {
+    const novo = prompt(T("nal.novoIme"), n.ime || ""); if (novo == null) return;
+    try { await nalogPromeniIme(novo); renderJaNalog(); } catch (e) { alert(nalogGreskaTekst(e)); }
+  });
+  document.getElementById("jaNalogPodeli").addEventListener("click", nalogPodeliKod);
+  document.getElementById("jaNalogPrij").addEventListener("click", () => nasTabKlik("zajednica"));
+}
+/* pozivni link ?prijatelj=KOD: kod se zapamti, pa se doda cim nalog postoji */
+function prijateljIzLinka() {
+  let kod = null; try { kod = localStorage.getItem("rmr2_prijatelj_kod"); } catch (e) {}
+  if (!kod) return false;
+  const n = nalogCitaj(); if (!n || !n.kod) return false;
+  try { localStorage.removeItem("rmr2_prijatelj_kod"); } catch (e) {}
+  prijateljDodaj(kod).then((r) => { tihoObavestenje(r && r.stanje === "prihvaceno" ? T("nal.sadaPrijatelji") : T("nal.zahtevPoslat")); renderPrijatelji(true); })
+    .catch((e) => { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} });
+  return true;
+}
+(function(){
+  try {
+    const p = new URLSearchParams(location.search);
+    const k = p.get("prijatelj");
+    if (k && kodValidan(kodOcisti(k))) {
+      try { localStorage.setItem("rmr2_prijatelj_kod", kodOcisti(k)); } catch (e) {}
+      setTimeout(() => { try { nasTabKlik("zajednica"); if (!prijateljIzLinka()) { const i = document.getElementById("zprKod"); if (i) i.value = kodOcisti(k); } } catch (e) {} }, 900);
+    }
+  } catch (e) {}
+})();
+
+/* ---- 2.10.2026 (Boskov nalog): slika, poslednja aktivnost, sazetak prijatelja, obavezna prijava ---- */
+function avatarSmanji(file) {   // galerija/kamera -> kvadrat 256 px, JPEG ~20-40 KB (bucket prima najvise 400 KB)
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = () => {
+      try {
+        const S = 256, c = document.createElement("canvas"); c.width = S; c.height = S;
+        const m = Math.min(img.naturalWidth, img.naturalHeight), sx = (img.naturalWidth - m) / 2, sy = (img.naturalHeight - m) / 2;
+        c.getContext("2d").drawImage(img, sx, sy, m, m, 0, 0, S, S);
+        c.toBlob((b) => { URL.revokeObjectURL(url); b ? res(b) : rej(new Error("slika")); }, "image/jpeg", 0.82);
+      } catch (e) { URL.revokeObjectURL(url); rej(e); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error(T("nal.slikaNeMoze"))); };
+    img.src = url;
+  });
+}
+async function avatarPosalji(blob) {   // storage: <uid>.jpg (x-upsert), pa avatar_v + 1 u korisnici
+  const n = nalogCitaj(); if (!n || !n.uid) throw new Error(T("nal.nemaSesije"));
+  const t = await nalogToken();
+  let signal; try { signal = AbortSignal.timeout(20000); } catch (e) {}
+  const r = await fetch(SUPA_URL + "/storage/v1/object/avatari/" + encodeURIComponent(n.uid) + ".jpg", { method: "POST", signal,
+    headers: { apikey: SUPA_KEY, Authorization: "Bearer " + t, "Content-Type": "image/jpeg", "x-upsert": "true" }, body: blob });
+  if (!r.ok) { let m = ""; try { m = (await r.json()).message || ""; } catch (e) {} throw new Error(m || ("HTTP " + r.status)); }
+  const v = (n.avatar_v || 0) + 1;
+  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify({ avatar_v: v }) });
+  nalogUpisi({ ...nalogCitaj(), avatar_v: v });
+  return v;
+}
+function avatarIzaberi(posle) {   // otvara galeriju; kad je nalog tu, odmah salje; inace cuva blob za kapiju
+  const inp = document.getElementById("avatarFajl"); if (!inp) return;
+  inp.value = "";
+  inp.onchange = async () => {
+    const f = inp.files && inp.files[0]; if (!f) return;
+    const kap = document.getElementById("nalogKapija"), naKapiji = !!(kap && !kap.hidden);
+    const gr = document.getElementById("nkGreska");
+    try {
+      if (naKapiji && gr) gr.hidden = true;
+      const b = await avatarSmanji(f);
+      const n = nalogCitaj();
+      /* 2.10. (Bosko: "nece da mi prikaci sliku"): krug na kapiji se osvezava UVEK kad je kapija na ekranu - i kad nalog
+         vec postoji (stari nalog bez mejla), jer se tada slika salje odmah, a krug je ostajao prazan; poruke o uspehu/gresci
+         idu u polje kapije, jer je obicna poruka (z-index 300) ISPOD kapije (8000) pa se ne vidi. */
+      if (naKapiji) { const im = document.getElementById("nkAvImg"); if (im) { im.src = URL.createObjectURL(b); im.hidden = false; const ini = document.getElementById("nkAvIni"); if (ini) ini.hidden = true; } }
+      if (n && n.kod) { NK.blob = null; await avatarPosalji(b); if (!naKapiji) tihoObavestenje(T("nal.slikaSacuvana")); }
+      else NK.blob = b;
+      if (posle) posle();
+    } catch (e) {
+      if (naKapiji && gr) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; }
+      else { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} }
+    }
+  };
+  inp.click();
+}
+function nalogStatistika() {   // ono sto prijatelji vide: vožnje, km, najduza - iz dozivotnog agregata i dnevnika
+  const p = _zajCitaj("mr_poeni", { ukupno: 0, nedelje: {} });
+  const v = _zajCitaj("mr_voznje", []);
+  const naj = v.reduce((m, r) => Math.max(m, (r && !r.tura && r.km) || 0), 0);
+  const posl = v.reduce((m, r) => Math.max(m, (r && r.ts) || 0), 0);
+  return { stat_voznje: p.voznje || v.length || 0, stat_km: Math.round(p.km || v.reduce((s2, r) => s2 + (r.km || 0), 0)),
+    stat_najduza_km: Math.round(naj * 10) / 10, stat_poslednja_at: posl ? new Date(posl).toISOString() : null };
+}
+async function nalogPing(force) {   // "poslednji put aktivan" + motor + statistika; najvise jednom na sat (bez force)
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  let zad = 0; try { zad = +localStorage.getItem("rmr2_nalog_ping") || 0; } catch (e) {}
+  if (!force && Date.now() - zad < 3600000) return;
+  const mm = (typeof mojMotor === "function") ? mojMotor() : null;
+  const telo = { aktivan_at: new Date().toISOString(), motor: mm ? mm.ime.slice(0, 48) : null, ...nalogStatistika() };
+  try { await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify(telo) });
+    try { localStorage.setItem("rmr2_nalog_ping", String(Date.now())); } catch (e) {} } catch (e) {}
+}
+function prijateljSazetak(f) {   // 3.10. (Boskov izbor 4B "lista"): zaglavlje sa @imenom, redovi Lokacija / Poslednja voznja / Ukupno / Sastanci, dve radnje, tiho uklanjanje
+  const el = document.getElementById("prijateljList"); if (!el || !f) return;
+  document.getElementById("plAv").outerHTML = avatarHtml(f.id, f.avatar_v, f.ime, "pl-av").replace('class="pl-av"', 'class="pl-av" id="plAv"');
+  document.getElementById("plIme").textContent = f.ime || "";
+  document.getElementById("plKor").textContent = [f.korisnicko ? "@" + f.korisnicko : "", f.aktivan_at ? aktivanTekst(f.aktivan_at) : ""].filter(Boolean).join(" · ");
+  document.getElementById("plMotor").textContent = f.motor || T("nal.motorNema");
+  const lok = f.lok || (LOK.lista || []).find((x) => x.id === f.id);   // 2.10. (faza 3): ziva lokacija
+  const sveza = !!(lok && lok.lat != null && lokacijaSveza(lok.ts));
+  const pl = document.getElementById("plLok"), plr = document.getElementById("plLokRed"), pln = document.getElementById("plLokNapomena");
+  pl.textContent = (lok && lok.lat != null) ? (sveza ? T("pl.lokNaMapi", { 0: lokacijaVremeTekst(lok.ts) }) + (lok.u_voznji ? " · " + T("lok.vozi") : "") : T("pl.lokStaraKratko", { 0: lokacijaVremeTekst(lok.ts) })) : T("pl.lokNemaKratko");
+  pl.classList.toggle("akc", sveza);
+  plr.classList.toggle("jrow-dodir", sveza); plr.querySelector(".jchev").hidden = !sveza;
+  pln.textContent = sveza ? "" : ((lok && lok.lat != null) ? T("pl.lokStara", { 0: lokacijaVremeTekst(lok.ts) }) : T("pl.lokNema")); pln.hidden = sveza;
+  plr.onclick = sveza ? () => { prijateljSazetakZatvori(); try { nasTabKlik("planer"); if (map && map.flyTo) map.flyTo({ center: [lok.lon, lok.lat], zoom: Math.max(map.getZoom(), 13), duration: 900 }); } catch (e) {} } : null;
+  document.getElementById("plPosl").textContent = f.stat_poslednja_at ? new Date(f.stat_poslednja_at).toLocaleDateString(LOKAL()) + (f.stat_najduza_km ? " · " + DEC(String(f.stat_najduza_km)) + " km" : "") : T("pl.nijeVozio");
+  document.getElementById("plStat").innerHTML = `<i>${esc(String(f.stat_voznje || 0))}</i> ${esc(TN(f.stat_voznje || 0, "pl.voznja"))} · <i>${esc(DEC(String(f.stat_km || 0)))}</i> km`;
+  const sast = (SAST.lista || []).filter((m) => (m.ucesnici || []).some((u) => u.id === f.id));
+  const sr = document.getElementById("plSastRed"); sr.hidden = !sast.length;
+  if (sast.length) { document.getElementById("plSast").textContent = sast[0].ime + " · " + sastanakKadTekst(sast[0]); sr.onclick = () => { prijateljSazetakZatvori(); sastanakOtvori(sast[0].id); }; }
+  const vb = document.getElementById("plVodi");
+  vb.hidden = !sveza;
+  vb.onclick = () => { prijateljSazetakZatvori(); juriPokreni(f, lok); };   // faza 4: ruta prati NJEGOVU tacku
+  el.hidden = false; document.body.classList.add("mcilj"); PL.f = f;
+}
+const PL = { f: null };
+function prijateljSazetakZatvori() { const el = document.getElementById("prijateljList"); if (el) el.hidden = true; document.body.classList.remove("mcilj"); PL.f = null; }
+/* KAPIJA: bez naloga nema aplikacije (Boskov nalog 2.10.). Izuzeci: ?preview=1 i ?demo (alati, snimci, testovi). */
+const NK = { blob: null };
+function nalogKapijaTreba(n, upit) {
+  let p; try { p = new URLSearchParams(upit == null ? location.search : upit); } catch (e) { p = new URLSearchParams(""); }
+  if (p.has("preview") || p.has("demo")) return false;
+  try { if (sessionStorage.getItem("rmr2_nalog_preskoci") === "1") return false; } catch (e) {}
+  return !(n && n.kod && n.email);   // 2.10. (Bosko: "nama treba mejl"): nalog bez mejla (anonimna prijava iz 0.9.161-163) vraca kapiju u rezimu "vezi mejl"
+}
+function nalogEmailIzTokena(n) {   // mejl iz JWT-a (claim email) - stara sesija ga mozda nema u localStorage
+  try { const b = JSON.parse(atob(String(n && n.access || "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); return b.email || ""; } catch (e) { return ""; }
+}
+function nalogKapijaKorak2(opis) {   // korak 2: poruka o poslatom linku; polje za kod i "Potvrdi kod" samo kad mejl zaista nosi kod
+  const g = (id) => document.getElementById(id);
+  NK.korak = 2; g("nkKorak1").hidden = true; g("nkKorak2").hidden = false;
+  g("nkKodOpis").textContent = opis;
+  g("nkKod").hidden = !NALOG_KOD_U_MEJLU;
+  g("nkKreni").textContent = NALOG_KOD_U_MEJLU ? T("nk.potvrdi") : T("nk.promeniMejl");
+  if (NALOG_KOD_U_MEJLU) setTimeout(() => { try { g("nkKod").focus(); } catch (e) {} }, 150);
+}
+function nalogKapijaPrikazi() {
+  const el = document.getElementById("nalogKapija"); if (!el) return;
+  { const n0 = nalogCitaj(); if (n0 && n0.kod && !n0.email) { const em = nalogEmailIzTokena(n0); if (em) nalogUpisi({ ...n0, email: em }); } }
+  if (!nalogKapijaTreba(nalogCitaj())) { el.hidden = true; document.body.classList.remove("kapija"); return; }
+  const n = nalogCitaj();
+  NK.vezi = !!(n && n.kod && n.refresh && !n.email);   // postojeci nalog bez mejla: mejl se VEZUJE za isti nalog (kod i prijatelji ostaju)
+  { const v = document.getElementById("nkVezi"); if (v) v.hidden = !NK.vezi; }
+  NK.korak = 1; document.getElementById("nkKorak1").hidden = false; document.getElementById("nkKorak2").hidden = true;
+  document.getElementById("nkKreni").querySelector("span, b") || (document.getElementById("nkKreni").textContent = T("nk.kreni"));
+  try { document.getElementById("nkEmail").value = localStorage.getItem("rmr2_nalog_email") || ""; } catch (e) {}
+  document.getElementById("nkIme").value = (n && n.ime) || "";
+  NK.korRucno = false; document.getElementById("nkKorisnicko").value = (n && n.korisnicko) || korisnickoPredlog((n && n.ime) || "");
+  const mm = (typeof mojMotor === "function") ? mojMotor() : null;
+  document.getElementById("nkMotor").textContent = mm ? T("nk.motor", { 0: mm.ime }) : T("nk.motorKasnije");
+  document.getElementById("nkGreska").hidden = true; document.getElementById("nkPreskoci").hidden = true;
+  if (NK.linkGreska) {   // dosao sa linka koji ne vazi: pravo na korak 2, sa mejlom koji je trazio link, i jednim dugmetom "posalji ponovo"
+    let em = ""; try { em = localStorage.getItem("rmr2_nalog_email") || ""; } catch (e) {}
+    if (em) {
+      NK.email = em; nalogKapijaKorak2(T("nk.linkNeVazi", { 0: em }));
+    } else { const gr = document.getElementById("nkGreska"); gr.textContent = T("nk.linkNeVaziBezMejla"); gr.hidden = false; }
+    NK.linkGreska = null;
+  }
+  el.hidden = false; document.body.classList.add("kapija");
+}
+(function(){
+  const g = (id) => document.getElementById(id);
+  if (!g("nalogKapija")) return;
+  g("nkAv").addEventListener("click", () => avatarIzaberi());
+  g("nkKreni").addEventListener("click", async () => {
+    const b = g("nkKreni"), gr = g("nkGreska"); b.disabled = true; gr.hidden = true;
+    try {
+      if (NK.korak !== 2) {   // korak 1: ime + mejl -> posalji kod
+        const ime = String(g("nkIme").value || "").trim();
+        if (ime.length < 2) throw new Error(T("nal.imeKratko"));
+        const kor = korisnickoOcisti(g("nkKorisnicko").value);
+        if (!korisnickoValidan(kor)) { const e = new Error(korisnickoGreska(g("nkKorisnicko").value)); e.korisnicko = true; throw e; }   // Bosko 3.10.: ne pusta dalje dok ime nije po pravilu
+        try { localStorage.setItem("rmr2_nalog_draft", JSON.stringify({ ime, telefon: String(g("nkTel").value || "").trim(), korisnicko: kor })); } catch (e) {}
+        if (NK.vezi && NK.veziZauzet && NK.veziZauzet === String(g("nkEmail").value || "").trim().toLowerCase()) NK.vezi = false;
+        // (korak 1)   // drugi Kreni istim mejlom: prijava TIM nalogom, stari bez mejla ostaje po strani
+        NK.email = NK.vezi ? await nalogVeziMejl(g("nkEmail").value) : await nalogPosaljiKod(g("nkEmail").value);
+        nalogKapijaKorak2(NK.vezi ? T("nk.veziPoslat", { 0: NK.email }) : (T("nk.kodPoslat", { 0: NK.email }) + " " + T("nk.iliLink")));
+        b.disabled = false;
+        return;
+      }
+      if (!NALOG_KOD_U_MEJLU) {   // korak 2 bez koda: glavno dugme = "Promeni mejl" (nazad na korak 1)
+        NK.korak = 1; g("nkKorak1").hidden = false; g("nkKorak2").hidden = true; g("nkKreni").textContent = T("nk.kreni"); b.disabled = false; return;
+      }
+      if (!String(g("nkKod").value || "").replace(/\D/g, "").length) { gr.textContent = T("nk.kliknilink"); gr.hidden = false; b.disabled = false; return; }
+      await nalogPotvrdiKod(NK.email, g("nkKod").value, g("nkIme").value, g("nkTel").value, NK.vezi ? "email_change" : "email", g("nkKorisnicko").value);
+      if (NK.blob) { try { await avatarPosalji(NK.blob); } catch (e) {} NK.blob = null; }
+      try { await nalogPing(true); } catch (e) {}
+      g("nalogKapija").hidden = true; document.body.classList.remove("kapija");
+      try { renderJaNalog(); renderPrijatelji(); prijateljIzLinka(); sastanciPokreni(); lokacijePokreni(); pushRegistruj(); } catch (e) {}
+      try { localStorage.removeItem("rmr2_voznje_sync"); voznjeSinhronizuj(); } catch (e) {}   // 3.10.: dnevnik sa servera
+    } catch (e) {
+      gr.textContent = nalogGreskaTekst(e); gr.hidden = false; b.disabled = false;
+      if (NK.vezi && e && e.kod === "email_exists") { NK.veziZauzet = String(g("nkEmail").value || "").trim().toLowerCase(); gr.textContent = T("nk.emailZauzet"); }
+      /* server pao ili nema mreze: aplikacija ne sme da ostane zakljucana na putu - izlaz vazi do sledeceg paljenja */
+      const m = String(e && e.message || "");
+      if (/nije podešen|not set up|Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m) || (e && e.status >= 500)) g("nkPreskoci").hidden = false;
+    }
+  });
+  ["nkIme", "nkEmail", "nkTel", "nkKod", "nkKorisnicko"].forEach((id) => g(id).addEventListener("keydown", (e) => { if (e.key === "Enter") g("nkKreni").click(); }));
+  g("nkIme").addEventListener("input", () => { if (!NK.korRucno) g("nkKorisnicko").value = korisnickoPredlog(g("nkIme").value); });   // predlog prati ime dok ga covek ne dirne
+  g("nkKorisnicko").addEventListener("input", () => {   // uzivo: mala slova, bez @; los oblik se vidi odmah (crven okvir + poruka sa predlogom), ne tek na Kreni
+    NK.korRucno = !!g("nkKorisnicko").value; g("nkKorisnicko").value = String(g("nkKorisnicko").value).toLowerCase().replace(/^@/, "");
+    const v = g("nkKorisnicko").value, ok = !v || korisnickoValidan(v); g("nkKorisnicko").classList.toggle("nk-los", !ok);
+    const h = g("nkKorHint"); if (h) { h.textContent = ok ? "" : korisnickoGreska(v); h.hidden = ok; }
+  });
+  g("nkPonovo").addEventListener("click", async () => { const gr = g("nkGreska"); gr.hidden = true; try { if (NK.vezi) await nalogVeziMejl(NK.email); else await nalogPosaljiKod(NK.email); tihoObavestenje(T("nk.kodPoslatPonovo")); } catch (e) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; } });
+  g("nkPreskoci").addEventListener("click", () => { try { sessionStorage.setItem("rmr2_nalog_preskoci", "1"); } catch (e) {} g("nalogKapija").hidden = true; document.body.classList.remove("kapija"); });
+  g("plNazad").addEventListener("click", prijateljSazetakZatvori);   // 3.10. (Bosko: "ekran ostane zamrznut, treba strelica back") - crveni X je licio na brisanje
+  g("plNadjemo").addEventListener("click", () => {   // 4B (3.10., Bosko: "ovo nadjemo se"): pretraga bira MESTO sastanka, pa nov sastanak sa ovim prijateljem
+    const f = PL.f; prijateljSazetakZatvori(); if (!f) return;
+    SAST.zaSastanak = f.id; try { nasTabKlik("planer"); } catch (e) {}
+    try { openSearch("to"); } catch (e) {}
+    try { const si = document.getElementById("sInput"); if (si) { if (!si.dataset.ph0) si.dataset.ph0 = si.placeholder; si.placeholder = T("sas.gdeSeNalazimo"); } } catch (e) {}
+    try { tihoObavestenje(T("sas.izaberiMesto", { 0: f.ime })); } catch (e) {}
+  });
+  g("plUkloni").addEventListener("click", async () => {
+    const f = PL.f; if (!f || !confirm(T("nal.ukloniPitanje"))) return;
+    try { await prijateljUkloni(f.id); prijateljSazetakZatvori(); renderPrijatelji(true); } catch (e) { alert(nalogGreskaTekst(e)); }
+  });
+  if (nalogIzHasha()) setTimeout(() => { nalogIzLinkaZavrsi(); }, 400);   // link iz mejla (web)
+  else setTimeout(() => { try { nalogKapijaPrikazi(); } catch (e) {} }, 350);   // posle uvodne animacije; sloj je iznad nje po z-indexu
+  window.addEventListener("hashchange", () => {   // 3.10. (QA ISSUE-005): link stigao u VEC otvorenu aplikaciju (isti tab, bez ucitavanja)
+    if (nalogIzHasha()) nalogIzLinkaZavrsi(); else if (NK.linkGreska) { try { nalogKapijaPrikazi(); } catch (e) {} }
+  });
+  setTimeout(() => { try { nalogProveriNaServeru(); } catch (e) {} }, 1500);   // nalog obrisan na serveru -> kapija, ne sat vremena laznog "prijavljen"
+  setTimeout(() => { try { nalogPing(); } catch (e) {} }, 6000);
+  setTimeout(() => { try { voznjeSinhronizuj(); } catch (e) {} }, 9000);   // 3.10.: voznje gore/dole, najvise na 6 h
+})();
+
+/* ======================= "NADJEMO SE TAMO" (faza 2 od 4, 2.10.2026) =======================
+   Sastanak = mesto + vreme + poruka, poslat izabranim prijateljima (docs/supabase-sastanci.sql). Pozvani
+   dobija traku na pocetnom i karticu u Zajednici; "Vodi me tamo" racuna rutu i salje ETA, pa svi vide ko kad
+   stize. Bez push obavestenja (jos): spisak se povlaci pri paljenju, na svakih 60 s dok je app na ekranu i
+   pri ulasku u Zajednicu. / Meet-up: place + time to friends; everyone gets "take me there" and ETAs. */
+const SAST = { lista: [], vidjeni: null, t: null, cilj: null, otvoren: null, novi: null };
+const SAST_KEY = "rmr2_sastanci", SAST_VIDJ = "rmr2_sastanci_vidjeni";
+function sastanciKes() { try { return JSON.parse(localStorage.getItem(SAST_KEY) || "[]"); } catch (e) { return []; } }
+function sastanakKadTekst(m, sad) {   // "ko kad stigne" ili "danas u 16:30" / "sub 4.10. 10:00"
+  if (!m || !m.kad) return T("sas.bezVremena");
+  const d = new Date(m.kad), danas = d.toDateString() === new Date(sad == null ? Date.now() : sad).toDateString();
+  const hh = d.toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
+  return danas ? T("sas.danasU", { 0: hh }) : d.toLocaleDateString(LOKAL(), { weekday: "short", day: "numeric", month: "numeric" }) + " " + hh;
+}
+function sastanakStanjeTekst(u, ja) {   // ja=true: drugo lice ("dolazis", "nisi odgovorio") - 3.10., "ti dolazi" je bilo nepismeno
+  if (!u) return "";
+  if (u.stanje === "stigao") return T(ja ? "sas.stigaoTi" : "sas.stigao");
+  if (u.stanje === "ne") return T(ja ? "sas.neDolazisTi" : "sas.neDolazi");
+  if (u.stanje === "dolazim") return u.eta_at ? T(ja ? "sas.stizesTi" : "sas.stizeU", { 0: new Date(u.eta_at).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" }) }) : T(ja ? "sas.dolazisTi" : "sas.dolazi");
+  return T(ja ? "sas.pozvanTi" : "sas.pozvan");
+}
+function mojiPrijateljiPrihvaceni() { return prijateljiKes().filter((f) => f.stanje === "prihvaceno"); }
+function sastanciNovi(lista, vidjeni, uid) {   // pozivi drugih koje jos nisam video (za tihu poruku)
+  return (lista || []).filter((m) => m.od !== uid && !(vidjeni || []).includes(m.id));
+}
+async function sastanciUcitaj(tiho) {
+  const n = nalogCitaj(); if (!n || !n.kod) return [];
+  let l = [];
+  try { const r = await supaJa("rpc/moji_sastanci", { method: "POST", body: "{}" }); l = Array.isArray(r) ? r : []; }
+  catch (e) { if (!tiho) throw e; return sastanciKes(); }
+  try { localStorage.setItem(SAST_KEY, JSON.stringify(l)); } catch (e) {}
+  SAST.lista = l;
+  let vidj = []; try { vidj = JSON.parse(localStorage.getItem(SAST_VIDJ) || "[]"); } catch (e) {}
+  const novi = sastanciNovi(l, vidj, n.uid);
+  if (novi.length && SAST.vidjeni !== null) { try { tihoObavestenje(T("sas.novPoziv", { 0: novi[0].od_ime, 1: novi[0].ime })); } catch (e) {} }   // prvo ucitavanje cuti
+  SAST.vidjeni = vidj;
+  try { localStorage.setItem(SAST_VIDJ, JSON.stringify(l.map((m) => m.id).slice(-50))); } catch (e) {}
+  sastanciCrtaj();
+  return l;
+}
+function sastanciPokreni() {   // pri paljenju + svakih 60 s dok je app vidljiv
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  SAST.lista = sastanciKes(); sastanciCrtaj();
+  sastanciUcitaj(true);
+  if (SAST.t) clearInterval(SAST.t);
+  SAST.t = setInterval(() => { if (document.visibilityState === "visible") sastanciUcitaj(true); }, 60000);
+  if (!sastanciPokreni._vis) { sastanciPokreni._vis = true; document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") sastanciUcitaj(true); }); }
+}
+function sastanciCrtaj() {
+  const n = nalogCitaj(); const uid = n && n.uid;
+  const zivi = (SAST.lista || []).filter((m) => new Date(m.istice_at).getTime() > Date.now());
+  const moj = (m) => (m.ucesnici || []).find((u) => u.id === uid);
+  const tr = document.getElementById("sastanakTraka");
+  if (tr) {   // traka na pocetnom: prvo onaj na koji nisam odgovorio, inace prvi na koji dolazim
+    const prvi = zivi.find((m) => { const u = moj(m); return u && u.stanje === "pozvan"; }) || zivi.find((m) => { const u = moj(m); return u && u.stanje !== "ne"; });
+    if (prvi) {
+      const u = moj(prvi), org = (prvi.ucesnici || []).find((x) => x.id === prvi.od) || {};
+      tr.innerHTML = `<span class="st-av">${avatarHtml(prvi.od, org.avatar_v, prvi.od_ime, "zpr-av st-avi")}</span><span class="st-t"><b>${esc(prvi.od === uid ? T("sas.tvojSastanak") : prvi.od_ime)}</b><small>${esc(T("sas.nadjemoSeU", { 0: prvi.ime, 1: sastanakKadTekst(prvi) }))}</small></span><span class="rmr-cap akc">${esc(u && u.stanje === "pozvan" ? T("sas.odgovori") : T("sas.otvori"))}</span>`;
+      tr.hidden = false; tr.dataset.id = prvi.id;
+    } else tr.hidden = true;
+  }
+  const box = document.getElementById("zSastanci");
+  if (box) {
+    if (!zivi.length) { box.hidden = true; box.innerHTML = ""; }
+    else {
+      box.hidden = false;
+      box.innerHTML = `<div class="zsec">${esc(T("sas.naslov"))}</div>` + zivi.map((m) => {
+        const dol = (m.ucesnici || []).filter((u) => u.stanje === "dolazim" || u.stanje === "stigao").length;
+        return `<button type="button" class="zs-kart" data-id="${esc(m.id)}"><div class="zs-t"><b>${esc(m.ime)}</b><small>${esc(sastanakKadTekst(m))} · ${esc(m.od === uid ? T("sas.tiZoves") : T("sas.zove", { 0: m.od_ime }))}</small><small>${esc(T("sas.dolaziN", { 0: dol, 1: (m.ucesnici || []).length }))}</small></div><span class="rmr-cap akc">${esc(T("sas.otvori"))}</span></button>`;
+      }).join("");
+    }
+  }
+}
+function sastanakDalj(m) {
+  try { const r = geoRef(); if (r && r.lat != null) { const d = haversine(r.lat, r.lon, m.lat, m.lon); return d < 1 ? T("mc.manje1") : T("mc.odTebe", { 0: Math.round(d) }); } } catch (e) {}
+  return "";
+}
+function sastanakOtvori(id) {
+  const m = (SAST.lista || []).find((x) => x.id === id) || sastanciKes().find((x) => x.id === id); if (!m) return;
+  const n = nalogCitaj(); const uid = n && n.uid; const moj = (m.ucesnici || []).find((u) => u.id === uid);
+  const el = document.getElementById("sastanakList"); if (!el) return;
+  try { mestoCiljZatvori(); } catch (e) {}
+  document.getElementById("slOd").textContent = m.od === uid ? T("sas.tiZoves") : T("sas.zove", { 0: m.od_ime });   // 5A: "Organizuje Ana Divic · Vreme: ko kad stigne"
+  document.getElementById("slIme").textContent = m.ime;
+  document.getElementById("slKad").textContent = T("sas.vreme", { 0: sastanakKadTekst(m) });   // "Vreme: ko kad stigne" / "Vreme: danas u 16:30"
+  document.getElementById("slDalj").innerHTML = sastanakDalj(m);
+  const po = document.getElementById("slPoruka"); po.textContent = m.poruka || ""; po.hidden = !m.poruka;
+  document.getElementById("slUcesnici").innerHTML = (m.ucesnici || []).map((u) =>
+    `<div class="sl-red${u.id === uid ? " ja" : ""}">${avatarHtml(u.id, u.avatar_v, u.ime)}<b class="sl-ime">${esc(u.id === uid ? T("sas.ti") : u.ime)}</b><small class="sl-st${u.stanje === "dolazim" || u.stanje === "stigao" ? " akc" : ""}">${esc(sastanakStanjeTekst(u, u.id === uid))}</small></div>`).join("");
+  document.getElementById("slNe").classList.toggle("on", !!moj && moj.stanje === "ne");
+  document.getElementById("slNe").hidden = !!moj && moj.stanje === "stigao";
+  document.getElementById("slOtkazi").hidden = m.od !== uid;
+  el.hidden = false; document.body.classList.add("mcilj"); SAST.otvoren = m;
+}
+function sastanakZatvori() { const el = document.getElementById("sastanakList"); if (el) el.hidden = true; document.body.classList.remove("mcilj"); SAST.otvoren = null; }
+async function sastanakOdgovori(id, stanje, eta) {
+  await supaJa("rpc/sastanak_odgovori", { method: "POST", body: JSON.stringify({ p_id: id, p_stanje: stanje, p_eta: eta || null }) });
+  if (stanje !== "ne") pushPosalji(id, "odgovor", stanje);   // "X je krenuo / stigao" ostalima
+  await sastanciUcitaj(true);
+}
+function sastanakEta(route, cilj, sad) {   // ETA iz izracunate rute, SAMO ako ruta vodi bas na mesto sastanka (<500 m)
+  if (!route || !route.totalDur || !cilj || !cilj.to || cilj.to.lat == null) return null;
+  if (haversine(cilj.to.lat, cilj.to.lon, cilj.lat, cilj.lon) >= 0.5) return null;
+  return new Date((sad == null ? Date.now() : sad) + route.totalDur * 1000).toISOString();
+}
+function sastanakVodi(m) {   // Vodi me tamo + ETA cim ruta stigne (plan je asinhron; cekamo do 40 s)
+  SAST.cilj = { id: m.id, t0: Date.now(), lat: m.lat, lon: m.lon };
+  sastanakZatvori();
+  try { SEARCH_MODE = "to"; } catch (e) {}
+  pickDestination({ n: m.ime, lat: m.lat, lon: m.lon, odmah: true });
+  const seq = ++sastanakVodi._seq;
+  const cekaj = () => {
+    if (seq !== sastanakVodi._seq || !SAST.cilj) return;
+    const eta = sastanakEta(state.routes && state.routes[state.selected], { ...SAST.cilj, to: state.geocode && state.geocode.to });
+    if (eta) { sastanakOdgovori(SAST.cilj.id, "dolazim", eta).catch(() => {}); return; }
+    if (Date.now() - SAST.cilj.t0 < 40000) setTimeout(cekaj, 1500);
+  };
+  setTimeout(cekaj, 2500);
+}
+sastanakVodi._seq = 0;
+function sastanakNoviOtvori(m) {   // iz lista mesta (E4)
+  const el = document.getElementById("sastanakNovi"); if (!el || !m) return;
+  const pr = mojiPrijateljiPrihvaceni();
+  SAST.novi = { ime: m.ime, lat: m.lat, lon: m.lon, kad: null };
+  document.getElementById("snIme").textContent = m.ime;
+  document.getElementById("snPoruka").value = "";
+  document.getElementById("snKad").hidden = true; document.getElementById("snSada").classList.add("on"); document.getElementById("snU").classList.remove("on");
+  document.getElementById("snUTxt").textContent = T("sas.uVreme");
+  document.getElementById("snGreska").hidden = true;
+  const samo = SAST.predizbor; SAST.predizbor = null;   // iz kartice prijatelja: stikliran je samo on
+  document.getElementById("snLista").innerHTML = pr.map((f) => `<label class="sn-red">${avatarHtml(f.id, f.avatar_v, f.ime)}<span class="zpr-t"><b>${esc(f.ime)}</b>${f.motor ? "<small>" + esc(f.motor) + "</small>" : ""}</span><input type="checkbox" value="${esc(f.id)}"${(!samo || samo === f.id) ? " checked" : ""}></label>`).join("");
+  try { mestoCiljZatvori(); } catch (e) {}
+  el.hidden = false; document.body.classList.add("mcilj");
+}
+function sastanakNoviZatvori() { const el = document.getElementById("sastanakNovi"); if (el) el.hidden = true; document.body.classList.remove("mcilj"); SAST.novi = null; }
+(function(){
+  const g = (id) => document.getElementById(id);
+  if (!g("sastanakNovi")) return;
+  g("sastanakTraka").addEventListener("click", (e) => { e.stopPropagation(); sastanakOtvori(g("sastanakTraka").dataset.id); });
+  const zs = g("zSastanci"); if (zs) zs.addEventListener("click", (e) => { const k = e.target.closest("[data-id]"); if (k) sastanakOtvori(k.dataset.id); });
+  const mcN = g("mcNadjemo"); if (mcN) mcN.addEventListener("click", () => { if (MC.m) sastanakNoviOtvori(MC.m); });
+  const pad = (n) => String(n).padStart(2, "0");
+  const hhmm = (v) => new Date(v).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
+  g("snSada").addEventListener("click", () => { SAST.novi.kad = null; g("snKad").hidden = true; g("snSada").classList.add("on"); g("snU").classList.remove("on"); g("snUTxt").textContent = T("sas.uVreme"); });
+  g("snU").addEventListener("click", () => {
+    const w = g("snKad"); w.hidden = false; g("snU").classList.add("on"); g("snSada").classList.remove("on");
+    if (!w.value) { const d = new Date(Date.now() + 60 * 60000); d.setMinutes(Math.round(d.getMinutes() / 15) * 15, 0, 0); w.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+    SAST.novi.kad = w.value; g("snUTxt").textContent = T("sas.uVremeX", { 0: hhmm(w.value) });
+    try { w.showPicker(); } catch (e) { w.focus(); }
+  });
+  g("snKad").addEventListener("change", () => { if (g("snKad").value) { SAST.novi.kad = g("snKad").value; g("snUTxt").textContent = T("sas.uVremeX", { 0: hhmm(g("snKad").value) }); } });
+  g("snPosalji").addEventListener("click", async () => {
+    const b = g("snPosalji"), gr = g("snGreska"); gr.hidden = true;
+    const ko = [...g("snLista").querySelectorAll("input:checked")].map((i) => i.value);
+    if (!ko.length) { gr.textContent = T("sas.izaberiNekog"); gr.hidden = false; return; }
+    b.disabled = true;
+    try {
+      const m = SAST.novi;
+      const id = await supaJa("rpc/nadjemo_se", { method: "POST", body: JSON.stringify({ p_ime: m.ime, p_lat: m.lat, p_lon: m.lon, p_kad: m.kad ? new Date(m.kad).toISOString() : null, p_poruka: g("snPoruka").value, p_ko: ko }) });
+      sastanakNoviZatvori();
+      tihoObavestenje(T("sas.poslato", { 0: ko.length, 1: TN(ko.length, "pl.prijatelj") }));
+      pushPosalji(id, "poziv");
+      await sastanciUcitaj(true);
+      if ((SAST.lista || []).some((x) => x.id === id)) sastanakOtvori(id);   // odmah vidis karticu - odatle "Vodi me tamo" i za sebe
+    } catch (e) { gr.textContent = nalogGreskaTekst(e); gr.hidden = false; }
+    b.disabled = false;
+  });
+  g("snX").addEventListener("click", sastanakNoviZatvori);
+  g("slX").addEventListener("click", sastanakZatvori);
+  g("slVodi").addEventListener("click", () => { if (SAST.otvoren) sastanakVodi(SAST.otvoren); });
+  g("slNe").addEventListener("click", async () => { const m = SAST.otvoren; if (!m) return; try { await sastanakOdgovori(m.id, "ne", null); sastanakOtvori(m.id); } catch (e) { tihoObavestenje(nalogGreskaTekst(e)); } });
+  g("slOtkazi").addEventListener("click", async () => { const m = SAST.otvoren; if (!m || !confirm(T("sas.otkaziPitanje"))) return;
+    try { await supaJa("rpc/sastanak_otkazi", { method: "POST", body: JSON.stringify({ p_id: m.id }) }); sastanakZatvori(); await sastanciUcitaj(true); } catch (e) { tihoObavestenje(nalogGreskaTekst(e)); } });
+  setTimeout(() => { try { sastanciPokreni(); } catch (e) {} }, 4000);
+})();
+
+/* ======================= PRIJATELJI UZIVO NA MAPI + PUSH (faza 3 od 4, 2.10.2026) =======================
+   Boskove odluke: lokacija se deli UVEK dok smo prijatelji (prekidac u Ja, podrazumevano upaljen); osvezavanje
+   2-3 min, cesce sto si blizi (>5 km 180 s, <5 km 30 s, <1 km 10 s). Slanje: u prednjem planu odavde
+   (watchPosition), u pozadini u voznji iz nativnog kolektora (cmd "deli"). Prijem: prijatelji_lokacije() na
+   isti ritam; prsten sa slikom/slovom i natpisom na mapi; dodir = sazetak + "Vodi me do njega".
+   Push: token iz nativnog sloja (window.rmrPushToken) -> uredjaj_upisi; salje Edge funkcija "push".
+   Sema: docs/supabase-lokacije.sql. / Live friends on the map + push registration. */
+const LOK = { markeri: {}, lista: [], tSalji: null, tCitaj: null, zadnje: 0, deli: null, tokenRok: 0 };
+function deliLokaciju() { if (LOK.deli == null) { try { LOK.deli = localStorage.getItem("rmr2_deli") !== "0"; } catch (e) { LOK.deli = true; } } return LOK.deli; }
+function lokacijaInterval(najbliziKm) {   // Boskovo pravilo 1.10.: 2-3 min, cesce kad si blizu
+  if (najbliziKm == null || !isFinite(najbliziKm)) return 180000;
+  if (najbliziKm < 1) return 10000;
+  if (najbliziKm < 5) return 30000;
+  return 180000;
+}
+function lokacijaNajbliziKm(mojFix, lista) {
+  if (!mojFix || mojFix.lat == null) return null;
+  let m = null;
+  for (const f of lista || []) { if (f.lat == null) continue; const d = haversine(mojFix.lat, mojFix.lon, f.lat, f.lon); if (m == null || d < m) m = d; }
+  return m;
+}
+function lokacijaMojFix() {   // u voznji: poslednji fiks voznje; inace: zivi watch sa pocetnog
+  try {
+    if (document.body.classList.contains("riding") && RIDE.lastFixObj && RIDE.lastFixObj.la != null)
+      return { lat: RIDE.lastFixObj.la, lon: RIDE.lastFixObj.lo, t: RIDE.lastFixTs || Date.now(), spd: (RIDE.spdKmh || 0) / 3.6, voznja: true };
+  } catch (e) {}
+  const h = HOMELOC.fix; if (h && !h.stale) return { lat: h.lat, lon: h.lon, acc: h.acc, t: h.t, voznja: false };
+  return null;
+}
+async function lokacijaSalji(force) {
+  const n = nalogCitaj(); if (!n || !n.kod || !deliLokaciju()) return false;
+  const f = lokacijaMojFix(); if (!f || Date.now() - f.t > 300000) return false;   // ustajao fiks se ne salje kao "sada"
+  const iv = lokacijaInterval(lokacijaNajbliziKm(f, LOK.lista));
+  if (!force && Date.now() - LOK.zadnje < iv) return false;
+  LOK.zadnje = Date.now();
+  try {
+    await supaJa("rpc/lokacija_upisi", { method: "POST", body: JSON.stringify({ p_lat: f.lat, p_lon: f.lon, p_spd: f.spd != null ? Math.round(f.spd * 10) / 10 : null, p_kurs: null, p_acc: f.acc != null ? Math.round(f.acc) : null, p_u_voznji: !!f.voznja }) });
+    return true;
+  } catch (e) { return false; }
+}
+function mojaLokacijaStanjeTekst() {   // Ja: da covek vidi da li ga prijatelji uopste mogu videti (3.10.)
+  if (!deliLokaciju()) return T("lok.mojaIskljucena");
+  if (LOK.zadnje) return T("lok.mojaPoslata", { 0: lokacijaVremeTekst(new Date(LOK.zadnje).toISOString()) });
+  const f = lokacijaMojFix();
+  return f ? T("lok.mojaCeka") : T("lok.mojaNemaGps");
+}
+function lokacijaVremeTekst(ts, sad) {
+  const d = Math.max(0, (sad == null ? Date.now() : sad) - new Date(ts).getTime()), min = Math.round(d / 60000);
+  if (min < 2) return T("lok.sada");
+  if (min < 60) return T("lok.preMin", { 0: min });
+  const h = Math.round(min / 60); if (h < 24) return T("lok.preH", { 0: h });
+  return T("lok.davno");
+}
+function lokacijaSveza(ts, sad) { return !!ts && ((sad == null ? Date.now() : sad) - new Date(ts).getTime()) < 30 * 60000; }
+async function prijateljiLokacijeUcitaj() {
+  const n = nalogCitaj(); if (!n || !n.kod) return [];
+  let l = [];
+  try { const r = await supaJa("rpc/prijatelji_lokacije", { method: "POST", body: "{}" }); l = Array.isArray(r) ? r : []; } catch (e) { return LOK.lista; }
+  LOK.lista = l;
+  prijateljiLokacijeCrtaj();
+  return l;
+}
+function prijateljiLokacijeCrtaj() {
+  if (!map || !state.catMarkers) return;
+  const zivi = new Set();
+  for (const f of LOK.lista) {
+    if (f.lat == null) continue;
+    zivi.add(f.id);
+    let m = LOK.markeri[f.id];
+    const html = `<div class="pr-nat"><b>${esc(f.ime)}</b><span>${esc(lokacijaVremeTekst(f.ts))}</span></div>${avatarHtml(f.id, f.avatar_v, f.ime, "pr-krug" + (f.u_voznji ? " voznja" : ""))}`;
+    if (!m) {
+      const el = document.createElement("div"); el.className = "pr-pin"; el.innerHTML = html;
+      el.addEventListener("click", (e) => { e.stopPropagation(); const ff = LOK.lista.find((x) => x.id === f.id); if (ff) prijateljSazetak({ ...(prijateljiKes().find((x) => x.id === f.id) || {}), ...ff, stanje: "prihvaceno", lok: ff }); });
+      m = new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat([f.lon, f.lat]).addTo(map);
+      LOK.markeri[f.id] = m; state.catMarkers.prijatelji.push(m);
+      if (!state.layerVis.prijatelji) el.style.display = "none";
+    } else { m.setLngLat([f.lon, f.lat]); m.getElement().innerHTML = html; }
+  }
+  prijateljiNatpisStrana();
+  if (!prijateljiLokacijeCrtaj._move) { prijateljiLokacijeCrtaj._move = true; try { map.on("moveend", prijateljiNatpisStrana); } catch (e) {} }
+  for (const id of Object.keys(LOK.markeri)) if (!zivi.has(id)) { try { LOK.markeri[id].remove(); } catch (e) {} state.catMarkers.prijatelji = state.catMarkers.prijatelji.filter((x) => x !== LOK.markeri[id]); delete LOK.markeri[id]; }
+}
+/* Natpis uz prsten ide LEVO od prstena kad je prijatelj blizu desne ivice (ispod dugmadi Slojevi/pumpa/hrana),
+   i ispod prstena kad je uz gornju ivicu - inace ga stub dugmadi i gornje polje prekriju (Boskov snimak 2.10.). */
+function prijateljiNatpisStrana() {
+  try {
+    const w = window.innerWidth;
+    for (const id of Object.keys(LOK.markeri)) {
+      const m = LOK.markeri[id], el = m.getElement(); const p = map.project(m.getLngLat());
+      el.classList.toggle("levo", p.x > w - 110);
+      el.classList.toggle("dole", p.y < 150);
+    }
+  } catch (e) {}
+}
+function lokacijeTakt() {   // jedan otkucaj: posalji svoju, povuci tudje, zakazi sledeci po blizini
+  if (LOK.tSalji) clearTimeout(LOK.tSalji);
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  /* 3.10. (Bosko: "Ana nije na mapi"): GPS se do sada trazio samo na pocetnom ekranu ili u voznji, pa ko je u Zajednici ili Ja
+     nikad nije dobio fiks i nista nije slao. Dok je app otvorena i deljenje upaljeno, sat se pali iz BILO KOG taba (isti
+     homeLocStart, ista dozvola). Na iPhone aplikaciji pozadinu i dalje nosi nativni sloj. */
+  try { if (deliLokaciju() && !document.body.classList.contains("riding") && !lokacijaMojFix() && navigator.geolocation && !HOMELOC.denied) homeLocStart(); } catch (e) {}
+  if (document.visibilityState === "visible") { lokacijaSalji(false); prijateljiLokacijeUcitaj(); }
+  const iv = lokacijaInterval(lokacijaNajbliziKm(lokacijaMojFix(), LOK.lista));
+  LOK.tSalji = setTimeout(lokacijeTakt, Math.min(iv, 60000));   // citanje tudjih najmanje na minut, slanje po pravilu
+  try { if (JURI.f) juriProveri(); } catch (e) {}
+}
+function lokacijePokreni() {
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  if (!lokacijePokreni._vis) { lokacijePokreni._vis = true; document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") lokacijeTakt(); }); }
+  lokacijeTakt();
+}
+/* pozadina u voznji: nativni kolektor salje sam; token mu obnavljamo na 30 min dok voznja traje */
+async function rmrGpsDeli(on) {
+  const n = nalogCitaj();
+  const poruka = { cmd: "deli", on: !!(on && n && n.kod && deliLokaciju()), url: SUPA_URL + "/rest/v1/rpc/lokacija_upisi", apikey: SUPA_KEY, token: "", ms: 120000 };
+  if (poruka.on) { try { const nn = nalogCitaj(); poruka.token = await nalogToken(!!(nn && nn.exp && nn.exp - Date.now() < 35 * 60000)); } catch (e) { poruka.on = false; } }   // pregled koda: token mora da nadzivi 30 min u dzepu
+  try { const h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.rmrGps; if (h) { h.postMessage(poruka); return; } } catch (e) {}
+  try { const a = rmrGpsSignal._a || (window.Capacitor && window.Capacitor.registerPlugin ? window.Capacitor.registerPlugin("RmrGps") : null); if (a && a.signal) a.signal(poruka).catch(() => {}); } catch (e) {}
+}
+function rmrGpsDeliPokreni() { rmrGpsDeli(true); if (LOK.tDeli) clearInterval(LOK.tDeli); LOK.tDeli = setInterval(() => rmrGpsDeli(true), 30 * 60000); }
+function rmrGpsDeliStani() { if (LOK.tDeli) clearInterval(LOK.tDeli); LOK.tDeli = null; rmrGpsDeli(false); }
+async function deliLokacijuPostavi(on) {
+  const pre = deliLokaciju();
+  try { await supaJa("rpc/deli_lokaciju_postavi", { method: "POST", body: JSON.stringify({ p_deli: !!on }) }); }
+  catch (e) {   // server nije primio: prekidac se vraca, covek cuje zasto (pregled koda 2.10.)
+    LOK.deli = pre; try { const c = document.getElementById("jaDeli"); if (c) c.checked = pre; } catch (e2) {}
+    try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {}
+    return;
+  }
+  LOK.deli = !!on; try { localStorage.setItem("rmr2_deli", on ? "1" : "0"); } catch (e) {}
+  if (on) lokacijaSalji(true); else rmrGpsDeli(false);
+}
+/* ---- push ---- */
+function pushRegistruj() {
+  const n = nalogCitaj(); if (!n || !n.kod) return;
+  try { const h = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.rmrPush; if (h) h.postMessage({ cmd: "register" }); } catch (e) {}
+  // Android (FCM) jos nije ozicen - vidi supabase/README-push.md
+}
+window.rmrPushToken = function (hex) {
+  try {
+    const n = nalogCitaj(); if (!n || !n.kod || !hex) return false;
+    let zad = ""; try { zad = sessionStorage.getItem("rmr2_push_token") || ""; } catch (e) {}   // po paljenju, ne zauvek (server ume da obrise mrtav token)
+    if (zad === hex) return true;
+    supaJa("rpc/uredjaj_upisi", { method: "POST", body: JSON.stringify({ p_token: hex, p_platforma: "ios" }) })
+      .then(() => { try { sessionStorage.setItem("rmr2_push_token", hex); } catch (e) {} }).catch(() => {});
+    return true;
+  } catch (e) { return false; }
+};
+window.rmrPushOtvori = function (rmr) {   // dodir na obavestenje: otvori sastanak
+  try {
+    if (!rmr || !rmr.sastanak) return false;
+    nasTabKlik("planer");
+    sastanciUcitaj(true).then(() => sastanakOtvori(rmr.sastanak)).catch(() => { try { sastanakOtvori(rmr.sastanak); } catch (e) {} });
+    return true;
+  } catch (e) { return false; }
+};
+async function pushPosalji(sastanakId, vrsta, stanje) {   // Edge funkcija salje ostalim ucesnicima; pad je tih (bez push-a app radi isto)
+  try {
+    const t = await nalogToken(); if (!t) return;
+    let signal; try { signal = AbortSignal.timeout(10000); } catch (e) {}
+    await fetch(SUPA_URL + "/functions/v1/push", { method: "POST", signal, headers: { apikey: SUPA_KEY, Authorization: "Bearer " + t, "Content-Type": "application/json" }, body: JSON.stringify({ sastanak: sastanakId, vrsta: vrsta || "poziv", stanje: stanje || null }) });
+  } catch (e) {}
+}
+(function(){
+  if (!document.getElementById("kartaPuta")) return;
+  setTimeout(() => { try { lokacijePokreni(); pushRegistruj(); } catch (e) {} }, 7000);
+})();
+
+/* ======================= "JURI GA" (faza 4 od 4, 2.10.2026) =======================
+   Dodir na prijatelja sa zivom tackom -> "Vodi me do njega": ruta do NJEGOVE tacke koja se pomera. Dok traje
+   (planiranje ili voznja), prijateljeva tacka se povlaci na 15 s; kad se pomeri vise od JURI_PRAG_M od tacke do
+   koje vodi ruta, ruta se preracuna (u voznji kroz postojeci rideReroute, pre voznje novim planom). U voznji HUD
+   nosi tablu: razmak, njegova brzina, "stizes ga za ~X min" (iz razlike brzina) i starost tacke. Gasi se sa
+   krajem voznje, novim ciljem iz pretrage ili kad tacka ostari preko 10 min (tabla to kaze, ruta ostaje).
+   / Chase: route to a moving friend, replanned when they move; HUD plate with gap and catch-up time. */
+const JURI = { f: null, cilj: null, poslednje: 0, t: null };
+const JURI_PRAG_M = 300, JURI_TAKT_MS = 15000, JURI_STARO_MS = 10 * 60000;
+function juriPomeren(cilj, lok, pragM) {   // da li se prijatelj pomerio dovoljno da se ruta preracuna
+  if (!cilj || !lok || lok.lat == null) return false;
+  return haversine(cilj.lat, cilj.lon, lok.lat, lok.lon) * 1000 >= (pragM == null ? JURI_PRAG_M : pragM);
+}
+function juriStizes(razmakM, mojaMs, njegovaMs) {   // sekunde do sustizanja; null = ne stizes ga (brzi je ili stojis)
+  if (razmakM == null || !(mojaMs > 0)) return null;
+  const zatvaranje = mojaMs - (njegovaMs || 0);
+  if (zatvaranje < 1) return null;
+  return razmakM / zatvaranje;
+}
+function juriTekst(f, lok, razmakM, mojaMs, sad) {
+  const t = sad == null ? Date.now() : sad;
+  const star = lok && lok.ts ? t - new Date(lok.ts).getTime() : Infinity;
+  if (star > JURI_STARO_MS) return T("juri.bezSignala", { 0: f.ime, 1: lok && lok.ts ? new Date(lok.ts).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" }) : "?" });
+  const delovi = [];
+  if (razmakM != null) delovi.push(razmakM < 1000 ? T("juri.m", { 0: Math.round(razmakM / 10) * 10 }) : T("juri.km", { 0: DEC((razmakM / 1000).toFixed(1)) }));
+  if (lok && lok.spd != null) delovi.push(T("juri.njegova", { 0: Math.round(lok.spd * 3.6) }));
+  const s = juriStizes(razmakM, mojaMs, lok && lok.spd);
+  if (s != null && razmakM > 50) delovi.push(s < 60 ? T("juri.stizesSad") : T("juri.stizesZa", { 0: Math.round(s / 60) }));
+  else if (razmakM != null && razmakM <= 50) delovi.push(T("juri.tuJe"));
+  else if (lok && lok.spd != null && mojaMs > 0) delovi.push(T("juri.beziTi"));
+  return f.ime + " · " + delovi.join(" · ");
+}
+function juriPokreni(f, lok) {
+  if (!f || !lok || lok.lat == null) return;
+  JURI.f = f; JURI.cilj = { lat: lok.lat, lon: lok.lon }; JURI.poslednje = Date.now();
+  try { SEARCH_MODE = "to"; } catch (e) {}
+  pickDestination({ n: f.ime, lat: lok.lat, lon: lok.lon, odmah: true, juri: true });
+  if (JURI.t) clearInterval(JURI.t);
+  JURI.t = setInterval(juriTakt, JURI_TAKT_MS);
+  try { tihoObavestenje(T("juri.krenuo", { 0: f.ime })); } catch (e) {}
+}
+function juriStani(razlog) {
+  if (!JURI.f) return;
+  if (JURI.t) clearInterval(JURI.t); JURI.t = null;
+  JURI.f = null; JURI.cilj = null;
+  const pl = document.getElementById("rideJuri"); if (pl) { pl.hidden = true; pl.classList.remove("on"); }
+}
+async function juriTakt() {
+  if (!JURI.f) return;
+  if (document.visibilityState !== "visible" && !document.body.classList.contains("riding")) return;
+  await prijateljiLokacijeUcitaj();
+  juriProveri();
+}
+function juriProveri() {
+  const f = JURI.f; if (!f) return;
+  const lok = (LOK.lista || []).find((x) => x.id === f.id);
+  const riding = document.body.classList.contains("riding");
+  // HUD tabla u voznji
+  const pl = document.getElementById("rideJuri");
+  if (pl && riding) {
+    let razmak = null;
+    try { if (RIDE.total != null && RIDE.maxD != null) razmak = Math.max(0, RIDE.total - RIDE.maxD); } catch (e) {}
+    const moja = (RIDE.spdKmh || 0) / 3.6;
+    pl.textContent = juriTekst(f, lok, razmak, moja);
+    pl.hidden = false; pl.classList.add("on");
+  }
+  if (!lok || !juriPomeren(JURI.cilj, lok)) return;
+  if (lok.ts && Date.now() - new Date(lok.ts).getTime() > JURI_STARO_MS) return;   // ustajala tacka ne vuce rutu
+  JURI.cilj = { lat: lok.lat, lon: lok.lon };
+  if (riding) {
+    try {
+      state.geocode = { ...(state.geocode || {}), to: { lat: lok.lat, lon: lok.lon, name: f.ime } };
+      state.searchTo = { name: f.ime, lat: lok.lat, lon: lok.lon };
+      const route = state.routes && state.routes[state.selected];
+      const my = RIDE.lastFixObj;
+      if (route && my && my.la != null) rideReroute(route, my.lo, my.la, RIDE.maxD || 0, true);
+    } catch (e) {}
+  } else {
+    try { SEARCH_MODE = "to"; } catch (e) {}
+    pickDestination({ n: f.ime, lat: lok.lat, lon: lok.lon, odmah: true, juri: true });
+  }
+}
+
+/* ---- app2 Faza 3.1: GPS polazak + brza dugmad + sheet drag + vožnja ---- */
 /* ===== KARTICE ZA DELJENJE - Filipov crtaci sloj (v2, 15.9.2026), prenet 16.9.2026 ==================
    Boskova odluka 16.9.2026: "implementiraj sve sto je Filip uradio. Ta topla tamna narandzasta. I to
    sve sa V2 sto stoji." Ovo je NJEGOV kod iz grane filip/app-structure, prenet bez promene izgleda:
