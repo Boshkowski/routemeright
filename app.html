@@ -1495,6 +1495,52 @@
   .ri-metrics { margin: 14px 0 4px; }
   .ri-zasto { font-size: 13px; color: var(--fg-muted); line-height: 1.4; margin: 2px 0 6px; }
   .ri-zasto:empty { display: none; }
+  /* ---- 3.10.2026 (spec tacke 4 i 5, makete 7A/7E/7G): niska traka, sekcije sa presudom, traka varijanti ---- */
+  .pk-glava { display: flex; align-items: center; gap: 10px; }
+  .pk-glava .ptxt b { font-size: 14px; }
+  .pk-glava .ptxt span { display: none; }   /* meta ide u podignut list, traka nosi samo relaciju */
+  .pk-glava .pbadge { display: none; }      /* stanje nosi boja ocene, kvadratic sa kvacicom je bio visak (maketa 7A) */
+  body.qplan.planning #riMeta { display: none; }   /* recenica o varijanti: isti podatak je u sekciji Ruta (jedan predikat) */
+  .pk-kad { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg-strong); font: 500 12px var(--font-ui); white-space: nowrap; }
+  .pk-red { display: none; align-items: center; gap: 12px; margin-top: 8px; }
+  .pk-metrics { flex: 1; margin: 0; }
+  .pk-metrics b { font-size: 26px; }
+  .pk-metrics span { font-size: 10px; margin-top: 4px; }
+  body.qplan.planning.hasroute #panel:not(.open) .pk-red { display: flex; }
+  body.qplan.planning.hasroute #panel:not(.open) .pk-red #peekGo { display: inline-flex; flex: 0 0 auto; min-height: 46px; padding: 0 20px; margin: 0; }
+  body.qplan.planning.hasroute #panel:not(.open) .pk-kad { display: inline-flex; }
+  #peekSum { display: block; }
+  #peekSum.hidden { display: none; }
+  .ri-cta { display: flex; gap: 10px; margin: 10px 0 6px; }
+  .ri-cta .b2 { flex: 0 0 56px; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--r-lg); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg-strong); font: 600 15px var(--font-ui); }
+  .ri-cta .b2 svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
+  .ri-cta .b2.p { flex: 1; background: var(--accent-fill); color: var(--on-accent); border: 0; box-shadow: var(--glow-accent); }
+  .ri-cta .b2.p svg { stroke: var(--on-accent); }
+  #riSekcije .ak { border-bottom: 1px solid var(--line-hairline); }
+  #riSekcije .ak .hd { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 56px; padding: 6px 0; border: 0; background: none; color: var(--fg); text-align: left; cursor: pointer; }
+  #riSekcije .ak .hd .cap { flex: none; width: 112px; font-family: var(--font-cap); font-synthesis: none; font-size: 10px; font-weight: var(--fw-cap); letter-spacing: var(--tr-cap); text-transform: uppercase; color: var(--fg-faint); }
+  #riSekcije .ak .hd .pres { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 6px; white-space: nowrap; overflow: hidden; }
+  #riSekcije .ak .hd .pres b { font: 300 18px var(--font-num); font-synthesis: none; letter-spacing: .03em; color: var(--fg-strong); flex: none; }
+  #riSekcije .ak .hd .pres b i { font-style: normal; font-size: 12px; color: var(--fg-muted); margin-left: 2px; }
+  #riSekcije .ak .hd .pres b.ok { color: var(--good-400); } #riSekcije .ak .hd .pres b.warn { color: #f5d27a; } #riSekcije .ak .hd .pres b.bad { color: var(--danger-400); }
+  #riSekcije .ak .hd .pres small { font-size: 12px; color: var(--fg-muted); overflow: hidden; text-overflow: ellipsis; }
+  #riSekcije .ak .hd .ch { flex: none; width: 20px; text-align: right; color: var(--fg-decor); font-size: 18px; transition: transform .2s; }
+  #riSekcije .ak.open .hd .ch { transform: rotate(90deg); }
+  #riSekcije .ak .bd { display: none; padding: 0 0 14px; }
+  #riSekcije .ak.open .bd { display: block; }
+  #riSekcije .ak .bd h3 { display: none; }
+  #riSekcije .ak .bd .card { background: none; border: 0; padding: 0; margin: 0; box-shadow: none; }
+  #riSekcije .ak .bd .jrow { padding: 8px 0; }
+  .vks { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; margin: 4px -16px 10px; padding: 0 16px 2px; -webkit-overflow-scrolling: touch; }
+  .vks::-webkit-scrollbar { display: none; }
+  .vk { flex: 0 0 158px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 10px 12px; color: var(--fg); cursor: pointer; }
+  .vk.on { border-color: var(--accent); background: var(--accent-wash); }
+  .vk b { display: block; font-size: 14px; font-weight: 600; color: var(--fg-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vk .num { display: block; font: 300 22px var(--font-num); font-synthesis: none; margin-top: 4px; color: var(--fg-strong); white-space: nowrap; }
+  .vk .num small { font-family: var(--font-num); font-size: 11px; color: var(--fg-muted); margin-left: 3px; }
+  .vk .pod { display: flex; justify-content: space-between; gap: 6px; font-family: var(--font-num); font-synthesis: none; font-size: 12px; color: var(--fg-muted); margin-top: 4px; }
+  .vk .pod > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vk .oc.ok { color: var(--good-400); } .vk .oc.warn { color: #f5d27a; } .vk .oc.bad { color: var(--danger-400); }
   #rezInst .jrow { padding: 11px 0; font-size: 15px; }
   #rezInst .jrow > b { flex: 1; text-align: right; font-weight: 600; color: var(--fg-strong); font-size: 15px; }
   #rezInst .ri-num { font: 300 20px var(--font-num) !important; }
@@ -3776,11 +3822,18 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
   <aside id="panel">
     <div id="peekBar" role="button" tabindex="0" aria-label="Prikaži ili sakrij planer" data-i18n-aria="planer.aria.peekBar">
       <div class="grabber" aria-hidden="true"></div>
+      <!-- 3.10.2026 (spec tacka 4, maketa 7A): NISKA TRAKA kao Google - relacija + cip polaska, tri broja + Kreni; detalji tek kad se list podigne -->
       <div id="peekSum" class="hidden">
-        <span class="pbadge warn" id="peekBadge">⚠︎</span>
-        <div class="ptxt"><b id="peekRoute"></b><span id="peekMeta"></span></div>
-        <button id="peekGo" type="button" aria-label="Kreni u vožnju" data-i18n="planer.peekGo" data-i18n-aria="planer.aria.peekGo">Kreni</button>
-        <span class="pchev" aria-hidden="true">▲</span>
+        <div class="pk-glava">
+          <span class="pbadge warn" id="peekBadge">⚠︎</span>
+          <div class="ptxt"><b id="peekRoute"></b><span id="peekMeta"></span></div>
+          <button type="button" class="pk-kad" id="pkKad" aria-label="Vreme polaska" data-i18n-aria="planer.aria.qMode">⏱ <span id="pkKadTxt">sada</span> ▾</button>
+          <span class="pchev" aria-hidden="true">▲</span>
+        </div>
+        <div class="pk-red">
+          <div class="jn-metrics pk-metrics"><div><b id="pkMin">–</b><span data-i18n="planer.riVoznja">vožnja</span></div><div><b id="pkKm">–</b><span data-i18n="planer.riDaljina">daljina</span></div><div><b id="pkOcena">–</b><span data-i18n="planer.riOcena">ocena</span></div></div>
+          <button id="peekGo" type="button" aria-label="Kreni u vožnju" data-i18n="planer.peekGo" data-i18n-aria="planer.aria.peekGo">Kreni</button>
+        </div>
       </div>
     </div>
     <button id="plannerClose" type="button" aria-label="Nazad na početnu" data-i18n-aria="planer.aria.plannerClose">✕</button>
@@ -3886,11 +3939,14 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
         </div>
         <div class="jn-metrics ri-metrics"><div><b id="riMin">–</b><span data-i18n="planer.riVoznja">vožnja</span></div><div><b id="riKm">–</b><span data-i18n="planer.riDaljina">daljina</span></div><div><b id="riOcena">–</b><span data-i18n="planer.riOcena">ocena</span></div></div>
         <div class="ri-zasto" id="riOcenaZasto"></div>
-        <div class="jrow"><span data-i18n="planer.riStizes">Stižeš</span><b class="ri-num" id="riStizes">–</b></div>
-        <div class="jrow"><span data-i18n="planer.vremeRuti">Vreme na ruti</span><b class="ri-v" id="riVreme">–</b></div>
-        <div class="jrow"><span data-i18n="planer.trosak">Trošak</span><b class="ri-trosak" id="riTrosak">–</b></div>
+        <!-- 3.10.2026 (maketa 7G): dugmad i gore; sekcije kao redovi sa presudom koje se otvaraju na dodir (#riSekcije puni JS) -->
+        <div class="ri-cta" id="riCta"><button type="button" class="b2 p" id="riKreni"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg><span data-i18n="planer.peekGo">Kreni</span></button><button type="button" class="b2" id="riCuvaj" aria-label="Sačuvaj rutu"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></button><button type="button" class="b2" id="riDeli" aria-label="Podeli"><svg viewBox="0 0 24 24" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></button></div>
+        <div id="riSekcije"></div>
+        <div class="jrow" id="riStizesRed"><span data-i18n="planer.riStizes">Stižeš</span><b class="ri-num" id="riStizes">–</b></div>
+        <div class="jrow" id="riVremeRed"><span data-i18n="planer.vremeRuti">Vreme na ruti</span><b class="ri-v" id="riVreme">–</b></div>
+        <div class="jrow" id="riTrosakRed"><span data-i18n="planer.trosak">Trošak</span><b class="ri-trosak" id="riTrosak">–</b></div>
         <div class="jrow ri-ruta" id="riRutaRed"><span data-i18n="planer.riRuta">Ruta</span><b id="riRute"></b></div>
-        <div class="ri-cipovi"><button type="button" class="ri-cip" id="riPovratno">⇄ <span data-i18n="planer.riPovratno">Povratno</span></button><button type="button" class="ri-cip" id="riBezAutoputa"><span data-i18n="planer.riBezAutoputa">Bez autoputa</span></button><button type="button" class="ri-cip" id="riJos"><span data-i18n="planer.riJos">Još</span></button></div>
+        <div class="ri-cipovi" id="riCipovi"><button type="button" class="ri-cip" id="riPovratno">⇄ <span data-i18n="planer.riPovratno">Povratno</span></button><button type="button" class="ri-cip" id="riBezAutoputa"><span data-i18n="planer.riBezAutoputa">Bez autoputa</span></button><button type="button" class="ri-cip" id="riJos"><span data-i18n="planer.riJos">Još</span></button></div>
       </div>
       <!-- Faza 3: mobilni rezultat kao maketa (hero + metrike + krivine); desktop ga ne vidi -->
       <div id="resHero">
@@ -4788,6 +4844,23 @@ const RECNIK_SR = {
   "planer.riPutarina": "putarina {0} €",
   "planer.riPutarinaNepoznata": "samo gorivo, putarina nepoznata",
   "planer.riZameniAria": "Zameni polazak i cilj",
+  "planer.akRuta": "Ruta",
+  "planer.akStizes": "Stižeš",
+  "planer.akUpoz": "Upozorenja",
+  "planer.akProfil": "Profil puta",
+  "planer.akKrivine": "Krivine",
+  "planer.akPutevi": "Stanje puteva",
+  "planer.akUsput": "Usput",
+  "planer.akNistaZaOprez": "ništa za oprez",
+  "planer.akNajbolje": "najbolje vreme polaska",
+  "planer.akUspona": "uspona",
+  "planer.akNajvise": "najviše {0} m",
+  "planer.akKrivinaPod": "krivina · {0} oštrih · {1}",
+  "planer.akRadovi": "RADOVI",
+  "planer.akCisto": "ČISTO",
+  "planer.akBezPrijava": "bez prijava na ruti",
+  "planer.akBezOcena": "još bez ocena vozača",
+  "planer.akUsputPod": "{0} pumpi · {1} pauza, hrana, kamp",
   "planer.riDodaj": "+ Dodaj stanicu",
   "planer.riStanica": "stanica",
   "planer.riDeonica": "deonica",
@@ -6529,6 +6602,23 @@ const RECNIK_EN = {
   "planer.riPutarina": "tolls {0} €",
   "planer.riPutarinaNepoznata": "fuel only, tolls unknown",
   "planer.riZameniAria": "Swap start and destination",
+  "planer.akRuta": "Route",
+  "planer.akStizes": "Arrive",
+  "planer.akUpoz": "Warnings",
+  "planer.akProfil": "Elevation",
+  "planer.akKrivine": "Curves",
+  "planer.akPutevi": "Road status",
+  "planer.akUsput": "On the way",
+  "planer.akNistaZaOprez": "nothing to watch",
+  "planer.akNajbolje": "best departure",
+  "planer.akUspona": "of climb",
+  "planer.akNajvise": "highest {0} m",
+  "planer.akKrivinaPod": "curves · {0} sharp · {1}",
+  "planer.akRadovi": "WORKS",
+  "planer.akCisto": "CLEAR",
+  "planer.akBezPrijava": "no reports on the route",
+  "planer.akBezOcena": "no rider ratings yet",
+  "planer.akUsputPod": "{0} fuel · {1} breaks, food, camp",
   "planer.riDodaj": "+ Add a stop",
   "planer.riStanica": "stop",
   "planer.riDeonica": "segment",
@@ -13329,7 +13419,9 @@ function drawRoute(route, assess) {
   for (let i = 0; i < assess.length - 1; i++) {
     const lvl = Math.max(assess[i].level, assess[i + 1].level);
     const na = assess[i].outOfRange && assess[i + 1].outOfRange;   // bez prognoze = neutralna boja, ne lazno "vedro" zelena
-    feats.push({ type: "Feature", properties: { color: na ? "#7d726a" : LEVEL_COLORS[lvl] },
+    /* 3.10.2026 (spec): deo rute sa KISOM je plav, sa vetrom/ostalim oprezom zut, opasno crveno - boja kaze STA, ne samo koliko */
+    const kisa = lvl > 0 && /ki[sš]a|rain|pljus|sneg|snow/i.test(((assess[i].reasons || []).concat(assess[i + 1].reasons || [])).join(" "));
+    feats.push({ type: "Feature", properties: { color: na ? "#7d726a" : (kisa && lvl < 2 ? "#4a90ff" : LEVEL_COLORS[lvl]) },
       geometry: { type: "LineString", coordinates: route.coords.slice(assess[i].idx, assess[i + 1].idx + 1) } });
   }
   map.addSource("seg", { type: "geojson", data: { type: "FeatureCollection", features: feats } });
@@ -16989,6 +17081,7 @@ async function selectRoute(departure) {
   if (_seq !== state.planSeq) return;   // R13: novija generacija je preuzela - ne gazi njene zone/hero
   state._zones = zones; state._zonesSeq = state.planSeq;   // MORA pre hero rendera - hero cita razlog iz zona
   try { renderResultHero(route); } catch (e) {}   // Faza 3: mobilni hero (svi podaci su sad na route objektu)
+  try { riPresude(route); } catch (e) {}   // 3.10.: presude sekcija posle svih pozadinskih rendera
   _restScroll();   // pozadinski renderi umeju jos jednom da klampuju skrol - finalno vracanje
   try {   // "Nedavno" istorija za brzo dugme
     const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
@@ -17787,8 +17880,13 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.184";
+const APP_VERSION = "0.9.185";
 const CHANGELOG = [
+  { v: "0.9.185", d: "03.10.2026.", stavke: [
+    "<b>Pregled rute kao Google:</b> dok je list spušten, niska traka nosi relaciju, čip polaska, tri broja (vožnja, daljina, ocena) i Kreni. Ništa drugo.",
+    "<b>Podignut list = sekcije koje se otvaraju:</b> Ruta (varijante kao kartice, prevlače se), Stižeš (trošak, domet, gorivo), Upozorenja (nisko sunce, vetar, osećaj, poledica + predlog), Kad krenuti, Vreme (po tački, grafici kiše, vetra, temperature), Šta obući, Profil puta, Krivine, Stanje puteva, Ocene vozača, Usput. Zatvoren red nosi presudu (broj ili reč u boji), pa se sve vidi i bez otvaranja. App pamti šta si otvorio.",
+    "<b>Mapa boji rutu:</b> plavo gde pada kiša, žuto gde je oprez, crveno gde je opasno.",
+  ] },
   { v: "0.9.184", d: "03.10.2026.", stavke: [
     "<b>Stanice u kartici Od/Do.</b> Red \"+ Dodaj stanicu\" otvara pretragu; stanica može biti mesto, adresa, tačka na mapi ili deonica iz Istraži (pretraga ih nudi obeležene kao deonica). Deonica je jedan red (ulaz, oblik i izlaz idu ruteru), X uklanja, ručica menja redosled, zamena Od/Do okreće i stanice. Preko 10 tačaka app kaže da ruter ne prima više.",
   ] },
@@ -25865,6 +25963,118 @@ function rezInstCrtaj(route) {
   document.getElementById("riBezAutoputa").classList.toggle("on", !!state.bezAutoputa);
   box.hidden = false;
   try { riOdDoCrtaj(od, do_); } catch (e) {}
+  /* 3.10.2026 (spec tacke 4 i 5): niska traka nosi iste brojeve; sekcije se usvoje jednom, presude posle svakog crtanja */
+  try {
+    const pk = (id, v) => { const e = document.getElementById(id); if (e) e.innerHTML = v; };
+    pk("pkMin", document.getElementById("riMin").innerHTML); pk("pkKm", document.getElementById("riKm").innerHTML);
+    const po = document.getElementById("pkOcena"); if (po) { po.textContent = so.textContent; po.style.color = so.style.color; }
+    const pkt = document.getElementById("pkKadTxt"); if (pkt) pkt.textContent = rezKadTekst();
+  } catch (e) {}
+  try { riSekcijeNapravi(); riVarijanteCrtaj(); riPresude(route); } catch (e) {}
+  try { clearTimeout(rezInstCrtaj._t1); clearTimeout(rezInstCrtaj._t2);
+    rezInstCrtaj._t1 = setTimeout(() => { try { riPresude(route); } catch (e) {} }, 1800);
+    rezInstCrtaj._t2 = setTimeout(() => { try { riPresude(route); } catch (e) {} }, 5000); } catch (e) {}
+}
+/* ---- SEKCIJE PREGLEDA RUTE (3.10.2026, spec tacka 5, maketa 7G) ---------------------------------
+   Svaka sekcija je red: natpis, PRESUDA (jedan broj ili jedna rec, u boji stanja) + kratak nastavak, strelica.
+   Dodir otvara samo tu sekciju. Telo sekcije USVAJA postojece blokove starog panela (isti renderi, isti
+   id-jevi: warnList, whenOut, wxCharts, gearList, elevSvg, diffOut, roadsList...), pa nista ne pise dvaput.
+   Pravilo "jedan predikat, dva teksta": presuda zatvorenog reda izlazi iz riPresude, isti podaci kao telo. */
+const RI_SEKCIJE = [
+  { k: "ruta", cap: "planer.akRuta", blok: ["riVks", "riRutaRed", "riCipovi"] },
+  { k: "stizes", cap: "planer.akStizes", blok: ["riStizesRed", "riTrosakRed", "costOut", "card-fuel"] },
+  { k: "upoz", cap: "planer.akUpoz", blok: ["planWarn", "warnList", "suggestions"] },
+  { k: "kad", cap: "planer.kadKrenuti", blok: ["whenWin", "whenOut", "whenNote"] },
+  { k: "vreme", cap: "planer.vremeRuti", blok: ["riVremeRed", "tlZone", "tl-labels", "ptBrowse", "consensusOut", "wxCharts"] },
+  { k: "obuci", cap: "planer.staObuci", blok: ["gearList"] },
+  { k: "profil", cap: "planer.akProfil", blok: ["elevSvg", "elevLbl"] },
+  { k: "krivine", cap: "planer.akKrivine", blok: ["diffOut", "camOut", "workOut"] },
+  { k: "putevi", cap: "planer.akPutevi", blok: ["roadsList", "roadsNote"] },
+  { k: "ocene", cap: "planer.staKazuVozaci", blok: ["stanjeOut", "stanjeIzvor"] },
+  { k: "usput", cap: "planer.akUsput", blok: ["foodList"] },
+];
+const RI_AK_KEY = "rmr2_ak";
+function riAkStanje() { try { return JSON.parse(localStorage.getItem(RI_AK_KEY) || "null") || { ruta: true }; } catch (e) { return { ruta: true }; } }
+function riAkUpisi(s) { try { localStorage.setItem(RI_AK_KEY, JSON.stringify(s)); } catch (e) {} }
+function riSekcijeNapravi() {
+  const host = document.getElementById("riSekcije"); if (!host || host.dataset.gotovo || !mqMobile.matches) return;
+  const st = riAkStanje();
+  host.innerHTML = RI_SEKCIJE.map((s) => '<div class="ak' + (st[s.k] ? " open" : "") + '" data-ak="' + s.k + '">' +
+    '<button type="button" class="hd" aria-expanded="' + (st[s.k] ? "true" : "false") + '"><span class="cap">' + esc(T(s.cap)) + '</span><span class="pres" data-pres="' + s.k + '"></span><span class="ch" aria-hidden="true">›</span></button>' +
+    '<div class="bd"></div></div>').join("");
+  /* usvajanje blokova: premestaju se JEDNOM, u svoju sekciju; traka varijanti (riVks) se pravi ovde */
+  for (const s of RI_SEKCIJE) {
+    const bd = host.querySelector('[data-ak="' + s.k + '"] .bd'); if (!bd) continue;
+    for (const id of s.blok) {
+      let el = document.getElementById(id);
+      if (!el && id === "riVks") { el = document.createElement("div"); el.id = "riVks"; el.className = "vks"; }
+      if (el) bd.appendChild(el);
+    }
+  }
+  host.dataset.gotovo = "1";
+  host.addEventListener("click", (e) => {
+    const hd = e.target.closest(".hd"); if (!hd) return;
+    const ak = hd.closest(".ak"); const on = !ak.classList.contains("open");
+    ak.classList.toggle("open", on); hd.setAttribute("aria-expanded", String(on)); ak.dataset.rucno = "1";
+    const s2 = riAkStanje(); s2[ak.dataset.ak] = on; riAkUpisi(s2);
+  });
+  const vks = document.getElementById("riVks");
+  if (vks) vks.addEventListener("click", (e) => { const b = e.target.closest("[data-i]"); if (!b) return; state.selected = +b.dataset.i; selectRoute(state.lastDeparture); });
+  const vez = (id, cilj) => { const b = document.getElementById(id); if (b) b.addEventListener("click", () => { const c = document.getElementById(cilj); if (c) c.click(); }); };
+  vez("riKreni", "ctaKreni"); vez("riCuvaj", "ctaCuvaj"); vez("riDeli", "ctaDeli");
+  const pkK = document.getElementById("pkKad"); if (pkK) pkK.addEventListener("click", (e) => { e.stopPropagation(); try { setSheet(true); } catch (er) {} setTimeout(() => { const k = document.getElementById("riKad"); if (k) k.click(); }, 350); });
+}
+function riVarijanteCrtaj() {   // traka kartica varijanti (maketa 7E): ime, vreme, km, ocena; izabrana narandzasta
+  const vks = document.getElementById("riVks"); if (!vks) return;
+  const fmt = (r) => { const h = Math.floor(r.totalDur / 3600), m = Math.round(r.totalDur % 3600 / 60); return h ? h + "<small>h</small>" + String(m).padStart(2, "0") : m + "<small>min</small>"; };
+  vks.innerHTML = (state.routes || []).map((r, i) => { const sc = rideScore(r); const ime = state.bezAutoputa && (state.routes.length === 1 || /najbr/i.test(r.label)) ? T("planer.riBezAutoputa") : String(rutaNaziv(r.label)).split(" · ")[0];
+    return '<button type="button" class="vk' + (i === state.selected ? " on" : "") + '" data-i="' + i + '"><b>' + esc(ime) + '</b><span class="num">' + fmt(r) + '<small>· ' + Math.round(r.totalDist / 1000) + ' km</small></span><span class="pod"><span>' + esc(String(rutaNaziv(r.label)).split(" · ").slice(1).join(" · ")) + '</span><span class="oc' + (sc ? (sc.score >= 85 ? " ok" : sc.score >= 60 ? " warn" : " bad") : "") + '">' + (sc ? sc.score : "–") + "</span></span></button>"; }).join("");
+}
+function riPresude(route) {
+  const host = document.getElementById("riSekcije"); if (!host || !host.dataset.gotovo) return;
+  const g = (id) => document.getElementById(id);
+  const txt = (id) => { const e = g(id); return e ? e.textContent.replace(/\s+/g, " ").trim() : ""; };
+  const li = (id) => { const e = g(id); return e ? [...e.querySelectorAll("li")] : []; };
+  const set = (k, glavno, ostatak, boja) => { const e = host.querySelector('[data-pres="' + k + '"]'); if (!e) return; e.innerHTML = '<b' + (boja ? ' class="' + boja + '"' : "") + ">" + glavno + "</b>" + (ostatak ? "<small>" + esc(ostatak) + "</small>" : ""); };
+  const sc = route ? rideScore(route) : null;
+  // Ruta
+  const r = route; const ime = r ? (state.bezAutoputa && (state.routes.length === 1 || /najbr/i.test(r.label)) ? T("planer.riBezAutoputa") : String(rutaNaziv(r.label)).split(" · ")[0]) : "";
+  set("ruta", esc(ime), r ? txt("riMin") + " · " + txt("riKm") : "");
+  // Stizes
+  const tro = g("riTrosak") ? g("riTrosak").textContent.replace(/\s+/g, " ").trim() : "";
+  const dometM = txt("fuelList").match(/domet\s*~?\s*(\d+)\s*km/i);
+  set("stizes", esc(txt("riStizes")), tro + (dometM ? " · domet " + dometM[1] + " km" : ""));
+  // Upozorenja
+  const zone = li("warnList").filter((l) => /warn-li|bad-li/.test(l.className));
+  const nUp = zone.length;
+  const razlozi = zone.slice(0, 2).map((l) => (l.textContent.split(":").pop() || "").split(",")[0].trim()).filter(Boolean).join(" · ");
+  set("upoz", String(nUp), nUp ? razlozi : T("planer.akNistaZaOprez"), nUp ? (zone.some((l) => /bad-li/.test(l.className)) ? "bad" : "warn") : "ok");
+  const akU = host.querySelector('[data-ak="upoz"]'); if (akU && nUp && !akU.dataset.rucno) { akU.classList.add("open"); akU.querySelector(".hd").setAttribute("aria-expanded", "true"); }
+  // Kad krenuti
+  const best = g("whenOut") ? g("whenOut").querySelector(".when-row.best .wr-time") : null;
+  set("kad", best ? esc(best.textContent.split("→")[0].trim()) : "–", best ? T("planer.akNajbolje") : txt("whenOut").slice(0, 60), best ? "ok" : "");
+  // Vreme
+  const rv = g("riVreme"); const kl = rv ? (rv.className.match(/\b(ok|warn|bad|na)\b/) || [])[1] : "";
+  const vr = rv ? rv.textContent.trim() : "";
+  set("vreme", esc((vr.split("·")[0] || "–").trim().toUpperCase()), vr.split("·").slice(1).join("·").trim(), kl);
+  // Sta obuci
+  const ob = li("gearList")[0] ? li("gearList")[0].textContent.trim() : txt("gearList");
+  set("obuci", esc((ob.split(/ - |,|\(/)[0] || "–").trim().toUpperCase()), ob.split(/ - /).slice(1).join(" - ").slice(0, 60));
+  // Profil
+  const el = txt("elevLbl"); const usp = el.match(/uspon\s*~?\s*([\d.,]+)\s*m/i), naj = el.match(/[Nn]ajvi[sš]a ta[cč]ka\s*([\d.,]+)\s*m/);
+  set("profil", usp ? esc(usp[1]) + "<i>m</i>" : "–", usp ? T("planer.akUspona") + (naj ? " · " + T("planer.akNajvise", { 0: naj[1] }) : "") : el.slice(0, 60));
+  // Krivine
+  const c = r && r._curves; const df = txt("diffOut");
+  set("krivine", c ? String(c.L + c.R) : "–", c ? T("planer.akKrivinaPod", { 0: c.sharp, 1: c.klasa || "" }) : df.slice(0, 60));
+  // Stanje puteva
+  const rl = li("roadsList"); const cr = g("card-roads"); const imaPut = rl.length && cr && cr.style.display !== "none";
+  set("putevi", imaPut ? esc(T("planer.akRadovi")) : esc(T("planer.akCisto")), imaPut ? rl[0].textContent.trim().slice(0, 70) : T("planer.akBezPrijava"), imaPut ? "warn" : "ok");
+  // Ocene
+  const cs = g("card-stanje"); const so = txt("stanjeOut");
+  set("ocene", cs && !cs.classList.contains("hidden") && so ? esc((so.match(/\d[.,]\d/) || ["★"])[0]) : "–", cs && !cs.classList.contains("hidden") ? so.slice(0, 70) : T("planer.akBezOcena"));
+  // Usput
+  const nf = li("fuelList").length, nh = li("foodList").length;
+  set("usput", String(nf + nh), T("planer.akUsputPod", { 0: nf, 1: nh }));
 }
 function rezZameni() {   // 3.10. (Bosko: "strelica"): zameni polazak i cilj; koordinate idu sa imenima (GPS polazak postaje cilj sa istim koordinatama)
   const fe = document.getElementById("from"), te = document.getElementById("to"); if (!fe || !te) return;
