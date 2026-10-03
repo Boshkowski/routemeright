@@ -1331,7 +1331,7 @@
   @media (max-width: 900px), (max-height: 520px) {
     body.qplan.planning #panel > *:not(#peekBar):not(#plannerClose):not(#qbar):not(#status):not(#results):not(#resCta) { display: none !important; }
     body.qplan.planning #panel { height: 54vh; height: 54dvh; padding-bottom: 0; display: flex; flex-direction: column; }   /* do pola kao Google; detalji sire; flex kolona = CTA footer uvek na dnu */
-    body.qplan.planning.qdetails #panel { height: 86vh; height: 86dvh; }
+    body.qplan.planning.qdetails #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); height: calc(100dvh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); }   /* 3.10. uvece: pun ekran (bilo 86dvh) - list povucen do vrha, kao Istrazi 'pun' */
     body.qplan.planning #resCta { margin-top: auto; }   /* kratak sadrzaj (kompaktni mod): traka svejedno na dnu sheeta */
     /* 11.8.: uz Rute stoji i presuda. Do sada je posle planiranja bila otvorena SAMO kartica Rute
        (186 px), a presuda je jedino mesto gde pise KAD STIZES - taj podatak je bio sakriven iza
@@ -1541,7 +1541,11 @@
   body.qplan.planning.hasroute.searching #riOdDo, body.qplan.planning.hasroute.riding #riOdDo { display: none; }
   /* 3.10. (Boskove slike 09:55-10:03): kartica Od/Do je ostajala preko Zajednice, Ja i Istrazi - klase qplan/planning/hasroute
      ostaju na body dok se tab menja. Kartica pripada samo planeru, pa se gasi cim je drugi tab na ekranu. */
-  body.atlas #riOdDo, body:has(.tabscreen.on) #riOdDo { display: none; }
+  /* 3.10. uvece (Boskovih 8 slika 20:05, "nije popravljeno"): moja prva dijagnoza (klase ostaju na body) je bila tacna,
+     ali pravilo nije ni delovalo - specificnost. `body.atlas #riOdDo` je (1,1,1) i `body:has(.tabscreen.on) #riOdDo` (1,3,1),
+     a pravilo koje kartu PRIKAZUJE je `body.qplan.planning.hasroute #riOdDo` (1,4,1) - jace, pa je kartica stajala preko
+     Istrazi, Zajednice i Ja. Dokaz: tools/provera-riOdDo-tabovi-pregledac.mjs. Sakrivanje nosi iste klase + tab. */
+  body.qplan.planning.hasroute.atlas #riOdDo, body.qplan.planning.hasroute:has(.tabscreen.on) #riOdDo { display: none !important; }
   /* 3.10. (pregled, izmereno 26 px): dok je kartica Od/Do na mapi, stub alata (Slojevi...) i kompas idu ISPOD nje; visinu meri riOdDoCrtaj u --riOdDo-h */
   body.qplan.planning.hasroute:not(.searching):not(.riding) #homeFabs { top: calc(var(--riOdDo-h, 150px) + 22px + env(safe-area-inset-top)); }
   body.qplan.planning.hasroute:not(.searching):not(.riding) .compass-btn { top: calc(var(--riOdDo-h, 150px) + 78px + env(safe-area-inset-top)); }
@@ -11132,6 +11136,13 @@ async function valhallaRoute(from, to, style, netOpts) {
 }
 /* ---- pametan grad (Boskov zakon 9.8.): iz grada NAJBRZE do oboda, vijuganje TEK OD OBODA;
    u grad NAJBRZE od oboda do cilja; cela gradska relacija = najbrza, bez vijuganja ---- */
+/* 3.10.2026 (Boskova slika 20:05, Breza -> Vukmir, fikstura tools/fixtures/valhalla-breza-vukmir.json): sonda za gradsko
+   tkivo je bio stil "Najbrza · autoput" (30,8 km / 38 min) - a Balans (12,4 km / 32 min) je bio BRZI. Autoputska varijanta
+   nosi deonicu preko 52 km/h, pa je grad promasen i vozac je za 12 km kroz Beograd dobio sivenu vijugavu od 22 km kao
+   podrazumevanu. Sonda je ruta koja je STVARNO najbrza po vremenu. */
+function gradSonda(brza, balans) {
+  return (balans && brza && balans.totalDur < brza.totalDur) ? balans : (brza || balans);
+}
 function gradIzlaz(route) {   // prvi manevar od kog prozor >=1.5 km drzi prosek >=52 km/h = kraj gradskog tkiva
   const mans = route.maneuvers || [];
   let acc = 0;
@@ -11186,8 +11197,9 @@ async function fetchRoutes(from, to) {
     ]);
     let stilPao = 0;   // 3.10.: kao `gradska` - NE na state tokom awaita, putuje uz rute (_stilPao) i commituje se u plan()
     // FAZA B (pametan grad, 9.8.): granice gradskog tkiva iz najbrze rute
-    const iz = gradIzlaz(brza), ul = gradUlaz(brza);
-    const kmTot = brza.totalDist / 1000;
+    const sonda = gradSonda(brza, balans);   // 3.10.: stvarno najbrza po vremenu, ne autoputski stil (vidi gradSonda)
+    const iz = gradIzlaz(sonda), ul = gradUlaz(sonda);
+    const kmTot = sonda.totalDist / 1000;
     const urbStart = !!(iz && iz.kmOd > 1.2), urbEnd = !!(ul && ul.kmDo > 1.2);
     const cistoZaSivenje = !(state.vias && state.vias.length) && !isRoundTrip();   // stanice/povratno zadrzavaju stari tok (v1)
     let vijugave = [], sinteticka = false;
@@ -11208,9 +11220,9 @@ async function fetchRoutes(from, to) {
     // KRITICNO (review 9.8.): "nigde deonice preko 52 km/h" NE znaci grad - Kotor-Cetinje i Uzice-Zlatibor
     // se voze ~50 km/h i to su NAJVIJUGAVIJE rute koje imamo. Grad se razlikuje po GUSTINI RASKRSNICA:
     // mereno 9.8. na zivom ruteru - grad 1,15-1,53 manevra/km uz prosek ~30 km/h; planina 0,43-0,56 uz ~50 km/h.
-    const _mans = (brza.maneuvers || []).filter((m) => m.type !== 0);
+    const _mans = (sonda.maneuvers || []).filter((m) => m.type !== 0);
     const manPoKm = _mans.length / Math.max(1, kmTot);
-    const prosekKmh = kmTot / Math.max(0.01, brza.totalDur / 3600);
+    const prosekKmh = kmTot / Math.max(0.01, sonda.totalDur / 3600);
     const gustoGradsko = manPoKm > 0.85 && prosekKmh < 42;
     if (!iz || (urbStart && urbEnd && iz.kmOd + ul.kmDo > kmTot - 3)) {
       if (gustoGradsko && kmTot < 40) gradska = true;   // gusto + sporo + kratko = pravi grad
@@ -11218,8 +11230,8 @@ async function fetchRoutes(from, to) {
     } else if (cistoZaSivenje && (urbStart || urbEnd)) {
       // sinteticka "Ekstra vijugava": najbrze do oboda + vijugavo izmedju + najbrze od oboda do cilja
       try {
-        const izl = urbStart ? { lat: brza.coords[iz.coordIdx][1], lon: brza.coords[iz.coordIdx][0] } : from;
-        const ula = urbEnd ? { lat: brza.coords[ul.coordIdx][1], lon: brza.coords[ul.coordIdx][0] } : to;
+        const izl = urbStart ? { lat: sonda.coords[iz.coordIdx][1], lon: sonda.coords[iz.coordIdx][0] } : from;
+        const ula = urbEnd ? { lat: sonda.coords[ul.coordIdx][1], lon: sonda.coords[ul.coordIdx][0] } : to;
         const seg = { noVias: true, noLoop: true, keepTrip: true };
         const [gl, sred, rep] = await Promise.all([
           urbStart ? valhallaRoute(from, izl, ROUTE_STYLES[3], seg) : null,
@@ -18092,10 +18104,18 @@ function initSheet() {
       if (t1 > t0) v = (p1 - p0) / (t1 - t0) * 1000;
     }
     peek._tapAt = Date.now();   // pointer mehanika je obradila interakciju - klik fallback ispod ne sme da je ponisti (ni tap ni prevlacenje)
+    /* 3.10. uvece (Bosko: "kad stoji do pola, da moze skroz do vrha da ceo ekran bude pregled"): tri polozaja,
+       kao Istrazi. Otvoren list povucen JOS gore (preko ivice, ili brz zamah nagore) = pun ekran (qdetails);
+       pun ekran povucen nadole prvo pada na pola, ne zatvara se u istom potezu. */
+    const pun = document.body.classList.contains("qdetails");
+    const stop = sheet.y + projectMomentum(v);
     if (drag.moved < 8) sheet.open = !sheet.open;                       // tap = toggle
+    else if (sheet.open && !pun && (sheet.y < -24 || v < -600)) { sheet.open = true; document.body.classList.add("qdetails"); }
+    else if (pun && stop > 40) { sheet.open = true; document.body.classList.remove("qdetails"); }
     /* 0.9.82: asimetrican prag - OTVARANJE vec na cetvrtini puta (maxY*0.75), zatvaranje ostaje na pola.
        Skupljena pilula se do sada otvarala tek preko pola ekrana prevlacenja - delovalo je mrtvo. */
-    else { const stop = sheet.y + projectMomentum(v); sheet.open = stop < (sheet.open ? maxY / 2 : maxY * 0.75); }
+    else { sheet.open = stop < (sheet.open ? maxY / 2 : maxY * 0.75); }
+    if (!sheet.open) document.body.classList.remove("qdetails");
     drag = null;
     applySheet();
   };
@@ -18565,8 +18585,13 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.191";
+const APP_VERSION = "0.9.192";
 const CHANGELOG = [
+  { v: "0.9.192", d: "03.10.2026.", stavke: [
+    "<b>Kartica Od/Do stvarno ostaje samo u planeru.</b> Tvoj nalaz: posle sačuvanog mesta stajala je zaleđena preko Istraži, Zajednice i Ja. Jutrošnje pravilo koje je sakriva nikad nije delovalo, jer je pravilo koje je prikazuje bilo jače (CSS specifičnost). Sada je izmereno u sva četiri taba: planer da, ostala tri ne.",
+    "<b>Gradska relacija bira najbržu, i kad autoputska varijanta nije najbrža.</b> Tvoja relacija Breza - Vukmir: 12 km kroz Beograd, a podrazumevana je bila vijugava od 22 km. Grad se merio na varijanti \"autoput\" (38 min, sa brzom deonicom), pa grad nije prepoznat; sada se meri na onoj koja je stvarno najbrža (Balans, 32 min). Vijugava ostaje u ponudi.",
+    "<b>Pregled rute ide do vrha.</b> Otvoren list povučen još gore (ili brz zamah nagore) zauzima ceo ekran kao Istraži; povučen nadole prvo pada na pola, pa tek onda na traku."
+  ] },
   { v: "0.9.191", d: "03.10.2026.", stavke: [
     "<b>Nagib se meri kao na fabričkom instrumentu.</b> Tvoj nalog: maksimum mora da uhvati i krivinu od pola sekunde. Do sada je u maksimum ulazio samo ugao držan pun sekund. Pogledali smo kako rade BMW, Ducati i KTM (Bosch IMU): oni ne drže ugao, nego spajaju žiroskop i kinematiku (brzina puta skretanje) i uzimaju vrh tog spojenog signala. Sada je prozor 0,4 s, a ljuljanje telefona bez skretanja obara kinematika, ne dužina prozora. Bez žiroskopa prozor je 0,7 s.",
     "<b>Kreni je Filipovo dugme</b> (tvoj izbor 1A): natpis levo, strelica desno, u traci odmah posle pretrage.",
