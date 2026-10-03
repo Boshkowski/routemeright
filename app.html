@@ -2181,6 +2181,7 @@ body.kapija #bottomnav, body.kapija #homeChrome, body.kapija #homeFabs { display
 #prijateljList .kp-cta { margin-top: 14px; }
 #prijateljList .kp-cta .kp-plan[hidden] { display: none; }
 #prijateljList .kp-cta:has(.kp-plan[hidden]) .kp-x { flex: 1; }
+#prijateljList .kp-x { border-color: var(--line-strong); background: var(--surface); color: var(--fg); }   /* 3.10. (QA ISSUE-004): X samo zatvara, pa ne sme da bude crven iznad "Ukloni prijatelja" */
 @media (min-width: 901px) and (min-height: 521px) { #prijateljList:not([hidden]) { left: 24px; right: auto; bottom: 24px; width: 400px; border: 1px solid var(--line-strong); border-radius: 20px; } }
 /* ===== 2.10.2026 "NADJEMO SE TAMO" (faza 2): traka na pocetnom, kartice u Zajednici, listovi ===== */
 #sastanakTraka { display: none; }
@@ -2237,8 +2238,8 @@ body.kplan #sastanakTraka, body.hasroute #sastanakTraka, body.riding #sastanakTr
 /* 2.10.: kapija sa mejlom i kodom */
 .nk-korak1, .nk-korak2 { width: 100%; display: grid; gap: 10px; }
 .nk-korak1[hidden], .nk-korak2[hidden] { display: none; }
-#nkEmail, #nkTel, #nkKod { width: 100%; height: 48px; padding: 0 16px; border-radius: var(--r-lg); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg-strong); font: 400 16px var(--font-ui); text-align: center; }
-#nkEmail:focus, #nkTel:focus, #nkKod:focus { outline: none; border-color: var(--accent); }
+#nkKorisnicko, #nkEmail, #nkTel, #nkKod { width: 100%; height: 48px; padding: 0 16px; border-radius: var(--r-lg); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg-strong); font: 400 16px var(--font-ui); text-align: center; }
+#nkKorisnicko:focus, #nkEmail:focus, #nkTel:focus, #nkKod:focus { outline: none; border-color: var(--accent); }
 #nkKod { font: 300 28px var(--font-num); letter-spacing: .3em; height: 56px; }
 #nkKodOpis { margin: 0 0 4px; }
 .nk-korak1 input.nk-los { border-color: var(--bad-fg); }
@@ -4171,7 +4172,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
   <div id="sastanakNovi" hidden role="dialog" aria-modal="true" aria-label="Nađemo se tamo" data-i18n-aria="sas.nadjemoSe">
     <div class="kp-grab" aria-hidden="true"></div>
     <div class="mc-glava"><div class="mc-t"><b id="snIme"></b><small data-i18n="sas.novOpis">Pozovi prijatelje - svi dobiju "Vodi me tamo" i vide ko kad stiže.</small></div></div>
-    <div class="kp-cipovi"><button type="button" class="kp-cip on" id="snSada" data-tm="sada"><span data-i18n="sas.cimStignes">Čim stigneš</span></button><button type="button" class="kp-cip" id="snU" data-tm="u"><span id="snUTxt" data-i18n="sas.uVreme">U...</span></button></div>
+    <div class="kp-cipovi"><button type="button" class="kp-cip on" id="snSada" data-tm="sada"><span data-i18n="sas.cimStignes">Ko kad stigne</span></button><button type="button" class="kp-cip" id="snU" data-tm="u"><span id="snUTxt" data-i18n="sas.uVreme">U...</span></button></div>
     <input id="snKad" type="datetime-local" hidden aria-label="Vreme sastanka" data-i18n-aria="sas.vremeAria">
     <input id="snPoruka" maxlength="140" placeholder="Poruka (npr. kafa pa Tara)" data-i18n-ph="sas.porukaPh">
     <div class="sn-cap rmr-cap" data-i18n="sas.koga">Koga zoveš</div>
@@ -4444,6 +4445,13 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
   </div>
   <div class="tabscreen" id="screen-zajednica"><h2 data-i18n="zajednica.zajednica">Zajednica</h2>
     <div id="zsegOko">
+      <!-- 3.10. (QA ISSUE-003): Prijatelji i sastanci su PRVI u Zajednici - pretraga @imena bez skrola kroz preporuke i prijave -->
+      <!-- 2.10.2026 (faza 2): "Nadjemo se tamo" - zivi sastanci sa prijateljima; sema docs/supabase-sastanci.sql -->
+      <div id="zSastanci" class="zsast" hidden></div>
+      <div class="zsec" data-i18n="zajednica.prijatelji">Prijatelji</div>
+      <!-- 1.10.2026 (faza 1 od 4, Boskov nalog): nalog bez lozinke + kod za dodavanje + spisak prijatelja.
+           Sema: docs/supabase-nalozi.sql. Dok server nije podesen, sekcija to kaze i nista ne pravi. -->
+      <div id="zPrijatelji" class="zprij"></div>
       <div class="zsec" data-i18n-tn="zajednica.zajednicaPreporucuje">Zajednica preporučuje<span id="zPrepOko" data-i18n="zajednica.zPrepOko"> oko tebe</span><small id="zPrepNap"></small></div>
       <div id="zPreporuke"></div>
       <div class="zsec" data-i18n-tn="zajednica.putu"><span class="dot"></span>Na putu<small id="zStat" data-i18n="zajednica.zStat">učitavam…</small><button id="zOsvezi" type="button" aria-label="Osveži" data-i18n-aria="zajednica.aria.zOsvezi">↻</button></div>
@@ -4451,12 +4459,6 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
       <div id="zFeed"><div class="stub" data-i18n="zajednica.ucitavamPrijaveZajednice">Učitavam prijave zajednice…</div></div>
       <div class="zsec" data-i18n="zajednica.tvojaNedelja">Tvoja nedelja</div>
       <div id="zNedelja" class="zpts"></div>
-      <!-- 2.10.2026 (faza 2): "Nadjemo se tamo" - zivi sastanci sa prijateljima; sema docs/supabase-sastanci.sql -->
-      <div id="zSastanci" class="zsast" hidden></div>
-      <div class="zsec" data-i18n="zajednica.prijatelji">Prijatelji</div>
-      <!-- 1.10.2026 (faza 1 od 4, Boskov nalog): nalog bez lozinke + kod za dodavanje + spisak prijatelja.
-           Sema: docs/supabase-nalozi.sql. Dok server nije podesen, sekcija to kaze i nista ne pravi. -->
-      <div id="zPrijatelji" class="zprij"></div>
     </div>
   </div>
   <div class="tabscreen" id="screen-ja"><h2 data-i18n="ja.naslov">Ja</h2>
@@ -6133,9 +6135,16 @@ const RECNIK_SR = {
   "pl.najduza": "km najduža",
   "pl.poslednjaVoznja": "poslednja vožnja {0}",
   // 2.10.2026: Nadjemo se tamo (faza 2)
+  "sas.bezVremena": "ko kad stigne",
+  "sas.vreme": "Vreme: {0}",
+  "sas.dolazisTi": "dolaziš",
+  "sas.neDolazisTi": "ne dolaziš",
+  "sas.stigaoTi": "stigao si",
+  "sas.pozvanTi": "nisi odgovorio",
+  "sas.stizesTi": "stižeš ~{0}",
   "sas.nadjemoSe": "Nađemo se tamo",
   "sas.novOpis": "Pozovi prijatelje - svi dobiju \"Vodi me tamo\" i vide ko kad stiže.",
-  "sas.cimStignes": "Čim stigneš",
+  "sas.cimStignes": "Ko kad stigne",
   "sas.uVreme": "U...",
   "sas.uVremeX": "U {0}",
   "sas.vremeAria": "Vreme sastanka",
@@ -6153,8 +6162,8 @@ const RECNIK_SR = {
   "sas.nadjemoSeU": "Nađemo se u {0} · {1}",
   "sas.odgovori": "odgovori",
   "sas.otvori": "otvori",
-  "sas.tiZoves": "ti zoveš",
-  "sas.zove": "zove {0}",
+  "sas.tiZoves": "Organizuješ ti",
+  "sas.zove": "Organizuje {0}",
   "sas.dolaziN": "dolazi {0} od {1}",
   "sas.danasU": "danas u {0}",
   "sas.stigao": "stigao",
@@ -7785,9 +7794,16 @@ const RECNIK_EN = {
   "pl.najduza": "km longest",
   "pl.poslednjaVoznja": "last ride {0}",
   // 2.10.2026: Nadjemo se tamo (faza 2)
+  "sas.bezVremena": "whenever each arrives",
+  "sas.vreme": "Time: {0}",
+  "sas.dolazisTi": "you're coming",
+  "sas.neDolazisTi": "you're not coming",
+  "sas.stigaoTi": "you arrived",
+  "sas.pozvanTi": "you haven't replied",
+  "sas.stizesTi": "you arrive ~{0}",
   "sas.nadjemoSe": "Meet me there",
   "sas.novOpis": "Invite friends - everyone gets \"Take me there\" and sees who arrives when.",
-  "sas.cimStignes": "When you get there",
+  "sas.cimStignes": "Whenever each arrives",
   "sas.uVreme": "At...",
   "sas.uVremeX": "At {0}",
   "sas.vremeAria": "Meeting time",
@@ -7805,8 +7821,8 @@ const RECNIK_EN = {
   "sas.nadjemoSeU": "Meet at {0} · {1}",
   "sas.odgovori": "reply",
   "sas.otvori": "open",
-  "sas.tiZoves": "you're inviting",
-  "sas.zove": "{0} invites",
+  "sas.tiZoves": "Organized by you",
+  "sas.zove": "Organized by {0}",
   "sas.dolaziN": "{0} of {1} coming",
   "sas.danasU": "today at {0}",
   "sas.stigao": "arrived",
@@ -17429,8 +17445,13 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.175";
+const APP_VERSION = "0.9.176";
 const CHANGELOG = [
+  { v: "0.9.176", d: "03.10.2026.", stavke: [
+    "<b>\"Vodi me preko nje\" ostaje moto ruta i na dugim deonicama.</b> Ruter prima najviše 10 tačaka, a deonica je slala do 16, pa je svaka preko ~120 km tiho padala na auto rutu bez skretanja. Sad ide ulaz + do 6 usputnih + izlaz.",
+    "<b>Sastanak bez zabune.</b> Umesto \"ti zoveš / Čim stigneš / ti dolazi\" piše ko organizuje, \"Vreme: ko kad stigne\" ili tačno vreme, a tvoj red kaže \"dolaziš\", \"nisi odgovorio\", \"stigao si\".",
+    "<b>Sitnice iz QA.</b> Polje za korisničko ime na \"Ko vozi?\" je isto kao ostala polja; Prijatelji su na vrhu Zajednice (pretraga bez skrola); X u kartici prijatelja više nije crven; link za prijavu radi i kad stigne u već otvorenu aplikaciju.",
+  ] },
   { v: "0.9.175", d: "03.10.2026.", stavke: [
     "<b>\"Vodi me preko nje\" bez biranja cilja.</b> Dodir na deonicu u Atlasu i Vodi me: ruta ide od tebe do ulaza deonice (bližeg kraja), pa preko cele deonice do izlaza. Cilj se više ne traži posebno; ako već imaš cilj, pita te kao i do sad.",
     "<b>Istraži → Blizu tebe: dodir na deonicu ponovo radi.</b> Od selidbe lista u traku (0.9.126) dodir na red u \"Blizu tebe\" nije stizao nikome, pa se ništa nije dešavalo. Sad otvara karticu deonice sa \"Vodi me preko nje\", a \"Nazad na listu\" vraća baš u Blizu tebe.",
@@ -20767,6 +20788,9 @@ function nalogKapijaPrikazi() {
   });
   if (nalogIzHasha()) setTimeout(() => { nalogIzLinkaZavrsi(); }, 400);   // link iz mejla (web)
   else setTimeout(() => { try { nalogKapijaPrikazi(); } catch (e) {} }, 350);   // posle uvodne animacije; sloj je iznad nje po z-indexu
+  window.addEventListener("hashchange", () => {   // 3.10. (QA ISSUE-005): link stigao u VEC otvorenu aplikaciju (isti tab, bez ucitavanja)
+    if (nalogIzHasha()) nalogIzLinkaZavrsi(); else if (NK.linkGreska) { try { nalogKapijaPrikazi(); } catch (e) {} }
+  });
   setTimeout(() => { try { nalogProveriNaServeru(); } catch (e) {} }, 1500);   // nalog obrisan na serveru -> kapija, ne sat vremena laznog "prijavljen"
   setTimeout(() => { try { nalogPing(); } catch (e) {} }, 6000);
 })();
@@ -20779,18 +20803,18 @@ function nalogKapijaPrikazi() {
 const SAST = { lista: [], vidjeni: null, t: null, cilj: null, otvoren: null, novi: null };
 const SAST_KEY = "rmr2_sastanci", SAST_VIDJ = "rmr2_sastanci_vidjeni";
 function sastanciKes() { try { return JSON.parse(localStorage.getItem(SAST_KEY) || "[]"); } catch (e) { return []; } }
-function sastanakKadTekst(m, sad) {   // "cim stignes" ili "danas u 16:30" / "sub 4.10. 10:00"
-  if (!m || !m.kad) return T("sas.cimStignes");
+function sastanakKadTekst(m, sad) {   // "ko kad stigne" ili "danas u 16:30" / "sub 4.10. 10:00"
+  if (!m || !m.kad) return T("sas.bezVremena");
   const d = new Date(m.kad), danas = d.toDateString() === new Date(sad == null ? Date.now() : sad).toDateString();
   const hh = d.toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
   return danas ? T("sas.danasU", { 0: hh }) : d.toLocaleDateString(LOKAL(), { weekday: "short", day: "numeric", month: "numeric" }) + " " + hh;
 }
-function sastanakStanjeTekst(u) {
+function sastanakStanjeTekst(u, ja) {   // ja=true: drugo lice ("dolazis", "nisi odgovorio") - 3.10., "ti dolazi" je bilo nepismeno
   if (!u) return "";
-  if (u.stanje === "stigao") return T("sas.stigao");
-  if (u.stanje === "ne") return T("sas.neDolazi");
-  if (u.stanje === "dolazim") return u.eta_at ? T("sas.stizeU", { 0: new Date(u.eta_at).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" }) }) : T("sas.dolazi");
-  return T("sas.pozvan");
+  if (u.stanje === "stigao") return T(ja ? "sas.stigaoTi" : "sas.stigao");
+  if (u.stanje === "ne") return T(ja ? "sas.neDolazisTi" : "sas.neDolazi");
+  if (u.stanje === "dolazim") return u.eta_at ? T(ja ? "sas.stizesTi" : "sas.stizeU", { 0: new Date(u.eta_at).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" }) }) : T(ja ? "sas.dolazisTi" : "sas.dolazi");
+  return T(ja ? "sas.pozvanTi" : "sas.pozvan");
 }
 function mojiPrijateljiPrihvaceni() { return prijateljiKes().filter((f) => f.stanje === "prihvaceno"); }
 function sastanciNovi(lista, vidjeni, uid) {   // pozivi drugih koje jos nisam video (za tihu poruku)
@@ -20853,13 +20877,13 @@ function sastanakOtvori(id) {
   const n = nalogCitaj(); const uid = n && n.uid; const moj = (m.ucesnici || []).find((u) => u.id === uid);
   const el = document.getElementById("sastanakList"); if (!el) return;
   try { mestoCiljZatvori(); } catch (e) {}
-  document.getElementById("slOd").textContent = m.od === uid ? T("sas.tiZoves") : T("sas.zove", { 0: m.od_ime });
+  document.getElementById("slOd").textContent = m.od === uid ? T("sas.tiZoves") : T("sas.zove", { 0: m.od_ime });   // "Organizuješ ti" / "Organizuje Ana"
   document.getElementById("slIme").textContent = m.ime;
-  document.getElementById("slKad").textContent = sastanakKadTekst(m);
+  document.getElementById("slKad").textContent = T("sas.vreme", { 0: sastanakKadTekst(m) });   // "Vreme: ko kad stigne" / "Vreme: danas u 16:30"
   document.getElementById("slDalj").innerHTML = sastanakDalj(m);
   const po = document.getElementById("slPoruka"); po.textContent = m.poruka || ""; po.hidden = !m.poruka;
   document.getElementById("slUcesnici").innerHTML = (m.ucesnici || []).map((u) =>
-    `<div class="sl-red${u.id === uid ? " ja" : ""}">${avatarHtml(u.id, u.avatar_v, u.ime)}<div class="zpr-t"><b>${esc(u.id === uid ? T("sas.ti") : u.ime)}</b><small class="${u.stanje === "dolazim" || u.stanje === "stigao" ? "akc" : ""}">${esc(sastanakStanjeTekst(u))}</small></div></div>`).join("");
+    `<div class="sl-red${u.id === uid ? " ja" : ""}">${avatarHtml(u.id, u.avatar_v, u.ime)}<div class="zpr-t"><b>${esc(u.id === uid ? T("sas.ti") : u.ime)}</b><small class="${u.stanje === "dolazim" || u.stanje === "stigao" ? "akc" : ""}">${esc(sastanakStanjeTekst(u, u.id === uid))}</small></div></div>`).join("");
   document.getElementById("slNe").classList.toggle("on", !!moj && moj.stanje === "ne");
   document.getElementById("slNe").hidden = !!moj && moj.stanje === "stigao";
   document.getElementById("slOtkazi").hidden = m.od !== uid;
@@ -28640,7 +28664,9 @@ function atlasZatvori(kuda) {
    koordinate se preskacu (ruter ih vraca kao gresku ili nultu deonicu).
    pendingAtlas se trosi u plan() POSLE geokodiranja - pickDestination pre toga legitimno
    cisti vias, pa punjenje ovde ne sme ranije. */
-const ATLAS_LOK_MAX = 15;   // ukupno stanica koje Atlas sme da preda planeru (2 kraja + do 13 nemih)
+const ATLAS_LOK_MAX = 8;   // ukupno stanica koje Atlas sme da preda planeru (2 kraja + do 6 nemih). 3.10. (QA ISSUE-001): javni Valhalla
+                           // prima NAJVISE 10 lokacija (error_code 150), a planer dodaje polazak i cilj -> 8 + 2 = 10. Sa 15 je svaka deonica
+                           // preko ~120 km padala na AUTO rutu (400 -> rezerva bez izbegavanja autoputa, bez skretanja).
 function atlasVias(d, from) {
   if (!d || !Array.isArray(d.coords) || d.coords.length < 2) return null;
   let cs = d.coords;
