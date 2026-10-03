@@ -2440,6 +2440,10 @@ body.kplan #sastanakTraka, body.hasroute #sastanakTraka, body.riding #sastanakTr
 #jaNalog .jmail { font-size: 13px; word-break: break-all; }
 /* 2.10.: posle prijave linkom na webu (iPhone/Android) - dugme koje sesiju preda nativnoj aplikaciji */
 .nk-nativ { position: fixed; left: 16px; right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 60; display: block; padding: 14px; border-radius: var(--r-lg); background: var(--action-gradient); color: var(--on-accent); font: 600 15px var(--font-ui); text-align: center; text-decoration: none; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+
+/* 3.10.2026 (spec tacka 7): obavestenja u Moj nalog - podnaslov i objasnjenje ispod natpisa prekidaca */
+#jaNalog .jn-sub { margin: 12px 0 2px; }
+#jaNalog .jrow .jpod { display: block; font-size: 11px; color: var(--fg-muted); font-weight: 400; margin-top: 2px; }
     /* Oznaka test verzije: uvek se vidi u kojoj si aplikaciji i sta je u njoj novo.
        Nestaje u voznji da ne smeta. */
     #verBadge { position: fixed; left: 10px; bottom: calc(92px + env(safe-area-inset-bottom));
@@ -4844,6 +4848,15 @@ const RECNIK_SR = {
   "planer.riPutarina": "putarina {0} €",
   "planer.riPutarinaNepoznata": "samo gorivo, putarina nepoznata",
   "planer.riZameniAria": "Zameni polazak i cilj",
+  "wx.vrucina": "vrućina ({0}°C) - voda, pauza u hladu, mek asfalt u krivinama",
+  "nal.obavestenja": "Obaveštenja",
+  "nal.saglMejl": "Mejl",
+  "nal.saglMejlPod": "novosti i saveti, retko",
+  "nal.saglSms": "SMS",
+  "nal.saglSmsPod": "novosti i ponude, retko",
+  "nal.saglOd": "pristanak od {0}",
+  "nal.saglNapomena": "Oba su ugašena dok ih sam ne upališ. Isključuješ ih ovde ili porukom „odjava“. Kod za prijavu i pozivi prijatelja stižu bez obzira na ovo.",
+  "nal.saglSmsTel": "Za SMS treba broj telefona (sa pozivnim brojem, npr. +381 6x...). Koristi se samo za ove poruke:",
   "planer.akRuta": "Ruta",
   "planer.akStizes": "Stižeš",
   "planer.akUpoz": "Upozorenja",
@@ -6602,6 +6615,15 @@ const RECNIK_EN = {
   "planer.riPutarina": "tolls {0} €",
   "planer.riPutarinaNepoznata": "fuel only, tolls unknown",
   "planer.riZameniAria": "Swap start and destination",
+  "wx.vrucina": "heat ({0}°C) - water, a break in the shade, soft asphalt in bends",
+  "nal.obavestenja": "Notifications",
+  "nal.saglMejl": "Email",
+  "nal.saglMejlPod": "news and tips, rarely",
+  "nal.saglSms": "SMS",
+  "nal.saglSmsPod": "news and offers, rarely",
+  "nal.saglOd": "consent since {0}",
+  "nal.saglNapomena": "Both are off until you turn them on. Switch off here or reply “stop”. Sign-in codes and friend invites arrive regardless.",
+  "nal.saglSmsTel": "SMS needs a phone number (with country code, e.g. +381 6x...). Used only for these messages:",
   "planer.akRuta": "Route",
   "planer.akStizes": "Arrive",
   "planer.akUpoz": "Warnings",
@@ -11810,6 +11832,9 @@ function assessHour(h, tt, ctx, fine, ft) {
   else if (g >= 45) { level = Math.max(level, 1); r1.push(T("wx.jakVetar", { 0: Math.round(g) })); }
   if (t <= 2) { level = 2; r2.push(T("wx.poledica", { 0: Math.round(t) })); }
   else if (t <= 6) { level = Math.max(level, 1); r1.push(`hladno (${Math.round(t)}°C)`); }
+  /* 3.10.2026 (spec tacka 6, Bosko: "sta cemo sa visokom temperaturom"): vrucina je bila samo u opremi (>= 28 "letnja"),
+     a na ruti nije postojala kao razlog. Od 32 stepena u satu prolaska: oprez - voda, pauza u hladu, mek asfalt u krivinama. */
+  else if (t >= 32) { level = Math.max(level, 1); r1.push(T("wx.vrucina", { 0: Math.round(t) })); }
   let feel = null;
   if (ctx) {
     // wind chill na brzini vožnje (Environment Canada formula, v = brzina motora + deo vetra)
@@ -17880,8 +17905,12 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.185";
+const APP_VERSION = "0.9.186";
 const CHANGELOG = [
+  { v: "0.9.186", d: "03.10.2026.", stavke: [
+    "<b>Vrućina kao upozorenje na ruti:</b> od 32° u satu prolaska app javlja gde i kad (voda, pauza u hladu, mek asfalt u krivinama); ulazi u Upozorenja, predlog polaska i Šta obući.",
+    "<b>Obaveštenja u Ja → Moj nalog:</b> dva prekidača, Mejl (novosti i saveti) i SMS (novosti i ponude), oba ugašena dok ih sam ne upališ. SMS traži broj telefona; bez broja ostaje ugašen. Datum pristanka se pamti.",
+  ] },
   { v: "0.9.185", d: "03.10.2026.", stavke: [
     "<b>Pregled rute kao Google:</b> dok je list spušten, niska traka nosi relaciju, čip polaska, tri broja (vožnja, daljina, ocena) i Kreni. Ništa drugo.",
     "<b>Podignut list = sekcije koje se otvaraju:</b> Ruta (varijante kao kartice, prevlače se), Stižeš (trošak, domet, gorivo), Upozorenja (nisko sunce, vetar, osećaj, poledica + predlog), Kad krenuti, Vreme (po tački, grafici kiše, vetra, temperature), Šta obući, Profil puta, Krivine, Stanje puteva, Ocene vozača, Usput. Zatvoren red nosi presudu (broj ili reč u boji), pa se sve vidi i bez otvaranja. App pamti šta si otvorio.",
@@ -29500,6 +29529,14 @@ async function prijateljiNadji(upit) {   // pretraga po @korisnickom ili delu im
   return supaJa("rpc/nadji_korisnike", { method: "POST", body: JSON.stringify({ p_upit: String(upit || "").trim() }) });
 }
 async function prijateljDodajPoId(id) { return supaJa("rpc/dodaj_prijatelja_po_id", { method: "POST", body: JSON.stringify({ p_id: id }) }); }
+const SAGL_VERZIJA = "2026-10-03";   // verzija teksta pristanka (nal.saglMejlPod / nal.saglSmsPod); menja se kad se tekst promeni
+async function saglasnostPostavi(vrsta, on) {
+  const n = nalogCitaj(); if (!n) return;
+  const telo = vrsta === "sms" ? { sagl_sms: !!on } : { sagl_mejl: !!on };
+  telo.sagl_kad = new Date().toISOString(); telo.sagl_verzija = SAGL_VERZIJA;
+  await supaJa("korisnici?id=eq." + encodeURIComponent(n.uid), { method: "PATCH", body: JSON.stringify(telo) });
+  nalogUpisi({ ...n, ...telo });
+}
 async function nalogPromeniTelefon(tel) {
   const n = nalogCitaj(); if (!n) return;
   tel = String(tel || "").trim().slice(0, 32);
@@ -29513,7 +29550,7 @@ async function nalogOsvezi() {   // moj red sa servera (ime/kod/telefon) kroz mo
   const n = nalogCitaj(); if (!n || !n.refresh) return null;
   const red = await supaJa("rpc/moj_profil", { method: "POST", body: "{}" });
   if (!Array.isArray(red) || !red.length) return null;
-  const m = { ...n, uid: red[0].id, ime: red[0].ime, kod: red[0].kod, avatar_v: red[0].avatar_v || 0, telefon: red[0].telefon || "", email: red[0].email || n.email || "", korisnicko: red[0].korisnicko || "", nalazi: red[0].nalazi !== false }; nalogUpisi(m);
+  const m = { ...n, uid: red[0].id, ime: red[0].ime, kod: red[0].kod, avatar_v: red[0].avatar_v || 0, telefon: red[0].telefon || "", email: red[0].email || n.email || "", korisnicko: red[0].korisnicko || "", sagl_mejl: !!red[0].sagl_mejl, sagl_sms: !!red[0].sagl_sms, sagl_kad: red[0].sagl_kad || null, nalazi: red[0].nalazi !== false }; nalogUpisi(m);
   try { if (red[0].deli_lokaciju != null) { LOK.deli = !!red[0].deli_lokaciju; localStorage.setItem("rmr2_deli", LOK.deli ? "1" : "0"); } } catch (e) {}
   return m;
 }
@@ -29691,10 +29728,28 @@ function renderJaNalog() {   // 3.10. (Boskov izbor 1B "instrument"): zaglavlje 
     <div class="jn-ticket"><div><span class="jn-cap">${esc(T("nal.tvojKod"))}</span><b class="jkod">${esc(n.kod)}</b></div><button type="button" class="jn-chip" id="jaNalogPodeli">${esc(T("nal.podeliKod"))}</button></div>
     <label class="jrow"><span>${esc(T("lok.deliPrekidac"))}</span><input type="checkbox" class="jsw" id="jaDeli" ${deliLokaciju() ? "checked" : ""}></label>
     <label class="jrow"><span>${esc(T("nal.nalaziPrekidac"))}</span><input type="checkbox" class="jsw" id="jaNalazi" ${n.nalazi === false ? "" : "checked"}></label>
+    <div class="jn-cap jn-sub">${esc(T("nal.obavestenja"))}</div>
+    <label class="jrow"><span>${esc(T("nal.saglMejl"))}<small class="jpod">${esc(T("nal.saglMejlPod"))}${n.sagl_kad && n.sagl_mejl ? " · " + esc(T("nal.saglOd", { 0: new Date(n.sagl_kad).toLocaleDateString(LOKAL()) })) : ""}</small></span><input type="checkbox" class="jsw" id="jaSaglMejl" ${n.sagl_mejl ? "checked" : ""}></label>
+    <label class="jrow"><span>${esc(T("nal.saglSms"))}<small class="jpod">${esc(T("nal.saglSmsPod"))}${n.sagl_kad && n.sagl_sms ? " · " + esc(T("nal.saglOd", { 0: new Date(n.sagl_kad).toLocaleDateString(LOKAL()) })) : ""}</small></span><input type="checkbox" class="jsw" id="jaSaglSms" ${n.sagl_sms ? "checked" : ""}></label>
+    <div class="jnote">${esc(T("nal.saglNapomena"))}</div>
     <div class="jnote"><span id="jaLokStanje">${esc(mojaLokacijaStanjeTekst())}</span> ${esc(T("nal.staVide"))}</div>
     <button type="button" class="jlink jopasno" id="jaNalogObrisi">${esc(T("nal.obrisiNalog"))}</button>`;
   document.getElementById("jaUredi").addEventListener("click", (e) => { const b = document.getElementById("jaUrediBlok"); b.hidden = !b.hidden; e.currentTarget.setAttribute("aria-expanded", String(!b.hidden)); });
   document.getElementById("jaDeli").addEventListener("change", (e) => deliLokacijuPostavi(e.target.checked));
+  /* 3.10.2026 (spec tacka 7, Boskova odluka: telefon neobavezan, SMS i za promo): pristanak po kanalu, sa datumom i verzijom
+     teksta. SMS bez broja ne moze da ostane upaljen - tada se trazi broj uz recenicu zasto. */
+  const sagl = async (e, vrsta) => {
+    const on = e.target.checked;
+    try {
+      if (vrsta === "sms" && on && !(nalogCitaj() || {}).telefon) {
+        const tel = prompt(T("nal.saglSmsTel"), ""); if (tel == null || !String(tel).trim()) { e.target.checked = false; return; }
+        await nalogPromeniTelefon(tel);
+      }
+      await saglasnostPostavi(vrsta, on); renderJaNalog();
+    } catch (er) { e.target.checked = !on; alert(nalogGreskaTekst(er)); }
+  };
+  document.getElementById("jaSaglMejl").addEventListener("change", (e) => sagl(e, "mejl"));
+  document.getElementById("jaSaglSms").addEventListener("change", (e) => sagl(e, "sms"));
   document.getElementById("jaNalazi").addEventListener("change", async (e) => { const on = e.target.checked; try { await nalaziPostavi(on); } catch (er) { e.target.checked = !on; alert(nalogGreskaTekst(er)); } });
   document.getElementById("jaNalogKor").addEventListener("click", async () => {
     const novo = prompt(T("nal.novoKorisnicko"), n.korisnicko || ""); if (novo == null) return;
