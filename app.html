@@ -1519,6 +1519,23 @@
   .ri-odred span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ri-tacka { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
   .ri-tacka.do { border-radius: 2px; background: var(--fg-strong); }
+  /* 3.10.2026 (spec tacka 3, maketa 7A): redovi stanica izmedju Od i Do + "Dodaj stanicu" */
+  .ri-tacka.via { background: none; border: 2px solid var(--fg-soft); width: 8px; height: 8px; }
+  .ri-tacka.deo { width: 14px; height: 4px; border-radius: 2px; background: var(--accent); }
+  .ri-tacka.oblik { width: 14px; height: 4px; border-radius: 2px; background: var(--fg-faint); }
+  #riStanice[hidden] { display: none; }
+  .ri-st { display: flex; align-items: center; gap: 10px; min-height: 44px; border-bottom: 1px solid var(--line-hairline); color: var(--fg-strong); font: 500 15px var(--font-ui); position: relative; background: inherit; }
+  .ri-st .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ri-st .k { flex: none; font-family: var(--font-cap); font-synthesis: none; font-size: 10px; font-weight: var(--fw-cap); letter-spacing: var(--tr-cap); text-transform: uppercase; color: var(--fg-faint); white-space: nowrap; }
+  .ri-st .ri-x { flex: none; width: 36px; height: 44px; border: 0; background: none; color: var(--fg-muted); font-size: 14px; cursor: pointer; }
+  .ri-st .ri-hd { flex: none; width: 24px; text-align: center; color: var(--fg-faint); font-size: 18px; touch-action: none; cursor: grab; }
+  .ri-st.vuce { z-index: 2; opacity: .92; box-shadow: var(--shadow-md); }
+  .ri-st.meta { box-shadow: inset 0 2px 0 var(--accent); }
+  .ri-dodaj { display: flex; align-items: center; width: 100%; min-height: 44px; border: 0; background: none; color: var(--accent-text); font: 500 14px var(--font-ui); text-align: left; cursor: pointer; padding: 0; }
+  .ri-sk { display: flex; align-items: center; width: 100%; min-height: 40px; border: 0; border-bottom: 1px solid var(--line-hairline); background: none; color: var(--fg-soft); font: 500 14px var(--font-ui); text-align: left; cursor: pointer; padding: 0 0 0 20px; }
+  .ri-sk[hidden] { display: none; }
+  #riOdDo.ri-mnogo:not(.ri-otvoreno) #riStanice { display: none; }
+  #riOdDo.ri-mnogo.ri-otvoreno .ri-sk { color: var(--accent-text); }
 }
 
   /* ===== app2 Faza 3.1: voznja traka + sheet collapse ===== */
@@ -4218,7 +4235,7 @@ body.riding #quietToast{bottom:calc(92px + env(safe-area-inset-bottom))}
     </div>
   </div>
   <!-- 3.10. (maketa 3, gornji deo iz B): Od -> Do kartica na mapi dok je rezultat otvoren; dodir na red menja to polje -->
-  <div id="riOdDo" aria-label="Polazak i cilj"><button type="button" class="ri-odred" id="riOd"><i class="ri-tacka od"></i><span></span></button><button type="button" class="ri-odred" id="riDo"><i class="ri-tacka do"></i><span></span></button><button type="button" class="ri-zameni" id="riZameni" aria-label="Zameni polazak i cilj" data-i18n-aria="planer.riZameniAria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg></button></div>
+  <div id="riOdDo" aria-label="Polazak i cilj"><button type="button" class="ri-odred" id="riOd"><i class="ri-tacka od"></i><span></span></button><button type="button" class="ri-sk" id="riStaniceSk" hidden></button><div id="riStanice" role="list" hidden></div><button type="button" class="ri-odred" id="riDo"><i class="ri-tacka do"></i><span></span></button><button type="button" class="ri-zameni" id="riZameni" aria-label="Zameni polazak i cilj" data-i18n-aria="planer.riZameniAria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg></button><button type="button" class="ri-dodaj" id="riDodaj" data-i18n="planer.riDodaj">+ Dodaj stanicu</button></div>
   <div id="routePill"><div class="rpin"><b id="rpTxt">-</b><span id="rpSub"></span></div><button id="rpX" aria-label="Poništi rutu" data-i18n-aria="planer.aria.rpX">✕</button></div>
   <!-- Faza 4: cist ekran pretrage (kao Google/Waze + nasa baza) -->
   <div id="searchOverlay">
@@ -4771,6 +4788,19 @@ const RECNIK_SR = {
   "planer.riPutarina": "putarina {0} €",
   "planer.riPutarinaNepoznata": "samo gorivo, putarina nepoznata",
   "planer.riZameniAria": "Zameni polazak i cilj",
+  "planer.riDodaj": "+ Dodaj stanicu",
+  "planer.riStanica": "stanica",
+  "planer.riDeonica": "deonica",
+  "planer.riOblik": "oblik rute",
+  "planer.riUkloni": "Ukloni {0}",
+  "planer.riUklonjeno": "Uklonjeno: {0}",
+  "planer.riPlafon": "Ruter prima najviše {0} tačaka (polazak, stanice, cilj). Ukloni neku stanicu pa dodaj novu.",
+  "pl.riStanica.1": "{n} stanica",
+  "pl.riStanica.2": "{n} stanice",
+  "pl.riStanica.5": "{n} stanica",
+  "srch.deonicaSub": "deonica · {0} km · ★ {1}",
+  "srch.deonicaSubBez": "deonica · {0} km · bez ocene",
+  "atl.bezOceneRec": "bez ocene",
   "planer.riBezAutoputa": "Bez autoputa",
   "planer.polazakSada": "Polazak: sada",
   "planer.polazak2": "Polazak u...",
@@ -6499,6 +6529,18 @@ const RECNIK_EN = {
   "planer.riPutarina": "tolls {0} €",
   "planer.riPutarinaNepoznata": "fuel only, tolls unknown",
   "planer.riZameniAria": "Swap start and destination",
+  "planer.riDodaj": "+ Add a stop",
+  "planer.riStanica": "stop",
+  "planer.riDeonica": "segment",
+  "planer.riOblik": "route shape",
+  "planer.riUkloni": "Remove {0}",
+  "planer.riUklonjeno": "Removed: {0}",
+  "planer.riPlafon": "The router takes at most {0} points (start, stops, destination). Remove a stop before adding a new one.",
+  "pl.riStanica.1": "{n} stop",
+  "pl.riStanica.n": "{n} stops",
+  "srch.deonicaSub": "segment · {0} km · ★ {1}",
+  "srch.deonicaSubBez": "segment · {0} km · no rating",
+  "atl.bezOceneRec": "no rating",
   "planer.riBezAutoputa": "No motorway",
   "planer.polazakSada": "Leaving: now",
   "planer.polazak2": "Leave at...",
@@ -17745,8 +17787,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.183";
+const APP_VERSION = "0.9.184";
 const CHANGELOG = [
+  { v: "0.9.184", d: "03.10.2026.", stavke: [
+    "<b>Stanice u kartici Od/Do.</b> Red \"+ Dodaj stanicu\" otvara pretragu; stanica može biti mesto, adresa, tačka na mapi ili deonica iz Istraži (pretraga ih nudi obeležene kao deonica). Deonica je jedan red (ulaz, oblik i izlaz idu ruteru), X uklanja, ručica menja redosled, zamena Od/Do okreće i stanice. Preko 10 tačaka app kaže da ruter ne prima više.",
+  ] },
   { v: "0.9.183", d: "03.10.2026.", stavke: [
     "<b>Istraži ima dva položaja:</b> spušten (jedan red preko cele mape: Deonice, Blizu tebe, Filter) i podignut (cela lista preko ekrana). Polovina je ukinuta, kao i traka mape iznad podignute liste.",
     "<b>Izabrana deonica</b> spušta list i pokazuje karticu: dužina, do ulaza, ocena; samo podaci koji postoje (bez \"nema podatka\"); tri sledeće deonice blizu tebe; \"Lista\" vraća tačno gde si bio.",
@@ -19580,6 +19625,17 @@ function renderSugg(q) {
      trazio kad je ukucao sedam slova. */
   const bod = (n) => n === fq ? 100 : n.startsWith(fq) ? (fq.length >= n.length * 0.55 ? 80 : 55) : rxq.test(n) ? 50 : n.includes(fq) ? 40 : 0;
   let sc = searchIndex().map((x) => ({ x, s: bod(SFOLD(x.n)) })).filter((h) => h.s > 0).sort((a, b) => b.s - a.s);
+  /* 3.10.2026 (spec tacka 3, maketa 7C): dok se bira STANICA ili CILJ, nude se i deonice iz Atlasa, obelezene
+     kao DEONICA (duzina, ocena). Baza se trazi lenjo - prvi put stize za koji trenutak, pa se lista precrta. */
+  try {
+    if (SEARCH_MODE === "via" || SEARCH_MODE === "to") {
+      if (!ATLAS.baza && !renderSugg._bazaTrazim) { renderSugg._bazaTrazim = true; atlasBaza().then(() => { try { const si = document.getElementById("sInput"); if (si && document.body.classList.contains("searching") && si.value.trim().length >= 2) renderSugg(si.value); } catch (e) {} }).catch(() => {}); }
+      const deo = (ATLAS.baza || []).map((d) => ({ d, s: bod(SFOLD(atlasNaslov(d.naziv))) })).filter((h) => h.s > 0).sort((a, b) => b.s - a.s).slice(0, 3)
+        .map((h) => ({ x: { n: atlasNaslov(h.d.naziv), sub: (h.d.ocena != null && ocenaPrava(h.d)) ? T("srch.deonicaSub", { 0: atlasKmTx(h.d.km), 1: DEC((Math.round(h.d.ocena * 10) / 10).toFixed(1)) }) : T("srch.deonicaSubBez", { 0: atlasKmTx(h.d.km) }),
+          lat: h.d.coords && h.d.coords[0] ? h.d.coords[0][1] : null, lon: h.d.coords && h.d.coords[0] ? h.d.coords[0][0] : null, t: "deonica", deo: h.d.kljuc }, s: h.s }));
+      sc = sc.concat(deo).sort((a, b) => b.s - a.s);
+    }
+  } catch (e) {}
   /* Samo TACNO ime sme ispred mreznih rezultata (11.8., druga runda). Sa pragom >= 80 se `jak`
      prevrtao usred kucanja - "Zlat" je davao 55, "Zlati" vec 80 - pa je blok mreznih rezultata
      skakao sa vrha na dno izmedju dva slova i redovi su se pomerali pod prstom. Tacan pogodak se
@@ -20017,14 +20073,34 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
   if (SEARCH_MODE === "via") {
     if (!sel || sel.lat == null) { shareToast(T("geo.zaPolazakTrebaTacka")); return; }
     closeSearch(true);
-    const imeVia = _imeOdredista(sel);
-    state.vias.push({ t: "stop", v: [sel.lon, sel.lat], name: imeVia });
-    state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null;
+    let imeVia = _imeOdredista(sel), dodato = null;
+    if (sel.deo) {   // 3.10.2026 (spec tacka 3): DEONICA kao stanica = ulaz + oblik + izlaz, sve sa oznakom `deo` (jedan red u kartici)
+      const d = (ATLAS.baza || []).find((x) => x.kljuc === sel.deo);
+      const zad = (state.vias || []).filter((it) => it.t === "stop").pop();
+      const odakle = zad ? { lat: zad.v[1], lon: zad.v[0] } : (state.gpsFrom && state.gpsFrom.lat != null ? state.gpsFrom : (state.fromOverride && state.fromOverride.lat != null ? state.fromOverride : null));
+      dodato = d ? atlasVias(d, odakle) : null;
+      if (!dodato) { shareToast(T("plan.deonicaNijeUsla", { 0: sel.n })); return; }
+      imeVia = atlasNaslov(d.naziv);
+    }
+    const nov = dodato || [{ t: "stop", v: [sel.lon, sel.lat], name: imeVia }];
+    const plafon = (typeof ATLAS_LOK_MAX === "number" ? ATLAS_LOK_MAX : 8) + 2;   // javni Valhalla: najvise 10 lokacija
+    if (2 + (state.vias || []).length + nov.length > plafon) { shareToast(T("planer.riPlafon", { 0: plafon })); return; }
+    state.vias.push(...nov);
+    state.famousApplied = null; if (!dodato) { state.atlasApplied = null; state.atlasCoords = null; }
     try { renderViaChips(); } catch (e) {}
     try { tihoObavestenje(T("kp.tackaDodata", { 0: imeVia })); } catch (e) {}
     SEARCH_MODE = "to";
+    if (state.routes && state.routes.length) {   // ruta vec postoji: nov plan odmah, kartica Od/Do se precrta
+      document.body.classList.add("planning");   // openSearch je skinuo "planning" - bez ovoga kartica Od/Do i traka ostaju skrivene (izmereno 3.10.)
+      if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e) {} }
+      plan(); return;
+    }
     try { if (typeof kartaPutaOtvori === "function") kartaPutaOtvori(); } catch (e) {}
     return;
+  }
+  if (sel && sel.deo && SEARCH_MODE === "to") {   // deonica kao CILJ = "Vodi me preko nje" (cilj je izlaz, deonica ulazi kao stanice)
+    const d = (ATLAS.baza || []).find((x) => x.kljuc === sel.deo);
+    if (d && typeof atlasNameraNaoruzaj === "function") { atlasNameraNaoruzaj(d); const iz = atlasIzlaz(d); if (iz) sel = { n: iz.name, lat: iz.lat, lon: iz.lon, odmah: sel.odmah }; }
   }
   closeSearch(true);   // izabran je cilj - Atlas namera prezivljava do plan() (0.9.90)
   /* 0.9.91: prelazak na Planer je NAS, ne "vozac je promenio tab" - inace ga slusalac donje
@@ -25799,13 +25875,63 @@ function rezZameni() {   // 3.10. (Bosko: "strelica"): zameni polazak i cilj; ko
   fe.value = tQ; te.value = fQ;
   state.fromOverride = tObj ? { name: tQ, lat: tObj.lat, lon: tObj.lon } : null;
   state.searchTo = fObj ? { name: fQ, lat: fObj.lat, lon: fObj.lon } : null;
-  state.vias = []; try { renderViaChips(); } catch (e) {}   // usputne tacke su bile u starom smeru
+  /* 3.10.2026: stanice se OKRECU sa smerom (bile su brisane) - ulaz deonice postaje izlaz i obrnuto */
+  state.vias = (state.vias || []).slice().reverse().map((it) => (it.uloga ? { ...it, uloga: it.uloga === "ulaz" ? "izlaz" : "ulaz" } : it));
+  try { renderViaChips(); } catch (e) {}
   plan();
+}
+/* ---- KARTICA OD/DO SA STANICAMA (3.10.2026, spec tacka 3, maketa 7A) ----------------------------
+   Stanice iz state.vias se grupisu: uzastopne tacke iste deonice (`deo`) = jedan red "ime · DEONICA · km";
+   obicna stanica = red "ime · STANICA"; neme via tacke bez deonice = red "oblik rute". Svaki red ima X i rucku
+   za redosled (prevlacenje). Preko 3 grupe kartica se skuplja u "N stanice" dok se ne dodirne. */
+function riStaniceGrupe() {
+  const vias = state.vias || [], g = [];
+  vias.forEach((it, i) => {
+    const z = g[g.length - 1];
+    if (it.deo && z && z.deo === it.deo) { z.idxs.push(i); return; }
+    if (!it.deo && it.t === "via" && z && z.oblik) { z.idxs.push(i); return; }
+    if (it.deo) g.push({ deo: it.deo, ime: atlasNaslov(it.deoNaziv || it.name || ""), km: it.deoKm, idxs: [i] });
+    else if (it.t === "via") g.push({ oblik: true, ime: T("planer.riOblik"), idxs: [i] });
+    else g.push({ ime: it.name || T("planer.riStanica"), idxs: [i] });
+  });
+  return g;
 }
 function riOdDoCrtaj(od, do_) {   // od/do kartica gore na mapi (iz makete B): dodir na red otvara pretragu tog polja
   const el = document.getElementById("riOdDo"); if (!el) return;
   document.getElementById("riOd").querySelector("span").textContent = od; document.getElementById("riDo").querySelector("span").textContent = do_;
+  const host = document.getElementById("riStanice"); if (!host) return;
+  const g = riStaniceGrupe();
+  const kmT = (v) => (v < 10 ? DEC((Math.round(v * 10) / 10).toFixed(1)) : String(Math.round(v)));
+  host.innerHTML = g.map((x, i) => '<div class="ri-st" data-g="' + i + '" role="listitem"><i class="ri-tacka ' + (x.deo ? "deo" : x.oblik ? "oblik" : "via") + '"></i>' +
+    '<span class="t">' + esc(x.ime) + "</span>" +
+    '<span class="k">' + (x.deo ? T("planer.riDeonica") + (x.km ? " · " + kmT(x.km) + " km" : "") : x.oblik ? "" : T("planer.riStanica")) + "</span>" +
+    '<button type="button" class="ri-x" data-x="' + i + '" aria-label="' + esc(T("planer.riUkloni", { 0: x.ime })) + '">✕</button>' +
+    '<span class="ri-hd" data-hd="' + i + '" aria-hidden="true">≡</span></div>').join("");
+  host.hidden = !g.length;
+  el.classList.toggle("ri-mnogo", g.length > 3);
+  const sk = document.getElementById("riStaniceSk");
+  if (sk) { sk.hidden = g.length <= 3; sk.textContent = TN(g.length, "pl.riStanica"); }
 }
+/* grupa -> ukloni / premesti; posle svake izmene novi plan (kartica se precrta iz plan -> rezInstCrtaj) */
+function riStanicaUkloni(gi) {
+  const g = riStaniceGrupe()[gi]; if (!g) return;
+  const skup = new Set(g.idxs);
+  state.vias = (state.vias || []).filter((_, i) => !skup.has(i));
+  if (g.deo) { state.atlasApplied = null; state.atlasCoords = null; }
+  try { renderViaChips(); } catch (e) {}
+  try { tihoObavestenje(T("planer.riUklonjeno", { 0: g.ime })); } catch (e) {}
+  plan();
+}
+function riStanicaPremesti(odG, naG) {
+  const g = riStaniceGrupe(); if (!g[odG] || odG === naG || naG < 0 || naG >= g.length) return;
+  const [x] = g.splice(odG, 1); g.splice(naG, 0, x);
+  const old = state.vias || [];
+  state.vias = g.flatMap((gr) => gr.idxs.map((i) => old[i]));
+  try { renderViaChips(); } catch (e) {}
+  plan();
+}
+/** Koliko lokacija ruter dobija sa ovim stanicama (polazak + stanice + cilj). Javni Valhalla prima najvise 10. */
+function riLokacijaBroj(dodatnih) { return 2 + (state.vias || []).length + (dodatnih || 0); }
 (function () {
   const g = (id) => document.getElementById(id);
   if (!g("rezInst")) return;
@@ -25830,6 +25956,40 @@ function riOdDoCrtaj(od, do_) {   // od/do kartica gore na mapi (iz makete B): d
     state.bezAutoputa = !state.bezAutoputa; g("riBezAutoputa").classList.toggle("on", !!state.bezAutoputa); plan();
   });
   g("riDo").addEventListener("click", () => { try { openSearch("to"); } catch (e) {} });
+  /* 3.10.2026: stanice u kartici */
+  const dod = g("riDodaj"); if (dod) dod.addEventListener("click", () => {
+    if (riLokacijaBroj(1) > ATLAS_LOK_MAX + 2) { shareToast(T("planer.riPlafon", { 0: ATLAS_LOK_MAX + 2 })); return; }
+    try { openSearch("via"); } catch (e) {}
+  });
+  const sk = g("riStaniceSk"); if (sk) sk.addEventListener("click", () => { g("riOdDo").classList.toggle("ri-otvoreno"); });
+  const host = g("riStanice");
+  if (host) {
+    host.addEventListener("click", (e) => { const x = e.target.closest("[data-x]"); if (x) { riStanicaUkloni(+x.dataset.x); } });
+    /* prevlacenje reda za redosled: rucka ≡ hvata pokazivac, red prati prst, na pustanju se grupa premesta
+       na mesto najblize sredini reda pod prstom */
+    let vuk = null;
+    host.addEventListener("pointerdown", (e) => {
+      const hd = e.target.closest("[data-hd]"); if (!hd) return;
+      const red = hd.closest(".ri-st"); if (!red) return;
+      vuk = { gi: +hd.dataset.hd, red, y0: e.clientY, h: red.getBoundingClientRect().height || 44, na: +hd.dataset.hd };
+      red.classList.add("vuce"); try { hd.setPointerCapture(e.pointerId); } catch (er) {}
+      e.preventDefault();
+    });
+    host.addEventListener("pointermove", (e) => {
+      if (!vuk) return;
+      const dy = e.clientY - vuk.y0; vuk.red.style.transform = "translateY(" + dy + "px)";
+      vuk.na = Math.max(0, Math.min(host.children.length - 1, vuk.gi + Math.round(dy / vuk.h)));
+      [...host.children].forEach((r, i) => r.classList.toggle("meta", i === vuk.na && i !== vuk.gi));
+    });
+    const kraj = (e) => {
+      if (!vuk) return;
+      const v = vuk; vuk = null;
+      v.red.classList.remove("vuce"); v.red.style.transform = "";
+      [...host.children].forEach((r) => r.classList.remove("meta"));
+      if (v.na !== v.gi) riStanicaPremesti(v.gi, v.na);
+    };
+    host.addEventListener("pointerup", kraj); host.addEventListener("pointercancel", kraj);
+  }
 })();
 function renderResultHero(route) {
   const box = document.getElementById("resHero");
@@ -28070,14 +28230,17 @@ function atlasVias(d, from) {
     if (par.length === 2) { odIme = odIme || par[0].trim(); doIme = doIme || par[1].trim(); }
   }
   if (obrnuto) { const t = odIme; odIme = doIme; doIme = t; }
-  const out = [{ t: "stop", v: [cs[0][0], cs[0][1]], name: odIme || "ulaz deonice" }];
+  /* 3.10.2026 (spec tacka 3): svaka tacka deonice nosi `deo` (kljuc) - kartica Od/Do ih crta kao JEDAN red
+     "Kapija Sumadije · deonica", a ne kao niz stanica. deoNaziv/deoKm su za taj red. */
+  const deo = d.kljuc || d.naziv, deoNaziv = String(d.naziv || ""), deoKm = d.km || null;
+  const out = [{ t: "stop", v: [cs[0][0], cs[0][1]], name: odIme || "ulaz deonice", deo, deoNaziv, deoKm, uloga: "ulaz" }];
   const N = Math.max(3, Math.min(ATLAS_LOK_MAX - 2, Math.round((d.km || 50) / 15)));
   for (let i = 1; i <= N; i++) {
     const idx = Math.round(i * (cs.length - 1) / (N + 1));
     if (idx <= 0 || idx >= cs.length - 1) continue;
     const p = out[out.length - 1].v;
     if (cs[idx][0] === p[0] && cs[idx][1] === p[1]) continue;   // uzastopna duplikat-koordinata ne ide ruteru
-    out.push({ t: "via", v: [cs[idx][0], cs[idx][1]] });
+    out.push({ t: "via", v: [cs[idx][0], cs[idx][1]], deo });
   }
   const kraj = cs[cs.length - 1], zad = out[out.length - 1].v;
   if (kraj[0] === zad[0] && kraj[1] === zad[1]) {
@@ -28088,7 +28251,7 @@ function atlasVias(d, from) {
     if (out.length === 1) return null;
     out.pop();
   }
-  out.push({ t: "stop", v: [kraj[0], kraj[1]], name: doIme || "izlaz deonice" });
+  out.push({ t: "stop", v: [kraj[0], kraj[1]], name: doIme || "izlaz deonice", deo, deoNaziv, deoKm, uloga: "izlaz" });
   return out.slice(0, ATLAS_LOK_MAX);
 }
 /* B4: namera dobija ROK. Bez njega je pendingAtlas mogao da stoji naoruzan i da otme rutu koju
