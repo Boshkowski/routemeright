@@ -1330,11 +1330,15 @@
   #qbar { display: none; }
   @media (max-width: 900px), (max-height: 520px) {
     body.qplan.planning #panel > *:not(#peekBar):not(#plannerClose):not(#qbar):not(#status):not(#results):not(#resCta) { display: none !important; }
-    body.qplan.planning #panel { height: 54vh; height: 54dvh; padding-bottom: 0; display: flex; flex-direction: column; }   /* do pola kao Google; detalji sire; flex kolona = CTA footer uvek na dnu */
+    /* 4.10. 01:10 (Bosko: "kad se skroluje do gore ide do pola, to nam ne igra - ili odmah kreni ili ceo prozor"): list ima DVA
+       polozaja - traka (skupljen) ili ceo ekran (otvoren). Visina je uvek puna; polozaj "do pola" (54dvh) ne postoji vise. */
+    body.qplan.planning #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); height: calc(100dvh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); padding-bottom: 0; display: flex; flex-direction: column; }   /* flex kolona = CTA footer uvek na dnu */
     body.qplan.planning.qdetails #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); height: calc(100dvh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); }   /* 3.10. uvece: pun ekran (bilo 86dvh) - list povucen do vrha, kao Istrazi 'pun' */
-    /* 3.10. 20:30 (Boskova slika: kartica Od/Do preko reda VOZNJA/DALJINA/OCENA): list "do vrha" staje ISPOD kartice Od/Do (8 px razmaka),
-       kao Google Maps - kartica je zaglavlje, ne sloj preko lista. Dokaz: tools/provera-riOdDo-list-pregledac.mjs (pre: kartica 148 px, list 0). */
-    body.qplan.planning.hasroute.qdetails:not(.searching):not(.riding) #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top) - var(--riOdDo-h, 150px) - 18px); height: calc(100dvh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top) - var(--riOdDo-h, 150px) - 18px); }
+    /* 4.10. 01:10 (Bosko, treci put: "ovaj deo kad prevucemo na gore NE SME da se vidi"): kad je list otvoren, kartice Od/Do NEMA.
+       0.9.193 ju je ostavio kao zaglavlje iznad lista - pogresno citanje. Dokaz: tools/provera-riOdDo-list-pregledac.mjs. */
+    body.qplan.planning.hasroute:has(#panel.open) #riOdDo { display: none !important; }
+    body.qplan.planning #qDet { display: none !important; }   /* 4.10.: sekcije 7G su "svi detalji"; dugme bi gasilo qdetails dok je list otvoren */
+    #riRutaRed { display: none !important; }   /* 4.10. (Bosko: "imamo cip i imamo da izaberemo, nema smisla"): varijante su SAMO kartice (7E), red sa cipovima ide napolje */
     body.qplan.planning #resCta { margin-top: auto; }   /* kratak sadrzaj (kompaktni mod): traka svejedno na dnu sheeta */
     /* 11.8.: uz Rute stoji i presuda. Do sada je posle planiranja bila otvorena SAMO kartica Rute
        (186 px), a presuda je jedino mesto gde pise KAD STIZES - taj podatak je bio sakriven iza
@@ -3507,8 +3511,8 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     body.qplan.planning #panel, body.qplan.planning.qdetails #panel { padding-bottom: 0; }   /* dok usidren i u landscape-u; .qdetails MORA da stoji tu - njegov selektor je specificniji (review 9.8.) */
     /* 3.10. 20:30: u pejzazu kartica Od/Do lezi u levom stubu preko lista (izmereno: kartica do 146 px, list od 0) - stub dobija gornji odmak = kartica + 8 px */
     body.qplan.planning.hasroute:not(.searching):not(.riding) #panel { padding-top: calc(var(--riOdDo-h, 150px) + 16px); }
-    /* isti selektor kao uspravno pravilo "do vrha" (07-planner), inace ono sabije stub na 170 px (izmereno 3.10. 20:40): u pejzazu stub je uvek pune visine */
-    body.qplan.planning.hasroute.qdetails:not(.searching):not(.riding) #panel { height: 100dvh; }
+    /* 4.10.: u pejzazu je stub uvek otvoren (mapa je desno), pa kartica Od/Do OSTAJE kao zaglavlje stuba - uspravno pravilo je skriva kad je list otvoren */
+    body.qplan.planning.hasroute:has(#panel.open) #riOdDo { display: block !important; }
     body.qplan.planning:not(.qdetails) #resHero .rslide { height: 176px; }
     #resHero .rslide { flex: 0 0 92%; }
     /* 3.10. (pregled, pejzaz): kartica Od/Do je bila fiksna preko CELOG vrha (07-planner), pa je lezala preko #plannerClose (34x34 u
@@ -18055,6 +18059,7 @@ function applySheet(animate = true) {
   // lomi sticky u WebKit-u; none→identitet se i dalje glatko animira kroz transition
   p.style.transform = sheet.open ? "" : sheetXform(sheet.y);
   p.classList.toggle("open", sheet.open);
+  document.body.classList.toggle("qdetails", sheet.open);   // 4.10.: otvoren list = ceo ekran sa svim detaljima; nema "do pola"
   if (!animate) requestAnimationFrame(() => p.classList.remove("dragging"));
 }
 function setSheet(open) { sheet.open = open; applySheet(); }
@@ -18111,18 +18116,15 @@ function initSheet() {
       if (t1 > t0) v = (p1 - p0) / (t1 - t0) * 1000;
     }
     peek._tapAt = Date.now();   // pointer mehanika je obradila interakciju - klik fallback ispod ne sme da je ponisti (ni tap ni prevlacenje)
-    /* 3.10. uvece (Bosko: "kad stoji do pola, da moze skroz do vrha da ceo ekran bude pregled"): tri polozaja,
-       kao Istrazi. Otvoren list povucen JOS gore (preko ivice, ili brz zamah nagore) = pun ekran (qdetails);
-       pun ekran povucen nadole prvo pada na pola, ne zatvara se u istom potezu. */
-    const pun = document.body.classList.contains("qdetails");
+    /* 4.10. 01:10 (Bosko: "ili odmah kreni ili kad se skroluje da otvara ceo prozor"): DVA polozaja - traka ili ceo ekran.
+       Polozaj "do pola" iz 0.9.192 je uklonjen; brz zamah nagore otvara, nadole zatvara. */
     const stop = sheet.y + projectMomentum(v);
     if (drag.moved < 8) sheet.open = !sheet.open;                       // tap = toggle
-    else if (sheet.open && !pun && (sheet.y < -24 || v < -600)) { sheet.open = true; document.body.classList.add("qdetails"); }
-    else if (pun && stop > 40) { sheet.open = true; document.body.classList.remove("qdetails"); }
+    else if (v < -600) sheet.open = true;
+    else if (v > 600) sheet.open = false;
     /* 0.9.82: asimetrican prag - OTVARANJE vec na cetvrtini puta (maxY*0.75), zatvaranje ostaje na pola.
        Skupljena pilula se do sada otvarala tek preko pola ekrana prevlacenja - delovalo je mrtvo. */
     else { sheet.open = stop < (sheet.open ? maxY / 2 : maxY * 0.75); }
-    if (!sheet.open) document.body.classList.remove("qdetails");
     drag = null;
     applySheet();
   };
@@ -18592,8 +18594,14 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.193";
+const APP_VERSION = "0.9.194";
 const CHANGELOG = [
+  { v: "0.9.194", d: "04.10.2026.", stavke: [
+    "<b>Kartica Od/Do nestaje kad podigneš list.</b> Tvoj nalaz treći put: \"ovaj deo kad prevučemo na gore ne sme da se vidi\". U 0.9.193 sam karticu ostavio kao zaglavlje iznad lista, što je bilo pogrešno čitanje. Sada: list skupljen = kartica na mapi; list gore = kartice nema, pregled je ceo ekran.",
+    "<b>List ima dva položaja: traka ili ceo ekran.</b> Položaj \"do pola\" je izbačen. Povučen nagore ili brz zamah = ceo ekran; nadole = traka sa Kreni.",
+    "<b>Izbor cilja odmah računa rutu.</b> Korak \"Planiraj rutu\" (karta puta) je izbačen: kad izabereš dokle ideš, varijante se odmah crtaju na mapi i traka pokazuje vreme, kilometre i Kreni, kao Google Maps. Stanice, zamena i vreme polaska su u kartici Od/Do nad mapom; vreme i motor i dalje i pod \"Još\".",
+    "<b>Varijante rute samo kao kartice.</b> Red \"Ruta\" sa čipovima ispod kartica je dupliran isti izbor, pa je izbačen."
+  ] },
   { v: "0.9.193", d: "03.10.2026.", stavke: [
     "<b>Kartica Od/Do više ne leži preko pregleda rute.</b> Tvoja slika 20:30: list povučen do vrha, a kartica preko reda VOŽNJA / DALJINA / OCENA. Kartica je bila fiksirana iznad svega, a list je u 0.9.192 dobio visinu do samog vrha ekrana. Sada list \"do vrha\" staje 8 px ispod kartice, kao polje Od/Do u Google Maps - kartica je zaglavlje, ne sloj. Izmereno u sva tri položaja lista i u pejzažu, gde je kartica isto ležala preko lista od 0.9.178."
   ] },
@@ -20945,7 +20953,9 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
       if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e) {} }
       plan(); return;
     }
-    try { if (typeof kartaPutaOtvori === "function") kartaPutaOtvori(); } catch (e) {}
+    /* 4.10.: bez karte puta - ako cilj postoji, plan odmah; bez cilja pretraga cilja (stanica ceka u state.vias) */
+    if ((document.getElementById("to").value || "").trim()) { document.body.classList.add("planning"); if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e) {} } plan(); return; }
+    try { openSearch("to"); } catch (e) {}
     return;
   }
   if (sel && sel.deo && SEARCH_MODE === "to") {   // deonica kao CILJ = "Vodi me preko nje" (cilj je izlaz, deonica ulazi kao stanice)
@@ -20991,10 +21001,9 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
   const f = document.getElementById("from");
   if (!f.value.trim()) f.value = "Moja lokacija";
   try { if (window.qplanFromOk) qplanFromOk(); } catch (e) {}
-  /* 1.10.2026 (Boskov tok E): izbor cilja NE racuna odmah nego otvara KARTU PUTA (Od, tacke, Do,
-     vreme, motor) - plan krece na "Planiraj rutu". Samo "Vodi me samo tamo" (sel.odmah) i tokovi
-     bez karte (sandbox, stari pozivaoci) idu pravo u plan. / Picking a target opens the route card. */
-  if (!sel.odmah && typeof kartaPutaOtvori === "function") { try { kartaPutaOtvori(); return; } catch (e) {} }
+  /* 4.10.2026 (Bosko: "kada izaberemo dokle idemo odmah treba da nam iscrta na mapi te dve tri ili cetiri putanje,
+     kao Google Maps - Planiraj rutu je jedan korak vise"): izbor cilja RACUNA ODMAH. Karta puta (E3, 1.10.) se vise
+     ne otvara - stanice, zamena i vreme zive u kartici Od/Do nad mapom (0.9.184). `sel.odmah` ostaje bezopasan. */
   try { if (typeof setSheet === "function") setSheet(true); } catch (e) {}   // status "Računam..." mora da se VIDI i kad je sheet bio skupljen
   document.getElementById("planBtn").click();
 }
@@ -21089,7 +21098,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
       document.getElementById("to").value = r.to;
       if (r.tp && r.tp[0] != null) state.searchTo = { name: r.to, lat: r.tp[0], lon: r.tp[1] };
       state.vias = []; state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null; try { renderViaChips(); } catch (e2) {}
-      try { kartaPutaOtvori(); } catch (e2) { document.getElementById("planBtn").click(); }   // 1.10.: karta puta, pa Planiraj
+      try { if (typeof nasTabKlik === "function") nasTabKlik("planer"); } catch (e2) {} document.body.classList.add("planning"); if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e2) {} } try { if (typeof setSheet === "function") setSheet(true); } catch (e2) {} document.getElementById("planBtn").click();   // 4.10.: plan ODMAH, bez karte puta (Bosko: "Planiraj rutu je jedan korak vise")
       return;
     }
     if (row.dataset.srow === "tura") { closeSearch(); nasTabKlik("rute"); return; }   // 1.10. (E2): poznate ture zive u Istrazi
@@ -21098,7 +21107,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
       const rg = document.getElementById("roundGen");
       if (rg && !rg.checked) { rg.checked = true; rg.dispatchEvent(new Event("change")); }
       state.fromOverride = null; document.getElementById("from").value = "Moja lokacija"; gpsPrefill(true);
-      try { kartaPutaOtvori(); } catch (e2) {}
+      try { if (typeof nasTabKlik === "function") nasTabKlik("planer"); } catch (e2) {} document.body.classList.add("planning"); if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e2) {} } try { if (typeof setSheet === "function") setSheet(true); } catch (e2) {} document.getElementById("planBtn").click();   // 4.10.: krug se racuna odmah
       return;
     }
     if (row.dataset.blizu != null) {   // 1.10. (E2): mesto zajednice blizu tebe = cilj
@@ -21113,7 +21122,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
       if (pk.toP) state.searchTo = { name: pk.to, lat: pk.toP[0], lon: pk.toP[1] };
       state.vias = (pk.vias || []).map((v) => ({ ...v })); state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null;
       try { renderViaChips(); } catch (e2) {}
-      try { kartaPutaOtvori(); } catch (e2) {}
+      try { if (typeof nasTabKlik === "function") nasTabKlik("planer"); } catch (e2) {} document.body.classList.add("planning"); if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e2) {} } try { if (typeof setSheet === "function") setSheet(true); } catch (e2) {} document.getElementById("planBtn").click();   // 4.10.: sacuvana ruta se racuna odmah
       return;
     }
     if (row.dataset.pickmap) {   // izlaz kad pretraga ne nalazi (0.9.91: pravi nišan, ne vise savet o dugom pritisku)
@@ -21308,7 +21317,7 @@ function mestoCiljVodi(samo) {
     try { renderViaChips(); } catch (e) {}
     try { tihoObavestenje(T("kp.tackaDodata", { 0: m.ime })); } catch (e) {}
     if (state.routes && state.routes.length && !$("results").classList.contains("hidden") && !KP.otvoren) { plan(); return; }
-    kartaPutaOtvori(); return;
+    try { if (typeof nasTabKlik === "function") nasTabKlik("planer"); } catch (e2) {} document.body.classList.add("planning"); if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e2) {} } try { if (typeof setSheet === "function") setSheet(true); } catch (e2) {} document.getElementById("planBtn").click(); return;   // 4.10.: bez karte puta, plan odmah
   }
   SEARCH_MODE = "to";
   pickDestination({ n: m.ime, lat: m.lat, lon: m.lon, odmah: !!samo });
@@ -26797,7 +26806,7 @@ function rezInstCrtaj(route) {
    id-jevi: warnList, whenOut, wxCharts, gearList, elevSvg, diffOut, roadsList...), pa nista ne pise dvaput.
    Pravilo "jedan predikat, dva teksta": presuda zatvorenog reda izlazi iz riPresude, isti podaci kao telo. */
 const RI_SEKCIJE = [
-  { k: "ruta", cap: "planer.akRuta", blok: ["riVks", "riRutaRed", "riCipovi"] },
+  { k: "ruta", cap: "planer.akRuta", blok: ["riVks", "riCipovi"] },   // 4.10.: riRutaRed (cipovi varijanti) van - dupliralo kartice 7E
   { k: "stizes", cap: "planer.akStizes", blok: ["riStizesRed", "riTrosakRed", "costOut", "card-fuel"] },
   { k: "upoz", cap: "planer.akUpoz", blok: ["planWarn", "warnList", "suggestions"] },
   { k: "kad", cap: "planer.kadKrenuti", blok: ["whenWin", "whenOut", "whenNote"] },
