@@ -41,8 +41,11 @@ jobs:
       - name: Tesseract OCR (Kosovo objavljuje cene samo kao sliku)
         run: sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr
         continue-on-error: true
+      # 3.10.2026 (pregled V20): `|| true` skinut - isti obrazac koji je sest nedelja krio Supabase 401.
+      # continue-on-error ostaje da pad updatera ne zaustavi komit stanja na putevima, ali se korak vidi
+      # kao crven u logu, a poslednji korak ispod PADA ako su cene stvarno stale.
       - name: Osvezi cene goriva (benzin BMB95 po zemljama)
-        run: python3 update_prices.py || true
+        run: python3 update_prices.py
         continue-on-error: true
       - name: Commit ako ima promena
         run: |
@@ -57,3 +60,23 @@ jobs:
             echo "push nije prosao (pokusaj $i), cekam 20 s"; sleep 20
             [ "$i" = 3 ] && exit 1
           done
+      # 3.10.2026 (pregled V20): cene ne smeju da stanu bez mejla. Najnoviji datum u data/prices.json
+      # (meta.updated ili bilo koji verified) stariji od 3 dana = posao PADA ("Run failed" mejl).
+      # Stoji POSLE komita da zastarele cene ne zadrze svez road_status.json.
+      - name: Cene goriva ne smeju da zastare (najnoviji datum u prices.json stariji od 3 dana = kvar)
+        run: |
+          python3 - <<'PY'
+          import datetime, json, re, sys
+          s = open("data/prices.json", encoding="utf-8").read()
+          json.loads(s)   # pokvaren JSON je isti kvar kao zastareo
+          datumi = []
+          for d in set(re.findall(r"\b(20\d\d-\d\d-\d\d)\b", s)):
+              try: datumi.append(datetime.date.fromisoformat(d))
+              except ValueError: pass
+          naj = max(datumi) if datumi else None
+          star = (datetime.date.today() - naj).days if naj else None
+          print(f"najnoviji datum u data/prices.json: {naj} ({star} dana)")
+          if naj is None or star > 3:
+              print(f"::error::data/prices.json: najnovija cena je od {naj} ({star} dana) - update_prices.py ne upisuje, vidi korak 'Osvezi cene goriva'")
+              sys.exit(1)
+          PY
