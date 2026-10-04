@@ -1382,6 +1382,9 @@
   #layersSheet { position: fixed; inset: 0; z-index: 60; }
   #layersSheet .lsback { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
   #layersSheet .lsbody { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bg); border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line); padding: 8px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow: var(--shadow-up); max-height: calc(84vh - env(safe-area-inset-top)); overflow-y: auto; }
+  /* 4.10.: X na svakom plutajucem listu (Slojevi, Jos opcija, Pumpe/Hrana, Vreme za tacku) - sticky da ostane gore i kad se spisak skroluje */
+  .lsx { position: sticky; top: 2px; float: right; z-index: 2; width: 34px; height: 34px; margin: 2px -6px 0 0; border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--line); color: var(--fg); font-size: 20px; font-weight: 800; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .lsx::before { content: ""; position: absolute; inset: -7px; }   /* dodir >= 44 px */
   #layersSheet .grab { width: 38px; height: 4px; border-radius: var(--r-xs); background: var(--fill-muted); margin: 4px auto 12px; }
   #layersSheet .lst { font-size: 16px; font-weight: 800; color: var(--fg-strong); margin-bottom: 8px; }
   #layersSheet .lrow { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--line-hairline); font-size: 14px; font-weight: 500; margin: 0; text-transform: none; font-family: var(--font-ui); font-synthesis: weight style; letter-spacing: 0; color: var(--fg); }   /* 15.9.: the planner form's global label style (uppercase, tracked) leaked into these rows */
@@ -6377,6 +6380,7 @@ const RECNIK_SR = {
   "kp.stigniDoV": "Stigni do",
   "kp.promeni": "Promeni",
   "kp.zatvori": "Zatvori",
+  "ui.zatvori": "Zatvori",
   "kp.dodajTackuPh": "Dodaj tačku - mesto ili adresa",
   "kp.motorPod": "{0} l · {1} l/100 km · domet ~{2} km · iz profila",
   "kp.motorIzaberi": "rezervoar i potrošnja iz baze motora - izaberi u profilu",
@@ -8392,6 +8396,7 @@ const RECNIK_EN = {
   "kp.polazakU": "Leave at",
   "kp.stigniDoV": "Arrive by",
   "kp.promeni": "Change",
+  "ui.zatvori": "Close",
   "kp.zatvori": "Close",
   "kp.dodajTackuPh": "Add a point - place or address",
   "kp.motorPod": "{0} l · {1} l/100 km · range ~{2} km · from profile",
@@ -14016,6 +14021,7 @@ async function poiNadji(vrsta) {
     `${rezim === "voznja" ? T("poi.dodirniVoznja") : rezim === "plan" ? T("poi.dodirniPlan") : rezim === "free" ? T("poi.dodirniFree") : T("poi.dodirniPlaniraj")}</div></div>`;
   document.body.appendChild(sh);
   sh.querySelector(".wxback").addEventListener("click", () => sh.remove());
+  if (typeof listIzlazi === "function") listIzlazi(sh, ".wxbody", () => sh.remove());   // guard: testovi vade funkciju lista bez okoline
   sh.querySelectorAll(".prow").forEach((b) => b.addEventListener("click", () => {
     const k = lista[+b.dataset.i]; if (!k) return;
     sh.remove();
@@ -17383,6 +17389,7 @@ function openOptsSheet() {
   _optsAnchors = items.map((el) => ({ el, parent: el.parentNode, next: el.nextSibling }));
   for (const el of items) host.appendChild(el);
   sh.querySelector(".lsback").addEventListener("click", closeOptsSheet);
+  if (typeof listIzlazi === "function") listIzlazi(sh, ".lsbody", closeOptsSheet);
   /* TEREN 27.8. (Boskov nalaz 8, treci sloj: "iako imam primeni moram da idem dodaj"). "Primeni"
      je radilo samo closeOptsSheet + plan i NIKAD nije citalo polje "dodaj destinaciju" - jedini
      citac je sivo "+ Dodaj". Ukucan tekst se tiho bacao, a polje se vracalo u #panel gde se na
@@ -18604,8 +18611,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.195";
+const APP_VERSION = "0.9.196";
 const CHANGELOG = [
+  { v: "0.9.196", d: "04.10.2026.", stavke: [
+    "<b>Iz Slojeva (i svakog sličnog lista) se izlazi na tri načina.</b> Tvoj nalaz 08:41: otvoriš Slojeve i nemaš kako nazad na mapu. Jedini izlaz je bio dodir u zatamnjeni deo iznad liste, a ništa to nije govorilo: hvataljka je izgledala kao da se vuče a nije, X nije postojao, a dugme Slojevi je ostajalo ispod liste. Sada: X gore desno, prevlačenje nadole (po hvataljci ili bilo gde kad je spisak na vrhu) i Escape na tastaturi. Isto važi za Još opcija, Pumpe i Hrana, i Vreme za ovu tačku."
+  ] },
   { v: "0.9.195", d: "04.10.2026.", stavke: [
     "<b>Otvoren list ide do samog vrha ekrana.</b> Tvoja slika 08:05: iznad lista je ostajala traka mape ispod sata. List se sada naslanja na statusnu traku, uglovi su ravni, a hvataljka nosi razmak za sat i kameru.",
     "<b>Nema više dupliranih Ruta i praznih kartica ispod sekcija.</b> Kad se list otvorio, palio se stari režim \"svi detalji\" sa računara, pa su se ispod sekcija pojavljivale stare kartice: još jedan izbor rute, prazne Kad krenuti i Šta obući, Trošak puta. Taj režim na telefonu više ne postoji, sekcije su jedini prikaz.",
@@ -20251,6 +20261,7 @@ function wxSheetOtvori(d) {
     T("hw.isplanirajBtn");
   document.body.appendChild(sh);
   sh.querySelector(".wxback").addEventListener("click", () => sh.remove());
+  if (typeof listIzlazi === "function") listIzlazi(sh, ".wxbody", () => sh.remove());   // guard: testovi vade funkciju lista bez okoline
   sh.querySelector(".wxcta").addEventListener("click", () => { sh.remove(); try { document.getElementById("homeSearch").click(); } catch (e) {} });
   // star kes bez satnog niza (pre 13.8. podne): ocisti ga da sledece otvaranje povuce svez - bez auto-petlje
   if (!redovi) try { Object.keys(localStorage).filter((k) => k.startsWith("rmr2_wxpeek_")).forEach((k) => localStorage.removeItem(k)); } catch (e) {}
@@ -27916,6 +27927,24 @@ function renderMesta(ftype) {
   });
 })();
 /* Slojevi: lep bottom sheet umesto starog popupa (mobilno) */
+/* 4.10. 08:41 (Bosko: "kliknem slojeve i ne mogu nazad na mapu, moram da izadjem iz appa"): plutajuci list (Slojevi, Jos opcija,
+   Pumpe/Hrana, Vreme za tacku) je do sada imao JEDAN izlaz - dodir u zatamnjeni deo iznad lista - a nista na listu to nije govorilo:
+   hvataljka je izgledala kao da se vuce a nije, X nije postojao, a dugme Slojevi je ostajalo ISPOD lista. Sada svaki takav list ima
+   X u zaglavlju, prevlacenje nadole (po hvataljci, ili bilo gde kad je spisak na vrhu) i Escape; dodir van lista ostaje. */
+function listIzlazi(sh, telo, zatvori) {
+  const b = typeof telo === "string" ? sh.querySelector(telo) : telo; if (!b) return;
+  if (!b.querySelector(".lsx")) {
+    const x = document.createElement("button"); x.type = "button"; x.className = "lsx"; x.setAttribute("aria-label", T("ui.zatvori")); x.innerHTML = "&times;";
+    x.addEventListener("click", (e) => { e.stopPropagation(); zatvori(); });
+    b.prepend(x);
+  }
+  let y0 = null, x0 = null;
+  b.addEventListener("touchstart", (e) => { if (b.scrollTop > 0 || !e.touches.length) { y0 = null; return; } y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; }, { passive: true });
+  b.addEventListener("touchmove", (e) => { if (y0 == null || !e.touches.length) return; const dy = e.touches[0].clientY - y0, dx = Math.abs(e.touches[0].clientX - x0); if (dy > 70 && dy > dx * 2) { y0 = null; zatvori(); } }, { passive: true });
+  b.addEventListener("touchend", () => { y0 = null; }, { passive: true });
+  const esc = (e) => { if (!sh.isConnected) { document.removeEventListener("keydown", esc); return; } if (e.key === "Escape") zatvori(); };
+  document.addEventListener("keydown", esc);
+}
 function openLayersSheet() {
   let sh = document.getElementById("layersSheet");
   if (sh) { sh.remove(); return; }
@@ -27931,6 +27960,7 @@ function openLayersSheet() {
     <div class="lsleg">${T("lay.legenda")} <i style="background:#86d98a"></i> ${T("lay.legVedro")} · <i style="background:#f0c14b"></i> ${T("lay.legOprez")} · <i style="background:#ea3d57"></i> ${T("lay.legNevreme")}</div></div>`;
   document.body.appendChild(sh);
   sh.querySelector(".lsback").addEventListener("click", () => sh.remove());
+  if (typeof listIzlazi === "function") listIzlazi(sh, ".lsbody", () => sh.remove());
   // 13.8.: prognoza po satima za tacku - dohvata se TEK ovde, ne na pokretanje aplikacije
   const lw = sh.querySelector("#lsWx");
   if (lw) lw.addEventListener("click", () => { sh.remove(); try { wxTackaOtvori(); } catch (e) {} });
