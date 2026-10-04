@@ -1210,7 +1210,9 @@
     /* 11.8.: sve troje se dize iznad donjeg lista. Atribucija NIJE ukras nego uslov licence
        OpenFreeMap/OSM - izmereno je da bi je list pokrio 100%. Visina lista je ~200 px. */
     #homeFabs button[data-fab="gps"] { position: fixed; right: 14px; top: auto; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 12; }
-    body.planning:not(.riding) #homeFabs button[data-fab="gps"] { display: none; }
+    /* 4.10. 08:40 (Bosko: "dugme za lokaciju nestaje kad krenemo negde, ne mogu da nadjem nasu lokaciju"): u planiranju dugme ne nestaje,
+       nego se iz donjeg desnog ugla (gde bi ga pokrila traka) seli u stub sa ostalim dugmadima */
+    body.planning:not(.riding) #homeFabs button[data-fab="gps"] { position: static; display: flex; bottom: auto; }
     body.riding #homeFabs button[data-fab="gps"] { bottom: calc(84px + env(safe-area-inset-bottom)); }
     #homeFabs button[data-fab="gps"].recenter { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(255,122,46,.35), 0 6px 18px rgba(0,0,0,.35); }
     /* Snimi voznju (6.8.): rec dugme iznad GPS FAB-a; nestaje u planiranju i u voznji */
@@ -1349,6 +1351,7 @@
        "Svi detalji". Vece je trazilo cetiri kartice; stalo je na dve, jer istrazivanje pokazuje da
        kazna dolazi od PROMENE gustine, pa se ide malim korakom. */
     body.qplan.planning:not(.qdetails) #results > .card:not(#card-routes):not(#card-summary) { display: none !important; }
+    body.qplan.planning #card-summary { display: none !important; }   /* 4.10. 08:40 (Bosko: "Suvo i mirno celim putem... opet se duplira"): presuda, relacija i dolazak vec stoje u instrumentu gore; #planWarn je usvojen u sekciju Upozorenja */
     /* 0.9.82: ocena vec stoji u #rhScoreSlide (hero) - red u #card-summary bi je pisao DVAPUT u kompaktnom modu */
     body.qplan.planning:not(.qdetails) #scoreLine { display: none !important; }
     body.qplan.planning:not(.qdetails) #resHero .rslide { height: 158px; }
@@ -13156,6 +13159,33 @@ function _meteoNivo(w) {
   if (!n || n === "?") return "";
   return METEO_NIVO[n] ? T("mt.nivo." + METEO_NIVO[n]) : n;
 }
+/* 4.10. 08:40 (Bosko: "u Stanje puteva stoji UPOZORENJE, kliknem - niska temperatura za Jugozapadnu Srbiju; koja je logika?"):
+   Meteoalarm upozorenje je VREMENSKO, pa ide u sekciju Upozorenja, i to samo kad ruta stvarno prolazi kroz njegov region.
+   Do sada je islo pod Stanje puteva, za CELU zemlju - Bukulja je u Sumadiji, a pisalo je upozorenje za Jugozapadnu Srbiju.
+   Regioni Meteoalarma nemaju granice u nasem fajlu, pa su ovde RUCNO priblizni krugovi (centar, poluprecnik km) - gruba mera,
+   namerno siroka (radije prikazi nego precuti); region bez kruga se prikazuje uvek. */
+const METEO_REGION_GEO = {
+  "Belgrade": [44.80, 20.45, 35], "Sumadija": [44.15, 20.85, 60], "Western Serbia": [44.25, 19.65, 70],
+  "Southwestern Serbia": [43.45, 19.85, 80], "Central Serbia": [43.85, 21.15, 70], "Eastern Serbia": [44.20, 22.20, 90],
+  "Southeastern Serbia": [43.00, 22.00, 95], "Northern Serbia": [45.55, 20.20, 120], "Backa": [45.60, 19.50, 80],
+  "Kosovo": [42.60, 20.90, 85], "Kosovo i Metohija": [42.60, 20.90, 85],
+};
+function _meteoNaRuti(w, route) {
+  const g = METEO_REGION_GEO[String(w && w.region || "").trim()];
+  if (!g) return true;   // nepoznat region: ne znamo gde je, pa se prikazuje
+  const c = route && route.coords; if (!c || !c.length) return true;
+  const korak = Math.max(1, Math.floor(c.length / 60));
+  for (let i = 0; i < c.length; i += korak) if (haversine(c[i][1], c[i][0], g[0], g[1]) <= g[2]) return true;
+  return haversine(c[c.length - 1][1], c[c.length - 1][0], g[0], g[1]) <= g[2];
+}
+function _meteoUWarn() {   // Meteoalarm redovi zive u #warnList (sekcija Upozorenja); crta ih i renderRoadStatus i renderWarnings, idempotentno
+  const ul = document.getElementById("warnList"); if (!ul) return;
+  ul.querySelectorAll("li[data-meteo]").forEach((l) => l.remove());
+  const redovi = (state._meteoRedoviSeq === state.planSeq && state._meteoRedovi) || [];
+  if (!redovi.length) return;
+  if (!ul.querySelector("li")) ul.innerHTML = "";   // "nema upozorenja" tekst ne sme da stoji uz upozorenje
+  for (const h of redovi) ul.insertAdjacentHTML("beforeend", h);
+}
 function _meteoRegion(w) {
   const r = String(w && w.region || "").trim();
   const k = METEO_REGION[r];
@@ -13341,12 +13371,14 @@ async function renderRoadStatus(route) {
      meteo kao [[stavke], odseceno] jer norm() vraca par - app je citao niz i broj kao dva "upozorenja". Robot ispravljen;
      ovde se podnosi i stari oblik (prvi clan niz = stavke), a red bez regiona i teksta se ne crta nikad. */
   const _meteoLista = (m) => { const l = Array.isArray(m) ? m : []; return (l.length && Array.isArray(l[0])) ? l[0] : l; };
+  const meteoRedovi = [];   // 4.10.: ide u sekciju UPOZORENJA (vremensko), ne u Stanje puteva; samo regioni kroz koje ruta prolazi
   for (const cc of ccs)
-    for (const w of _meteoLista(rs.meteo && rs.meteo[cc]).filter((w0) => w0 && typeof w0 === "object" && !Array.isArray(w0) && (w0.title || w0.region)).filter((w0) => { const p = _meteoProzor(w0); return !p || (p[0] <= dolazak && p[1] >= dep0); }).slice(0, 3)) {
+    for (const w of _meteoLista(rs.meteo && rs.meteo[cc]).filter((w0) => w0 && typeof w0 === "object" && !Array.isArray(w0) && (w0.title || w0.region)).filter((w0) => { const p = _meteoProzor(w0); return !p || (p[0] <= dolazak && p[1] >= dep0); }).filter((w0) => _meteoNaRuti(w0, route)).slice(0, 3)) {
       const poj = _meteoPojava(w), niv = _meteoNivo(w);
-      rows.push(`<li class="rs-meteo">${rIco("storm", 14)} <b>${esc(_meteoRegion(w))}</b>: ${esc(poj || w.title)}` +
-        (niv ? ` <span class="poi-dist">(${esc(niv)} ` + T("rs.upozorenjeRec") + `)</span>` : "") + `</li>`);
+      meteoRedovi.push(`<li class="warn-li rs-meteo" data-meteo="1">${rIco("storm", 14)} <b>${esc(_meteoRegion(w))}</b>: ${esc(poj || w.title)}` +
+        (niv ? ` <span class="poi-dist">(${esc(niv)} ` + T("rs.upozorenjeRec") + `, Meteoalarm)</span>` : ` <span class="poi-dist">(Meteoalarm)</span>`) + `</li>`);
     }
+  state._meteoRedovi = meteoRedovi; state._meteoRedoviSeq = _mySeq; try { _meteoUWarn(); } catch (e) {}
   /* Zapisi bez koordinate: JEDNA tiha linija na dnu umesto vise punih redova sa hedzom.
      Izvor zna samo oznaku ceste, pa iskreno pisemo da tacno mesto ne znamo. */
   const nzRef = [...new Set(neznano.map((x) => x.ref))].slice(0, 3);
@@ -14573,6 +14605,7 @@ async function renderWarnings(assess) {
       : cov.puna
         ? T("warn.nema")
         : T("warn.nemaNaDelu", { 0: cov.procenat });
+    try { _meteoUWarn(); } catch (e) {}   // 4.10.: Meteoalarm redovi prezivljavaju novo crtanje zona
     return zones;
   }
   for (const z of zones.slice(0, 5)) {
@@ -14589,6 +14622,7 @@ async function renderWarnings(assess) {
     ul.appendChild(li);
   }
   if (_mySeq !== state.planSeq) return zones;   // R13v2: stara generacija NE pecatira svoje zone kao aktuelne
+  try { _meteoUWarn(); } catch (e) {}   // 4.10.: Meteoalarm redovi prezivljavaju novo crtanje zona
   state._zones = zones;
   try { const r = state.routes && state.routes[state.selected]; if (r) renderResultHero(r); } catch (e) {}
   return zones;
@@ -18611,8 +18645,13 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.196";
+const APP_VERSION = "0.9.197";
 const CHANGELOG = [
+  { v: "0.9.197", d: "04.10.2026.", stavke: [
+    "<b>Meteoalarm upozorenja su pod Upozorenjima, i samo za kraj kroz koji prolaziš.</b> Tvoj nalaz 08:40: pod Stanje puteva je pisalo UPOZORENJE, a bila je niska temperatura za Jugozapadnu Srbiju, dok ti voziš u Šumadiju. Vremensko upozorenje nije stanje puta, pa sada stoji u sekciji Upozorenja, sa regionom i oznakom Meteoalarm, i to samo kad ruta stvarno prolazi kroz taj region. Stanje puteva su od sada samo radovi, zatvaranja i granice.",
+    "<b>Sklonjena stara kartica sažetka sa dna liste.</b> Zelena presuda o vremenu, relacija i dolazak već stoje u instrumentu na vrhu, pa je ista stvar na dnu bila dupla.",
+    "<b>Dugme Moja lokacija ne nestaje kad je ruta na mapi.</b> Do sada se u planiranju gasilo jer bi ga u donjem uglu pokrila traka; sada stoji u stubu sa Slojevima, Pumpama i Hranom."
+  ] },
   { v: "0.9.196", d: "04.10.2026.", stavke: [
     "<b>Iz Slojeva (i svakog sličnog lista) se izlazi na tri načina.</b> Tvoj nalaz 08:41: otvoriš Slojeve i nemaš kako nazad na mapu. Jedini izlaz je bio dodir u zatamnjeni deo iznad liste, a ništa to nije govorilo: hvataljka je izgledala kao da se vuče a nije, X nije postojao, a dugme Slojevi je ostajalo ispod liste. Sada: X gore desno, prevlačenje nadole (po hvataljci ili bilo gde kad je spisak na vrhu) i Escape na tastaturi. Isto važi za Još opcija, Pumpe i Hrana, i Vreme za ovu tačku."
   ] },
