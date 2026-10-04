@@ -178,7 +178,7 @@ def main():
             exec(compile(f.read(), "meteo.py", "exec"), ns)
         for cc in METEO_COUNTRIES:
             try:
-                result["meteo"][cc] = norm(ns["fetch_meteoalarm"](cc))
+                result["meteo"][cc], _ods = norm(ns["fetch_meteoalarm"](cc))   # 4.10.: norm vraca PAR (stavke, odseceno) od 0.9.97 - ceo par je 5 nedelja isao u fajl, pa je app crtao dva prazna reda
                 print(f"[OK ] meteo {cc}: {len(result['meteo'][cc])} upozorenja")
             except Exception as e:
                 result["meteo"][cc] = []
