@@ -1332,8 +1332,12 @@
     body.qplan.planning #panel > *:not(#peekBar):not(#plannerClose):not(#qbar):not(#status):not(#results):not(#resCta) { display: none !important; }
     /* 4.10. 01:10 (Bosko: "kad se skroluje do gore ide do pola, to nam ne igra - ili odmah kreni ili ceo prozor"): list ima DVA
        polozaja - traka (skupljen) ili ceo ekran (otvoren). Visina je uvek puna; polozaj "do pola" (54dvh) ne postoji vise. */
-    body.qplan.planning #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); height: calc(100dvh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); padding-bottom: 0; display: flex; flex-direction: column; }   /* flex kolona = CTA footer uvek na dnu */
-    body.qplan.planning.qdetails #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); height: calc(100dvh - 56px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); }   /* 3.10. uvece: pun ekran (bilo 86dvh) - list povucen do vrha, kao Istrazi 'pun' */
+    body.qplan.planning #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom)); height: calc(100dvh - 56px - env(safe-area-inset-bottom)); padding-bottom: 0; display: flex; flex-direction: column; }   /* flex kolona = CTA footer uvek na dnu */
+    /* 4.10. 08:05 (Bosko: "kad prevucemo do kraja gore opet ostaje traka mape gore, ruzno"): otvoren list ide do SAMOG vrha ekrana,
+       ispod statusne trake - uglovi ravni, a hvataljka nosi safe-area odozgo (visina lista se ne menja, pa nema skoka pri otvaranju) */
+    body.qplan.planning #panel.open { border-radius: 0; border-top-color: transparent; }
+    body.qplan.planning #panel.open #peekBar { padding-top: calc(8px + env(safe-area-inset-top)); }
+    body.qplan.planning.qdetails #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom)); height: calc(100dvh - 56px - env(safe-area-inset-bottom)); }   /* 3.10. uvece: pun ekran (bilo 86dvh) - list povucen do vrha, kao Istrazi 'pun' */
     /* 4.10. 01:10 (Bosko, treci put: "ovaj deo kad prevucemo na gore NE SME da se vidi"): kad je list otvoren, kartice Od/Do NEMA.
        0.9.193 ju je ostavio kao zaglavlje iznad lista - pogresno citanje. Dokaz: tools/provera-riOdDo-list-pregledac.mjs. */
     body.qplan.planning.hasroute:has(#panel.open) #riOdDo { display: none !important; }
@@ -4914,6 +4918,7 @@ const RECNIK_SR = {
   "planer.akNajvise": "najviše {0} m",
   "planer.akKrivinaPod": "krivina · {0} oštrih · {1}",
   "planer.akRadovi": "RADOVI",
+  "planer.akUpozorenje": "UPOZORENJE",
   "planer.akCisto": "ČISTO",
   "planer.akBezPrijava": "bez prijava na ruti",
   "planer.akBezOcena": "još bez ocena vozača",
@@ -6954,6 +6959,7 @@ const RECNIK_EN = {
   "planer.akNajvise": "highest {0} m",
   "planer.akKrivinaPod": "curves · {0} sharp · {1}",
   "planer.akRadovi": "WORKS",
+  "planer.akUpozorenje": "WARNING",
   "planer.akCisto": "CLEAR",
   "planer.akBezPrijava": "no reports on the route",
   "planer.akBezOcena": "no rider ratings yet",
@@ -13326,10 +13332,14 @@ async function renderRoadStatus(route) {
      stizes u 15:30, nije upozorenje nego vest. Zapis bez citljivog vazenja se i dalje prikazuje
      (necitljivo vreme nije dokaz da ne vazi) - ali na srpskom, ne "nivo: zuto | pojava: High temperature". */
   const dolazak = dep0 + ((route && route.totalDur) || 0) * 1000 + 2 * 3600e3;   // +2 h: pauza, kafa, obilazak
+  /* 4.10. (Boskova slika 08:06: dva reda "oblak :" bez teksta pod STANJE PUTEVA): robot je od 27.8. (0.9.97) upisivao
+     meteo kao [[stavke], odseceno] jer norm() vraca par - app je citao niz i broj kao dva "upozorenja". Robot ispravljen;
+     ovde se podnosi i stari oblik (prvi clan niz = stavke), a red bez regiona i teksta se ne crta nikad. */
+  const _meteoLista = (m) => { const l = Array.isArray(m) ? m : []; return (l.length && Array.isArray(l[0])) ? l[0] : l; };
   for (const cc of ccs)
-    for (const w of (rs.meteo && rs.meteo[cc] || []).filter((w0) => { const p = _meteoProzor(w0); return !p || (p[0] <= dolazak && p[1] >= dep0); }).slice(0, 3)) {
+    for (const w of _meteoLista(rs.meteo && rs.meteo[cc]).filter((w0) => w0 && typeof w0 === "object" && !Array.isArray(w0) && (w0.title || w0.region)).filter((w0) => { const p = _meteoProzor(w0); return !p || (p[0] <= dolazak && p[1] >= dep0); }).slice(0, 3)) {
       const poj = _meteoPojava(w), niv = _meteoNivo(w);
-      rows.push(`<li>${rIco("storm", 14)} <b>${esc(_meteoRegion(w))}</b>: ${esc(poj || w.title)}` +
+      rows.push(`<li class="rs-meteo">${rIco("storm", 14)} <b>${esc(_meteoRegion(w))}</b>: ${esc(poj || w.title)}` +
         (niv ? ` <span class="poi-dist">(${esc(niv)} ` + T("rs.upozorenjeRec") + `)</span>` : "") + `</li>`);
     }
   /* Zapisi bez koordinate: JEDNA tiha linija na dnu umesto vise punih redova sa hedzom.
@@ -18059,7 +18069,7 @@ function applySheet(animate = true) {
   // lomi sticky u WebKit-u; none→identitet se i dalje glatko animira kroz transition
   p.style.transform = sheet.open ? "" : sheetXform(sheet.y);
   p.classList.toggle("open", sheet.open);
-  document.body.classList.toggle("qdetails", sheet.open);   // 4.10.: otvoren list = ceo ekran sa svim detaljima; nema "do pola"
+  document.body.classList.remove("qdetails");   // 4.10. 08:05 (Boskova slika: duplirane Rute + prazne kartice): stari "svi detalji" rezim na telefonu NIKAD - sekcije 7G su detalji
   if (!animate) requestAnimationFrame(() => p.classList.remove("dragging"));
 }
 function setSheet(open) { sheet.open = open; applySheet(); }
@@ -18594,8 +18604,13 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.194";
+const APP_VERSION = "0.9.195";
 const CHANGELOG = [
+  { v: "0.9.195", d: "04.10.2026.", stavke: [
+    "<b>Otvoren list ide do samog vrha ekrana.</b> Tvoja slika 08:05: iznad lista je ostajala traka mape ispod sata. List se sada naslanja na statusnu traku, uglovi su ravni, a hvataljka nosi razmak za sat i kameru.",
+    "<b>Nema više dupliranih Ruta i praznih kartica ispod sekcija.</b> Kad se list otvorio, palio se stari režim \"svi detalji\" sa računara, pa su se ispod sekcija pojavljivale stare kartice: još jedan izbor rute, prazne Kad krenuti i Šta obući, Trošak puta. Taj režim na telefonu više ne postoji, sekcije su jedini prikaz.",
+    "<b>Stanje puteva: prazni redovi sa oblakom su bili meteo upozorenja bez teksta.</b> Robot je od 27.8. upisivao upozorenja u pogrešnom obliku (ceo par \"stavke + koliko je odsečeno\" umesto samih stavki), pa je aplikacija nizove čitala kao dva prazna upozorenja i naslov pisala RADOVI. Robot ispravljen, aplikacija čita oba oblika, prazan red se nikad ne crta, a meteo upozorenje se zove UPOZORENJE, ne RADOVI. Do prvog sledećeg robotovog kruga (svaki sat) podaci na sajtu su još u starom obliku, aplikacija ih svejedno čita ispravno."
+  ] },
   { v: "0.9.194", d: "04.10.2026.", stavke: [
     "<b>Kartica Od/Do nestaje kad podigneš list.</b> Tvoj nalaz treći put: \"ovaj deo kad prevučemo na gore ne sme da se vidi\". U 0.9.193 sam karticu ostavio kao zaglavlje iznad lista, što je bilo pogrešno čitanje. Sada: list skupljen = kartica na mapi; list gore = kartice nema, pregled je ceo ekran.",
     "<b>List ima dva položaja: traka ili ceo ekran.</b> Položaj \"do pola\" je izbačen. Povučen nagore ili brz zamah = ceo ekran; nadole = traka sa Kreni.",
@@ -26907,7 +26922,8 @@ function riPresude(route) {
   set("krivine", c ? String(c.L + c.R) : "–", c ? T("planer.akKrivinaPod", { 0: c.sharp, 1: c.klasa || "" }) : df.slice(0, 60));
   // Stanje puteva
   const rl = li("roadsList"); const cr = g("card-roads"); const imaPut = rl.length && cr && cr.style.display !== "none";
-  set("putevi", imaPut ? esc(T("planer.akRadovi")) : esc(T("planer.akCisto")), imaPut ? rl[0].textContent.trim().slice(0, 70) : T("planer.akBezPrijava"), imaPut ? "warn" : "ok");
+  const prviMeteo = imaPut && rl[0].classList.contains("rs-meteo");   // 4.10.: meteo upozorenje nije "RADOVI"
+  set("putevi", imaPut ? esc(T(prviMeteo ? "planer.akUpozorenje" : "planer.akRadovi")) : esc(T("planer.akCisto")), imaPut ? rl[0].textContent.replace(/\s+/g, " ").trim().slice(0, 70) : T("planer.akBezPrijava"), imaPut ? "warn" : "ok");
   // Ocene
   const cs = g("card-stanje"); const so = txt("stanjeOut");
   set("ocene", cs && !cs.classList.contains("hidden") && so ? esc((so.match(/\d[.,]\d/) || ["★"])[0]) : "–", cs && !cs.classList.contains("hidden") ? so.slice(0, 70) : T("planer.akBezOcena"));
