@@ -3,7 +3,7 @@
 Pokrece ga GitHub Action (.github/workflows/road-status.yml) 5x dnevno.
 Adapteri u tools/road_adapters/ su testirani uzivo 2026-07-23 (multi-agent provera).
 Svaki adapter je nezavisan: pad jednog ne rusi ostale (ok:false + razlog u JSON-u)."""
-import json, os, sys, time, traceback
+import re, json, os, sys, time, traceback
 from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +23,7 @@ COUNTRIES = {  # kod -> (ime, adapter fajl, izvor za prikaz)
     "GR": ("Grčka", "gr.py", "Nea Odos / Aegean"),
 }
 METEO_COUNTRIES = ["RS", "HR", "SI", "BA", "ME", "MK", "BG", "RO", "GR"]  # AL nije clan Meteoalarma
-MAX_ITEMS = 40
+MAX_ITEMS = 100   # 5.10.2026: bilo 40 - vidi _redosled() ispod
 
 def run_adapter(path):
     """Exec adapter u izolovanom namespace-u i pozovi njegovu fetch* funkciju.
@@ -70,6 +70,33 @@ def izdvoj_granice(items, cc):
         })
     return gr
 
+_DATUM_RE = re.compile(r"(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})")
+_ISO_RE = re.compile(r"(\d{4})-(\d{2})-(\d{2})")
+_ZATV_RE = re.compile(r"closure|zatvar|obustav|zapora|zaprt|inchis", re.I)
+
+def _datum_zapisa(it):
+    """Datum objave koji zapis SAM nosi (isti sud kao _radDatum u aplikaciji); 0 kad ga nema."""
+    t = str(it.get("title", "")) + " " + str(it.get("detail", ""))
+    m = _DATUM_RE.search(t)
+    try:
+        if m:
+            return int(m.group(3)) * 10000 + int(m.group(2)) * 100 + int(m.group(1))
+        m = _ISO_RE.search(t)
+        if m:
+            return int(m.group(1)) * 10000 + int(m.group(2)) * 100 + int(m.group(3))
+    except ValueError:
+        pass
+    return 0
+
+def _redosled(obicni):
+    """5.10.2026 (Boskova voznja Beograd-Bukulja 4.10.): rez je do danas isao PO REDOSLEDU FIDA, a Putevi
+    Srbije salju zapise od NAJSTARIJEG ka najnovijem - pa je fajl nosio 40 zapisa iz 2005-2025 (samo dva iz
+    2026), a sve tekuce je odsecano, ukljucujuci obustavu na IB-27 Lazarevac-Darosava (Krusevica) do 26.12.
+    Sada: zatvaranja UVEK prva (nikad se ne seku), pa najnoviji ka najstarijem; zapis bez datuma zadrzava
+    mesto iz fida iza datiranih (stabilno sortiranje)."""
+    return sorted(obicni, key=lambda it: (0 if _ZATV_RE.search(str(it.get("type", "")) + " " + str(it.get("title", ""))[:60]) else 1,
+                                         -_datum_zapisa(it)))
+
 def norm(items):
     """Vrati (stavke, koliko_je_odseceno).
 
@@ -81,7 +108,7 @@ def norm(items):
     """
     out = []
     # granicni prelazi se izdvajaju posebno pa ne trose mesto u limitu
-    obicni = [it for it in items if not (isinstance(it, dict) and it.get("border"))]
+    obicni = _redosled([it for it in items if isinstance(it, dict) and not it.get("border")])
     odseceno = max(0, len(obicni) - MAX_ITEMS)
     for it in obicni[:MAX_ITEMS]:
         if not isinstance(it, dict):
@@ -192,4 +219,5 @@ def main():
     if ok_c < 5:
         sys.exit(1)   # vecina pala = ne komituj polupraznu datoteku
 
-main()
+if __name__ == "__main__":   # 5.10.: test uvozi norm() bez mreznog kruga
+    main()
