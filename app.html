@@ -88,6 +88,7 @@
      block exists, so two copies cannot drift apart.
      =========================================================================== */
   :root {
+  --sat: env(safe-area-inset-top, 0px);   /* 5.10.: jedna tacka za bezbednu zonu odozgo - proba je prepisuje (headless = 0) */
     /* --- ATLAS nizovi (14.9.2026, Filipov brend: brand/system/tokens.css) ---------------
        Topla ugljeno-crna, bez plavicaste sive. Vrednosti su prepisane 1:1 iz brend tokena
        (tamo imaju ulogu i kontrast), ovde nose aplikaciju. HUD niz (--hud-*), slate niz i
@@ -1338,7 +1339,11 @@
     /* 4.10. 08:05 (Bosko: "kad prevucemo do kraja gore opet ostaje traka mape gore, ruzno"): otvoren list ide do SAMOG vrha ekrana,
        ispod statusne trake - uglovi ravni, a hvataljka nosi safe-area odozgo (visina lista se ne menja, pa nema skoka pri otvaranju) */
     body.qplan.planning #panel.open { border-radius: 0; border-top-color: transparent; }
-    body.qplan.planning #panel.open #peekBar { padding-top: calc(8px + env(safe-area-inset-top)); }
+    body.qplan.planning #panel.open #peekBar { padding-top: calc(8px + var(--sat)); }
+    /* 5.10. (Boskova slika: X "sakriven skroz gore desno" pod satom): sve sto je usidreno uz vrh OTVORENOG lista ide ispod
+       bezbedne zone. --sat = env(safe-area-inset-top); proba ga prepisuje na 47 px jer headless Chrome uvek vraca 0. */
+    body.qplan.planning #panel.open #plannerClose { top: calc(14px + var(--sat)); }
+    #homeFabs button.fab-tesno { display: none !important; }   /* 5.10.: fabsUklopi() - dugme koje na malom ekranu ne staje iznad trake */
     body.qplan.planning.qdetails #panel { height: calc(100vh - 56px - env(safe-area-inset-bottom)); height: calc(100dvh - 56px - env(safe-area-inset-bottom)); }   /* 3.10. uvece: pun ekran (bilo 86dvh) - list povucen do vrha, kao Istrazi 'pun' */
     /* 4.10. 01:10 (Bosko, treci put: "ovaj deo kad prevucemo na gore NE SME da se vidi"): kad je list otvoren, kartice Od/Do NEMA.
        0.9.193 ju je ostavio kao zaglavlje iznad lista - pogresno citanje. Dokaz: tools/provera-riOdDo-list-pregledac.mjs. */
@@ -1554,7 +1559,7 @@
   #rezInst .ri-ruta .ri-cip { height: 30px; padding: 0 10px; font-size: 12px; }
   .ri-cipovi { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
   /* od/do kartica gore na mapi dok je rezultat otvoren (sheet .planning); kad je sheet skupljen stoji #routePill */
-  body.qplan.planning.hasroute #riOdDo { display: block; position: fixed; left: 12px; right: 12px; top: calc(10px + env(safe-area-inset-top)); z-index: 41; background: var(--bg-veil); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--line-strong); border-radius: var(--r-lg); padding: 2px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+  body.qplan.planning.hasroute #riOdDo { display: block; position: fixed; left: 12px; right: 12px; top: calc(10px + var(--sat)); z-index: 41; background: var(--bg-veil); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--line-strong); border-radius: var(--r-lg); padding: 2px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
   body.qplan.planning.hasroute.searching #riOdDo, body.qplan.planning.hasroute.riding #riOdDo { display: none; }
   /* 3.10. (Boskove slike 09:55-10:03): kartica Od/Do je ostajala preko Zajednice, Ja i Istrazi - klase qplan/planning/hasroute
      ostaju na body dok se tab menja. Kartica pripada samo planeru, pa se gasi cim je drugi tab na ekranu. */
@@ -1564,8 +1569,8 @@
      Istrazi, Zajednice i Ja. Dokaz: tools/provera-riOdDo-tabovi-pregledac.mjs. Sakrivanje nosi iste klase + tab. */
   body.qplan.planning.hasroute.atlas #riOdDo, body.qplan.planning.hasroute:has(.tabscreen.on) #riOdDo { display: none !important; }
   /* 3.10. (pregled, izmereno 26 px): dok je kartica Od/Do na mapi, stub alata (Slojevi...) i kompas idu ISPOD nje; visinu meri riOdDoCrtaj u --riOdDo-h */
-  body.qplan.planning.hasroute:not(.searching):not(.riding) #homeFabs { top: calc(var(--riOdDo-h, 150px) + 22px + env(safe-area-inset-top)); }
-  body.qplan.planning.hasroute:not(.searching):not(.riding) .compass-btn { top: calc(var(--riOdDo-h, 150px) + 78px + env(safe-area-inset-top)); }
+  body.qplan.planning.hasroute:not(.searching):not(.riding) #homeFabs { top: calc(var(--riOdDo-h, 150px) + 22px + var(--sat)); }
+  body.qplan.planning.hasroute:not(.searching):not(.riding) .compass-btn { top: calc(var(--riOdDo-h, 150px) + 78px + var(--sat)); }
   body.qplan.planning.hasroute #riOdDo { padding-right: 52px; }
   .ri-zameni { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--surface); color: var(--fg); display: flex; align-items: center; justify-content: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .ri-zameni svg { width: 20px; height: 20px; }
@@ -4824,6 +4829,7 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
     </div>
   </div>
 
+  <div id="satMera" aria-hidden="true" style="position:fixed;top:0;left:0;width:1px;height:var(--sat);pointer-events:none;visibility:hidden"></div>   <!-- 5.10.: meri bezbednu zonu odozgo za uokviravanje rute -->
   <nav id="bottomnav">
     <a tabindex="0" role="tab" data-tab="planer" class="on"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span data-i18n="nav.planer">Planer</span></a>
     <a tabindex="0" role="tab" data-tab="rute"><svg viewBox="0 0 24 24" stroke-width="2"><path d="M9 20l-5.5-3V4L9 7l6-3 5.5 3v13L15 17z"/><path d="M9 7v13M15 4v13"/></svg><span data-i18n="nav.istrazi">Istraži</span></a>
@@ -6705,6 +6711,10 @@ const RECNIK_SR = {
   "mt.region.centralnaSrbija": "Centralna Srbija",
   "mt.region.sumadija": "Šumadija",
   "mt.region.backa": "Bačka",
+  "planer.meteoDodatak": " Ali: {0} Meteoalarm upozorenje za kraj kroz koji prolaziš - vidi Upozorenja.",
+  "mt.region.srem": "Srem",
+  "mt.region.banat": "Banat",
+  "mt.region.macva": "Mačva",
   "mt.region.beograd": "Beograd",
   "mt.region.kosovo": "Kosovo",
   "zem.gen.RS": "Srbije",
@@ -8719,6 +8729,10 @@ const RECNIK_EN = {
   "mt.region.centralnaSrbija": "Central Serbia",
   "mt.region.sumadija": "Šumadija",
   "mt.region.backa": "Bačka",
+  "planer.meteoDodatak": " But: {0} Meteoalarm warning for the area you pass through - see Warnings.",
+  "mt.region.srem": "Srem",
+  "mt.region.banat": "Banat",
+  "mt.region.macva": "Macva",
   "mt.region.beograd": "Belgrade",
   "mt.region.kosovo": "Kosovo",
   "zem.gen.RS": "Serbia",
@@ -13121,8 +13135,20 @@ function _radRelevantan(it, sad) {
   return true;
 }
 function _radStaro(it, sad) {
+  /* 5.10.2026: zapis koji SAM kaze do kada vazi ("do 26.12.2026", "Do 01.09.2026. godine") sudi se po tom datumu -
+     istekao je star, a dug posao (obustava na IB-27 do 26.12.) nije star samo zato sto je objavljen pre pola godine.
+     Bez kraja ostaje staro pravilo: objava starija od RAD_STARO_DANA = arhiva. */
+  const k = _radKraj(it);
+  if (k != null) return k < sad;
   const d = _radDatum(it);
   return d != null && (sad - d) > RAD_STARO_DANA * 86400000;
+}
+function _radKraj(it) {   // kraj vazenja koji zapis nosi ("do 17.10.2026"); kraj dana; null kad ga nema
+  const t = String(it.detail || "") + " " + String(it.title || "");
+  const m = t.match(/\bdo\s+(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})/i);
+  if (!m) return null;
+  const d = new Date(+m[3], +m[2] - 1, +m[1], 23, 59).getTime();
+  return isFinite(d) ? d : null;
 }
 /* MET Norway/Meteoalarm salju vreme u UTC; kolektor ga upisuje kao "...T22:00Z" (starije
    datoteke nemaju oznaku zone - tada se ISTO cita kao UTC, jer je izvor uvek bio UTC). */
@@ -13142,7 +13168,7 @@ const METEO_POJAVA = { "high temperature": "visokaTemp", "low temperature": "nis
   "ice": "poledica", "thunderstorm": "grmljavina", "thunderstorms": "grmljavina", "rain-flood": "kisaBujice",
   "flood": "poplava", "fog": "magla", "forest fire": "pozar", "forestfire": "pozar",
   "coastal event": "olujnoMore", "coastalevent": "olujnoMore", "avalanches": "lavine", "avalanche": "lavine" };
-const METEO_REGION = { "Western Serbia": "zapadnaSrbija", "Southwestern Serbia": "jugozapadnaSrbija",
+const METEO_REGION = { "Srem": "srem", "Banat": "banat", "Macva": "macva", "Kosovo i Metohija": "kosovo", "Western Serbia": "zapadnaSrbija", "Southwestern Serbia": "jugozapadnaSrbija",
   "Eastern Serbia": "istocnaSrbija", "Southeastern Serbia": "jugoistocnaSrbija",
   "Northern Serbia": "severnaSrbija", "Central Serbia": "centralnaSrbija", "Sumadija": "sumadija",
   "Backa": "backa", "Belgrade": "beograd", "Kosovo": "kosovo" };
@@ -13169,6 +13195,9 @@ const METEO_REGION_GEO = {
   "Southwestern Serbia": [43.45, 19.85, 80], "Central Serbia": [43.85, 21.15, 70], "Eastern Serbia": [44.20, 22.20, 90],
   "Southeastern Serbia": [43.00, 22.00, 95], "Northern Serbia": [45.55, 20.20, 120], "Backa": [45.60, 19.50, 80],
   "Kosovo": [42.60, 20.90, 85], "Kosovo i Metohija": [42.60, 20.90, 85],
+  /* 5.10.: Srem je bez kruga prikazivan svuda (Beograd-Drinicka dobio "Srem"). Srem = Sid..Stara Pazova; Zemun i Novi Beograd
+     su region "Belgrade" (centar 45 km od Zemuna = van kruga). */
+  "Srem": [44.97, 19.70, 45], "Banat": [45.35, 20.75, 80], "Macva": [44.70, 19.55, 40],
 };
 function _meteoNaRuti(w, route) {
   const g = METEO_REGION_GEO[String(w && w.region || "").trim()];
@@ -13183,7 +13212,9 @@ function _meteoUWarn() {   // Meteoalarm redovi zive u #warnList (sekcija Upozor
   ul.querySelectorAll("li[data-meteo]").forEach((l) => l.remove());
   const redovi = (state._meteoRedoviSeq === state.planSeq && state._meteoRedovi) || [];
   if (!redovi.length) return;
-  if (!ul.querySelector("li")) ul.innerHTML = "";   // "nema upozorenja" tekst ne sme da stoji uz upozorenje
+  /* 5.10. (Boskova slika: "Nema upozorenja - prognoza je cista" iznad dva Meteoalarm upozorenja): prazna poruka je i sama <li>,
+     pa je stara provera "nema nijednog li" nikad nije brisala. Sada ide napolje svaki red koji nije upozorenje. */
+  ul.querySelectorAll(":scope > *").forEach((el) => { if (!(el.matches && el.matches("li.warn-li, li.bad-li"))) el.remove(); });
   for (const h of redovi) ul.insertAdjacentHTML("beforeend", h);
 }
 function _meteoRegion(w) {
@@ -13379,6 +13410,7 @@ async function renderRoadStatus(route) {
         (niv ? ` <span class="poi-dist">(${esc(niv)} ` + T("rs.upozorenjeRec") + `, Meteoalarm)</span>` : ` <span class="poi-dist">(Meteoalarm)</span>`) + `</li>`);
     }
   state._meteoRedovi = meteoRedovi; state._meteoRedoviSeq = _mySeq; try { _meteoUWarn(); } catch (e) {}
+  try { const z = document.getElementById("riOcenaZasto"); const r0 = state.routes && state.routes[state.selected]; if (z && r0 && meteoRedovi.length) { const sc0 = rideScore(r0); z.textContent = sc0.why + T("planer.meteoDodatak", { 0: meteoRedovi.length }); } } catch (e) {}
   /* Zapisi bez koordinate: JEDNA tiha linija na dnu umesto vise punih redova sa hedzom.
      Izvor zna samo oznaku ceste, pa iskreno pisemo da tacno mesto ne znamo. */
   const nzRef = [...new Set(neznano.map((x) => x.ref))].slice(0, 3);
@@ -14159,7 +14191,9 @@ function drawRoute(route, assess) {
     .setPopup(markerPopup(`<b>Cilj</b>${isRoundTrip() ? "<br>" + fromName + " (povratno preko " + toName + ")" : toName ? "<br>" + toName : ""}`)).addTo(map));
 
   const b = new maplibregl.LngLatBounds();
-  route.coords.forEach((c) => b.extend(c));
+  /* 5.10. (Bosko: "da bude tacno u prozoru gde se vidi mapa - i pocetak i kraj"): okvir obuhvata SVE varijante (kao Google),
+     a padding se meri iz zivog rasporeda - vidi rutaFitPadding() */
+  for (const r of (state.routes && state.routes.length ? state.routes : [route])) (r.coords || []).forEach((c) => b.extend(c));
   /* Ista relacija (varijanta/opcija/stanica/"Moja lokacija"): kamera se NE dira (0.9.82). Do sada je
      isao trenutni fitBounds (duration 0), pa je svaki replan iste relacije vracao ceo prikaz rute i
      bacao korisnika sa mesta koje je gledao. Ceo preview ide samo za NOVU relaciju - UZ JEDAN izuzetak
@@ -14172,13 +14206,70 @@ function drawRoute(route, assess) {
     const sece = !(b.getWest() > vb.getEast() || b.getEast() < vb.getWest() || b.getSouth() > vb.getNorth() || b.getNorth() < vb.getSouth());
     if (!sece) fitTreba = true;
   } catch (e) {}
-  if (fitTreba) map.fitBounds(b, {
-    padding: mqMobile.matches
-      ? (isLS() ? { top: 40, left: lsPadLeft("panel", 444), right: 80, bottom: 60 }   // landscape: izmereno, ne konstanta (notch/mali ekran)
-                : { top: 70, left: 36, right: 36, bottom: 150 })
-      : 60,
-    duration: 600,
-  });
+  if (fitTreba) {
+    map.fitBounds(b, { padding: rutaFitPadding(), duration: 600 });
+    /* traka se posle hasroute jos sirí (23 -> 118 px, 3.10.), a kartica Od/Do se crta tek kad se list skupi: okvir se
+       ponovi kad se raspored slegne - ali SAMO ako vozac u medjuvremenu nije dirao mapu */
+    const bb = b; let dirao = false;
+    const pazi = (e) => { if (e && e.originalEvent) dirao = true; };
+    try { map.on("movestart", pazi); } catch (e) {}
+    clearTimeout(drawRoute._t);
+    drawRoute._t = setTimeout(() => {
+      try { map.off("movestart", pazi); } catch (e) {}
+      try { fabsUklopi(); } catch (e) {}
+      if (!dirao && !document.body.classList.contains("riding")) try { map.fitBounds(bb, { padding: rutaFitPadding(), duration: 350 }); } catch (e) {}
+    }, 900);
+  }
+}
+/* 5.10.2026 (mali telefon, 375 x 667): stub dugmadi uz rutu (Slojevi, rupa za kompas, Pumpe, Hrana, Sacuvano, Moja lokacija)
+   je izmereno ulazio 18 px u traku sa Kreni. Kad ne staje, sklanja se najmanje vazno - prvo Sacuvano, pa Hrana;
+   Slojevi i Moja lokacija se ne sklanjaju nikad. Meri se posle svake promene kartice Od/Do i velicine ekrana. */
+function fabsUklopi() {
+  const f = document.getElementById("homeFabs"); if (!f) return;
+  f.querySelectorAll(".fab-tesno").forEach((b) => b.classList.remove("fab-tesno"));
+  const bd = document.body.classList;
+  if (!mqMobile.matches || isLS() || !(bd.contains("qplan") && bd.contains("planning") && bd.contains("hasroute")) || bd.contains("riding")) return;
+  const nav = document.getElementById("bottomnav"), nr = nav && nav.getBoundingClientRect();
+  const pk = document.getElementById("peekBar");
+  const traka = (nr && nr.height > 0 ? nr.top : window.innerHeight - 56) - Math.max(118, pk ? pk.offsetHeight : 0);
+  const dno = () => Math.max(0, ...[...f.querySelectorAll("button")].filter((b) => b.offsetParent !== null).map((b) => b.getBoundingClientRect().bottom));
+  for (const ime of ["poi-saved", "poi-food"]) {
+    if (dno() <= traka - 8) break;
+    const b = f.querySelector('button[data-fab="' + ime + '"]'); if (b) b.classList.add("fab-tesno");
+  }
+}
+/* 5.10.2026: slobodan deo mape kad je list SKUPLJEN (stanje posle plana): ispod kartice Od/Do, iznad trake sa Kreni,
+   levo od stuba dugmadi. Meri se iz zivog rasporeda; delovi koji jos nisu nacrtani (kartica dok je list otvoren)
+   procenjuju se iz izmerene visine (--riOdDo-h) i bezbedne zone. Zbir ne sme da pojede mapu - fitBounds bi tiho odbio. */
+function rutaFitPadding() {
+  if (!mqMobile.matches) return 60;
+  if (isLS()) return { top: 40, left: lsPadLeft("panel", 444), right: 80, bottom: 60 };   // landscape: izmereno, ne konstanta (notch/mali ekran)
+  const W = window.innerWidth, H = window.innerHeight, g = (id) => document.getElementById(id);
+  let sat = 0; try { const m = g("satMera"); if (m) sat = m.offsetHeight; } catch (e) {}   // #satMera ima visinu var(--sat) = bezbedna zona odozgo
+  let top = 70;
+  try {
+    const k = g("riOdDo"), kr = k && k.getBoundingClientRect();
+    if (kr && kr.height > 0) top = kr.bottom + 14;
+    else top = 10 + sat + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--riOdDo-h")) || 150) + 14;
+  } catch (e) {}
+  let bottom = 150;
+  try {
+    const nav = g("bottomnav"), nr = nav && nav.getBoundingClientRect();
+    const navTop = nr && nr.height > 0 ? nr.top : H - 56;
+    const pk = g("peekBar"); const ph = Math.max(118, pk ? pk.offsetHeight : 0);   // traka sa brojevima i Kreni (izmereno 118 px)
+    bottom = (H - navTop) + ph + 14;
+  } catch (e) {}
+  let right = 36;
+  try {
+    const f = g("homeFabs"), dugmad = f ? [...f.querySelectorAll("button")].filter((x) => x.offsetParent !== null) : [];
+    const lev = dugmad.length ? Math.min(...dugmad.map((x) => x.getBoundingClientRect().left)) : W;
+    if (lev < W) right = (W - lev) + 10;
+  } catch (e) {}
+  const left = 24;
+  // mapa mora da ostane bar 140 x 160 px; inace se padding skuplja srazmerno
+  const vis = H - top - bottom, sir = W - left - right;
+  const k1 = vis < 160 ? Math.max(0, (H - 160) / (top + bottom)) : 1, k2 = sir < 140 ? Math.max(0, (W - 140) / (left + right)) : 1;
+  return { top: Math.round(top * k1), bottom: Math.round(bottom * k1), left: Math.round(left * k2), right: Math.round(right * k2) };
 }
 
 /* ---------------- kišni radar (RainViewer) ---------------- */
@@ -18645,8 +18736,14 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.197";
+const APP_VERSION = "0.9.198";
 const CHANGELOG = [
+  { v: "0.9.198", d: "05.10.2026.", stavke: [
+    "<b>Izabrana ruta staje cela u deo ekrana gde se vidi mapa.</b> Tvoja slika 09:52: videlo se samo parče rute. Okvir je računat sa malim razmakom od vrha i dna, a preko mape stoje kartica Od/Do, stub dugmadi i traka sa Kreni. Sada se razmak meri iz stvarnog rasporeda, okvir obuhvata sve varijante (kao Google), i ponovi se kad se traka slegne - osim ako si već pomerio mapu. Na malom telefonu (iPhone SE) dugme Sačuvano se skloni ako stub ne staje iznad trake; Slojevi i Moja lokacija se ne sklanjaju nikad.",
+    "<b>X na otvorenom pregledu je ispod sata.</b> Bio je sakriven gore desno pod satom i baterijom, jer list od 0.9.195 ide do samog vrha.",
+    "<b>Upozorenja ne protivreče sama sebi.</b> Ispod zaglavlja je pisalo \"Nema upozorenja\", a ispod toga dva Meteoalarm upozorenja; i rečenica ispod brojeva ih sada pominje. Srem, Banat i Mačva imaju svoje granice, pa gradska ruta kroz Beograd više ne dobija upozorenje za Srem.",
+    "<b>Stanje puteva u Srbiji je bilo pet nedelja staro.</b> Robot je od fida Puteva Srbije zadržavao prvih 40 zapisa, a fid ide od najstarijeg - pa su do aplikacije stizali radovi iz 2005-2025, a tekući nisu, uključujući obustavu na putu IB-27 Lazarevac - Darosava kod Kruševice (do 26.12.). Sada se zatvaranja čuvaju uvek, a ostalo od najnovijeg; zapis koji kaže do kada važi sudi se po tom datumu."
+  ] },
   { v: "0.9.197", d: "04.10.2026.", stavke: [
     "<b>Meteoalarm upozorenja su pod Upozorenjima, i samo za kraj kroz koji prolaziš.</b> Tvoj nalaz 08:40: pod Stanje puteva je pisalo UPOZORENJE, a bila je niska temperatura za Jugozapadnu Srbiju, dok ti voziš u Šumadiju. Vremensko upozorenje nije stanje puta, pa sada stoji u sekciji Upozorenja, sa regionom i oznakom Meteoalarm, i to samo kad ruta stvarno prolazi kroz taj region. Stanje puteva su od sada samo radovi, zatvaranja i granice.",
     "<b>Sklonjena stara kartica sažetka sa dna liste.</b> Zelena presuda o vremenu, relacija i dolazak već stoje u instrumentu na vrhu, pa je ista stvar na dnu bila dupla.",
@@ -26837,7 +26934,10 @@ function rezInstCrtaj(route) {
   document.getElementById("riKm").innerHTML = `${Math.round(route.totalDist / 1000)}<i>km</i>`;
   const sc = rideScore(route); const so = document.getElementById("riOcena");
   so.textContent = sc ? String(sc.score) : "–"; so.style.color = sc ? (sc.score >= 85 ? "var(--good-400)" : sc.score >= 60 ? "#f5d27a" : "var(--danger-400)") : "";
-  document.getElementById("riOcenaZasto").textContent = sc ? sc.why : "";
+  /* 5.10. (jedan predikat, dva teksta): red ispod brojeva i sekcija Upozorenja citaju ISTO stanje - kad Meteoalarm ima upozorenje
+     za kraj kroz koji ides, recenica "Suvo i mirno" ga ne precutkuje */
+  const _mt = (state._meteoRedoviSeq === state.planSeq && state._meteoRedovi) || [];
+  document.getElementById("riOcenaZasto").textContent = sc ? sc.why + (_mt.length ? T("planer.meteoDodatak", { 0: _mt.length }) : "") : "";
   const dep = state.lastDeparture instanceof Date ? state.lastDeparture : new Date();
   document.getElementById("riStizes").textContent = fmtTime(new Date(dep.getTime() + route.totalDur * 1000));
   const wxV = document.getElementById("rhWxV"), wxS = document.getElementById("rhWxS"), rv = document.getElementById("riVreme");
@@ -27086,7 +27186,8 @@ function riLokacijaBroj(dodatnih) { return 2 + (state.vias || []).length + (doda
   /* 3.10. 20:30: visina kartice (--riOdDo-h) pomera stub alata I vrh lista "do vrha" - meri se na SVAKU promenu visine
      (stanice, sklapanje, okret telefona), ne samo pri crtanju; inace list stane ispod stare visine */
   if (typeof ResizeObserver === "function") {
-    try { new ResizeObserver(() => { const h = g("riOdDo").getBoundingClientRect().height; if (h) document.documentElement.style.setProperty("--riOdDo-h", Math.round(h) + "px"); }).observe(g("riOdDo")); } catch (e) {}
+    try { new ResizeObserver(() => { const h = g("riOdDo").getBoundingClientRect().height; if (h) document.documentElement.style.setProperty("--riOdDo-h", Math.round(h) + "px"); requestAnimationFrame(() => { try { fabsUklopi(); } catch (e) {} }); }).observe(g("riOdDo")); } catch (e) {}
+    try { window.addEventListener("resize", () => { try { fabsUklopi(); } catch (e) {} }); } catch (e) {}
   }
   const host = g("riStanice");
   if (host) {
