@@ -25,7 +25,7 @@ COUNTRIES = {  # kod -> (ime, adapter fajl, izvor za prikaz)
 METEO_COUNTRIES = ["RS", "HR", "SI", "BA", "ME", "MK", "BG", "RO", "GR"]  # AL nije clan Meteoalarma
 MAX_ITEMS = 100   # 5.10.2026: bilo 40 - vidi _redosled() ispod
 
-def run_adapter(path):
+def run_adapter(path, dodatno=None):
     """Exec adapter u izolovanom namespace-u i pozovi njegovu fetch* funkciju.
 
     0.9.95 (QA nalaz 93): vraca (stavke, nepotpuno). `nepotpuno` je spisak kategorija koje
@@ -33,6 +33,8 @@ def run_adapter(path):
     pad zavrsavao kao `ok: true` i cela kategorija (npr. granicni prelazi) je nestajala bez
     traga. Adapter ga ostavlja u svom namespace-u pod imenom NEPOTPUNO."""
     ns = {"__name__": "adapter"}   # __main__ guard se ne pali
+    if dodatno:
+        ns.update(dodatno)   # 5.10.: npr. MESTA_KES za rs.py (kes geokodiranih imena mesta, cuva se u fajlu)
     with open(path, encoding="utf-8") as f:
         exec(compile(f.read(), path, "exec"), ns)
     def _pale():
@@ -127,6 +129,8 @@ def norm(items):
             la, lo = it.get("lat"), it.get("lon")
             if la is not None and lo is not None:
                 zap["lat"], zap["lon"] = round(float(la), 5), round(float(lo), 5)
+                if it.get("tacnost_km") is not None:   # 5.10.: priblizna tacka (RS - pretvorena sa slike mape) nosi svoju nesigurnost
+                    zap["tacnost_km"] = float(it["tacnost_km"])
         except (TypeError, ValueError):
             pass
         ln = it.get("coords")
@@ -158,13 +162,15 @@ def main():
     prev = load_prev()
     now_iso = datetime.now(timezone.utc).isoformat(timespec="minutes")
     result = {"updated": now_iso, "countries": {}, "meteo": {}, "borders": []}
+    mesta_kes = prev.get("_mesta") if isinstance(prev.get("_mesta"), dict) else {}   # 5.10.: ime mesta -> kandidati [lat, lon] (Nominatim)
+    result["_mesta"] = mesta_kes
     fails = []
     for code, (name, fname, src) in COUNTRIES.items():
         entry = {"name": name, "source": src, "ok": False, "items": []}
         last_err = None
         for pokusaj in (1, 2, 3):   # izvori drzava umeju da budu spori iz tudje mreze
             try:
-                sirovo, nepotpuno = run_adapter(os.path.join(ADAPTERS, fname))
+                sirovo, nepotpuno = run_adapter(os.path.join(ADAPTERS, fname), {"MESTA_KES": mesta_kes} if code == "RS" else None)
                 entry["items"], odseceno = norm(sirovo)
                 if odseceno:
                     entry["odseceno"] = odseceno   # nalaz 56: merljivo u fajlu, nevidljivo vozacu
