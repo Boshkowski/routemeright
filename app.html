@@ -5299,6 +5299,12 @@ const RECNIK_SR = {
   "pl.uzorakGen.1": "uzorka",
   "pl.uzorakGen.2": "uzorka",
   "pl.uzorakGen.5": "uzoraka",
+  "rs.putBroj": "put {0}",
+  "plan.zaobilazim": "Ruta prolazi kroz zatvoren put ili radove - tražim obilazak...",
+  "plan.zaobidjeno": "Ruta zaobilazi: {0} ({1}).",
+  "plan.obilazakNijeSiguran": "Na ruti je zatvoreno ili raskopano: {0} ({1}) - obilazak nije siguran, proveri na licu mesta.",
+  "plan.obilazakNijeIzracunat": "Na ruti je zatvoreno ili raskopano: {0} ({1}) - obilazak nije izračunat (ruter nije odgovorio), proveri na licu mesta.",
+  "plan.prijavaRadovi": "radove koje su prijavili vozači",
   "rs.jos": "<li><span class=\"poi-dist\">Još {0} {1} sa {2} bez tačne lokacije - može biti bilo gde na toj cesti.</span></li>",
   "rs.nijeDaoKategoriju": "<li><span class=\"warn-inline\">{0}: izvor nije dao kategoriju {1}{2} u ovom ciklusu - to što ovde ne piše ne znači da tamo nema ničega.</span></li>",
   "rs.iJos": " i još {0}",
@@ -7325,6 +7331,12 @@ const RECNIK_EN = {
   "cost.podelaProcena": "<br><span class=\"poi-dist\">the split per country is an estimate from {0} {1} of the route - the border is accurate to ±{2} km</span>",
   "pl.uzorakGen.1": "sample",
   "pl.uzorakGen.n": "samples",
+  "rs.putBroj": "road {0}",
+  "plan.zaobilazim": "The route crosses a closed road or roadworks - looking for a detour...",
+  "plan.zaobidjeno": "Route avoids: {0} ({1}).",
+  "plan.obilazakNijeSiguran": "Closed or dug-up on the route: {0} ({1}) - the detour is not certain, check on site.",
+  "plan.obilazakNijeIzracunat": "Closed or dug-up on the route: {0} ({1}) - no detour computed (the router did not answer), check on site.",
+  "plan.prijavaRadovi": "roadworks reported by riders",
   "rs.jos": "<li><span class=\"poi-dist\">{0} more {1} on {2} without an exact location - could be anywhere on that road.</span></li>",
   "rs.nijeDaoKategoriju": "<li><span class=\"warn-inline\">{0}: the source gave no {1}{2} category this cycle - nothing listed here does not mean nothing is there.</span></li>",
   "rs.iJos": " and {0} more",
@@ -11165,6 +11177,11 @@ async function valhallaRoute(from, to, style, netOpts) {
     costing_options: { motorcycle: { use_highways: state.bezAutoputa ? Math.min(style.uh, 0.02) : style.uh, use_tolls: state.bezAutoputa ? Math.min(style.ut, 0.05) : style.ut, exclude_unpaved: true } },   // 3.10.: cip "Bez autoputa"
     units: "kilometers",
   };
+  if (state._izbegniPoly && state._izbegniPoly.length) {   // 5.10.: zatvaranja/neprohodni radovi/prijave (preprekeNaRutama)
+    /* zona u kojoj stoji neka lokacija zahteva (vozac je u njoj pri skretanju u voznji, cilj je u njoj) obara zahtev - ta se izostavlja */
+    const z = state._izbegniPoly.filter((pl) => !locations.some((l) => _uPoligonu(l.lat, l.lon, pl)));
+    if (z.length) body.exclude_polygons = z;
+  }
   const j = await fetchJSON("https://valhalla1.openstreetmap.de/route", { method: "POST", body: JSON.stringify(body),
     timeoutMs: (netOpts && netOpts.timeoutMs) || 14000, retries: (netOpts && netOpts.retries) || 0 });   // reroute u voznji trazi krace cekanje + retry
   if (!j.trip || !j.trip.legs || !j.trip.legs.length) throw new Error("Valhalla: nema rute");
@@ -13071,7 +13088,12 @@ function _refoviRute(route) {   // skup oznaka puteva kroz koje ruta prolazi (iz
       if (v.length >= 2) out.add(v);
     }
   };
+  /* 5.10.2026: u Srbiji ruter za drzavne puteve vraca GOLI broj ("27", "151"), a Putevi Srbije pisu "drzavni put I B reda
+     broj 27" - stari obrazac (D8, E75, A1) ih nikad nije spojio, pa nijedan srpski zapis nije stigao do rute. Goli broj ide
+     u skup kao "#27" i spaja se SAMO sa "reda broj 27" (vidi _tekstNosiRef); autoput A1..A5 nosi i "#1".."#5" (I A reda broj N). */
+  const goli = (arr) => { for (const s of (arr || [])) { const v = String(s || "").trim(); if (/^\d{1,3}$/.test(v)) out.add("#" + v); const a = v.toUpperCase().replace(/[\s-]/g, "").match(/^A([1-5])$/); if (a) out.add("#" + a[1]); } };
   for (const m of (route.maneuvers || [])) {
+    goli(m.street_names); goli(m.begin_street_names);
     dodaj(m.street_names && m.street_names.join(" "));
     dodaj(m.instruction);
     /* 19.8.: exit_branch/exit_toward su table ZA SKRETANJA KOJA NE UZIMAS ("D8 ->" na
@@ -13086,6 +13108,10 @@ function _refoviRute(route) {   // skup oznaka puteva kroz koje ruta prolazi (iz
 function _tekstNosiRef(t, refovi) {
   const T = String(t || "").toUpperCase();
   for (const r of refovi) {
+    if (r[0] === "#") {   // 5.10.: srpski broj drzavnog puta - samo uz "reda broj N" (vidi _refoviRute)
+      if (new RegExp("REDA\\s+BR(?:OJ|\\.)?\\s*" + r.slice(1) + "(?!\\d)").test(T)) return r;
+      continue;
+    }
     const re = new RegExp("\\b" + r[0] + "[\\s-]?" + r.slice(1) + "\\b");
     if (re.test(T)) return r;
   }
@@ -13221,6 +13247,137 @@ function _meteoRegion(w) {
   const r = String(w && w.region || "").trim();
   const k = METEO_REGION[r];
   return k ? T("mt.region." + k) : r;
+}
+function _refPrikaz(r) { return String(r || "")[0] === "#" ? T("rs.putBroj", { 0: String(r).slice(1) }) : String(r || ""); }
+/* ---- IZBEGAVANJE (5.10.2026, Boskova voznja Beograd-Bukulja: "aplikacija mora da ne vodi na puteve koji se rade") ----
+   Ruta se pravi dvaput SAMO kad prva prolazi kroz nesto sto se ne vozi: zatvaranje/obustava iz zvanicnog izvora, zapis koji kaze
+   da je kolovoz skinut (makadam, frezovanje), ili prijava "radovi" od vozaca (tvoja ili zajednice - GPS tacna). Za zvanicni zapis
+   trazi se ISTI broj puta na ruti i odstojanje do tacnosti tacke (RS: 3,5 km jer je tacka pretvorena sa slike mape); tada se
+   na rutu, na delu sa tim brojem, stavi zabranjena zona ~150 m i ruter trazi obilazak. Obicni radovi (suzena traka, naizmenicno
+   propustanje) se NE izbegavaju - prikazuju se u Stanju puteva: inace bi jedna zatvorena traka na autoputu bacila vozaca na
+   obilazak od sat vremena. Sta NE moze: gradske ulice i lokalni putevi koje niko nije prijavio (opstina ih objavi na Instagramu)
+   ne postoje ni u jednom izvoru - za njih je prijava "radovi" u aplikaciji jedini put. */
+const RAD_NEPROHODNO = /makadam|frezovan|skinut[a-zščćžđ]*\s+(?:sloj\s+)?asfalt|bez\s+asfalta|zatvoren[a-zščćžđ]*\s+za\s+(?:sav|sve)/i;
+function _radBlokira(it) {
+  const tip = String(it && it.type || ""), nas = String(it && it.title || "");
+  if (/closure|zatvar|obustav|zapora/i.test(tip) || /^\s*(obustava|zatvaranje|zapora)/i.test(nas)) return true;
+  return RAD_NEPROHODNO.test(nas + " " + String(it && it.detail || ""));
+}
+function _kutija(la, lo, e) { const f = e / Math.max(0.2, Math.cos(la * Math.PI / 180)); return [[lo - f, la - e], [lo + f, la - e], [lo + f, la + e], [lo - f, la + e], [lo - f, la - e]]; }
+function _naRefuIndeks(route, ref, la, lo) {   // najbliza tacka rute NA DELU koji nosi taj broj puta (rezerva: najbliza uopste)
+  const tok = ref[0] === "#" ? ref.slice(1) : ref.toUpperCase();
+  const C = route.coords || [];
+  const nosi = (m) => [...(m.street_names || []), ...(m.begin_street_names || [])].some((s) => { const v = String(s || "").toUpperCase().replace(/[\s-]/g, ""); return v === tok || (ref[0] === "#" && /^[1-5]$/.test(tok) && v === "A" + tok); });
+  const opsezi = (route.maneuvers || []).filter(nosi).map((m) => [m.begin_shape_index | 0, Math.min(C.length - 1, m.end_shape_index | 0)]);
+  let bi = -1, bd = Infinity;
+  const probaj = (i) => { const c = C[i]; if (!c) return; const d = haversine(la, lo, c[1], c[0]); if (d < bd) { bd = d; bi = i; } };
+  for (const [a, b] of opsezi) for (let i = a; i <= b; i++) probaj(i);
+  if (bi < 0) for (let i = 0; i < C.length; i++) probaj(i);
+  return bi;
+}
+/* 5.10. (proba na zivom ruteru): zona od 150 m oko JEDNE tacke ruter zaobidje sporednom ulicom i vrati se na zatvoreni put
+   (Lazarevac-Darosava: Trbusnicki put - Liparska - nazad na 27, tacno u Kruseвici). Zato se blokira DEONICA: uska traka (~45 m)
+   duz same rute, `polaKm` u oba smera od tacke, samo na delu koji nosi taj broj puta (ili istu ulicu za prijavu). Ruter iskljucuje
+   svaku ivicu koja preseca traku, pa je unutrasnjost nedostupna. Javni Valhalla dozvoljava najvise 10 km ukupnog obima zona. */
+function _indeksiNaMan(route, nosi) {   // niz bool: koja tacka rute pripada manevru koji zadovoljava `nosi`
+  const C = route.coords || [], ok = new Array(C.length).fill(false);
+  for (const m of (route.maneuvers || [])) if (nosi(m)) for (let i = m.begin_shape_index | 0; i <= Math.min(C.length - 1, m.end_shape_index | 0); i++) ok[i] = true;
+  return ok;
+}
+function _koridor(route, idx, polaKm, ok) {
+  const C = route.coords || [], D = route.cumDist || [];
+  if (!C[idx]) return null;
+  if (!D.length) return _kutija(C[idx][1], C[idx][0], 0.0013);
+  const d0 = D[idx]; let a = idx, b = idx;
+  while (a > 0 && d0 - D[a - 1] <= polaKm * 1000 && (!ok || ok[a - 1])) a--;
+  while (b < C.length - 1 && D[b + 1] - d0 <= polaKm * 1000 && (!ok || ok[b + 1])) b++;
+  const pts = []; let posl = -1e9;
+  for (let i = a; i <= b; i++) if (D[i] - posl >= 90 || i === b) { pts.push(C[i]); posl = D[i]; }
+  if (pts.length < 2) return _kutija(C[idx][1], C[idx][0], 0.0013);
+  const w = 0.0004, L = [], R = [];
+  for (let i = 0; i < pts.length; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[Math.min(pts.length - 1, i + 1)], k = Math.cos(pts[i][1] * Math.PI / 180);
+    let dx = (p1[0] - p0[0]) * k, dy = p1[1] - p0[1]; const n = Math.hypot(dx, dy) || 1; dx /= n; dy /= n;
+    L.push([pts[i][0] - dy * w / k, pts[i][1] + dx * w]); R.push([pts[i][0] + dy * w / k, pts[i][1] - dx * w]);
+  }
+  // krajevi trake se produze ~60 m da presecaju put i na ulazu i na izlazu
+  return [...L, ...R.reverse(), L[0]];
+}
+function _obimKm(poly) { let s = 0; for (let i = 1; i < poly.length; i++) s += haversine(poly[i - 1][1], poly[i - 1][0], poly[i][1], poly[i][0]); return s; }
+function _uPoligonu(la, lo, poly) { let u = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1]; if (((yi > la) !== (yj > la)) && (lo < (xj - xi) * (la - yi) / ((yj - yi) || 1e-12) + xi)) u = !u; } return u; }
+/* posle drugog kruga: da li neka ruta JOS prolazi kroz prepreku - zvanicno: deo sa istim brojem puta do tacnosti tacke;
+   prijava: tacka rute do 60 m od prijave. Tada se ne tvrdi "zaobilazi" nego "obilazak nije siguran". */
+function _jesteProsla(p, routes) {
+  return routes.some((r) => {
+    const C = r.coords || [];
+    if (p.vrsta === "prijava") return C.some((c) => Math.abs(c[1] - p.la) < 0.002 && haversine(p.la, p.lo, c[1], c[0]) <= 0.06);
+    const ok = _indeksiNaMan(r, (m) => _manNosi(m, p.ref));
+    for (let i = 0; i < C.length; i++) if (ok[i] && haversine(p.la, p.lo, C[i][1], C[i][0]) <= p.tacnost) return true;
+    return false;
+  });
+}
+function _manNosi(m, ref) {
+  const tok = ref[0] === "#" ? ref.slice(1) : ref.toUpperCase();
+  return [...(m.street_names || []), ...(m.begin_street_names || [])].some((s) => { const v = String(s || "").toUpperCase().replace(/[\s-]/g, ""); return v === tok || (ref[0] === "#" && /^[1-5]$/.test(tok) && v === "A" + tok); });
+}
+async function preprekeNaRutama(routes) {
+  const out = [], vidjeno = new Set();
+  if (!Array.isArray(routes) || !routes.length || routes._engine === "osrm") return out;
+  const sad = Date.now();
+  let rs = null; try { rs = await loadRoadStatus(); } catch (e) {}
+  const kand = [];
+  for (const [cc, c] of Object.entries((rs && rs.countries) || {}))
+    for (const it of ((c && c.items) || [])) {
+      if (!it || !(it.lat != null && it.lon != null)) continue;
+      if (!_radRelevantan(it, sad) || !_radBlokira(it)) continue;
+      kand.push({ it, izvor: (c && (c.source || c.name)) || cc });
+    }
+  for (const r of routes) {
+    const refs = _refoviRute(r);
+    for (const k of kand) {
+      const ref = _tekstNosiRef((k.it.title || "") + " " + (k.it.detail || ""), refs); if (!ref) continue;
+      const d = _radKmOdRute(k.it, r), lim = (+k.it.tacnost_km || 0.5) + 0.5;
+      if (d == null || d > lim) continue;
+      const i = _naRefuIndeks(r, ref, +k.it.lat, +k.it.lon), c = r.coords[i]; if (!c) continue;
+      const kl = ref + "@" + (+k.it.lat).toFixed(3) + "," + (+k.it.lon).toFixed(3); if (vidjeno.has(kl)) continue; vidjeno.add(kl);
+      const ime = String(k.it.title || "").replace(/^\s*\d{1,2}\.\s*\d{1,2}\.\s*\d{4}\.?\s*/, "").trim().slice(0, 120);
+      const tac = +k.it.tacnost_km || 0.5;
+      out.push({ ime, izvor: k.izvor, vrsta: "zvanicno", ref, la: +k.it.lat, lo: +k.it.lon, tacnost: tac + 0.3, r, idx: i, polaKm: tac + 0.3, ok: _indeksiNaMan(r, (m) => _manNosi(m, ref)) });
+    }
+  }
+  // prijave "radovi" (GPS tacne): tvoje lokalne + zajednice sa servera, do 80 m od neke rute
+  const tacke = [];
+  try { for (const h of (typeof getHazards === "function" ? getHazards() : [])) if (h && h.type === "radovi" && Array.isArray(h.v) && (typeof prijavaZiva !== "function" || prijavaZiva(h))) tacke.push([+h.v[1], +h.v[0]]); } catch (e) {}
+  try {
+    let a = 90, b = -90, c0 = 180, d0 = -180;
+    for (const r of routes) for (const q of r.coords) { if (q[1] < a) a = q[1]; if (q[1] > b) b = q[1]; if (q[0] < c0) c0 = q[0]; if (q[0] > d0) d0 = q[0]; }
+    /* rok 2,5 s: upit ide uz SVAKI plan, a na slabom signalu ne sme da drzi "Racunam rute" - bez odgovora plan ide bez prijava zajednice */
+    const red = await Promise.race([supa(`prijave_javno?select=lat,lon,tip,istice_at&tip=eq.radovi&lat=gte.${(a - 0.01).toFixed(4)}&lat=lte.${(b + 0.01).toFixed(4)}&lon=gte.${(c0 - 0.01).toFixed(4)}&lon=lte.${(d0 + 0.01).toFixed(4)}&limit=100`),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("rok")), 2500))]);
+    for (const p of (red || [])) if (!(p.istice_at && new Date(p.istice_at).getTime() <= sad)) tacke.push([+p.lat, +p.lon]);
+  } catch (e) {}
+  for (const [la, lo] of tacke) {
+    if (!isFinite(la) || !isFinite(lo)) continue;
+    const kl = "p@" + lo.toFixed(4) + "," + la.toFixed(4); if (vidjeno.has(kl)) continue;
+    for (const r of routes) {
+      const C = r.coords || []; let bi = -1, bd = 1e9;
+      for (let i = 0; i < C.length; i++) { if (Math.abs(C[i][1] - la) > 0.01) continue; const d = haversine(la, lo, C[i][1], C[i][0]); if (d < bd) { bd = d; bi = i; } }
+      if (bi < 0 || bd > 0.08) continue;
+      vidjeno.add(kl);
+      // prijava kaze "ovde", a ne koliko se radovi protezu: blokira se ista ulica (manevar te tacke) do 1,5 km u oba smera
+      const man = (r.maneuvers || []).find((m) => bi >= (m.begin_shape_index | 0) && bi <= (m.end_shape_index | 0));
+      const ulica = man ? [...(man.street_names || [])].join("|") : "";
+      const ok = _indeksiNaMan(r, (m) => m === man || (ulica && [...(m.street_names || [])].join("|") === ulica));
+      out.push({ ime: T("plan.prijavaRadovi"), izvor: "RouteMeRight", vrsta: "prijava", la, lo, r, idx: bi, polaKm: 1.5, ok });
+      break;
+    }
+  }
+  /* zone: traka duz rute; javni Valhalla prima najvise 10 km ukupnog obima - kad ne staje, sve trake se srazmerno skrate */
+  const lista = out.slice(0, 6);
+  let polys = lista.map((p) => _koridor(p.r, p.idx, p.polaKm, p.ok));
+  const obim = polys.reduce((s, q) => s + (q ? _obimKm(q) : 0), 0);
+  if (obim > 9.2) { const k = 9.2 / obim; polys = lista.map((p) => _koridor(p.r, p.idx, Math.max(0.25, p.polaKm * k), p.ok)); }
+  return lista.map((p, i) => ({ ime: p.ime, izvor: p.izvor, vrsta: p.vrsta, ref: p.ref, la: p.la, lo: p.lo, tacnost: p.tacnost, poly: polys[i] })).filter((p) => p.poly);
 }
 function _radKmOdRute(it, route) {
   const R = (route && route.coords) || [];   // [lon, lat]
@@ -13377,7 +13534,9 @@ async function renderRoadStatus(route) {
       if (!ref) continue;
       if (!_radRelevantan(it, sad)) continue;   // kapije 1 i 2 kroz JEDAN sud koji deli sa planerom
       const dKm = _radKmOdRute(it, route);
-      if (dKm != null && dKm > RAD_BLIZU_KM) continue;   // dokazano daleko - ne prikazuj
+      /* 5.10.: priblizna tacka (RS, pretvorena sa slike mape) sme da kaze "na tvojoj ruti" samo do svoje tacnosti - isto merilo kao
+         izbegavanje. Sa pragom od 30 km obustava kod Kruseвice je pisala "na tvojoj ruti" za Beograd-Bukulja, a ruta put 27 dodiruje 20 km dalje. */
+      if (dKm != null && dKm > (it.tacnost_km != null ? +it.tacnost_km + 0.5 : RAD_BLIZU_KM)) continue;   // dokazano daleko - ne prikazuj
       if (dKm == null) { neznano.push({ ...it, cc, ref }); continue; }   // kapija 3: tiha linija na dnu
       naRuti.push({ ...it, cc, ime: c.name, ref, dKm, stale: c.ok === false, kad: c.fetched });
     }
@@ -13385,7 +13544,7 @@ async function renderRoadStatus(route) {
   naRuti.sort((a, b) => (ROAD_PRIO[a.type] ?? 9) - (ROAD_PRIO[b.type] ?? 9));   // sve je izmereno blizu - ostaje tezina dogadjaja
   const _dat = (x) => { try { const d = new Date(x); return isNaN(d.getTime()) ? "" : d.toLocaleDateString(LOKAL(), { day: "numeric", month: "numeric" }).replace(/\.\s*$/, ""); } catch (e) { return ""; } };
   for (const it of naRuti.slice(0, 6))
-    rows.push(T("rs.naTvojojRuti", { 0: rIco("roadworks", 14), 1: esc(it.ref) }) +
+    rows.push(T("rs.naTvojojRuti", { 0: rIco("roadworks", 14), 1: esc(_refPrikaz(it.ref)) }) +
       ` · ${esc(it.title)}` +
       (it.detail && it.detail !== it.title ? ` <span class="poi-dist">${esc(it.detail.slice(0, 140))}</span>` : "") +
       // zapis iz zemlje ciji izvor trenutno ne odgovara nosi etiketu u SVOM redu (nalaz 89a)
@@ -13413,7 +13572,7 @@ async function renderRoadStatus(route) {
   try { const z = document.getElementById("riOcenaZasto"); const r0 = state.routes && state.routes[state.selected]; if (z && r0 && meteoRedovi.length) { const sc0 = rideScore(r0); z.textContent = sc0.why + T("planer.meteoDodatak", { 0: meteoRedovi.length }); } } catch (e) {}
   /* Zapisi bez koordinate: JEDNA tiha linija na dnu umesto vise punih redova sa hedzom.
      Izvor zna samo oznaku ceste, pa iskreno pisemo da tacno mesto ne znamo. */
-  const nzRef = [...new Set(neznano.map((x) => x.ref))].slice(0, 3);
+  const nzRef = [...new Set(neznano.map((x) => _refPrikaz(x.ref)))].slice(0, 3);
   if (nzRef.length)
     rows.push(T("rs.jos", { 0: neznano.length, 1: TN(neznano.length, "pl.prijava"), 2: esc(nzRef.join(", ")) }));
   /* Zemlja sa ruti ciji izvor ne odgovara: jedan red koji razdvaja "nema nicega" od "ne znamo".
@@ -18061,8 +18220,29 @@ async function plan() {
 
     setStatus(T("plan.racunamRute"));
     logState({ phase: "route" });
-    const _rts = await fetchRoutes(from, to);
+    state._izbegniPoly = [];   // nov plan krece bez zona; one iz prethodnog plana su vazile i za skretanje u voznji
+    let _rts = await fetchRoutes(from, to);
     if (_pseq !== state.planSeq) return;   // R13v2: prvo provera, PA commit (stari fetch ne sme da pregazi nove rute)
+    try {   // 5.10.: prolazi li neka varijanta kroz zatvaranje / neprohodne radove / prijavu "radovi"? Tada JOS JEDAN krug sa zonama.
+      const prep = await preprekeNaRutama(_rts);
+      if (_pseq !== state.planSeq) return;
+      if (prep.length) {
+        setStatus(T("plan.zaobilazim"));
+        state._izbegniPoly = prep.map((p) => p.poly);
+        await new Promise((rs) => setTimeout(rs, 700));   // predah: druga salva odmah posle prve ume da udari u FOSSGIS limit
+        let r2 = null; try { r2 = await fetchRoutes(from, to); } catch (e) {}
+        if (_pseq !== state.planSeq) return;
+        if (r2 && r2.length && r2._engine === "valhalla") {
+          _rts = r2;
+          /* planWarn pise textContent - bez esc. "Zaobilazi" se kaze SAMO kad nijedna nova ruta vise ne ide tim putem kod prepreke. */
+          for (const p of prep) state.upoz.push(T(_jesteProsla(p, r2) ? "plan.obilazakNijeSiguran" : "plan.zaobidjeno", { 0: p.ime, 1: p.izvor }));
+        } else {
+          state._izbegniPoly = [];   // ruter nije odgovorio (ili je pao na OSRM rezervu bez zona) - ne znamo da li obilazak postoji
+          for (const p of prep) state.upoz.push(T("plan.obilazakNijeIzracunat", { 0: p.ime, 1: p.izvor }));
+        }
+        try { navLog("zaobilazak", { n: prep.length, ok: !!(r2 && r2.length) }); } catch (e) {}
+      }
+    } catch (e) {}
     try { if (typeof zajModeOff === "function") zajModeOff("mapa"); } catch (e) {}   // planiranje gasi rezim zajednice
     try { if (typeof atlasZatvori === "function") atlasZatvori("mapa"); } catch (e) {}   // C3: i Atlas - inace se seg/alts crtaju dok su prisilno sakriveni (nevidljiva ruta)
     state.routes = _rts;
@@ -18736,8 +18916,13 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.198";
+const APP_VERSION = "0.9.199";
 const CHANGELOG = [
+  { v: "0.9.199", d: "05.10.2026.", stavke: [
+    "<b>Ruta zaobilazi zatvorene puteve i raskopane deonice.</b> Tvoja vožnja Beograd - Bukulja 4.10.: aplikacija nije znala ni za jedan rad na putu kojim si išao, jer srpski zapisi nikad nisu stizali do rute - Putevi Srbije šalju tačku na slici svoje mape (ne koordinatu) i broj puta kao \"I B reda broj 27\", a ruter piše samo \"27\". Sada se tačka pretvara u koordinatu (kad zapis imenuje mesto, uzima se to mesto), broj puta se spaja, i kad neka varijanta prolazi kroz obustavu ili deonicu bez asfalta (makadam, frezovanje), blokira se deo tog puta i ruta se pravi ponovo. U Upozorenjima piše šta je zaobiđeno - a ako nova ruta i dalje ide tim putem kod zatvaranja, piše \"obilazak nije siguran\", ne \"zaobilazi\". Probano na pravom ruteru: Lazarevac - Darosava više ne ide putem 27 kroz Kruševicu.",
+    "<b>Tvoja prijava \"radovi\" menja rutu.</b> Prijava radova (tvoja ili drugih vozača) do 80 m od rute blokira tu ulicu 1,5 km u oba smera. Probano na tvojoj relaciji: prijava na putu 151 (Ranilović - Aranđelovac) skida rutu sa tog puta. To je jedini put za gradske ulice i lokalne puteve: radovi Ranilović - Aranđelovac su objavljeni samo na Instagramu opštine i nisu ni u jednom izvoru koji aplikacija čita.",
+    "<b>Obični radovi se prikazuju, ne izbegavaju.</b> Sužena traka i naizmenično propuštanje ostaju u Stanju puteva sa brojem puta - inače bi jedna zatvorena traka na autoputu bacila vožnju na obilazak od sat vremena."
+  ] },
   { v: "0.9.198", d: "05.10.2026.", stavke: [
     "<b>Izabrana ruta staje cela u deo ekrana gde se vidi mapa.</b> Tvoja slika 09:52: videlo se samo parče rute. Okvir je računat sa malim razmakom od vrha i dna, a preko mape stoje kartica Od/Do, stub dugmadi i traka sa Kreni. Sada se razmak meri iz stvarnog rasporeda, okvir obuhvata sve varijante (kao Google), i ponovi se kad se traka slegne - osim ako si već pomerio mapu. Na malom telefonu (iPhone SE) dugme Sačuvano se skloni ako stub ne staje iznad trake; Slojevi i Moja lokacija se ne sklanjaju nikad.",
     "<b>X na otvorenom pregledu je ispod sata.</b> Bio je sakriven gore desno pod satom i baterijom, jer list od 0.9.195 ide do samog vrha.",
