@@ -2286,6 +2286,12 @@ body.kplan #bottomnav, body.mcilj #bottomnav { display: none; }
   #plannerClose { display: flex; position: absolute; top: 12px; right: 12px; z-index: 6; width: 34px; height: 34px; border-radius: 50%; background: none; border: 1px solid var(--danger-400); color: var(--danger-400); font-size: 16px; align-items: center; justify-content: center; cursor: pointer; }
   body.searching #searchOverlay { display: flex; flex-direction: column; position: fixed; left: 24px; top: 24px; width: 400px; max-height: calc(100vh - 48px); z-index: 50; background: var(--bg-veil); border: 1px solid var(--line-strong); border-radius: 20px; box-shadow: 0 16px 48px rgba(0,0,0,.5); overflow: hidden; }
   #searchOverlay .shead { display: flex; align-items: center; gap: 10px; padding: 12px 16px 6px; }
+  /* 10.10.: Google polje (UI Kit) na mestu naseg; njegov ekran sa listom je Google-ov i ne prefarbava se */
+  #searchOverlay #gPolje { flex: 1; min-width: 0; border: 1px solid var(--line-strong); border-radius: var(--r-lg); overflow: hidden; }   /* okvir kao nase polje - inace je na tamnoj podlozi prazan crn pravougaonik */
+  #gpUcitava { margin: 6px 0 10px; }
+  #gpUcitava .gp-tekst { font-size: 13px; color: var(--fg-muted); margin: 0 2px 6px; }
+  #gpCilj { margin: 6px 0 12px; }
+  #gpCilj gmp-place-details-compact, #gpUcitava gmp-place-details-compact { display: block; width: 100%; }
   #searchOverlay .sback { width: 40px; height: 40px; border-radius: 50%; background: none; border: 1px solid var(--line-strong); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   #searchOverlay .sback svg { width: 18px; height: 18px; stroke: var(--fg); fill: none; }
   #searchOverlay #sInput { flex: 1; height: 48px; padding: 0 14px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line-strong); color: var(--fg-strong); font-size: 16px; outline: none; }
@@ -4355,6 +4361,7 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
       <input id="sInput" placeholder="Kuda ćeš danas?" autocomplete="off" enterkeyhint="search" data-i18n-ph="planer.ph.sInput">
     </div>
     <div class="sbody" id="sBody">
+      <div id="gpUcitava" hidden></div>   <!-- 10.10.: Google kartica izabranog mesta dok se ucitava (mora biti vidljiva da bi dala lokaciju) -->
       <div class="sfrom" id="sFrom"><span data-i18n="planer.odVelika">OD</span> <b id="sFromName" data-i18n="planer.sFromName">Moja lokacija</b></div>
       <div class="srow" role="button" tabindex="0" data-srow="myloc" id="sMyLoc"><span class="sic"><svg viewBox="0 0 24 24" stroke-width="2" style="width:19px;height:19px;stroke:#cfccc9;fill:none"><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="2.5" fill="#cfccc9" stroke="none"/></svg></span><div class="st"><b data-i18n="planer.mojaLokacija">Moja lokacija</b><span data-i18n="planer.koristiGpsPoziciju">koristi GPS poziciju</span></div></div>
       <!-- 0.9.91 (Boskov nalog 25.8., Google obrazac "odakle ideš"): tvoja lokacija, pa izbor na
@@ -6784,6 +6791,8 @@ const RECNIK_SR = {
   "ja.plusOveNedelje": " (+{0} ove nedelje)",
   "ja.voznjeSaNavigacijom": "Vožnje sa navigacijom",
   "tag.najbrza": "najbrža",
+  "gp.trazimMesto": "Tražim mesto…",
+  "gp.nijeOdgovorio": "Google pretraga trenutno ne odgovara - koristim našu.",
   "geo.odrediste": "odredište",
   "verzija.vozis": "Voziš v{0}",
   "verzija.uzivoJe": "uživo je v{0}",
@@ -8808,6 +8817,8 @@ const RECNIK_EN = {
   "ja.plusOveNedelje": " (+{0} this week)",
   "ja.voznjeSaNavigacijom": "Rides with navigation",
   "tag.najbrza": "fastest",
+  "gp.trazimMesto": "Finding the place…",
+  "gp.nijeOdgovorio": "Google search is not responding right now - using ours.",
   "geo.odrediste": "destination",
   "verzija.vozis": "You are on v{0}",
   "verzija.uzivoJe": "live is v{0}",
@@ -18083,7 +18094,8 @@ async function selectRoute(departure) {
     const _tn = (state.geocode.to.name || "").trim();
     if (_imeSmisleno(_tn) && !/^moja lokacija$/i.test(_tn))   // "10"/"10a" i slicni geocode-ostaci ne idu u istoriju - ISTI kriterijum kao DO polje (0.9.82 review); 3.10.: ni "Moja lokacija" kao cilj (zamena smera)
       rec.unshift({ from: state.geocode.from.name, to: _tn, ts: Date.now(),
-        fp: [state.geocode.from.lat, state.geocode.from.lon], tp: [state.geocode.to.lat, state.geocode.to.lon] });   // koordinate: replay ne zavisi od geokodera ni od imena
+        fp: [state.geocode.from.lat, state.geocode.from.lon], tp: [state.geocode.to.lat, state.geocode.to.lon],
+        ...(state.geocode.to.izvor === "google" ? { g: 1 } : {}), ...(state.geocode.from.izvor === "google" ? { g: 1, gOd: 1 } : {}) });   // koordinate: replay ne zavisi od geokodera ni od imena; g = Google tacka, vazi 30 dana (nedavnoProcisti)
     // dedupe po DESTINACIJI (13.8.): "Jadrija iz Beograda" i "Jadrija iz Zvornika" su ista stavka - Jadrija
     localStorage.setItem("rmr2_recent", JSON.stringify(rec.filter((x, i, a) => a.findIndex((y) => y.to === x.to) === i).slice(0, 10)));
     if (typeof updateQuickLabels === "function") updateQuickLabels();
@@ -18152,7 +18164,7 @@ async function plan() {
     // a i ne pucamo salvu paralelnih upita na Nominatim (policy 1/s)
     const from = gpsF ? { lat: gpsF.lat, lon: gpsF.lon, name: gpsF.name } : await geocode(fromQ);
     state.geocode = { ...(state.geocode || {}), from };   // odmah - geoRef() ga vidi za "to" upit
-    const to = toOverride ? toOverride : searchT ? { lat: searchT.lat, lon: searchT.lon, name: searchT.name }
+    const to = toOverride ? toOverride : searchT ? { lat: searchT.lat, lon: searchT.lon, name: searchT.name, izvor: searchT.izvor || null, pid: searchT.pid || null }
              : homeT ? { lat: homeT.lat, lon: homeT.lon, name: homeT.name } : await geocode(toQ);
     if (_pseq !== state.planSeq) return;   // R13: u medjuvremenu je krenuo noviji plan
     state.geocode = { from, to };
@@ -18916,8 +18928,13 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.199";
+const APP_VERSION = "0.9.200";
 const CHANGELOG = [
+  { v: "0.9.200", d: "10.10.2026.", stavke: [
+    "<b>Pretraga lokala, adresa i mesta preko Google Maps-a</b> (tvoj izbor A + b). U polju \"Kuda\" kucaš u Google-ovu pretragu - lokali, ulice sa brojem, sela; naši redovi (mapa, Kuća, Nedavno, Blizu tebe, ture) ostaju ispod polja. Izbor mesta odmah crta rutu, a u pregledu rute stoji Google-ova kartica cilja (slika, ime, Google Maps). Na probi: \"Rudnik\" i \"Рудник\" vode u naš Rudnik kod Gornjeg Milanovca (naša pretraga je nudila sela u Poljskoj), Knez Mihailova 30 na tačan broj.",
+    "<b>Google-ovo ime mesta se ne čuva.</b> Takav je Google-ov uslov: u kartici Od/Do, Nedavno, dnevniku i sačuvanim rutama stoji naziv iz OpenStreetMap-a, a Google-ova tačka se pamti najviše 30 dana.",
+    "<b>Kad Google ne odgovori</b> (nema signala, potrošena dnevna kvota), vraća se naša pretraga sama od sebe. Kategorije (\"pumpa\", \"kafana\") Google ne razume - za to su dugmad Pumpe i Hrana na mapi."
+  ] },
   { v: "0.9.199", d: "05.10.2026.", stavke: [
     "<b>Ruta zaobilazi zatvorene puteve i raskopane deonice.</b> Tvoja vožnja Beograd - Bukulja 4.10.: aplikacija nije znala ni za jedan rad na putu kojim si išao, jer srpski zapisi nikad nisu stizali do rute - Putevi Srbije šalju tačku na slici svoje mape (ne koordinatu) i broj puta kao \"I B reda broj 27\", a ruter piše samo \"27\". Sada se tačka pretvara u koordinatu (kad zapis imenuje mesto, uzima se to mesto), broj puta se spaja, i kad neka varijanta prolazi kroz obustavu ili deonicu bez asfalta (makadam, frezovanje), blokira se deo tog puta i ruta se pravi ponovo. U Upozorenjima piše šta je zaobiđeno - a ako nova ruta i dalje ide tim putem kod zatvaranja, piše \"obilazak nije siguran\", ne \"zaobilazi\". Probano na pravom ruteru: Lazarevac - Darosava više ne ide putem 27 kroz Kruševicu.",
     "<b>Tvoja prijava \"radovi\" menja rutu.</b> Prijava radova (tvoja ili drugih vozača) do 80 m od rute blokira tu ulicu 1,5 km u oba smera. Probano na tvojoj relaciji: prijava na putu 151 (Ranilović - Aranđelovac) skida rutu sa tog puta. To je jedini put za gradske ulice i lokalne puteve: radovi Ranilović - Aranđelovac su objavljeni samo na Instagramu opštine i nisu ni u jednom izvoru koji aplikacija čita.",
@@ -20648,8 +20665,11 @@ function openSearch(mode) {   // mode: 'to' (default), 'from' ili 'via' (1.10.: 
   i.placeholder = SEARCH_MODE === "from" ? T("q.polazakOdakle") : SEARCH_MODE === "via" ? T("kp.dodajTackuPh") : T("planer.kudaCesDanas");
   try { sBlizuRender(); } catch (e) {}
   updateSearchStatic();
+  try { nedavnoProcisti(); } catch (e) {}   // 10.10.: Google koordinate starije od 30 dana napolje pre nego sto se Nedavno nacrta
+  if (!gpAktivan()) i.style.display = "";   // 10.10. (proba): Google ugasen ili pao posle ranijeg otvaranja - nase polje MORA da se vrati
   i.value = ""; renderSugg("");
-  setTimeout(() => i.focus(), 120);
+  setTimeout(() => { if (!gpAktivan()) i.focus(); }, 120);
+  try { gpPokazi(); } catch (e) {}   // 10.10.: Google polje (ako je ukljuceno i dostupno) dolazi na mesto naseg; nasi redovi ostaju
 }
 let SEARCH_MODE = "to";
 /* ---- Kratak Google link u pretrazi (7.9.2026) --------------------------------------------
@@ -20690,6 +20710,135 @@ async function razresiIPokazi(link) {
 function closeSearch(zadrziAtlas) {
   if (!zadrziAtlas) atlasNameraGasi();
   document.body.classList.remove("searching");
+}
+/* ---- GOOGLE PRETRAGA (10.10.2026, Boskov izbor A + b: Google polje gore, nasi redovi ispod; izbor odmah crta rutu) ----
+   Google Places UI Kit: BasicPlaceAutocompleteElement (polje + sopstveni ekran sa listom) i Place Details Compact
+   (kartica mesta: daje LOKACIJU i nosi obaveznu atribuciju "Google Maps"). Uslovi (procitano 10.10.2026 na Google-ovim stranama):
+   - UI Kit sme uz ne-Google mapu (Service Specific Terms 15.1); koordinate iz UI Kit-a smeju u kes najvise 30 dana;
+   - Google-ovo ime mesta se ne cuva van sesije (content scraping) - kartica nam ime ni ne daje, pa SVUDA (Od/Do, naslov,
+     Nedavno, dnevnik, sacuvane rute, sastanak) stoji NASE ime iz OSM-a (gpNasaImena); Google-ovo zivi samo u Google kartici;
+   - kartica se ucitava SAMO kad je vidljiva (izmereno: sakrivena nikad ne puca gmp-load), pa se pri izboru pokaze u ekranu
+     pretrage, a posle rute ponovo u pregledu (dva upita; UI Kit Query: 10.000 mesecno besplatno, pa 1 USD na 1.000).
+   Google skripta se ucitava TEK kad se otvori pretraga (podaci, baterija, IP ne ide Google-u bez potrebe). Bez kljuca, bez
+   signala, kad skripta padne ili potrosi dnevnu kvotu demo kljuca - vraca se nase polje, bez mrtve tacke. Prekidac: data/google.json. */
+const GP = { cfg: undefined, stanje: "nije", el: null, skripta: null, javljeno: false };
+const GP_KOORD_DANA = 30;
+function gpAktivan() { return GP.stanje === "spreman" && !!GP.el && GP.el.isConnected; }
+async function gpPodesavanja() {
+  if (GP.cfg !== undefined) return GP.cfg;
+  try { GP.cfg = await fetchJSON("data/google.json?v=" + APP_VERSION, { timeoutMs: 4000, retries: 0 }); } catch (e) { GP.cfg = null; }
+  return GP.cfg;
+}
+function gpBootstrap(key) {   // Google-ov zvanicni ucitavac (importLibrary), skracen; jednom po sesiji
+  if (window.google && window.google.maps && window.google.maps.importLibrary) return;
+  ((g) => { let h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {});
+    const d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams();
+    const u = () => h || (h = new Promise(async (f, n) => { a = m.createElement("script"); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, (t) => "_" + t[0].toLowerCase()), g[k]);
+      e.set("callback", c + ".maps." + q); a.src = "https://maps." + c + "apis.com/maps/api/js?" + e; d[q] = f; a.onerror = () => (h = n(Error(p + " could not load."))); m.head.append(a); }));
+    d[l] ? 0 : (d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)));
+  })({ key, v: "weekly", language: (typeof jezikAktivan === "function" && jezikAktivan() === "en") ? "en" : "sr-Latn", region: "RS" });
+}
+async function gpPripremi() {
+  if (GP.stanje === "pao" || GP.stanje === "iskljuceno") return false;
+  if (GP.cfg && GP.cfg.ukljuceno !== true) { GP.stanje = "iskljuceno"; return false; }   // prekidac ugasen u toku sesije
+  if (GP.el) return GP.stanje === "spreman";
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return false;   // bez signala: nasa pretraga, Google se proba sledeci put
+  const cfg = await gpPodesavanja();
+  if (!cfg || cfg.ukljuceno !== true || !/^AIza[0-9A-Za-z_-]{35}$/.test(String(cfg.kljuc || ""))) { GP.stanje = "iskljuceno"; return false; }
+  try {
+    gpBootstrap(cfg.kljuc);
+    const lib = await Promise.race([google.maps.importLibrary("places"), new Promise((_, n) => setTimeout(() => n(new Error("rok 8 s")), 8000))]);
+    const el = new lib.BasicPlaceAutocompleteElement({});
+    el.id = "gPolje";
+    el.addEventListener("gmp-select", (ev) => { try { gpIzabrano(ev && ev.place && ev.place.id); } catch (e) {} });
+    el.addEventListener("gmp-error", () => gpPao("gmp-error"));   // potrosena kvota demo kljuca, odbijen kljuc
+    GP.el = el; GP.stanje = "spreman";
+    return true;
+  } catch (e) { gpPao(e && e.message); return false; }
+}
+function gpPao(zasto) {
+  GP.stanje = "pao";
+  try { navLog("google-pao", { zasto: String(zasto || "").slice(0, 80) }); } catch (e) {}
+  try { if (GP.el) GP.el.remove(); } catch (e) {}
+  const i = document.getElementById("sInput"); if (i) i.style.display = "";
+  const h = document.getElementById("gpUcitava"); if (h) { h.hidden = true; h.innerHTML = ""; }
+  if (!GP.javljeno && document.body.classList.contains("searching")) { GP.javljeno = true; try { shareToast(T("gp.nijeOdgovorio")); } catch (e) {} }
+}
+async function gpPokazi() {   // zove se iz openSearch: Google polje ide na mesto naseg, nasi redovi ostaju ispod
+  const i = document.getElementById("sInput");
+  if (!(await gpPripremi())) { if (i) i.style.display = ""; try { if (GP.el) GP.el.remove(); } catch (e) {} return; }
+  if (!document.body.classList.contains("searching")) return;
+  if (i && i.value.trim() && document.activeElement === i) return;   // vozac je vec poceo da kuca u nase polje - ne otimamo mu ga
+  const el = GP.el;
+  try {
+    const r = geoRef();
+    el.locationBias = r && r.lat != null ? { center: { lat: r.lat, lng: r.lon }, radius: 50000 } : null;
+  } catch (e) {}
+  el.style.colorScheme = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  if (i && el.parentNode !== i.parentNode) i.parentNode.insertBefore(el, i);
+  if (i) { i.style.display = "none"; try { i.blur(); } catch (e) {} }
+}
+function gpKartica(pid, domacin) {   // UI Kit kartica mesta (slika, ime, "Google Maps"); ucitava se samo kad je vidljiva
+  const d = document.createElement("gmp-place-details-compact");
+  d.setAttribute("orientation", "horizontal");
+  d.style.colorScheme = document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  const rq = document.createElement("gmp-place-details-place-request"); rq.setAttribute("place", pid);
+  d.append(rq, document.createElement("gmp-place-standard-content"));
+  if (domacin) domacin.appendChild(d);
+  return d;
+}
+function gpLokacija(kartica, rokMs) {
+  return new Promise((res) => {
+    const t = setTimeout(() => res(null), rokMs || 8000);
+    kartica.addEventListener("gmp-load", () => { clearTimeout(t); try { const l = kartica.place && kartica.place.location; res(l ? { lat: l.lat(), lon: l.lng() } : null); } catch (e) { res(null); } }, { once: true });
+    kartica.addEventListener("gmp-error", () => { clearTimeout(t); res(null); }, { once: true });
+  });
+}
+async function gpNasaImena(lat, lon) {   // NASE ime za Google-ov izbor (OSM): ime objekta kad ga OSM zna, inace mesto
+  try {
+    const j = await geoFetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&zoom=18&format=jsonv2&accept-language=sr-Latn,hr,en`, 6000);
+    const a = (j && j.address) || {};
+    const mesto = a.village || a.town || a.city || a.hamlet || a.municipality || "";
+    const objekat = j && j.name && ["amenity", "tourism", "shop", "leisure", "historic", "natural", "place"].includes(j.category) && imaSlovo(j.name) && !jeKucniBroj(j.name) ? j.name : "";
+    const ime = objekat && mesto && objekat !== mesto ? objekat + ", " + mesto : (objekat || mesto);
+    if (ime) return /[Ѐ-ӿ]/.test(ime) ? cyr2lat(ime) : ime;
+  } catch (e) {}
+  try { const r = await reverseName(lat, lon, 12, true); if (r) return r; } catch (e) {}
+  return T("geo.odrediste");
+}
+async function gpIzabrano(pid) {
+  if (!pid) return;
+  const host = document.getElementById("gpUcitava");
+  if (host) { host.innerHTML = '<div class="gp-tekst">' + esc(T("gp.trazimMesto")) + "</div>"; host.hidden = false; }
+  const k = gpKartica(pid, host);
+  const L = await gpLokacija(k, 8000);
+  if (!L) { gpPao("kartica bez lokacije"); return; }
+  const ime = await gpNasaImena(L.lat, L.lon);
+  if (host) { host.hidden = true; host.innerHTML = ""; }
+  pickDestination({ n: ime, lat: L.lat, lon: L.lon, izvor: "google", pid });
+}
+function gpCiljKartica() {   // pregled rute: Google kartica cilja ispod naslova, samo dok je cilj stvarno Google-ov izbor
+  const box = document.getElementById("rezInst"); if (!box) return;
+  const to = (state.geocode && state.geocode.to) || {};
+  let k = document.getElementById("gpCilj");
+  if (!(to.izvor === "google" && to.pid)) { if (k) k.remove(); return; }
+  if (k && k.dataset.pid === to.pid) return;
+  if (k) k.remove();
+  k = document.createElement("div"); k.id = "gpCilj"; k.dataset.pid = to.pid;
+  gpKartica(to.pid, k);
+  const glava = box.querySelector(".ri-glava");
+  box.insertBefore(k, glava ? glava.nextSibling : box.firstChild);
+}
+/* Google koordinate u Nedavno i u sacuvanim rutama smeju najvise GP_KOORD_DANA dana; posle toga ostaje NASE ime, a tacka se
+   trazi iznova kroz nasu pretragu (isto kao stari zapisi bez koordinata). */
+function gpKoordIstekle(x) { return !!(x && x.g && (Date.now() - (+x.ts || 0)) > GP_KOORD_DANA * 86400000); }
+function nedavnoProcisti() {
+  try {
+    const rec = JSON.parse(localStorage.getItem("rmr2_recent") || "[]");
+    let menjano = false;
+    for (const x of rec) if (gpKoordIstekle(x) && (x.tp || x.fp)) { delete x.tp; if (x.gOd) delete x.fp; menjano = true; }
+    if (menjano) localStorage.setItem("rmr2_recent", JSON.stringify(rec));
+  } catch (e) {}
 }
 const SCHIP_IKONE = {
   home: '<svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>',
@@ -21341,7 +21490,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
   state.vias = []; state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null; try { renderViaChips(); } catch (e) {}   // pendingAtlas prezivljava NAMERNO - plan() ga trosi posle geokodiranja (0.9.90)
   const imeDo = _imeOdredista(sel);   // 0.9.82: golo "10" nikad u DO polje/naslov/"cilj:"; kod kuce pise "Kuća"
   document.getElementById("to").value = imeDo;
-  if (sel.lat != null) state.searchTo = { name: imeDo, lat: sel.lat, lon: sel.lon };
+  if (sel.lat != null) state.searchTo = { name: imeDo, lat: sel.lat, lon: sel.lon, izvor: sel.izvor || null, pid: sel.pid || null };   // 10.10.: Google izbor nosi place ID (kartica u pregledu)
   // 7.8.: Google princip - prazan polazak ODMAH postaje "Moja lokacija" i plan krece SAD (plan() sam
   // ceka GPS uz vidljiv "Čekam GPS poziciju..." i citljivu gresku). Stari nemi 8s poll je bio bag:
   // dugi pritisak nikad ne pokrene prefill, pa je "Vodi me ovde" delovao mrtvo.
@@ -21466,7 +21615,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
       closeSearch(true);
       state.fromOverride = null; document.getElementById("from").value = "Moja lokacija"; gpsPrefill(true);
       document.getElementById("to").value = pk.to || "";
-      if (pk.toP) state.searchTo = { name: pk.to, lat: pk.toP[0], lon: pk.toP[1] };
+      if (pk.toP && !gpKoordIstekle(pk)) state.searchTo = { name: pk.to, lat: pk.toP[0], lon: pk.toP[1] };   // 10.10.: Google tacka starija od 30 dana se trazi iznova po nasem imenu
       state.vias = (pk.vias || []).map((v) => ({ ...v })); state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null;
       try { renderViaChips(); } catch (e2) {}
       try { if (typeof nasTabKlik === "function") nasTabKlik("planer"); } catch (e2) {} document.body.classList.add("planning"); if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e2) {} } try { if (typeof setSheet === "function") setSheet(true); } catch (e2) {} document.getElementById("planBtn").click();   // 4.10.: sacuvana ruta se racuna odmah
@@ -27112,6 +27261,7 @@ function rezInstCrtaj(route) {
   const g = state.geocode || {};
   const od = (g.from && g.from.name) || document.getElementById("from").value || "?", do_ = (g.to && g.to.name) || document.getElementById("to").value || "?";
   document.getElementById("riNaslov").textContent = od.split(",")[0] + " → " + do_.split(",")[0];
+  try { gpCiljKartica(); } catch (e) {}   // 10.10.: Google kartica cilja (slika, ime, "Google Maps") ispod naslova
   try { const pm = document.getElementById("peekMeta"); document.getElementById("riMeta").textContent = pm ? pm.textContent : ""; } catch (e) {}   // tekst iz stare trake (npr. "1 h 18 min duze od autoputa, ali vijugavo")
   document.getElementById("riKadTxt").textContent = rezKadTekst();
   const h = Math.floor(route.totalDur / 3600), mn = Math.round(route.totalDur % 3600 / 60);
@@ -27872,6 +28022,7 @@ async function offlineSave(route, departure) {
     verzija: APP_VERSION,
     from: (g.from && g.from.name) || "", to: (g.to && g.to.name) || "",
     fromP: g.from ? [g.from.lat, g.from.lon] : null, toP: g.to ? [g.to.lat, g.to.lon] : null,
+    ...((g.to && g.to.izvor === "google") || (g.from && g.from.izvor === "google") ? { g: 1 } : {}),   // 10.10.: Google tacka u paketu vazi 30 dana (gpKoordIstekle)
     departure: (departure || new Date()).toISOString(),
     wxTs: Date.now(),
     vias: (state.vias || []).map((v) => ({ ...v })),
