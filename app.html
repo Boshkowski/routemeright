@@ -18162,7 +18162,7 @@ async function plan() {
     const searchT = (state.searchTo && toQ === state.searchTo.name) ? state.searchTo : null;
     // SEKVENCIJALNO (6.8.): "to" koristi svez "from" kao geografski oslonac (viewbox/blizina),
     // a i ne pucamo salvu paralelnih upita na Nominatim (policy 1/s)
-    const from = gpsF ? { lat: gpsF.lat, lon: gpsF.lon, name: gpsF.name } : await geocode(fromQ);
+    const from = gpsF ? { lat: gpsF.lat, lon: gpsF.lon, name: gpsF.name, izvor: gpsF.izvor || null } : await geocode(fromQ);
     state.geocode = { ...(state.geocode || {}), from };   // odmah - geoRef() ga vidi za "to" upit
     const to = toOverride ? toOverride : searchT ? { lat: searchT.lat, lon: searchT.lon, name: searchT.name, izvor: searchT.izvor || null, pid: searchT.pid || null }
              : homeT ? { lat: homeT.lat, lon: homeT.lon, name: homeT.name } : await geocode(toQ);
@@ -18928,8 +18928,12 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.200";
+const APP_VERSION = "0.9.201";
 const CHANGELOG = [
+  { v: "0.9.201", d: "10.10.2026.", stavke: [
+    "<b>Podeljen Google Maps link opet radi kad je Google pretraga već učitana.</b> Link ide u naše polje i Google ga ne pokriva (u 0.9.200 je pri drugom otvaranju pretrage ostajao u sakrivenom polju).",
+    "<b>Google mesto izabrano kao polazak ili kao stanica</b> se pamti po istom pravilu kao cilj: naše ime, a Google-ova tačka u Nedavno i sačuvanim rutama najviše 30 dana."
+  ] },
   { v: "0.9.200", d: "10.10.2026.", stavke: [
     "<b>Pretraga lokala, adresa i mesta preko Google Maps-a</b> (tvoj izbor A + b). U polju \"Kuda\" kucaš u Google-ovu pretragu - lokali, ulice sa brojem, sela; naši redovi (mapa, Kuća, Nedavno, Blizu tebe, ture) ostaju ispod polja. Izbor mesta odmah crta rutu, a u pregledu rute stoji Google-ova kartica cilja (slika, ime, Google Maps). Na probi: \"Rudnik\" i \"Рудник\" vode u naš Rudnik kod Gornjeg Milanovca (naša pretraga je nudila sela u Poljskoj), Knez Mihailova 30 na tačan broj.",
     "<b>Google-ovo ime mesta se ne čuva.</b> Takav je Google-ov uslov: u kartici Od/Do, Nedavno, dnevniku i sačuvanim rutama stoji naziv iz OpenStreetMap-a, a Google-ova tačka se pamti najviše 30 dana.",
@@ -20683,6 +20687,7 @@ function otvoriPretraguSaLinkom(link) {
     const i = document.getElementById("sInput");
     if (!i) return;
     i.value = String(link || "");
+    i.style.display = ""; try { if (GP.el && GP.el.isConnected) GP.el.remove(); } catch (e) {}   // 10.10.: link ide u NASE polje - Google ne sme da ga pokrije
     renderSugg(i.value);
   } catch (e) {}
 }
@@ -20768,8 +20773,10 @@ async function gpPokazi() {   // zove se iz openSearch: Google polje ide na mest
   const i = document.getElementById("sInput");
   if (!(await gpPripremi())) { if (i) i.style.display = ""; try { if (GP.el) GP.el.remove(); } catch (e) {} return; }
   if (!document.body.classList.contains("searching")) return;
-  if (i && i.value.trim() && document.activeElement === i) return;   // vozac je vec poceo da kuca u nase polje - ne otimamo mu ga
   const el = GP.el;
+  /* nase polje vec nosi tekst (vozac je poceo da kuca, ili je stigao podeljen Google Maps link - otvoriPretraguSaLinkom): Google ga ne
+     pokriva, a ako je nase polje bilo sakriveno od proslog otvaranja, vraca se (proba 10.10.: link u skrivenom polju = nevidljiv red) */
+  if (i && i.value.trim()) { i.style.display = ""; try { if (el && el.isConnected) el.remove(); } catch (e) {} return; }
   try {
     const r = geoRef();
     el.locationBias = r && r.lat != null ? { center: { lat: r.lat, lng: r.lon }, radius: 50000 } : null;
@@ -21435,7 +21442,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
       if (!dodato) { shareToast(T("plan.deonicaNijeUsla", { 0: sel.n })); return; }
       imeVia = atlasNaslov(d.naziv);
     }
-    const nov = dodato || [{ t: "stop", v: [sel.lon, sel.lat], name: imeVia }];
+    const nov = dodato || [{ t: "stop", v: [sel.lon, sel.lat], name: imeVia, ...(sel.izvor === "google" ? { izvor: "google" } : {}) }];   // 10.10.: Google stanica (30 dana u sacuvanoj ruti)
     const plafon = (typeof ATLAS_LOK_MAX === "number" ? ATLAS_LOK_MAX : 8) + 2;   // javni Valhalla: najvise 10 lokacija
     if (2 + (state.vias || []).length + nov.length > plafon) { shareToast(T("planer.riPlafon", { 0: plafon })); return; }
     state.vias.push(...nov);
@@ -21474,7 +21481,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
        pa je isti loš geokod koji je pravio "→ 10" umeo da napiše "10 → Zlatibor". */
     const imeOd = _imeOdredista(sel);
     document.getElementById("from").value = imeOd;
-    if (sel.lat != null) state.fromOverride = { name: imeOd, lat: sel.lat, lon: sel.lon };
+    if (sel.lat != null) state.fromOverride = { name: imeOd, lat: sel.lat, lon: sel.lon, izvor: sel.izvor || null };   // 10.10.: Google polazak (30 dana u Nedavno)
     SEARCH_MODE = "to";
     if (document.getElementById("to").value.trim()) { try { if (KP.otvoren) kartaPutaZatvori(true); } catch (e) {} document.getElementById("planBtn").click(); }   // ako je cilj vec tu - odmah preracunaj (3.10.: i karta puta se uredno zatvori)
     return;
@@ -21616,7 +21623,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
       state.fromOverride = null; document.getElementById("from").value = "Moja lokacija"; gpsPrefill(true);
       document.getElementById("to").value = pk.to || "";
       if (pk.toP && !gpKoordIstekle(pk)) state.searchTo = { name: pk.to, lat: pk.toP[0], lon: pk.toP[1] };   // 10.10.: Google tacka starija od 30 dana se trazi iznova po nasem imenu
-      state.vias = (pk.vias || []).map((v) => ({ ...v })); state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null;
+      state.vias = (pk.vias || []).filter((v) => !(gpKoordIstekle(pk) && v && v.izvor === "google")).map((v) => ({ ...v })); state.famousApplied = null; state.atlasApplied = null; state.atlasCoords = null;   // 10.10.: istekla Google stanica ne ulazi
       try { renderViaChips(); } catch (e2) {}
       try { if (typeof nasTabKlik === "function") nasTabKlik("planer"); } catch (e2) {} document.body.classList.add("planning"); if (mqMobile.matches) { document.body.classList.add("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e2) {} } try { if (typeof setSheet === "function") setSheet(true); } catch (e2) {} document.getElementById("planBtn").click();   // 4.10.: sacuvana ruta se racuna odmah
       return;
@@ -28022,7 +28029,7 @@ async function offlineSave(route, departure) {
     verzija: APP_VERSION,
     from: (g.from && g.from.name) || "", to: (g.to && g.to.name) || "",
     fromP: g.from ? [g.from.lat, g.from.lon] : null, toP: g.to ? [g.to.lat, g.to.lon] : null,
-    ...((g.to && g.to.izvor === "google") || (g.from && g.from.izvor === "google") ? { g: 1 } : {}),   // 10.10.: Google tacka u paketu vazi 30 dana (gpKoordIstekle)
+    ...((g.to && g.to.izvor === "google") || (g.from && g.from.izvor === "google") || (state.vias || []).some((v) => v && v.izvor === "google") ? { g: 1 } : {}),   // 10.10.: Google tacka u paketu vazi 30 dana (gpKoordIstekle)
     departure: (departure || new Date()).toISOString(),
     wxTs: Date.now(),
     vias: (state.vias || []).map((v) => ({ ...v })),
