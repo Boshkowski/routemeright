@@ -40,15 +40,33 @@
 
 <div class="box dobro">
   <div class="kick">Ukratko</div>
-  <p style="margin:0 0 8px">Nema naloga, nema lozinke, nema reklama i nema alata za praćenje. <b>Tvoj GPS trag ostaje na tvom telefonu.</b> Ne prodajemo podatke.</p>
+  <p style="margin:0 0 8px">Nalog praviš svojim mejlom - bez lozinke, kod od 6 cifara stiže na mejl. Nema reklama i nema alata za praćenje. <b>Tvoj GPS trag ostaje na tvom telefonu</b> - na server ide samo ono što je potrebno za nalog, prijatelje i pregled tvojih vožnji (spisak je ispod). Ne prodajemo podatke.</p>
   <p style="margin:0">Puni tekst politike privatnosti, sa svakim servisom koji aplikacija koristi, objavljujemo uz izlazak aplikacije.</p>
 </div>
+
+<h2>Tvoj nalog i šta je na serveru</h2>
+<p>Server baze je <a href="https://supabase.com/privacy">Supabase</a>. Na njemu je:</p>
+<ul>
+  <li><b>mejl</b> kojim se prijavljuješ - vidiš ga samo ti (i mi); kod za prijavu šalje <a href="https://resend.com/legal/privacy-policy">Resend</a>;</li>
+  <li><b>ime, korisničko ime, motor i slika</b> - vide ih tvoji prijatelji, a ako je u tabu Ja uključeno "dozvoli da me nađu", i drugi vozači u pretrazi;</li>
+  <li><b>telefon</b>, ako ga upišeš (nije obavezan) - vidiš ga samo ti;</li>
+  <li><b>prijatelji</b> i <b>sastanci</b> ("Nađemo se tamo") - vide ih samo učesnici; sastanak ističe 6 sati posle dogovorenog vremena;</li>
+  <li><b>poslednja lokacija za prijatelje</b> - uključena je kad se sprijateljiš sa nekim; vidi je samo prihvaćeni prijatelj, i to samo poslednju tačku, ne tvoj put. Isključuješ je u tabu Ja;</li>
+  <li><b>sažetak vožnje</b> - naziv relacije, kilometri, vreme, brzine, nagib i poeni, <b>bez ijedne GPS tačke</b>; vidiš ga samo ti;</li>
+  <li><b>pristanak</b> na obaveštenja mejlom ili SMS-om, sa datumom - samo ako ga sam uključiš.</li>
+</ul>
+<p>Nalog i sve što je vezano za njega brišeš u tabu <b>Ja → Obriši nalog</b>; brisanje je odmah i trajno.</p>
+
+<h2>Pretraga mesta (Google Maps)</h2>
+<p>Kad u polju "Kuda" pretražuješ lokale, adrese i mesta, pretragu obavlja <b>Google Maps</b>. Google tada dobija ono što ukucaš, približnu oblast oko tebe (da bi bliža mesta bila prva) i tvoju IP adresu. Za taj deo aplikacije važe i <a href="https://maps.google.com/help/terms_maps/">Google Maps/Google Earth dodatni uslovi korišćenja</a> i <a href="https://policies.google.com/privacy">Google-ova politika privatnosti</a>.</p>
+<p>Ime mesta koje Google vrati ne čuvamo: u istoriju i dnevnik upisujemo naziv iz OpenStreetMap-a, a tačku mesta pamtimo najviše 30 dana. Kad Google pretraga ne radi, koristi se naša pretraga (OpenStreetMap).</p>
 
 <h2>Lista čekanja na sajtu</h2>
 <p>Ako ostaviš mejl da ti javimo kad aplikacija izađe, taj mejl (i model motora, ako ga sam upišeš) prima servis za obrasce <a href="https://formspree.io/legal/privacy-policy/">Formspree</a> i prosleđuje ga nama. Lista služi za <b>jednu poruku - da je aplikacija izašla</b> - i ni za šta drugo. Adresa se čuva dok tu poruku ne pošaljemo ili dok ne zatražiš brisanje na <a href="mailto:info@routemeright.app">info@routemeright.app</a>.</p>
 
 <h2>Kontakt</h2>
-<p>Za sva pitanja i zahteve u vezi sa podacima: <a href="mailto:info@routemeright.app">info@routemeright.app</a>.</p>
+<p>Za sva pitanja i zahteve u vezi sa podacima - uvid u ono što je vezano za tvoj nalog ili njegovo brisanje: <a href="mailto:info@routemeright.app">info@routemeright.app</a>. Nalog možeš da obrišeš i sam, u tabu Ja.</p>
+<p style="color:var(--fg-muted, #9c938a);font-size:14px">Izmenjeno 10.10.2026: dodati nalog, prijatelji, lokacija za prijatelje, sažeci vožnji na serveru i pretraga mesta preko Google Maps-a.</p>
 
 <footer>
   <p>RouteMeRight - vremenska prognoza za sat kad tuda prolaziš, i koliko će te tura koštati za tvoj motor.</p>

@@ -4821,7 +4821,7 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
       <div class="jset">
         <a class="jlink" href="privatnost.html" data-href-en="privatnost-en.html" target="_blank" rel="noopener" style="display:block;text-align:left" data-i18n="ja.politika">Politika privatnosti - šta ostaje na telefonu, a šta ne</a>
         <a class="jlink" href="privatnost.html#odricanje" data-href-en="privatnost-en.html" target="_blank" rel="noopener" style="display:block;text-align:left" data-i18n="ja.odricanje">Odricanje odgovornosti - ti voziš, ne aplikacija</a>
-        <div class="jnote" data-i18n="ja.privatnostNapomena">GPS trag vožnje i dnevnik ostaju na ovom telefonu i ne čuvaju se ni na jednom serveru. Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine dok voziš, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Koji su to servisi i šta vide, piše u politici privatnosti. Bez naloga, bez reklama, bez alata za praćenje.</div>
+        <div class="jnote" data-i18n="ja.privatnostNapomena">GPS trag vožnje ostaje na ovom telefonu i ne čuva se ni na jednom serveru. Na naš server idu nalog (mejl, ime, slika, motor), prijatelji, poslednja lokacija za prijatelje (dok je prekidač uključen) i sažetak vožnje bez traga. Pretragu mesta radi Google Maps. Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Sve je nabrojano u politici privatnosti. Bez reklama, bez alata za praćenje.</div>
       </div>
     </div>
     <div class="stub"><b data-i18n="ja.izvori">Izvori podataka</b>
@@ -4888,7 +4888,7 @@ const RECNIK_SR = {
   "ja.privatnost": "Privatnost i uslovi",
   "ja.politika": "Politika privatnosti - šta ostaje na telefonu, a šta ne",
   "ja.odricanje": "Odricanje odgovornosti - ti voziš, ne aplikacija",
-  "ja.privatnostNapomena": "GPS trag vožnje i dnevnik ostaju na ovom telefonu i ne čuvaju se ni na jednom serveru. Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine dok voziš, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Koji su to servisi i šta vide, piše u politici privatnosti. Bez naloga, bez reklama, bez alata za praćenje.",
+  "ja.privatnostNapomena": "GPS trag vožnje ostaje na ovom telefonu i ne čuva se ni na jednom serveru. Na naš server idu nalog (mejl, ime, slika, motor), prijatelji, poslednja lokacija za prijatelje (dok je prekidač uključen) i sažetak vožnje bez traga. Pretragu mesta radi Google Maps. Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Sve je nabrojano u politici privatnosti. Bez reklama, bez alata za praćenje.",
   "ja.izvori": "Izvori podataka",
   "ja.izvoriTekst": "Mape i putevi: OpenStreetMap saradnici, prikaz preko OpenFreeMap. Rutiranje: Valhalla moto profil. Prognoza: Open-Meteo i CHMI Aladin 2,3 km, based on data from MET Norway. Radar: RainViewer.<br><b>Stanje na putevima</b> (zatvaranja, radovi, gužve na granici): zvanični izvori po zemljama - HAK, Putevi Srbije, AMSS, promet.si, BIHAMK, AMSCG, plus Meteoalarm upozorenja državnih meteo zavoda.<br><b>Ocene kvaliteta puta</b> (kakav je asfalt): uneli motociklisti koji su tuda prošli, uz njihovu dozvolu. Hvala svima koji su podelili svoje iskustvo.",
   // ---- staticki HTML (body.html), obelezen alatom tools/i18n-oznaci.py ----
@@ -6942,7 +6942,7 @@ const RECNIK_EN = {
   "ja.privatnost": "Privacy and terms",
   "ja.politika": "Privacy policy - what stays on the phone and what does not",
   "ja.odricanje": "Disclaimer - you ride, not the app",
-  "ja.privatnostNapomena": "The GPS trace of your ride and the ride log stay on this phone and are not stored on any server. When the app needs to know something about the place you are at right now - the speed limit while riding, the forecast where you are, a place name for the log, a new route when you turn off - that question goes in passing to a public service, with a few points and without your name. Which services those are and what they see is in the privacy policy. No account, no ads, no tracking tools.",
+  "ja.privatnostNapomena": "The GPS trace of your ride stays on this phone and is not stored on any server. Our server holds your account (email, name, photo, motorcycle), friends, your last location for friends (while the switch is on) and a ride summary without the trace. Place search is done by Google Maps. When the app needs to know something about the place you are at right now - the speed limit, the forecast where you are, a place name for the log, a new route when you turn off - that question goes in passing to a public service, with a few points and without your name. Everything is listed in the privacy policy. No ads, no tracking tools.",
   "ja.izvori": "Data sources",
   "ja.izvoriTekst": "Maps and roads: OpenStreetMap contributors, rendered via OpenFreeMap. Routing: Valhalla motorcycle profile. Forecast: Open-Meteo and CHMI Aladin 2.3 km, based on data from MET Norway. Radar: RainViewer.<br><b>Road conditions</b> (closures, roadworks, border queues): official sources per country - HAK, Putevi Srbije, AMSS, promet.si, BIHAMK, AMSCG, plus Meteoalarm warnings from national weather services.<br><b>Road quality ratings</b> (what the asphalt is like): entered by motorcyclists who rode there, with their permission. Thanks to everyone who shared their experience.",
   // ---- static HTML (body.html), marked by tools/i18n-oznaci.py ----
@@ -18928,8 +18928,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.201";
+const APP_VERSION = "0.9.202";
 const CHANGELOG = [
+  { v: "0.9.202", d: "10.10.2026.", stavke: [
+    "<b>Politika privatnosti i uslovi korišćenja opisuju aplikaciju kakva jeste</b> (tvoje odobrenje 10.10.). Do sada su pisali \"nema naloga, nema lozinke\". Sada piše šta je na serveru i ko to vidi (nalog, prijatelji, lokacija za prijatelje, sažetak vožnje bez traga), kako se nalog briše, i da pretragu mesta radi Google Maps - uz Google-ove uslove i politiku privatnosti, kako Google traži. Isto i napomena o privatnosti u tabu Ja."
+  ] },
   { v: "0.9.201", d: "10.10.2026.", stavke: [
     "<b>Podeljen Google Maps link opet radi kad je Google pretraga već učitana.</b> Link ide u naše polje i Google ga ne pokriva (u 0.9.200 je pri drugom otvaranju pretrage ostajao u sakrivenom polju).",
     "<b>Google mesto izabrano kao polazak ili kao stanica</b> se pamti po istom pravilu kao cilj: naše ime, a Google-ova tačka u Nedavno i sačuvanim rutama najviše 30 dana."
