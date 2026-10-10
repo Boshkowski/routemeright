@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-10T05:47+00:00",
+ "updated": "2026-10-10T12:26+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -224,12 +224,6 @@
     },
     {
      "type": "Delo",
-     "title": "R3-677, Pišece - Zgornja Pohanca - Krško: Delo",
-     "detail": "R3-677, Pišece - Zg. Pohanca - Krško, Zdole - Krško, izmenično enosmerni promet, pomična zapora, rekonstrukcija vozišča, do 31. 12. 2026, med 17. in 8. uro. Popolna zapora dnevno med 8. in 17. uro.",
-     "region": "R3-677, Pišece - Zgornja Pohanca - Krško"
-    },
-    {
-     "type": "Delo",
      "title": "R2-419, Soteska - Novo mesto: Delo",
      "detail": "R2-419, Soteska - Novo mesto, v Novem mestu, Kandijska cesta, oviran promet, gradnja objekta, do 30. 12. 2026.",
      "region": "R2-419, Soteska - Novo mesto"
@@ -239,6 +233,12 @@
      "title": "G2-103, Ušnik - Plave: Delo",
      "detail": "G2-103, Nova Gorica - Tolmin, pri Doblarju na dveh lokacijah, izmenično enosmerni promet, rekonstrukcija 110 kV stikališča HE Doblar, do 29. 12. 2026.",
      "region": "G2-103, Ušnik - Plave"
+    },
+    {
+     "type": "Delo",
+     "title": "R1-203, Predel - Bovec: Delo",
+     "detail": "R1-203, Predel - Bovec, pri trdnjavi Kluže, popolna zapora, urejanje brežine, do 24. 12. 2026. Obvoz: preko prelaza Vršič. Vsak dan med 8. in 14.30. Izven tega časa promet poteka izmenično enosmerno. Ob nedeljah popolnih zapor ni.",
+     "region": "R1-203, Predel - Bovec"
     },
     {
      "type": "Delo",
@@ -263,6 +263,12 @@
      "title": "R3-653, Hrib - Trava - Podplanina: Delo",
      "detail": "R3-653, Hrib - Trava - Podplanina, med Loškim Potokom in Travnikom, popolna zapora, obnova ceste, do 23. 12. 2026. Obvoz: po lokalnih cestah.",
      "region": "R3-653, Hrib - Trava - Podplanina"
+    },
+    {
+     "type": "Delo",
+     "title": "R3-677, Pišece - Zgornja Pohanca - Krško: Delo",
+     "detail": "R3-677, Pišece - Zg. Pohanca - Krško, Zdole - Krško, popolna zapora, rekonstrukcije ceste, do 23. 12. 2026, dnevno med 8. in 17. uro. Delna zapora med 17. in 8. uro.",
+     "region": "R3-677, Pišece - Zgornja Pohanca - Krško"
     },
     {
      "type": "Delo",
@@ -599,16 +605,10 @@
      "title": "R3-627, Črni Kal - Osp: Delo",
      "detail": "R3-627, Črni Kal - Osp, Gabrovica pri Črnem Kalu, izmenično enosmerni promet, nadgradnje vodovodnega omrežja, do 30. 10. 2026.",
      "region": "R3-627, Črni Kal - Osp"
-    },
-    {
-     "type": "Delo",
-     "title": "R2-403, Podrošt - Češnjica: Delo",
-     "detail": "R2-403, Podrošt - Češnjica, pri Zalem Logu, izmenično enosmerni promet, izvedbe zaščite ceste pred padajočim kamenjem, do 30. 10. 2026.",
-     "region": "R2-403, Podrošt - Češnjica"
     }
    ],
-   "odseceno": 96,
-   "fetched": "2026-10-10T05:47+00:00"
+   "odseceno": 99,
+   "fetched": "2026-10-10T12:26+00:00"
   },
   "HR": {
    "name": "Hrvatska",
@@ -622,6 +622,14 @@
      "region": "default",
      "lat": 45.80022,
      "lon": 16.13115
+    },
+    {
+     "type": "zatvaranje (Radovi)",
+     "title": "ŽC4136-1 - Radovi",
+     "detail": "radovi - cesta zatvorena",
+     "region": "ŽC4136-1",
+     "lat": 45.31942,
+     "lon": 18.85068
     },
     {
      "type": "zatvaranje (Radovi)",
@@ -4404,12 +4412,12 @@
      ]
     },
     {
-     "type": "guzva/dogadjaj (Nesreća)",
-     "title": "A1 - Nesreća",
-     "detail": "Prometna nesreća na autocesti A1 na 71+000 km između čvora Ogulin i čvora Bosiljevo 2 na kolniku u smjeru Zagreba. Vozi se uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Zbog oštečenja revizionog okna odvodnje na čvoru Bosiljevo 1 u kraku 1, vozi se usporeno suženim kolnikom. Molimo korisnike za oprez.",
      "region": "A1",
-     "lat": 45.37646,
-     "lon": 15.26863
+     "lat": 45.42054,
+     "lon": 15.29351
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
@@ -4418,6 +4426,256 @@
      "region": "A1",
      "lat": 44.24108,
      "lon": 15.58287
+    },
+    {
+     "type": "guzva/dogadjaj (Nesreća)",
+     "title": "A1 - Nesreća",
+     "detail": "Prometna nesreća na autocesti A1 u tunelu Bristovac na kolniku u smjeru Zagreba. Promet se vodi jednom prometnom trakom uz ograničenje brzine od 40 km/h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 44.26023,
+     "lon": 15.59867
+    },
+    {
+     "type": "guzva/dogadjaj (Nesreća)",
+     "title": "A1 - Nesreća",
+     "detail": "Prometna nesreća na autocesti A1 na 299+050 km između čvora Vodice i čvora Benkovac na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 43.89919,
+     "lon": 15.7779
+    },
+    {
+     "type": "guzva/dogadjaj (Nesreća)",
+     "title": "A1 - Nesreća",
+     "detail": "Prometna nesreća na autocesti A1 na 297+400 km između čvora Benkovac i čvora Vodice na kolniku u smjeru Dubrovnika. Promet se vodi jednom prometnom trakom uz ograničenje brzine od 60 km/h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 43.90649,
+     "lon": 15.76005
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Vozilo u kvaru (teretno vozilo) na autocesti A1 na 335+000 km između čvora Danilo i čvora Prgomet na kolniku u smjeru Dubrovnika. Vozi se uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 43.68234,
+     "lon": 16.0738
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A1 - Izvanredni događaj",
+     "detail": "Vozilo u kvaru (autobus) na autocesti A1 između odmorišta Marune i tunela Sveti Rok na kolniku u smjeru Zagreba. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A1",
+     "lat": 44.25125,
+     "lon": 15.63915,
+     "coords": [
+      [
+       15.63915,
+       44.25125
+      ],
+      [
+       15.64027,
+       44.25164
+      ],
+      [
+       15.64142,
+       44.25198
+      ],
+      [
+       15.64259,
+       44.2523
+      ],
+      [
+       15.64349,
+       44.25256
+      ],
+      [
+       15.64433,
+       44.25282
+      ],
+      [
+       15.64544,
+       44.25324
+      ],
+      [
+       15.64605,
+       44.25351
+      ],
+      [
+       15.64702,
+       44.25399
+      ],
+      [
+       15.64752,
+       44.25427
+      ],
+      [
+       15.64838,
+       44.25481
+      ],
+      [
+       15.64895,
+       44.25521
+      ],
+      [
+       15.64935,
+       44.25552
+      ],
+      [
+       15.65012,
+       44.25624
+      ],
+      [
+       15.65122,
+       44.25733
+      ],
+      [
+       15.65194,
+       44.2581
+      ],
+      [
+       15.65274,
+       44.25932
+      ],
+      [
+       15.65355,
+       44.26053
+      ],
+      [
+       15.65435,
+       44.26175
+      ],
+      [
+       15.65506,
+       44.26282
+      ],
+      [
+       15.65567,
+       44.26379
+      ],
+      [
+       15.65645,
+       44.26502
+      ],
+      [
+       15.65723,
+       44.26625
+      ],
+      [
+       15.65801,
+       44.26748
+      ],
+      [
+       15.65879,
+       44.26871
+      ],
+      [
+       15.65957,
+       44.26994
+      ],
+      [
+       15.66035,
+       44.27116
+      ],
+      [
+       15.66113,
+       44.27239
+      ],
+      [
+       15.66191,
+       44.27362
+      ],
+      [
+       15.66269,
+       44.27485
+      ],
+      [
+       15.66347,
+       44.27608
+      ],
+      [
+       15.66425,
+       44.27731
+      ],
+      [
+       15.66503,
+       44.27853
+      ],
+      [
+       15.66581,
+       44.27976
+      ],
+      [
+       15.66658,
+       44.28099
+      ],
+      [
+       15.66736,
+       44.28222
+      ],
+      [
+       15.66814,
+       44.28345
+      ],
+      [
+       15.66892,
+       44.28467
+      ],
+      [
+       15.6697,
+       44.2859
+      ],
+      [
+       15.67048,
+       44.28713
+      ],
+      [
+       15.67126,
+       44.28836
+      ],
+      [
+       15.67204,
+       44.28959
+      ],
+      [
+       15.67282,
+       44.29082
+      ],
+      [
+       15.6736,
+       44.29204
+      ],
+      [
+       15.67438,
+       44.29327
+      ],
+      [
+       15.67516,
+       44.2945
+      ],
+      [
+       15.67594,
+       44.29573
+      ],
+      [
+       15.6763,
+       44.29661
+      ],
+      [
+       15.67681,
+       44.29791
+      ],
+      [
+       15.67709,
+       44.2988
+      ],
+      [
+       15.67737,
+       44.30014
+      ],
+      [
+       15.67758,
+       44.30116
+      ]
+     ]
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
@@ -4440,14 +4698,6 @@
        44.17005
       ]
      ]
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A1 - Izvanredni događaj",
-     "detail": "Zbog oštečenja revizionog okna odvodnje na čvoru Bosiljevo 1 u kraku 1, vozi se usporeno suženim kolnikom. Molimo korisnike za oprez.",
-     "region": "A1",
-     "lat": 45.42054,
-     "lon": 15.29351
     },
     {
      "type": "guzva/dogadjaj (Radovi)",
@@ -4524,12 +4774,138 @@
      ]
     },
     {
+     "type": "guzva/dogadjaj (Zastoj)",
+     "title": "A3 - Zastoj",
+     "detail": "Kolona teretnih vozila na autocesti A3 između 303+500 km i graničnog prijelaza GP Bajakovo na kolniku u smjeru Lipovca, duljine 2 km. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Kolona se povećava. Molimo korisnike za oprez i strpljenje.",
+     "region": "A3",
+     "lat": 45.04899,
+     "lon": 19.07864,
+     "coords": [
+      [
+       19.07864,
+       45.04899
+      ],
+      [
+       19.07914,
+       45.04899
+      ],
+      [
+       19.07927,
+       45.04898
+      ],
+      [
+       19.0799,
+       45.04898
+      ],
+      [
+       19.08054,
+       45.04897
+      ],
+      [
+       19.08092,
+       45.04896
+      ],
+      [
+       19.08117,
+       45.04896
+      ],
+      [
+       19.08181,
+       45.04895
+      ],
+      [
+       19.08235,
+       45.04894
+      ],
+      [
+       19.08244,
+       45.04894
+      ],
+      [
+       19.08307,
+       45.04892
+      ],
+      [
+       19.08371,
+       45.0489
+      ],
+      [
+       19.08434,
+       45.04889
+      ],
+      [
+       19.0849,
+       45.04887
+      ],
+      [
+       19.08498,
+       45.04887
+      ],
+      [
+       19.08561,
+       45.04885
+      ],
+      [
+       19.08624,
+       45.04883
+      ],
+      [
+       19.08665,
+       45.04881
+      ],
+      [
+       19.08688,
+       45.0488
+      ],
+      [
+       19.08751,
+       45.04878
+      ],
+      [
+       19.08814,
+       45.04875
+      ],
+      [
+       19.08878,
+       45.04872
+      ],
+      [
+       19.08881,
+       45.04872
+      ],
+      [
+       19.08941,
+       45.04869
+      ],
+      [
+       19.09004,
+       45.04866
+      ],
+      [
+       19.09067,
+       45.04863
+      ],
+      [
+       19.09131,
+       45.04859
+      ]
+     ]
+    },
+    {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme na kolniku autoceste A3, na kraku 11 čvora Kosnica (kolnik u smjeru Bregane/Radničke ceste), promet se odvija uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A3 na kraku 13 čvora Zagreb zapad na kolniku u smjeru Bregane. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3",
-     "lat": 45.76423,
-     "lon": 16.08988
+     "lat": 45.78742,
+     "lon": 15.84901
+    },
+    {
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "region": "A3",
+     "lat": 45.75761,
+     "lon": 15.90084
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
@@ -4890,14 +5266,6 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
-     "region": "A3",
-     "lat": 45.1669,
-     "lon": 17.67695
-    },
-    {
-     "type": "guzva/dogadjaj (Izvanredni događaj)",
-     "title": "A3 - Izvanredni događaj",
      "detail": "Zbog oštećenja kolnika i nastalih kolotraga na AC A3 između 135+000 km i 142+000 km, na kolniku, u smjeru Lipovca, promet se vodi po dvije prometne trake. Vozi se uz ograničenje brzine od 100 km/h. Molimo korisnike za oprez.",
      "region": "A3",
      "lat": 45.30438,
@@ -5092,136 +5460,26 @@
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Vozilo u kvaru (osobno vozilo) na autocesti A3 na kraku 13 čvora Zagreb zapad na kolniku u smjeru Bregane. Promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Oprez, vozilo u kvaru!",
      "region": "A3",
-     "lat": 45.78742,
-     "lon": 15.84901
+     "lat": 45.68439,
+     "lon": 16.41895
     },
     {
      "type": "guzva/dogadjaj (Izvanredni događaj)",
      "title": "A3 - Izvanredni događaj",
-     "detail": "Zbog oštećenja opreme na kolniku na autocesti A3 na 19+700 km između čvora Lučko i čvora Buzin na kolniku u smjeru Lipovca promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
+     "detail": "Izvanredni događaj na autocesti A3 na kraku 4 čvora Lužani na kolniku u smjeru Bregane. Zbog oštećenja ublaživača udara promet se vodi po dvije prometne trake uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3",
-     "lat": 45.75761,
-     "lon": 15.90084
+     "lat": 45.1669,
+     "lon": 17.67695
     },
     {
-     "type": "guzva/dogadjaj (Zastoj)",
-     "title": "A3 - Zastoj",
-     "detail": "Kolona teretnih vozila na autocesti A3 između 303+500 km i graničnog prijelaza GP Bajakovo na kolniku u smjeru Lipovca, duljine 2 km. Promet se vodi po dvije prometne trake uz ograničenje brzine od 40 km/h. Kolona se povećava. Molimo korisnike za oprez i strpljenje.",
+     "type": "guzva/dogadjaj (Izvanredni događaj)",
+     "title": "A3 - Izvanredni događaj",
+     "detail": "Zbog oštećenja opreme na kolniku autoceste A3, na kraku 11 čvora Kosnica (kolnik u smjeru Bregane/Radničke ceste), promet se odvija uz ograničenje brzine od 80 km/h. Molimo korisnike za oprez.",
      "region": "A3",
-     "lat": 45.04899,
-     "lon": 19.07864,
-     "coords": [
-      [
-       19.07864,
-       45.04899
-      ],
-      [
-       19.07914,
-       45.04899
-      ],
-      [
-       19.07927,
-       45.04898
-      ],
-      [
-       19.0799,
-       45.04898
-      ],
-      [
-       19.08054,
-       45.04897
-      ],
-      [
-       19.08092,
-       45.04896
-      ],
-      [
-       19.08117,
-       45.04896
-      ],
-      [
-       19.08181,
-       45.04895
-      ],
-      [
-       19.08235,
-       45.04894
-      ],
-      [
-       19.08244,
-       45.04894
-      ],
-      [
-       19.08307,
-       45.04892
-      ],
-      [
-       19.08371,
-       45.0489
-      ],
-      [
-       19.08434,
-       45.04889
-      ],
-      [
-       19.0849,
-       45.04887
-      ],
-      [
-       19.08498,
-       45.04887
-      ],
-      [
-       19.08561,
-       45.04885
-      ],
-      [
-       19.08624,
-       45.04883
-      ],
-      [
-       19.08665,
-       45.04881
-      ],
-      [
-       19.08688,
-       45.0488
-      ],
-      [
-       19.08751,
-       45.04878
-      ],
-      [
-       19.08814,
-       45.04875
-      ],
-      [
-       19.08878,
-       45.04872
-      ],
-      [
-       19.08881,
-       45.04872
-      ],
-      [
-       19.08941,
-       45.04869
-      ],
-      [
-       19.09004,
-       45.04866
-      ],
-      [
-       19.09067,
-       45.04863
-      ],
-      [
-       19.09131,
-       45.04859
-      ]
-     ]
+     "lat": 45.76423,
+     "lon": 16.08988
     },
     {
      "type": "guzva/dogadjaj (Radovi)",
@@ -6245,32 +6503,6 @@
     },
     {
      "type": "radovi (Radovi)",
-     "title": "D50-3 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "D50-3",
-     "lat": 44.50845,
-     "lon": 15.43815,
-     "coords": [
-      [
-       15.43815,
-       44.50845
-      ],
-      [
-       15.43816,
-       44.50845
-      ]
-     ]
-    },
-    {
-     "type": "radovi (Radovi)",
-     "title": "D55-2 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "D55-2",
-     "lat": 45.26604,
-     "lon": 18.80904
-    },
-    {
-     "type": "radovi (Radovi)",
      "title": "D55-2 - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
      "region": "D55-2",
@@ -6511,6 +6743,14 @@
     },
     {
      "type": "radovi (Radovi)",
+     "title": "D46-1 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D46-1",
+     "lat": 45.28189,
+     "lon": 18.60353
+    },
+    {
+     "type": "radovi (Radovi)",
      "title": "D2-11 - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
      "region": "D2-11",
@@ -6519,11 +6759,29 @@
     },
     {
      "type": "radovi (Radovi)",
-     "title": "D46-1 - Radovi",
+     "title": "D50-3 - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
-     "region": "D46-1",
-     "lat": 45.28189,
-     "lon": 18.60353
+     "region": "D50-3",
+     "lat": 44.50845,
+     "lon": 15.43815,
+     "coords": [
+      [
+       15.43815,
+       44.50845
+      ],
+      [
+       15.43816,
+       44.50845
+      ]
+     ]
+    },
+    {
+     "type": "radovi (Radovi)",
+     "title": "D55-2 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D55-2",
+     "lat": 45.26604,
+     "lon": 18.80904
     },
     {
      "type": "radovi (Radovi)",
@@ -6838,251 +7096,10 @@
      "region": "D7-1",
      "lat": 45.84166,
      "lon": 18.64932
-    },
-    {
-     "type": "radovi (Radovi)",
-     "title": "D116-1 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "D116-1",
-     "lat": 43.16848,
-     "lon": 16.45726,
-     "coords": [
-      [
-       16.45726,
-       43.16848
-      ],
-      [
-       16.45732,
-       43.16848
-      ],
-      [
-       16.45775,
-       43.16845
-      ],
-      [
-       16.45801,
-       43.16845
-      ],
-      [
-       16.45818,
-       43.16846
-      ],
-      [
-       16.45835,
-       43.1685
-      ],
-      [
-       16.45903,
-       43.16868
-      ],
-      [
-       16.45969,
-       43.16889
-      ],
-      [
-       16.46014,
-       43.16908
-      ],
-      [
-       16.46115,
-       43.16954
-      ],
-      [
-       16.46186,
-       43.16986
-      ],
-      [
-       16.46219,
-       43.16998
-      ],
-      [
-       16.46229,
-       43.17
-      ],
-      [
-       16.46239,
-       43.17002
-      ],
-      [
-       16.46274,
-       43.17005
-      ],
-      [
-       16.46288,
-       43.17005
-      ],
-      [
-       16.46315,
-       43.17002
-      ],
-      [
-       16.46339,
-       43.16997
-      ],
-      [
-       16.46367,
-       43.16989
-      ],
-      [
-       16.46412,
-       43.16971
-      ],
-      [
-       16.46492,
-       43.16937
-      ],
-      [
-       16.46549,
-       43.16914
-      ],
-      [
-       16.46593,
-       43.16899
-      ],
-      [
-       16.4665,
-       43.16886
-      ],
-      [
-       16.46742,
-       43.16869
-      ],
-      [
-       16.46789,
-       43.16861
-      ],
-      [
-       16.46863,
-       43.16855
-      ],
-      [
-       16.46978,
-       43.16848
-      ],
-      [
-       16.47063,
-       43.16842
-      ],
-      [
-       16.47109,
-       43.16837
-      ],
-      [
-       16.47139,
-       43.16833
-      ],
-      [
-       16.47196,
-       43.16818
-      ],
-      [
-       16.47232,
-       43.16807
-      ],
-      [
-       16.47319,
-       43.16779
-      ],
-      [
-       16.47415,
-       43.16747
-      ],
-      [
-       16.4743,
-       43.16742
-      ],
-      [
-       16.47457,
-       43.1673
-      ],
-      [
-       16.47481,
-       43.16716
-      ],
-      [
-       16.47515,
-       43.16695
-      ],
-      [
-       16.47558,
-       43.16666
-      ],
-      [
-       16.47621,
-       43.16621
-      ],
-      [
-       16.47668,
-       43.1659
-      ],
-      [
-       16.47717,
-       43.16564
-      ],
-      [
-       16.47733,
-       43.16556
-      ],
-      [
-       16.47762,
-       43.16542
-      ],
-      [
-       16.47793,
-       43.16529
-      ],
-      [
-       16.47831,
-       43.16515
-      ]
-     ]
-    },
-    {
-     "type": "radovi (Radovi)",
-     "title": "ŽC5140-3 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "ŽC5140-3",
-     "lat": 44.87015,
-     "lon": 15.2098
-    },
-    {
-     "type": "radovi (Radovi)",
-     "title": "D8-16 - Radovi",
-     "detail": "zbog radova održavanja vozi se uz ograničenje brzine",
-     "region": "D8-16",
-     "lat": 43.71341,
-     "lon": 15.91407
-    },
-    {
-     "type": "radovi (Radovi)",
-     "title": "D8-19 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "D8-19",
-     "lat": 43.43386,
-     "lon": 16.70472
-    },
-    {
-     "type": "radovi (Radovi)",
-     "title": "ŽC5041-1 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "ŽC5041-1",
-     "lat": 45.26429,
-     "lon": 13.63604
-    },
-    {
-     "type": "radovi (Radovi)",
-     "title": "D38-2 - Radovi",
-     "detail": "zbog radova se vozi jednim trakom",
-     "region": "D38-2",
-     "lat": 45.32746,
-     "lon": 17.75445
     }
    ],
-   "odseceno": 88,
-   "fetched": "2026-10-10T05:47+00:00",
-   "nepotpuno": [
-    "granicni-prijelazi-stanje"
-   ]
+   "odseceno": 94,
+   "fetched": "2026-10-10T12:26+00:00"
   },
   "RS": {
    "name": "Srbija",
@@ -7127,15 +7144,6 @@
     },
     {
      "type": "closure",
-     "title": "7.10.2026.Obustava saobraćaja na državnom putu I B reda broj 36, Paraćin - Zaječar, od mesta Izvor  do mesta Lukovo",
-     "detail": "Od 7.10 do 9.10.2026 godine, u periodu od 10 do 13 časova i u periodu od 15 do 18 časova na snazi je obustava saobraćaj na delu državnog puta I B reda broj 36, na deonici Paraćin – Zaječar, na deonici između nasenjenih mesta Izvor i Lukovo ( od km 13+747 do km 36+735). Saobraćaj je obustavljen radi ",
-     "region": "Srbija",
-     "lat": 43.80135,
-     "lon": 21.80861,
-     "tacnost_km": 3.5
-    },
-    {
-     "type": "closure",
      "title": "7.10.2026. Obustava saobraćaja na državnom putu II A reda broj 126, Putinci - Inđija, naseljeno mesto Ljukovo",
      "detail": "Оd 8.10. do 10.10.2026. godine, od 8 do 18 časova, na snazi će biti obustava saobraćaja zbog radova na redovnom održavanju (faza 1), na državnom putu II A reda broj 126, na deonici Putinci - Inđija, u naseljenom mestu Ljukovo. Trasa preusmerenja saobraćaja će se vršiti od Inđije na državni put IIA-1",
      "region": "Srbija",
@@ -7155,7 +7163,7 @@
     {
      "type": "closure",
      "title": "30.9.2026.Obustava saobraćaja na državnom putu I B reda broj 14, deonica Kovin - Ralja",
-     "detail": "Do 10.10.2026.godine, zbog radova na pojačanom održavanju dela državnog puta I B reda broj 14, deonica Kovin - Ralja na km 49+200 do km 50+010, ( od mosta preko reke Ralja do ukrštanja sa državnim putem II A reda broj 156), doći će do obustave saobraćaja. Alternativni putni pravac : - iz pravca Smed",
+     "detail": "Do 19.10.2026.godine, zbog radova na pojačanom održavanju dela državnog puta I B reda broj 14, deonica Kovin - Ralja na km 49+200 do km 50+010, ( od mosta preko reke Ralja do ukrštanja sa državnim putem II A reda broj 156), doći će do obustave saobraćaja. Alternativni putni pravac : - iz pravca Smed",
      "region": "Kovin - Ralja",
      "lat": 44.61562,
      "lon": 20.9557,
@@ -7277,6 +7285,24 @@
      "lat": 45.24036,
      "lon": 20.58222,
      "tacnost_km": 1.0
+    },
+    {
+     "type": "roadworks",
+     "title": "10.10.2026. Izmena režima saobraćaja na državnom putu I A reda broj 1, petlja Markovac - petlja Velika Plana, kod petlje Velika Plana",
+     "detail": "Od 10.10.2026. godine, zbog radova na peskarenju natputnjaka, izmenjen je režim saobraćaja na deonici državnog puta I A reda broj 1, petlja Markovac – petlja Velika Plana, blizu petlje Velika Plana, na km 293+450, u oba smera. Tokom izvođenja radova na natputnjaku, saobraćaj na državnom putu I A red",
+     "region": "Srbija",
+     "lat": 44.3266,
+     "lon": 21.08382,
+     "tacnost_km": 3.5
+    },
+    {
+     "type": "roadworks",
+     "title": "10.10.2026.Radovi na državnom putu I A reda broj 2, na deonici Ub – Obrenovac, zona naplatne stanice Obrenovac",
+     "detail": "Od 12.10. do 16.10.2026. godine, izvodiće se radovi na rehabilitaciji preticajne saobraćajne trake, na državnom putu I A reda broj 2, na deonici Ub – Obrenovac, u zoni naplatne stanice Obrenovac (od km 25+000 do km 26+850), u smeru ka Beogradu. Tokom izvođenja radova, saobraćaj će se odvijati voznom",
+     "region": "Srbija",
+     "lat": 44.65183,
+     "lon": 20.24197,
+     "tacnost_km": 3.5
     },
     {
      "type": "roadworks",
@@ -7492,15 +7518,6 @@
      "region": "Srbija",
      "lat": 44.77206,
      "lon": 20.28627,
-     "tacnost_km": 3.5
-    },
-    {
-     "type": "roadworks",
-     "title": "2.10.2026. Radovi na državnom putu I A reda broj 1, petlja Markovac - petlja Velika Plana, u blizini petlje Velika Plana",
-     "detail": "Do 12.10.2026. godine, izvodiće se radovi na sanaciji mosta ( natputnjak preko auto-puta, na km 293+450), u blizini petlje Velika Plana, na državnom putu I A reda broj 1, na deonici petlja Markovac – petlja Velika Plana. Tokom izvođenja radova na natputnjaku, saobraćaj na državnom putu I A reda broj",
-     "region": "Srbija",
-     "lat": 44.3255,
-     "lon": 21.08383,
      "tacnost_km": 3.5
     },
     {
@@ -7991,7 +8008,7 @@
     }
    ],
    "odseceno": 51,
-   "fetched": "2026-10-10T05:47+00:00"
+   "fetched": "2026-10-10T12:26+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -8037,7 +8054,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Velika Kladuša",
-     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
+     "detail": "Duga je kolona putničkih vozila na izlazu iz Bosne i Hercegovine. Zadržavanja putničkih vozila na ulazu nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -8067,13 +8084,13 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Brod",
-     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
+     "detail": "Duga je kolona putničkih vozila na ulazu u Bosnu i Hercegovinu. Zadržavanja putničkih vozila na izlazu nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
      "type": "granicni_prelaz",
      "title": "GP Šamac",
-     "detail": "Duga je kolona putničkih vozila na izlazu iz Bosne i Hercegovine. Zadržavanja putničkih vozila na ulazu nisu duža od 30 minuta.",
+     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -8097,7 +8114,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Šepak",
-     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta. Na graničnom prelazu Šepak zabranjen je saobraćaj za sva teretna vozila.",
+     "detail": "Duga je kolona putničkih vozila na ulazu u Bosnu i Hercegovinu. Zadržavanja putničkih vozila na izlazu nisu duža od 30 minuta. Na graničnom prelazu Šepak zabranjen je saobraćaj za sva teretna vozila.",
      "region": "Granični prijelazi"
     },
     {
@@ -8157,7 +8174,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Zupci",
-     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
+     "detail": "Duge su kolone putničkih vozila u oba smjera.",
      "region": "Granični prijelazi"
     },
     {
@@ -8301,7 +8318,7 @@
     {
      "type": "granicni_prelaz",
      "title": "GP Gradiška - novi most",
-     "detail": "Duga je kolona putničkih vozila na izlazu iz Bosne i Hercegovine. Zadržavanja putničkih vozila na ulazu nisu duža od 30 minuta.",
+     "detail": "Zadržavanja putničkih vozila nisu duža od 30 minuta.",
      "region": "Granični prijelazi"
     },
     {
@@ -8497,7 +8514,7 @@
      "region": "Gradske ceste"
     }
    ],
-   "fetched": "2026-10-10T05:47+00:00"
+   "fetched": "2026-10-10T12:26+00:00"
   },
   "ME": {
    "name": "Crna Gora",
@@ -8559,7 +8576,7 @@
      "region": "Crna Gora"
     }
    ],
-   "fetched": "2026-10-10T05:47+00:00"
+   "fetched": "2026-10-10T12:26+00:00"
   },
   "MK": {
    "name": "S. Makedonija",
@@ -8568,7 +8585,7 @@
    "items": [
     {
      "type": "sostojba",
-     "title": "Состојба (2026-10-10 06:11)",
+     "title": "Состојба (2026-10-10 12:18)",
      "detail": "Сообраќајот на државните патишта се одвива непречено, по претежно суви коловози.",
      "region": "cela drzava"
     },
@@ -8651,7 +8668,7 @@
      "region": "Кичево – Охрид"
     }
    ],
-   "fetched": "2026-10-10T05:47+00:00"
+   "fetched": "2026-10-10T12:26+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -8719,7 +8736,7 @@
      "region": "Ksamil"
     }
    ],
-   "fetched": "2026-10-10T05:47+00:00"
+   "fetched": "2026-10-10T12:26+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -9404,7 +9421,7 @@
     }
    ],
    "odseceno": 314,
-   "fetched": "2026-10-10T05:47+00:00"
+   "fetched": "2026-10-10T12:26+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -9592,7 +9609,7 @@
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-10-10T05:47+00:00"
+   "fetched": "2026-10-10T12:26+00:00"
   }
  },
  "meteo": {
@@ -9625,21 +9642,189 @@
   "HR": [
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - North Dalmatia region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:01Z do 2026-10-11T19:00Z",
-    "region": "North Dalmatia region"
+    "title": "Yellow Rain Warning issued for Croatia - Dubrovačko-neretvanska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-11T09:00Z do 2026-10-11T10:59Z",
+    "region": "Dubrovačko-neretvanska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Dubrovačko-neretvanska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-11T09:00Z do 2026-10-11T10:59Z",
+    "region": "Dubrovačko-neretvanska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Dubrovačko-neretvanska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-11T08:00Z do 2026-10-11T08:59Z",
+    "region": "Dubrovačko-neretvanska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Dubrovačko-neretvanska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-11T08:00Z do 2026-10-11T08:59Z",
+    "region": "Dubrovačko-neretvanska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Splitsko-dalmatinska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-11T08:00Z do 2026-10-11T10:59Z",
+    "region": "Splitsko-dalmatinska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Splitsko-dalmatinska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-11T08:00Z do 2026-10-11T10:59Z",
+    "region": "Splitsko-dalmatinska"
    },
    {
     "type": "meteo-upozorenje",
     "title": "Yellow Wind Warning issued for Croatia - South Dalmatia region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:01Z do 2026-10-11T13:00Z",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-11T16:00Z do 2026-10-11T21:59Z",
     "region": "South Dalmatia region"
    },
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Velebit channel region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:01Z do 2026-10-11T21:59Z",
-    "region": "Velebit channel region"
+    "title": "Orange Thunderstorm Warning issued for Croatia - Dubrovačko-neretvanska",
+    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-10-10T08:13Z do 2026-10-11T05:59Z",
+    "region": "Dubrovačko-neretvanska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange Thunderstorm Warning issued for Croatia - Dubrovačko-neretvanska",
+    "detail": "nivo: narandzasto | pojava: thunderstorm | vazi: 2026-10-10T08:13Z do 2026-10-11T05:59Z",
+    "region": "Dubrovačko-neretvanska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Splitsko-dalmatinska",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-10T08:13Z do 2026-10-11T05:59Z",
+    "region": "Splitsko-dalmatinska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Splitsko-dalmatinska",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-10T08:13Z do 2026-10-11T05:59Z",
+    "region": "Splitsko-dalmatinska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Šibensko-kninska",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-10T08:13Z do 2026-10-11T05:59Z",
+    "region": "Šibensko-kninska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Šibensko-kninska",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-10T08:13Z do 2026-10-11T05:59Z",
+    "region": "Šibensko-kninska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Zadarska",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-10T08:13Z do 2026-10-11T05:59Z",
+    "region": "Zadarska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Croatia - Zadarska",
+    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-10T08:13Z do 2026-10-11T05:59Z",
+    "region": "Zadarska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Dubrovačko-neretvanska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-10T06:34Z do 2026-10-11T07:59Z",
+    "region": "Dubrovačko-neretvanska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Dubrovačko-neretvanska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-10T06:34Z do 2026-10-11T07:59Z",
+    "region": "Dubrovačko-neretvanska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Splitsko-dalmatinska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-10T06:34Z do 2026-10-11T07:59Z",
+    "region": "Splitsko-dalmatinska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Splitsko-dalmatinska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-10T06:34Z do 2026-10-11T07:59Z",
+    "region": "Splitsko-dalmatinska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Šibensko-kninska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-10T06:34Z do 2026-10-11T07:59Z",
+    "region": "Šibensko-kninska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Šibensko-kninska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-10T06:34Z do 2026-10-11T07:59Z",
+    "region": "Šibensko-kninska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Zadarska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-10T06:34Z do 2026-10-11T06:59Z",
+    "region": "Zadarska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Zadarska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-10T06:34Z do 2026-10-11T06:59Z",
+    "region": "Zadarska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Ličko-senjska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-10T06:34Z do 2026-10-11T04:59Z",
+    "region": "Ličko-senjska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Croatia - Ličko-senjska",
+    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-10T06:34Z do 2026-10-11T04:59Z",
+    "region": "Ličko-senjska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Zadarska",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T11:59Z",
+    "region": "Zadarska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Zadarska",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T11:59Z",
+    "region": "Zadarska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Ličko-senjska",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T10:59Z",
+    "region": "Ličko-senjska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Ličko-senjska",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T10:59Z",
+    "region": "Ličko-senjska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Primorsko-goranska",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T09:59Z",
+    "region": "Primorsko-goranska"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Primorsko-goranska",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T09:59Z",
+    "region": "Primorsko-goranska"
    },
    {
     "type": "meteo-upozorenje",
@@ -9655,50 +9840,26 @@
    },
    {
     "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - North Dalmatia region",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:01Z do 2026-10-11T19:00Z",
+    "region": "North Dalmatia region"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Croatia - Velebit channel region",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:01Z do 2026-10-11T21:59Z",
+    "region": "Velebit channel region"
+   },
+   {
+    "type": "meteo-upozorenje",
     "title": "Yellow Wind Warning issued for Croatia - West Istrian coast region",
     "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:01Z do 2026-10-11T16:00Z",
     "region": "West Istrian coast region"
    },
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Zadarska",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T11:59Z",
-    "region": "Zadarska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Zadarska",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T11:59Z",
-    "region": "Zadarska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Primorsko-goranska",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T09:59Z",
-    "region": "Primorsko-goranska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Primorsko-goranska",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T09:59Z",
-    "region": "Primorsko-goranska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Ličko-senjska",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T10:59Z",
-    "region": "Ličko-senjska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Wind Warning issued for Croatia - Ličko-senjska",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-10T22:00Z do 2026-10-11T10:59Z",
-    "region": "Ličko-senjska"
-   },
-   {
-    "type": "meteo-upozorenje",
     "title": "Yellow Wind Warning issued for Croatia - Middle Dalmatia region",
-    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-09T22:01Z do 2026-10-10T06:00Z",
+    "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-09T22:01Z do 2026-10-10T16:00Z",
     "region": "Middle Dalmatia region"
    },
    {
@@ -9706,78 +9867,6 @@
     "title": "Yellow Wind Warning issued for Croatia - South Dalmatia region",
     "detail": "nivo: zuto | pojava: wind | vazi: 2026-10-09T22:01Z do 2026-10-10T21:59Z",
     "region": "South Dalmatia region"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Dubrovačko-neretvanska",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-09T22:00Z do 2026-10-11T12:59Z",
-    "region": "Dubrovačko-neretvanska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Dubrovačko-neretvanska",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-09T22:00Z do 2026-10-11T12:59Z",
-    "region": "Dubrovačko-neretvanska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Šibensko-kninska",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-09T22:00Z do 2026-10-11T07:59Z",
-    "region": "Šibensko-kninska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Šibensko-kninska",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-09T22:00Z do 2026-10-11T07:59Z",
-    "region": "Šibensko-kninska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Splitsko-dalmatinska",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-09T22:00Z do 2026-10-11T10:59Z",
-    "region": "Splitsko-dalmatinska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Splitsko-dalmatinska",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-09T22:00Z do 2026-10-11T10:59Z",
-    "region": "Splitsko-dalmatinska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Ličko-senjska",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-09T22:00Z do 2026-10-11T04:59Z",
-    "region": "Ličko-senjska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Ličko-senjska",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-09T22:00Z do 2026-10-11T04:59Z",
-    "region": "Ličko-senjska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Zadarska",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-09T22:00Z do 2026-10-11T06:59Z",
-    "region": "Zadarska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Rain Warning issued for Croatia - Zadarska",
-    "detail": "nivo: zuto | pojava: rain | vazi: 2026-10-09T22:00Z do 2026-10-11T06:59Z",
-    "region": "Zadarska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Dubrovačko-neretvanska",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-09T22:00Z do 2026-10-10T21:59Z",
-    "region": "Dubrovačko-neretvanska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Dubrovačko-neretvanska",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-09T22:00Z do 2026-10-10T21:59Z",
-    "region": "Dubrovačko-neretvanska"
    }
   ],
   "SI": [],
@@ -9793,6 +9882,36 @@
     "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Foca",
     "detail": "nivo: zuto | pojava: Wind | vazi: 2026-10-11T12:00Z do 2026-10-11T21:59Z",
     "region": "Foca"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Visegrad",
+    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-10-11T09:00Z do 2026-10-11T17:00Z",
+    "region": "Visegrad"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Trebinje",
+    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-10-11T12:00Z do 2026-10-11T21:59Z",
+    "region": "Trebinje"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Wind Warning issued for Bosnia-Herzegovina - Foca",
+    "detail": "nivo: zuto | pojava: Wind | vazi: 2026-10-11T12:00Z do 2026-10-11T21:59Z",
+    "region": "Foca"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Bosnia-Herzegovina - Foca",
+    "detail": "nivo: zuto | pojava: Rain | vazi: 2026-10-10T22:00Z do 2026-10-11T21:59Z",
+    "region": "Foca"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Bosnia-Herzegovina - Trebinje",
+    "detail": "nivo: zuto | pojava: Rain | vazi: 2026-10-10T22:00Z do 2026-10-11T21:59Z",
+    "region": "Trebinje"
    },
    {
     "type": "meteo-upozorenje",
@@ -9881,6 +10000,102 @@
   "GR": [
    {
     "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - West Sterea",
+    "detail": "nivo: zuto | pojava: Moderate Thunderstorm | vazi: 2026-10-11T10:00Z do 2026-10-11T18:00Z",
+    "region": "West Sterea"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - East Peloponnisos",
+    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-11T11:00Z do 2026-10-11T15:00Z",
+    "region": "East Peloponnisos"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - North East Aegean Islands",
+    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-11T21:00Z do 2026-10-12T12:00Z",
+    "region": "North East Aegean Islands"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - West Peloponnisos",
+    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-11T03:00Z do 2026-10-11T18:00Z",
+    "region": "West Peloponnisos"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - West Makedonia",
+    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-11T03:00Z do 2026-10-11T15:00Z",
+    "region": "West Makedonia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - Thraki",
+    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-11T20:00Z do 2026-10-12T09:00Z",
+    "region": "Thraki"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - East Makedonia",
+    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-11T12:00Z do 2026-10-12T06:00Z",
+    "region": "East Makedonia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - Central Makedonia",
+    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-11T04:00Z do 2026-10-11T22:00Z",
+    "region": "Central Makedonia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - Thessalia",
+    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-11T10:00Z do 2026-10-11T18:00Z",
+    "region": "Thessalia"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Rain Warning issued for Greece - West Sterea",
+    "detail": "nivo: zuto | pojava: Moderate Rain | vazi: 2026-10-10T22:00Z do 2026-10-11T15:00Z",
+    "region": "West Sterea"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange Thunderstorm Warning issued for Greece - Epirus",
+    "detail": "nivo: narandzasto | pojava: Severe Thunderstorm | vazi: 2026-10-10T20:59Z do 2026-10-11T10:00Z",
+    "region": "Epirus"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange Thunderstorm Warning issued for Greece - West Sterea",
+    "detail": "nivo: narandzasto | pojava: Severe Thunderstorm | vazi: 2026-10-10T20:59Z do 2026-10-11T10:00Z",
+    "region": "West Sterea"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - Epirus",
+    "detail": "nivo: zuto | pojava: Moderate Thunderstorm | vazi: 2026-10-10T09:00Z do 2026-10-10T20:59Z",
+    "region": "Epirus"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - West Sterea",
+    "detail": "nivo: zuto | pojava: Moderate Thunderstorm | vazi: 2026-10-10T09:00Z do 2026-10-10T20:59Z",
+    "region": "West Sterea"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Orange Thunderstorm Warning issued for Greece - Ionion Islands",
+    "detail": "nivo: narandzasto | pojava: Orange Warning | vazi: 2026-10-10T18:01Z do 2026-10-11T10:00Z",
+    "region": "Ionion Islands"
+   },
+   {
+    "type": "meteo-upozorenje",
+    "title": "Yellow Thunderstorm Warning issued for Greece - Ionion Islands",
+    "detail": "nivo: zuto | pojava: Moderate Thunderstorm | vazi: 2026-10-10T09:00Z do 2026-10-10T18:00Z",
+    "region": "Ionion Islands"
+   },
+   {
+    "type": "meteo-upozorenje",
     "title": "Yellow Rain Warning issued for Greece - Epirus",
     "detail": "nivo: zuto | pojava: Moderate Rain | vazi: 2026-10-10T12:00Z do 2026-10-11T23:59Z",
     "region": "Epirus"
@@ -9893,31 +10108,66 @@
    },
    {
     "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Greece - Ionion Islands",
-    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-10T09:00Z do 2026-10-10T16:00Z",
-    "region": "Ionion Islands"
-   },
-   {
-    "type": "meteo-upozorenje",
     "title": "Yellow Thunderstorm Warning issued for Greece - West Peloponnisos",
     "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-10T09:00Z do 2026-10-10T16:00Z",
     "region": "West Peloponnisos"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Greece - Epirus",
-    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-10T09:00Z do 2026-10-10T16:00Z",
-    "region": "Epirus"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Greece - West Sterea",
-    "detail": "nivo: zuto | pojava: Yellow Warning | vazi: 2026-10-10T09:00Z do 2026-10-10T16:00Z",
-    "region": "West Sterea"
    }
   ]
  },
- "borders": [],
+ "borders": [
+  {
+   "prelaz": "Gornji Varoš",
+   "zemlja": "HR",
+   "ulaz_auto": "1 h",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "10.10.2026. 11:21:16",
+   "lat": 45.16319,
+   "lon": 17.20499,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Županja",
+   "zemlja": "HR",
+   "ulaz_auto": "do 30 min.",
+   "izlaz_auto": "do 30 min.",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "10.10.2026 10:16:48",
+   "lat": 45.046352,
+   "lon": 18.70347,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Slavonski Brod",
+   "zemlja": "HR",
+   "ulaz_auto": "do 30 min.",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "-",
+   "ocitano": "10.10.2026. 12:46:04",
+   "lat": 45.156888,
+   "lon": 18.002278,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Tovarnik",
+   "zemlja": "HR",
+   "ulaz_auto": "-",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "3 h",
+   "ocitano": "10.10.2026 10:25:01",
+   "lat": 45.157234,
+   "lon": 19.170414,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  }
+ ],
  "_mesta": {
   "Orlovat Od": [
    [
