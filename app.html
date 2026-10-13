@@ -1462,6 +1462,11 @@
   #searchOverlay .sback { width: 44px; height: 44px; border-radius: 50%; background: none; border: 1px solid var(--line-strong); }
   #searchOverlay #sInput { height: 56px; padding: 0 16px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line-strong); font-weight: 400; font-size: 17px; }
   #searchOverlay #sInput:focus { border-color: var(--accent); }
+  /* 13.10.: Google polje (UI Kit) na telefonu = isto kao nase polje. Pravilo je do sada postojalo samo za siroki ekran (10-sheets.css),
+     pa je na telefonu (WebKit) polje bilo 398 px od x=70 - 78 px van ekrana - sa Google-ovim plavim okvirom fokusa (Boskov snimak). */
+  #searchOverlay #gPolje { flex: 1; min-width: 0; height: 56px; border: 1px solid var(--line-strong); border-radius: var(--r-lg); background-color: var(--surface); overflow: hidden; font-size: 17px; }
+  #searchOverlay #gPolje:focus-within { border-color: var(--accent); }
+  #searchOverlay #gPolje::part(focus-ring) { display: none; }   /* Google-ov plavi okvir; fokus pokazuje nas narandzast rub, kao na nasem polju */
   #searchOverlay .sbody { padding: 4px 16px calc(20px + env(safe-area-inset-bottom)); }
   #searchOverlay .ssect { font-family: var(--font-cap); font-synthesis: none; font-weight: var(--fw-cap); font-size: 11px; letter-spacing: .1em; color: var(--fg-muted); margin: 20px 2px 2px; }
   #searchOverlay .srow { padding: 10px 2px; gap: 12px; min-height: 54px; }
@@ -1479,6 +1484,13 @@
 }
 
 /* ===== 3.10. (maketa 3-ruta-final): instrument pregled rute na telefonu ===== */
+/* 13.10. (Boskov snimak Smederevo -> Rudnik): otvoren list je imao ISTE tri radnje dvaput - #riCta u instrumentu (maketa 7G: jedan red)
+   i staru donju traku #resCta (Kreni / Cuvaj / Deli). Stara traka se gasi dok instrument stoji; dugmad instrumenta i dalje klikcu
+   #ctaKreni/#ctaCuvaj/#ctaDeli (vez u riSekcijeNapravi), a skupljen list ima svoj Kreni. Bez instrumenta traka ostaje.
+   Samo USPRAVAN telefon: u pejzazu je stub nizak (390 px), red instrumenta ode ispod ivice, pa tamo traka ostaje. */
+@media (max-width: 900px) and (min-height: 521px) {
+  body.qplan.planning:has(#rezInst:not([hidden])) #resCta { display: none !important; }
+}
 #rezInst, #riOdDo { display: none; }
 @media (max-width: 900px), (max-height: 520px) {
   body.qplan.planning #rezInst:not([hidden]) { display: block; margin: 4px 0 10px; }
@@ -2288,6 +2300,8 @@ body.kplan #bottomnav, body.mcilj #bottomnav { display: none; }
   #searchOverlay .shead { display: flex; align-items: center; gap: 10px; padding: 12px 16px 6px; }
   /* 10.10.: Google polje (UI Kit) na mestu naseg; njegov ekran sa listom je Google-ov i ne prefarbava se */
   #searchOverlay #gPolje { flex: 1; min-width: 0; border: 1px solid var(--line-strong); border-radius: var(--r-lg); overflow: hidden; }   /* okvir kao nase polje - inace je na tamnoj podlozi prazan crn pravougaonik */
+  #searchOverlay #gPolje:focus-within { border-color: var(--accent); }
+  #searchOverlay #gPolje::part(focus-ring) { display: none; }   /* 13.10.: Google-ov plavi okvir fokusa -> nas narandzast rub */
   #gpUcitava { margin: 6px 0 10px; }
   #gpUcitava .gp-tekst { font-size: 13px; color: var(--fg-muted); margin: 0 2px 6px; }
   #gpCilj { margin: 6px 0 12px; }
@@ -6061,6 +6075,7 @@ const RECNIK_SR = {
   "off.cuvajBtn": "<svg viewBox=\"0 0 24 24\" stroke-width=\"2\"><path d=\"M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z\"/></svg>Čuvaj",
   "off.nemaRute": "Nema rute",
   "off.cuvam": "Čuvam...",
+  "off.nijeUspelo": "Čuvanje rute nije uspelo - probaj ponovo.",
   "off.sacuvanoRadi": "Sačuvano - ruta radi i bez signala",
   "off.nijeSpremna": "Ruta je sačuvana, ali aplikacija još nije spremna za rad bez signala. Ostani na vezi minut pa proveri opet.",
   "off.ispalaJedna": "Sačuvano je najviše {0} ruta - ispala je \"{1}\".",
@@ -8090,6 +8105,7 @@ const RECNIK_EN = {
   "off.cuvajBtn": "<svg viewBox=\"0 0 24 24\" stroke-width=\"2\"><path d=\"M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z\"/></svg>Save",
   "off.nemaRute": "No route",
   "off.cuvam": "Saving...",
+  "off.nijeUspelo": "Saving the route failed - try again.",
   "off.sacuvanoRadi": "Saved - the route works without signal too",
   "off.nijeSpremna": "The route is saved, but the app is not yet ready to work without signal. Stay connected for a minute and check again.",
   "off.ispalaJedna": "At most {0} routes are kept - \"{1}\" dropped out.",
@@ -18928,8 +18944,14 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.202";
+const APP_VERSION = "0.9.203";
 const CHANGELOG = [
+  { v: "0.9.203", d: "13.10.2026.", stavke: [
+    "<b>Polje za pretragu na telefonu više ne izlazi van ekrana.</b> Google polje je bilo šire od ekrana (78 px van desne ivice) i imalo plavi okvir. Sada je iste širine i izgleda kao naše polje, sa narandžastim rubom kad kucaš.",
+    "<b>Otvoren pregled rute ima jedan red dugmadi.</b> Kreni, Čuvaj i Deli su stajali dvaput (u kartici i u traci na dnu). Ostao je red iz makete; kad je list spušten, Kreni je u traci kao i do sada.",
+    "<b>Web verzija dodata na početni ekran Android telefona više ne zaključava uspravan položaj</b> (do sada je bio zaključan od jula). Aplikacija na iPhone-u je i ranije smela da se okrene.",
+    "<b>Čuvanje rute javlja šta radi</b> i kad je list gore: \"Čuvam...\", pa \"Sačuvano\", a ako ne uspe - kaže to."
+  ] },
   { v: "0.9.202", d: "10.10.2026.", stavke: [
     "<b>Politika privatnosti i uslovi korišćenja opisuju aplikaciju kakva jeste</b> (tvoje odobrenje 10.10.). Do sada su pisali \"nema naloga, nema lozinke\". Sada piše šta je na serveru i ko to vidi (nalog, prijatelji, lokacija za prijatelje, sažetak vožnje bez traga), kako se nalog briše, i da pretragu mesta radi Google Maps - uz Google-ove uslove i politiku privatnosti, kako Google traži. Isto i napomena o privatnosti u tabu Ja."
   ] },
@@ -27936,14 +27958,17 @@ async function shareRide() {
   if (k) k.addEventListener("click", () => startRide());   // Kreni = prava vožnja: GPS praćenje + preostalo km + ETA
   if (s) s.addEventListener("click", async () => {   // Čuvaj = cela ruta na telefon (radi i bez signala)
     const vrati = () => setTimeout(() => { s.innerHTML = T("off.cuvajBtn"); }, 1800);
+    /* 13.10.: na uspravnom telefonu ova traka je skrivena (Cuvaj je ikonica u instrumentu, #riCuvaj), pa natpis dugmeta niko ne vidi -
+       tada poruka o toku i gresci ide u tiho obavestenje. Gde se traka vidi, ostaje na dugmetu kao do sada (bez duple poruke). */
+    const javi = (txt) => { if (!s.offsetParent) { try { tihoObavestenje(txt); } catch (e) {} } };
     try {
       const g = (typeof state !== "undefined" && state.geocode) || {};
       const saved = JSON.parse(localStorage.getItem("rmr2_saved") || "[]");   // stara lista ostaje za brzo popunjavanje polja
       saved.unshift({ from: g.from && g.from.name, to: g.to && g.to.name, ts: new Date().toISOString() });
       localStorage.setItem("rmr2_saved", JSON.stringify(saved.slice(0, 30)));
       const r = state.routes && state.routes[state.selected];
-      if (!r) { s.innerHTML = T("off.nemaRute"); return vrati(); }
-      s.innerHTML = T("off.cuvam");
+      if (!r) { s.innerHTML = T("off.nemaRute"); javi(T("off.nemaRute")); return vrati(); }
+      s.innerHTML = T("off.cuvam"); javi(T("off.cuvam"));
       await offlineSave(r, state.lastDeparture || new Date());
       // 0.9.82: dugme se odmah vraca na "Čuvaj" - status ide tihim obavestenjem, natpis dugmeta nije mesto za poruke
       s.innerHTML = T("off.cuvajBtn");
@@ -27959,7 +27984,7 @@ async function shareRide() {
       updateQuickLabels();
     } catch (e) {
       logState({ phase: "offline-save-fail", msg: String(e).slice(0, 80) });
-      s.innerHTML = "Nije uspelo";
+      s.innerHTML = "Nije uspelo"; javi(T("off.nijeUspelo"));
     }
     vrati();
   });
