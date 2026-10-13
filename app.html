@@ -1495,6 +1495,9 @@
 @media (max-width: 900px), (max-height: 520px) {
   body.qplan.planning #rezInst:not([hidden]) { display: block; margin: 4px 0 10px; }
   body.qplan.planning #qbar, body.qplan.planning #resHero { display: none !important; }   /* stari hero i traka: zamenjeni instrumentom */
+  /* 13.10. (Boskov izbor B): "+ Dodaj stanicu" i u otvorenom listu, ispod naslova; naslov sa stanicama sme u dva reda */
+  #rezInst #riDodajList { margin: 2px 0 4px; }
+  #rezInst .ri-glava b { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.25; }
   body.qplan.planning:not(.qdetails) #card-routes { display: none !important; }   /* varijante su u redu "Ruta" */
   .ri-glava { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .ri-glava b { flex: 1; min-width: 0; font-size: 19px; font-weight: 600; color: var(--fg-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -3548,6 +3551,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     body.qplan.planning.hasroute:not(.searching):not(.riding) #panel { padding-top: calc(var(--riOdDo-h, 150px) + 16px); }
     /* 4.10.: u pejzazu je stub uvek otvoren (mapa je desno), pa kartica Od/Do OSTAJE kao zaglavlje stuba - uspravno pravilo je skriva kad je list otvoren */
     body.qplan.planning.hasroute:has(#panel.open) #riOdDo { display: block !important; }
+    #rezInst #riDodajList { display: none; }   /* 13.10.: kartica Od/Do sa svojim "+ Dodaj stanicu" stoji iznad stuba - drugi red bi bio duplikat */
     body.qplan.planning:not(.qdetails) #resHero .rslide { height: 176px; }
     #resHero .rslide { flex: 0 0 92%; }
     /* 3.10. (pregled, pejzaz): kartica Od/Do je bila fiksna preko CELOG vrha (07-planner), pa je lezala preko #plannerClose (34x34 u
@@ -4004,7 +4008,7 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
     <div id="results" class="hidden">
       <!-- 3.10. (maketa 3-ruta-final): INSTRUMENT na telefonu - naslov + cip polaska, tri broja, redovi, cipovi -->
       <div id="rezInst" hidden>
-        <div class="ri-glava"><b id="riNaslov"></b><button type="button" class="ri-kad" id="riKad" aria-expanded="false">⏱ <span id="riKadTxt">sada</span> ▾</button></div>
+        <div class="ri-glava"><b id="riNaslov"></b><button type="button" class="ri-kad" id="riKad" aria-expanded="false">⏱ <span id="riKadTxt">sada</span> ▾</button></div><button type="button" class="ri-dodaj" id="riDodajList" data-i18n="planer.riDodaj">+ Dodaj stanicu</button>
         <div class="ri-meta" id="riMeta"></div>
         <div class="ri-meni" id="riKadMeni" hidden>
           <button type="button" data-rezim="now"><span data-i18n="planer.riMeniSada">Sada</span></button>
@@ -18944,8 +18948,12 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.203";
+const APP_VERSION = "0.9.204";
 const CHANGELOG = [
+  { v: "0.9.204", d: "13.10.2026.", stavke: [
+    "<b>Stanica može da se doda i kad je pregled rute otvoren</b>: red \"+ Dodaj stanicu\" stoji odmah ispod naslova (do sada je bio samo u kartici na mapi, koja se sklanja kad povučeš list gore).",
+    "<b>Dodata stanica se vidi u naslovu</b>: \"Smederevo → Dubona → Rudnik\". Kad ih je više od dve, piše prva i koliko ih je još."
+  ] },
   { v: "0.9.203", d: "13.10.2026.", stavke: [
     "<b>Polje za pretragu na telefonu više ne izlazi van ekrana.</b> Google polje je bilo šire od ekrana (78 px van desne ivice) i imalo plavi okvir. Sada je iste širine i izgleda kao naše polje, sa narandžastim rubom kad kucaš.",
     "<b>Otvoren pregled rute ima jedan red dugmadi.</b> Kreni, Čuvaj i Deli su stajali dvaput (u kartici i u traci na dnu). Ostao je red iz makete; kad je list spušten, Kreni je u traci kao i do sada.",
@@ -27288,11 +27296,20 @@ function rezKadTekst() {
   if (!qm || qm.value === "now" || !t) return T("planer.riSada");
   return qm.value === "arrive" ? T("planer.riStigniDo", { 0: t }) : T("planer.riPolazakU", { 0: t });
 }
+/* 13.10. (Bosko: "ako dodamo stanicu izmedju, da se vidi"): naslov otvorenog lista nosi i stanice - kartica Od/Do je tada sakrivena,
+   pa je dodata stanica do sada bila nevidljiva. Imenovane grupe (mesto, deonica) idu u naslov; "oblik rute" (tacke sa mape) nema ime
+   pa ne ulazi. Vise od dve stanice: prva + "+N" (naslov je jedan do dva reda). */
+function riNaslovTekst(od, do_) {
+  let st = [];
+  try { st = riStaniceGrupe().filter((x) => !x.oblik).map((x) => String(x.ime || "").split(",")[0]).filter(Boolean); } catch (e) {}
+  const sred = st.length > 2 ? [st[0], "+" + (st.length - 1)] : st;
+  return [od.split(",")[0], ...sred, do_.split(",")[0]].join(" → ");
+}
 function rezInstCrtaj(route) {
   const box = document.getElementById("rezInst"); if (!box || !route) return;
   const g = state.geocode || {};
   const od = (g.from && g.from.name) || document.getElementById("from").value || "?", do_ = (g.to && g.to.name) || document.getElementById("to").value || "?";
-  document.getElementById("riNaslov").textContent = od.split(",")[0] + " → " + do_.split(",")[0];
+  document.getElementById("riNaslov").textContent = riNaslovTekst(od, do_);
   try { gpCiljKartica(); } catch (e) {}   // 10.10.: Google kartica cilja (slika, ime, "Google Maps") ispod naslova
   try { const pm = document.getElementById("peekMeta"); document.getElementById("riMeta").textContent = pm ? pm.textContent : ""; } catch (e) {}   // tekst iz stare trake (npr. "1 h 18 min duze od autoputa, ali vijugavo")
   document.getElementById("riKadTxt").textContent = rezKadTekst();
@@ -27545,10 +27562,13 @@ function riLokacijaBroj(dodatnih) { return 2 + (state.vias || []).length + (doda
   });
   g("riDo").addEventListener("click", () => { try { openSearch("to"); } catch (e) {} });
   /* 3.10.2026: stanice u kartici */
-  const dod = g("riDodaj"); if (dod) dod.addEventListener("click", () => {
+  /* 13.10. (Janko "nisam uspeo da kucnem medjutacku", Boskov izbor B): ista radnja i iz otvorenog lista (#riDodajList ispod naslova) -
+     kartica Od/Do je tada sakrivena (odluka 4.10.), pa stanica do sada nije mogla da se doda bez spustanja lista */
+  const riDodajStanicu = () => {
     if (riLokacijaBroj(1) > ATLAS_LOK_MAX + 2) { shareToast(T("planer.riPlafon", { 0: ATLAS_LOK_MAX + 2 })); return; }
     try { openSearch("via"); } catch (e) {}
-  });
+  };
+  for (const id of ["riDodaj", "riDodajList"]) { const dod = g(id); if (dod) dod.addEventListener("click", riDodajStanicu); }
   const sk = g("riStaniceSk"); if (sk) sk.addEventListener("click", () => { g("riOdDo").classList.toggle("ri-otvoreno"); });
   /* 3.10. 20:30: visina kartice (--riOdDo-h) pomera stub alata I vrh lista "do vrha" - meri se na SVAKU promenu visine
      (stanice, sklapanje, okret telefona), ne samo pri crtanju; inace list stane ispod stare visine */
