@@ -4839,7 +4839,7 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
       <div class="jset">
         <a class="jlink" href="privatnost.html" data-href-en="privatnost-en.html" target="_blank" rel="noopener" style="display:block;text-align:left" data-i18n="ja.politika">Politika privatnosti - šta ostaje na telefonu, a šta ne</a>
         <a class="jlink" href="privatnost.html#odricanje" data-href-en="privatnost-en.html" target="_blank" rel="noopener" style="display:block;text-align:left" data-i18n="ja.odricanje">Odricanje odgovornosti - ti voziš, ne aplikacija</a>
-        <div class="jnote" data-i18n="ja.privatnostNapomena">GPS trag vožnje ostaje na ovom telefonu i ne čuva se ni na jednom serveru. Na naš server idu nalog (mejl, ime, slika, motor), prijatelji, poslednja lokacija za prijatelje (dok je prekidač uključen) i sažetak vožnje bez traga. Pretragu mesta radi Google Maps. Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Sve je nabrojano u politici privatnosti. Bez reklama, bez alata za praćenje.</div>
+        <div class="jnote" data-i18n="ja.privatnostNapomena">GPS trag vožnje ostaje na ovom telefonu i ne čuva se ni na jednom serveru. Na naš server idu nalog (mejl, ime, slika, motor), prijatelji, poslednja lokacija za prijatelje (dok je prekidač uključen) i sažetak vožnje bez traga. Pretragu mesta radi Google Maps, a gužve TomTom (dobija deo mape koji gledaš i tačke rute za prvih sat vremena vožnje). Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Sve je nabrojano u politici privatnosti. Bez reklama, bez alata za praćenje.</div>
       </div>
     </div>
     <div class="stub"><b data-i18n="ja.izvori">Izvori podataka</b>
@@ -4906,7 +4906,7 @@ const RECNIK_SR = {
   "ja.privatnost": "Privatnost i uslovi",
   "ja.politika": "Politika privatnosti - šta ostaje na telefonu, a šta ne",
   "ja.odricanje": "Odricanje odgovornosti - ti voziš, ne aplikacija",
-  "ja.privatnostNapomena": "GPS trag vožnje ostaje na ovom telefonu i ne čuva se ni na jednom serveru. Na naš server idu nalog (mejl, ime, slika, motor), prijatelji, poslednja lokacija za prijatelje (dok je prekidač uključen) i sažetak vožnje bez traga. Pretragu mesta radi Google Maps. Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Sve je nabrojano u politici privatnosti. Bez reklama, bez alata za praćenje.",
+  "ja.privatnostNapomena": "GPS trag vožnje ostaje na ovom telefonu i ne čuva se ni na jednom serveru. Na naš server idu nalog (mejl, ime, slika, motor), prijatelji, poslednja lokacija za prijatelje (dok je prekidač uključen) i sažetak vožnje bez traga. Pretragu mesta radi Google Maps, a gužve TomTom (dobija deo mape koji gledaš i tačke rute za prvih sat vremena vožnje). Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Sve je nabrojano u politici privatnosti. Bez reklama, bez alata za praćenje.",
   "ja.izvori": "Izvori podataka",
   "ja.izvoriTekst": "Mape i putevi: OpenStreetMap saradnici, prikaz preko OpenFreeMap. Rutiranje: Valhalla moto profil. Prognoza: Open-Meteo i CHMI Aladin 2,3 km, based on data from MET Norway. Radar: RainViewer.<br><b>Stanje na putevima</b> (zatvaranja, radovi, gužve na granici): zvanični izvori po zemljama - HAK, Putevi Srbije, AMSS, promet.si, BIHAMK, AMSCG, plus Meteoalarm upozorenja državnih meteo zavoda.<br><b>Ocene kvaliteta puta</b> (kakav je asfalt): uneli motociklisti koji su tuda prošli, uz njihovu dozvolu. Hvala svima koji su podelili svoje iskustvo.",
   // ---- staticki HTML (body.html), obelezen alatom tools/i18n-oznaci.py ----
@@ -6919,6 +6919,28 @@ const RECNIK_SR = {
   "gal.nepitano": "Nije sačuvano u galeriju: dozvola još nije data.",
   "gal.istek": "Čuvanje u galeriju je predugo trajalo, pa je otkazano.",
   "gal.nijeUspelo": "Čuvanje u galeriju nije uspelo.",
+  "guz.atribucija": "Saobraćaj © TomTom",
+  "guz.izvor": "TomTom, uživo",
+  "guz.zastoj": "zastoj, {0} km/h, +{1} min",
+  "guz.zatvoreno": "put zatvoren",
+  "guz.uzZastoje": "uz zastoje +{0} min",
+  "guz.nijeProvereno": "gužve nisu proverene",
+  "guz.priPolasku": "gužve se gledaju uživo, pri polasku",
+  "guz.bezZastoja": "bez zastoja u prvih {0} min (TomTom)",
+  "guz.meta1": "Zastoj: {0}, +{1} min",
+  "guz.metaN": "{2} zastoja usput (prvi: {0}), ukupno +{1} min",
+  "lay.guzve": "Gužve uživo",
+  "lay.guzveNapomena": "TomTom: žuto sporo, crveno stoji; vidi se kad uvećaš grad",
+  "guz.zaobLabel": "Zaobilazi gužvu · {0} min brže",
+  "guz.zaobPonuda": "<b>Zaobiđi gužvu</b>: {0} min brže po TomTom-u, {1}.",
+  "guz.zaobDuze": "{0} km duže",
+  "guz.zaobKrace": "{0} km kraće",
+  "guz.zaobIzaberi": "Izaberi obilazak",
+  "guz.zaobIzabran": "Voziš obilazak gužve: {0} min brže po TomTom-u (provereno pri planu).",
+  "guz.zaobNijeBrze": "Obilazak gužve sam proverio: ne bi bio brži (TomTom).",
+  "guz.zaobStanice": "Obilazak gužve se ne računa kad je stanica pre zastoja.",
+  "guz.metaZaob": "Obilazak je {0} min brži - vidi Upozorenja",
+  "guz.zaobNema": "Oko ovog zastoja nema razumnog obilaska - ruter bi te vodio mnogo duže.",
 };
 /* English dictionary. Same keys as sr.js - the test fails on any key missing on either side.
    Plain hyphens, no em dashes (house rule). */
@@ -6961,7 +6983,7 @@ const RECNIK_EN = {
   "ja.privatnost": "Privacy and terms",
   "ja.politika": "Privacy policy - what stays on the phone and what does not",
   "ja.odricanje": "Disclaimer - you ride, not the app",
-  "ja.privatnostNapomena": "The GPS trace of your ride stays on this phone and is not stored on any server. Our server holds your account (email, name, photo, motorcycle), friends, your last location for friends (while the switch is on) and a ride summary without the trace. Place search is done by Google Maps. When the app needs to know something about the place you are at right now - the speed limit, the forecast where you are, a place name for the log, a new route when you turn off - that question goes in passing to a public service, with a few points and without your name. Everything is listed in the privacy policy. No ads, no tracking tools.",
+  "ja.privatnostNapomena": "The GPS trace of your ride stays on this phone and is not stored on any server. Our server holds your account (email, name, photo, motorcycle), friends, your last location for friends (while the switch is on) and a ride summary without the trace. Place search is done by Google Maps, and traffic by TomTom (it receives the part of the map you are looking at and the route points for the first hour of riding). When the app needs to know something about the place you are at right now - the speed limit, the forecast where you are, a place name for the log, a new route when you turn off - that question goes in passing to a public service, with a few points and without your name. Everything is listed in the privacy policy. No ads, no tracking tools.",
   "ja.izvori": "Data sources",
   "ja.izvoriTekst": "Maps and roads: OpenStreetMap contributors, rendered via OpenFreeMap. Routing: Valhalla motorcycle profile. Forecast: Open-Meteo and CHMI Aladin 2.3 km, based on data from MET Norway. Radar: RainViewer.<br><b>Road conditions</b> (closures, roadworks, border queues): official sources per country - HAK, Putevi Srbije, AMSS, promet.si, BIHAMK, AMSCG, plus Meteoalarm warnings from national weather services.<br><b>Road quality ratings</b> (what the asphalt is like): entered by motorcyclists who rode there, with their permission. Thanks to everyone who shared their experience.",
   // ---- static HTML (body.html), marked by tools/i18n-oznaci.py ----
@@ -8946,6 +8968,28 @@ const RECNIK_EN = {
   "gal.nepitano": "Not saved to the gallery: permission has not been granted yet.",
   "gal.istek": "Saving to the gallery took too long and was cancelled.",
   "gal.nijeUspelo": "Saving to the gallery failed.",
+  "guz.atribucija": "Traffic © TomTom",
+  "guz.izvor": "TomTom, live",
+  "guz.zastoj": "jam, {0} km/h, +{1} min",
+  "guz.zatvoreno": "road closed",
+  "guz.uzZastoje": "incl. jams +{0} min",
+  "guz.nijeProvereno": "traffic not checked",
+  "guz.priPolasku": "traffic is checked live, at departure",
+  "guz.bezZastoja": "no jams in the first {0} min (TomTom)",
+  "guz.meta1": "Jam: {0}, +{1} min",
+  "guz.metaN": "{2} jams ahead (first: {0}), +{1} min in total",
+  "lay.guzve": "Live traffic",
+  "lay.guzveNapomena": "TomTom: yellow slow, red standing; shows when you zoom into a city",
+  "guz.zaobLabel": "Avoids traffic · {0} min faster",
+  "guz.zaobPonuda": "<b>Avoid the jam</b>: {0} min faster according to TomTom, {1}.",
+  "guz.zaobDuze": "{0} km longer",
+  "guz.zaobKrace": "{0} km shorter",
+  "guz.zaobIzaberi": "Take the detour",
+  "guz.zaobIzabran": "You are taking the detour: {0} min faster according to TomTom (checked when planned).",
+  "guz.zaobNijeBrze": "I checked a detour around the jam: it would not be faster (TomTom).",
+  "guz.zaobStanice": "A detour is not calculated when a stop comes before the jam.",
+  "guz.metaZaob": "A detour is {0} min faster - see Warnings",
+  "guz.zaobNema": "There is no sensible detour around this jam - the router would take you much further.",
 };
 /* ---- Jezik aplikacije / app language (0.9.159) ----
    Jedan recnik po jeziku (i18n/sr.js, i18n/en.js), jedan kljuc po natpisu. Staticni HTML nosi
@@ -11208,9 +11252,12 @@ async function valhallaRoute(from, to, style, netOpts) {
     costing_options: { motorcycle: { use_highways: state.bezAutoputa ? Math.min(style.uh, 0.02) : style.uh, use_tolls: state.bezAutoputa ? Math.min(style.ut, 0.05) : style.ut, exclude_unpaved: true } },   // 3.10.: cip "Bez autoputa"
     units: "kilometers",
   };
-  if (state._izbegniPoly && state._izbegniPoly.length) {   // 5.10.: zatvaranja/neprohodni radovi/prijave (preprekeNaRutama)
+  /* 5.10.: zatvaranja/neprohodni radovi/prijave (preprekeNaRutama); 14.10.: + zone zastoja SAMO za ovaj jedan zahtev (netOpts.izbegni, guzve.js) -
+     zastoji ne ulaze u state._izbegniPoly jer ono vazi i za skretanje u voznji, a zastoj se razidje */
+  const _zone = (state._izbegniPoly || []).concat((netOpts && netOpts.izbegni) || []);
+  if (_zone.length) {
     /* zona u kojoj stoji neka lokacija zahteva (vozac je u njoj pri skretanju u voznji, cilj je u njoj) obara zahtev - ta se izostavlja */
-    const z = state._izbegniPoly.filter((pl) => !locations.some((l) => _uPoligonu(l.lat, l.lon, pl)));
+    const z = _zone.filter((pl) => !locations.some((l) => _uPoligonu(l.lat, l.lon, pl)));
     if (z.length) body.exclude_polygons = z;
   }
   const j = await fetchJSON("https://valhalla1.openstreetmap.de/route", { method: "POST", body: JSON.stringify(body),
@@ -13064,6 +13111,7 @@ function clearMap() {
   for (const id of ["seg", "seg-casing", "alts", "nav-risk"]) if (map.getLayer(id)) map.removeLayer(id);
   for (const id of ["seg", "alts"]) if (map.getSource(id)) map.removeSource(id);
   try { sumTragSkini(); } catch (e) {}   // trag sazetka v3 - isti zakon kao nav-risk: zaostali sloj rusi sledece planiranje
+  try { if (typeof guzvaRutaGasi === "function") guzvaRutaGasi(); } catch (e) {}   // 14.10.: zastoji na liniji rute (guzve.js)
 }
 const CAT_LABELS = { fuel: T("cat.fuel"), food: T("cat.food"), camp: T("cat.camp"), cam: T("cat.cam"), pause: T("cat.pause"), work: T("cat.work") };
 function markerPopup(html) {
@@ -14887,6 +14935,7 @@ async function renderWarnings(assess) {
         ? T("warn.nema")
         : T("warn.nemaNaDelu", { 0: cov.procenat });
     try { _meteoUWarn(); } catch (e) {}   // 4.10.: Meteoalarm redovi prezivljavaju novo crtanje zona
+    try { if (typeof _guzvaUWarn === "function") _guzvaUWarn(); } catch (e) {}   // 14.10.: zastoji (guzve.js) isto
     return zones;
   }
   for (const z of zones.slice(0, 5)) {
@@ -14904,6 +14953,7 @@ async function renderWarnings(assess) {
   }
   if (_mySeq !== state.planSeq) return zones;   // R13v2: stara generacija NE pecatira svoje zone kao aktuelne
   try { _meteoUWarn(); } catch (e) {}   // 4.10.: Meteoalarm redovi prezivljavaju novo crtanje zona
+  try { if (typeof _guzvaUWarn === "function") _guzvaUWarn(); } catch (e) {}   // 14.10.: zastoji (guzve.js) isto
   state._zones = zones;
   try { const r = state.routes && state.routes[state.selected]; if (r) renderResultHero(r); } catch (e) {}
   return zones;
@@ -18086,7 +18136,15 @@ async function selectRoute(departure) {
   try { await renderSuggestions(route, assess, departure, zones); } catch (e) {}
   if (_seq !== state.planSeq) return;
   try { renderFamousSuggestion().catch(() => {}); } catch (e) {}   // async od 30.8. (ukrstanje sa terenskim ocenama) - odbijeno obecanje se ne sme izgubiti
+  try { if (route._guzva && typeof guzvaPrikazi === "function") guzvaPrikazi(route); } catch (e) {}   // 14.10.: varijanta vec proverena - zastoji odmah
   await Promise.allSettled([renderCost(route), renderFuel(route, assess, departure), renderFood(route, assess, departure),
+    (async () => {   // 14.10.: guzva na OVOJ ruti (TomTom, guzve.js) - u pozadini, ne drzi plan
+      if (typeof guzvaProveri !== "function") return;
+      await guzvaProveri(route, departure);
+      if (_seq !== state.planSeq) return;
+      guzvaPrikazi(route);
+      guzvaZaobPonudi(route, departure, _seq);   // obilazak: Valhalla + dva TomTom poredjenja - ne drzi ostale presude, javlja se sam
+    })(),
     renderDifficulty(route), renderCameras(route), renderRoadworks(route), renderRoadStatus(route), renderStanjePuta(route),
     (async () => {
       // Druga varijanta koju korisnik izabere klikom nema jos fini sloj - dovuci ga i preracunati,
@@ -18948,8 +19006,14 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.204";
+const APP_VERSION = "0.9.205";
 const CHANGELOG = [
+  { v: "0.9.205", d: "14.10.2026.", stavke: [
+    "<b>Gužve uživo na mapi</b> (tvoj nalog posle vožnje kroz Beograd). Novi sloj u Slojevima, uključen: TomTom crta samo puteve gde se sporo vozi - žuto sporo, crveno stoji. Vidi se kad uvećaš grad.",
+    "<b>Zastoji na tvojoj ruti</b>: posle plana TomTom proveri baš tvoju rutu. Zastoj ide u Upozorenja (gde, kada stižeš, brzina, koliko kasniš), deo rute sa zastojem je obojen na mapi, a vreme dolaska u Stižeš uključuje kašnjenje.",
+    "<b>Zaobiđi gužvu</b>: kad te zastoji koštaju bar 3 minuta, aplikacija traži obilazak samo oko zastoja (ostatak tvoje rute ostaje isti), pa TomTom proveri i staru i novu putanju uz živu gužvu. Obilazak se nudi kao nova kartica i dugme u Upozorenjima SAMO kad je stvarno brži bar 2 minuta; inače piše da ne bi bio brži.",
+    "Gužva se gleda samo za prvih 45 minuta vožnje i samo za polazak sada - dalje je to druga gužva. Kad TomTom ne odgovori, piše \"gužve nisu proverene\", nikad \"bez gužve\". Kad kreneš, zastoj izmeren pri planu se više ne prikazuje kao trenutni (provera u vožnji stiže kasnije)."
+  ] },
   { v: "0.9.204", d: "13.10.2026.", stavke: [
     "<b>Stanica može da se doda i kad je pregled rute otvoren</b>: red \"+ Dodaj stanicu\" stoji odmah ispod naslova (do sada je bio samo u kartici na mapi, koja se sklanja kad povučeš list gore).",
     "<b>Dodata stanica se vidi u naslovu</b>: \"Smederevo → Dubona → Rudnik\". Kad ih je više od dve, piše prva i koliko ih je još."
@@ -24502,6 +24566,7 @@ function startRide() {
   try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
   rideSensorsInit();
   document.body.classList.remove("planning"); document.body.classList.add("riding");
+  try { if (typeof guzvaRutaGasi === "function") guzvaRutaGasi(); } catch (e) {}   // 14.10.: zastoj izmeren pri planu nije trenutni u voznji (guzvaVazi = ne u voznji; provera u voznji = sledeci korak)
   /* Atribucija se skuplja na (i) cim krene voznja (11.8.). Kontrola jeste compact, ali stoji
      otvorena dok je korisnik ne dodirne - a otvoren tekst "OpenFreeMap (c) OpenMapTiles / from
      OpenStreetMap" lezi tacno ispod pilule "jos X km · HH:MM" i meša se sa njom. Tap na (i) je i
@@ -27321,9 +27386,12 @@ function rezInstCrtaj(route) {
   /* 5.10. (jedan predikat, dva teksta): red ispod brojeva i sekcija Upozorenja citaju ISTO stanje - kad Meteoalarm ima upozorenje
      za kraj kroz koji ides, recenica "Suvo i mirno" ga ne precutkuje */
   const _mt = (state._meteoRedoviSeq === state.planSeq && state._meteoRedovi) || [];
-  document.getElementById("riOcenaZasto").textContent = sc ? sc.why + (_mt.length ? T("planer.meteoDodatak", { 0: _mt.length }) : "") : "";
+  const _gm = typeof guzvaMeta === "function" ? guzvaMeta(route) : "";   // 14.10.: zastoji iz TomTom provere - ista recenica koju vozac cita ispod brojeva
+  document.getElementById("riOcenaZasto").textContent = sc ? sc.why + (_mt.length ? T("planer.meteoDodatak", { 0: _mt.length }) : "") + (_gm ? " " + _gm + "." : "") : _gm;
   const dep = state.lastDeparture instanceof Date ? state.lastDeparture : new Date();
-  document.getElementById("riStizes").textContent = fmtTime(new Date(dep.getTime() + route.totalDur * 1000));
+  /* 14.10.: JEDNO vreme dolaska - zastoji iz TomTom provere (samo oni do kojih stizes u prvih 45 min) ulaze u isti broj; nema drugog "+X min" pored njega */
+  const _gz = typeof guzvaKasnjenjeSek === "function" ? guzvaKasnjenjeSek(route) : 0;
+  document.getElementById("riStizes").textContent = fmtTime(new Date(dep.getTime() + (route.totalDur + _gz) * 1000));
   const wxV = document.getElementById("rhWxV"), wxS = document.getElementById("rhWxS"), rv = document.getElementById("riVreme");
   rv.textContent = (wxV ? wxV.textContent : "") + (wxS && wxS.textContent ? " · " + wxS.textContent : "");
   rv.className = "ri-v " + (document.getElementById("rhWx") ? document.getElementById("rhWx").className.replace(/.*\b(ok|warn|bad|na)\b.*/, "$1") : "");
@@ -27428,15 +27496,17 @@ function riPresude(route) {
   // Stizes
   const tro = g("riTrosak") ? g("riTrosak").textContent.replace(/\s+/g, " ").trim() : "";
   let domet = null; try { const tk = +(g("tank") || {}).value, cs = +(g("cons") || {}).value; if (tk > 0 && cs > 0) domet = Math.round(tk / cs * 100); } catch (e) {}   // 3.10. (pregled V11): broj, ne parsiranje teksta
-  set("stizes", esc(txt("riStizes")), tro + (domet ? " · " + T("planer.akDomet", { 0: domet }) : ""));
+  const _gz = typeof guzvaKasnjenjeSek === "function" ? guzvaKasnjenjeSek(route) : 0;   // 14.10.: zasto je Stizes kasnije nego vreme voznje
+  set("stizes", esc(txt("riStizes")), (_gz >= 60 ? T("guz.uzZastoje", { 0: Math.round(_gz / 60) }) + " · " : "") + tro + (domet ? " · " + T("planer.akDomet", { 0: domet }) : ""));
   // Upozorenja
   const zone = li("warnList").filter((l) => /warn-li|bad-li/.test(l.className));
   /* 3.10. (pregled K4): kanal neprijatnih istina (#planWarn: "moto profil ne radi", "ruter nije odgovorio", "deonica nije usla")
      zivi u ovoj sekciji - MORA da se broji, inace stoji zakopan iza zelene nule (ponistilo bi popravku 0.9.95). */
   const pw = g("planWarn"); const pwTx = pw && !pw.hidden ? pw.textContent.replace(/\s+/g, " ").trim() : "";
   const nUp = zone.length + (pwTx ? 1 : 0);
-  const razlozi = (pwTx ? [pwTx.slice(0, 60)] : []).concat(zone.slice(0, 2).map((l) => (l.textContent.split(":").pop() || "").split(",")[0].trim())).filter(Boolean).slice(0, 2).join(" · ");
-  set("upoz", String(nUp), nUp ? razlozi : T("planer.akNistaZaOprez"), nUp ? (zone.some((l) => /bad-li/.test(l.className)) || pwTx ? (pwTx && !zone.length ? "warn" : zone.some((l) => /bad-li/.test(l.className)) ? "bad" : "warn") : "warn") : "ok");
+  const razlozi = [...new Set((pwTx ? [pwTx.slice(0, 60)] : []).concat(zone.slice(0, 3).map((l) => (l.textContent.split(":").pop() || "").split(",")[0].trim())).filter(Boolean))].slice(0, 2).join(" · ");   // 14.10.: bez "zastoj · zastoj"
+  const _gzN = typeof guzvaNapomena === "function" ? guzvaNapomena(route) : "";   // 14.10.: guzve nisu proverene / pri polasku / bez zastoja - nikad precutano
+  set("upoz", String(nUp), (nUp ? razlozi : T("planer.akNistaZaOprez")) + (_gzN ? " · " + _gzN : ""), nUp ? (zone.some((l) => /bad-li/.test(l.className)) || pwTx ? (pwTx && !zone.length ? "warn" : zone.some((l) => /bad-li/.test(l.className)) ? "bad" : "warn") : "warn") : "ok");
   const akU = host.querySelector('[data-ak="upoz"]'); if (akU && nUp && !akU.dataset.rucno) { akU.classList.add("open"); akU.querySelector(".hd").setAttribute("aria-expanded", "true"); }
   // Kad krenuti
   const best = g("whenOut") ? g("whenOut").querySelector(".when-row.best .wr-time") : null;
@@ -28486,6 +28556,7 @@ function openLayersSheet() {
   sh.innerHTML = `<div class="lsback"></div><div class="lsbody"><div class="grab"></div><div class="lst">${T("lay.naslov")}</div>
     <button class="lrow lsbtn" id="lsWx" type="button"><span>${rIco("rain", 15)} ${T("lay.vremeZaTacku")}</span><span class="chev">›</span></button>
     <label class="lrow"><span>${rIco("rain", 15)} ${T("lay.radar")}<small style="display:block;font-size:12px;font-weight:400;color:var(--fg-muted)">${esc(radarPodnaslov())}</small></span><input type="checkbox" id="lsRadar" ${radar.on ? "checked" : ""}></label>
+    <label class="lrow"><span>${rIco("warning", 15)} ${T("lay.guzve")}<small style="display:block;font-size:12px;font-weight:400;color:var(--fg-muted)">${T("lay.guzveNapomena")}</small></span><input type="checkbox" id="lsGuzve" ${typeof guzvaSlojZeljen === "function" && guzvaSlojZeljen() ? "checked" : ""}></label>
     <label class="lrow"><span>${rIco("viewpoint", 15)} ${T("lay.pogled3d")}</span><input type="checkbox" id="lsTilt" ${map.getPitch() > 20 ? "checked" : ""}></label>
     <label class="lrow"><span>${rIco("mountain", 15)} ${T("lay.reljef3d")}<small style="display:block;font-size:12px;font-weight:400;color:var(--fg-muted)">${T("lay.reljef3dNapomena")}</small></span><input type="checkbox" id="lsTeren" ${terenZeljen() ? "checked" : ""}></label>${rows}
     <div class="lsleg">${T("lay.legenda")} <i style="background:#86d98a"></i> ${T("lay.legVedro")} · <i style="background:#f0c14b"></i> ${T("lay.legOprez")} · <i style="background:#ea3d57"></i> ${T("lay.legNevreme")}</div></div>`;
@@ -28499,6 +28570,11 @@ function openLayersSheet() {
     const c = e.target;
     if (c.id === "lsTilt") {
       const t = document.querySelector('[data-fab="tilt"]'); if (t) t.click();
+      return;
+    }
+    if (c.id === "lsGuzve") {   // 14.10.: TomTom guzve na mapi (guzve.js)
+      guzvaSlojUpisi(c.checked);
+      if (c.checked) guzvaSlojPali(); else guzvaSlojGasi();
       return;
     }
     if (c.id === "lsTeren") {
@@ -31977,6 +32053,399 @@ function juriProveri() {
 }
 
 /* ---- app2 Faza 3.1: GPS polazak + brza dugmad + sheet drag + vožnja ---- */
+/* ================= GUZVE UZIVO (14.10.2026) =================
+   Bosko posle voznje kroz Beograd: "nemamo gde su guzve i kako da ih izbegnemo"; pa: "Odmah kreni da to radimo, guzva je jako
+   bitna da se upozori i izbegne". Ovo je PRVI deo (0.9.205): videti guzvu i biti upozoren; zaobilazak je sledece izdanje.
+   Izvor je TomTom (kljuc TT_KEY, isti kao pretraga). Dva dela:
+   1) SLOJ "Guzve" na mapi: TomTom plocice protoka, stil relative-delay = crta SAMO usporene puteve (zuto, narandzasto, crveno), bez
+      zelenog koje bi se mesalo sa nasom zelenom rutom; lezi ISPOD nase rute i ispod natpisa mape. 200.000 plocica mesecno besplatno
+      (docs.tomtom.com/pricing, procitano 14.10.2026), bez kartice.
+   2) GUZVA NA NASOJ RUTI: TomTom calculateRoute (POST) sa supportingPoints = tacke NASE rute i minDeviation 0, pa TomTom vozi bas nasu
+      geometriju i vraca TRAFFIC sekcije (zastoj, brzina, kasnjenje). Izmereno 14.10. u 18:27, Arena -> Karaburma (tools/fixtures/tomtom):
+      dva zastoja, 9 i 11 km/h, +107 s i +118 s. Routing: 20.000 mesecno besplatno.
+   Pravila iskrenosti (ista kao za prognozu u satu prolaska):
+   - ziv podatak vazi za SADA: zastoj se prikazuje samo ako do njega stizes u prvih GUZVA_PROZOR_MIN minuta; za polazak kasnije od
+     GUZVA_SADA_MIN se zivo ne prikazuje nista, nego se kaze da se guzva gleda pri polasku;
+   - TomTom nije odgovorio / odbio / nema signala = "guzve nisu proverene", NIKAD "bez guzve";
+   - TomTom mora da vozi NASU rutu: duzina koja odstupa vise od GUZVA_ODSTUPANJE znaci da nije pratio nasu rutu = "nije provereno";
+   - jedno vreme dolaska: Stizes = nase vreme voznje + kasnjenje zastoja u prozoru (TomTom-ov model brzina se ne mesa sa nasim).
+   iPhone: kljuc je ogranicen na domen, a iPhone ljuska salje poreklo capacitor:// koje TomTom odbija (izmereno 26.8.; bez porekla 403,
+   izmereno 14.10.). Zato tamo zahtev ide kroz nativni HTTP (CapacitorHttp) sa poreklom routemeright.app. Privremeno, dok pred izlazak
+   ne dodje posrednik (proksi). */
+const GUZVA_PROZOR_MIN = 45;      // zastoj do kog stizes kasnije od ovoga se ne prikazuje (dok stignes, to vise nije ta guzva)
+const GUZVA_SADA_MIN = 15;        // polazak do 15 min od sada racuna se kao "sada"
+const GUZVA_MIN_SEK = 30;         // kraci zastoj se ne broji
+const GUZVA_ODSTUPANJE = 0.08;    // TomTom duzina naspram nase (isti deo rute): vise od 8% = nije vozio nasu rutu
+const GUZVA_TACAKA_MAX = 300;     // tacaka nase rute u jednom zahtevu
+const GUZVA_RAZMAK_M = 100;       // najmanji razmak tacaka (gusce ne treba - Valhalla tacke su na 20-50 m)
+const GUZVA_VAZI_MS = 5 * 60000;  // provera zastari: povratak na istu varijantu posle 5 min pita ponovo
+const GUZVA_PRIKAZ_MS = 20 * 60000;  // posle 20 min provera se vise NIGDE ne prikazuje (ni Stizes, ni crven deo, ni redovi, ni recenica)
+const GUZVA_SALJE_MIN = 60;       // TomTom dobija tacke rute za prvih sat vremena voznje (tako pise i u politici privatnosti)
+const GUZVA_SLOJ_OSVEZI_MS = 3 * 60000;   // plocice sloja se osvezavaju: MapLibre inace drzi ucitanu plocicu i prikazuje staru guzvu kao zivu
+const GUZVA_SLOJ_KLJUC = "rmr2_guzve";
+const TT_POREKLO = "https://routemeright.app";
+
+function ttPreko() {   // "nativno" samo u iPhone ljusci (capacitor://); Android ljuska ima poreklo https://localhost koje kljuc prima
+  try { return /^capacitor:$/i.test(location.protocol) && typeof nativniHttp === "function" && nativniHttp() ? "nativno" : "web"; } catch (e) { return "web"; }
+}
+async function ttJSON(url, body) {
+  if (ttPreko() === "nativno") {
+    const r = await nativniHttp().request({ url, method: body ? "POST" : "GET", data: body,
+      headers: { "Content-Type": "application/json", Origin: TT_POREKLO, Referer: TT_POREKLO + "/app.html" }, connectTimeout: 8000, readTimeout: 8000 });
+    if (!r || r.status !== 200) { const e = new Error("TomTom HTTP " + (r && r.status)); e.status = r && r.status; throw e; }
+    return typeof r.data === "string" ? JSON.parse(r.data) : r.data;
+  }
+  // POST trazi application/json (text/plain = 415, izmereno 14.10.); TomTom odgovara na pripremni CORS zahtev za svako poreklo
+  return fetchJSON(url, { method: body ? "POST" : "GET", headers: body ? { "Content-Type": "application/json" } : undefined,
+    body: body ? JSON.stringify(body) : undefined, timeoutMs: 8000, retries: 0 });
+}
+
+/* ---- 1) SLOJ NA MAPI ---- */
+function guzvaSlojZeljen() { try { return localStorage.getItem(GUZVA_SLOJ_KLJUC) !== "0"; } catch (e) { return true; } }   // podrazumevano ukljucen
+function guzvaSlojUpisi(on) { try { localStorage.setItem(GUZVA_SLOJ_KLJUC, on ? "1" : "0"); } catch (e) {} }
+function guzvaBajtovi(d) {   // CapacitorHttp na iPhone-u vraca binarno telo kao base64 tekst
+  if (d instanceof ArrayBuffer) return d;
+  if (typeof d === "string") { const s = atob(d); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u.buffer; }
+  throw new Error("plocica: nepoznat oblik");
+}
+function guzvaProtokol() {   // iPhone: plocice idu kroz nativni HTTP (vidi zaglavlje); MapLibre 4 prima obecanje sa { data }
+  if (guzvaProtokol._ok || ttPreko() !== "nativno" || !window.maplibregl || !maplibregl.addProtocol) return;
+  guzvaProtokol._ok = true;
+  maplibregl.addProtocol("ttguzve", async (params) => {
+    const r = await nativniHttp().request({ url: "https://" + String(params.url).replace(/^ttguzve:\/\//, ""), method: "GET", responseType: "arraybuffer",
+      headers: { Origin: TT_POREKLO, Referer: TT_POREKLO + "/app.html" }, connectTimeout: 8000, readTimeout: 8000 });
+    if (!r || r.status !== 200) throw new Error("TomTom plocica " + (r && r.status));
+    return { data: guzvaBajtovi(r.data) };
+  });
+}
+function guzvaSlojPali() {
+  if (typeof map === "undefined" || !map || !map.getStyle || !guzvaSlojZeljen() || !TT_KEY) return;
+  try {
+    if (map.getLayer("guzve")) return;
+    guzvaProtokol();
+    const put = "api.tomtom.com/traffic/map/4/tile/flow/relative-delay/{z}/{x}/{y}.png?key=" + TT_KEY + "&t=" + Math.floor(Date.now() / GUZVA_SLOJ_OSVEZI_MS);
+    if (!map.getSource("guzve")) map.addSource("guzve", { type: "raster", tileSize: 256, minzoom: 10, maxzoom: 18,
+      tiles: [(ttPreko() === "nativno" ? "ttguzve://" : "https://") + put], attribution: T("guz.atribucija") });
+    /* ispod nase rute (seg-casing) i ispod natpisa mape - guzva ne sme da prekrije ni rutu ni imena ulica */
+    const prviNatpis = ((map.getStyle().layers || []).find((l) => l.type === "symbol") || {}).id;
+    const ispod = map.getLayer("radar") ? "radar" : map.getLayer("alts") ? "alts" : map.getLayer("seg-casing") ? "seg-casing" : prviNatpis;
+    map.addLayer({ id: "guzve", type: "raster", source: "guzve", minzoom: 10, paint: { "raster-opacity": 0.85 } }, ispod);
+  } catch (e) { try { navLog("guzva-sloj", { greska: String(e && e.message || e).slice(0, 80) }); } catch (e2) {} }
+}
+function guzvaSlojGasi() {
+  try { if (map.getLayer("guzve")) map.removeLayer("guzve"); if (map.getSource("guzve")) map.removeSource("guzve"); } catch (e) {}
+}
+/* sveze plocice: na svaka 3 min nov "&t=" u adresi, pa MapLibre uzme nove (ista adresa = ista, stara plocica iz kesa); ne radi dok je app sakriven */
+function guzvaSlojOsvezi() {
+  try {
+    if (document.hidden || typeof map === "undefined" || !map) return;
+    const src = map.getSource("guzve"); if (!src || !src.setTiles) return;
+    const t = Math.floor(Date.now() / GUZVA_SLOJ_OSVEZI_MS);
+    src.setTiles([(ttPreko() === "nativno" ? "ttguzve://" : "https://") + "api.tomtom.com/traffic/map/4/tile/flow/relative-delay/{z}/{x}/{y}.png?key=" + TT_KEY + "&t=" + t]);
+  } catch (e) {}
+}
+
+/* ---- 2) GUZVA NA NASOJ RUTI ---- */
+/** Tacke nase rute za TomTom: samo deo do kog se stize za `doSek` (ziv podatak dalje ne vazi) - ili tacno do indeksa `doIdx` -
+    razmak >= GUZVA_RAZMAK_M, najvise GUZVA_TACAKA_MAX. */
+function guzvaUzorak(route, doSek, doIdx) {
+  const C = (route && route.coords) || [], D = (route && route.cumDist) || [], S = (route && route.cumDur) || [];
+  if (C.length < 2 || D.length !== C.length) return null;
+  let kraj = C.length - 1;
+  if (doIdx != null) kraj = Math.max(1, Math.min(C.length - 1, doIdx | 0));
+  else if (doSek && S.length === C.length) for (let i = 1; i < C.length; i++) if (S[i] > doSek) { kraj = i; break; }
+  const duzM = D[kraj] - D[0];
+  const razmak = Math.max(GUZVA_RAZMAK_M, duzM / (GUZVA_TACAKA_MAX - 1));
+  const idx = [0]; let posl = D[0];
+  for (let i = 1; i < kraj; i++) if (D[i] - posl >= razmak) { idx.push(i); posl = D[i]; }
+  idx.push(kraj);
+  return { kraj, idx, duzM };
+}
+/** TomTom odgovor -> zastoji na NASOJ ruti (indeksi, km, nase vreme do zastoja). Pretraga je monotona: zastoji idu redom duz rute. */
+function guzvaMapiraj(route, uz, tt) {
+  const r0 = tt && tt.routes && tt.routes[0];
+  if (!r0 || !uz) return { stanje: "nije", zasto: "prazno" };
+  const ttDuz = r0.summary && +r0.summary.lengthInMeters;
+  if (!(ttDuz > 0) || Math.abs(ttDuz - uz.duzM) / Math.max(1, uz.duzM) > GUZVA_ODSTUPANJE) return { stanje: "nije", zasto: "odstupa", ttDuz, nasaDuz: uz.duzM };
+  const C = route.coords, D = route.cumDist, S = route.cumDur || [];
+  const P = (r0.legs || []).flatMap((l) => l.points || []);
+  const naNasu = (p, od) => {
+    let bi = od, bd = Infinity;
+    for (let i = od; i <= uz.kraj; i++) { const d = haversine(p.latitude, p.longitude, C[i][1], C[i][0]); if (d < bd) { bd = d; bi = i; } }
+    return { i: bi, d: bd };
+  };
+  const zastoji = []; let od = 0;
+  for (const s of (r0.sections || [])) {
+    if (s.sectionType !== "TRAFFIC") continue;
+    const pa = P[s.startPointIndex], pb = P[s.endPointIndex]; if (!pa || !pb) continue;
+    const a = naNasu(pa, od), b = naNasu(pb, a.i);
+    if (a.d > 0.15 || b.d > 0.15) continue;   // tacka zastoja nije na nasoj ruti (km)
+    od = a.i;
+    const iB = Math.max(a.i + 1, b.i);
+    zastoji.push({ iA: a.i, iB, kmOd: D[a.i] / 1000, kmDo: D[iB] / 1000, kadSek: S.length === C.length ? S[a.i] : null,
+      sek: +s.delayInSeconds || 0, kmh: s.effectiveSpeedInKmh != null ? +s.effectiveSpeedInKmh : null,
+      kat: s.simpleCategory || "OTHER", jacina: +s.magnitudeOfDelay || 0 });
+  }
+  return { stanje: "ok", zastoji, ttDuz, nasaDuz: uz.duzM };
+}
+/** Minuti jednog zastoja kako ih vozac CITA (red u Upozorenjima). Zbir, Stizes i recenica sabiraju BAS ove brojeve - da "+2" i "+1" ne daju "+4". */
+function guzvaMin(x) { return x.kat === "ROAD_CLOSURE" ? 0 : Math.max(1, Math.round((+x.sek || 0) / 60)); }
+/** Sta od zastoja vazi SADA: u prozoru, i dovoljno dug (zatvoren put uvek). Kasnjenje zatvorenog puta se ne sabira - ruta tu ne prolazi. */
+function guzvaUProzoru(g) {
+  const z = ((g && g.zastoji) || []).filter((x) => (x.kadSek == null || x.kadSek <= GUZVA_PROZOR_MIN * 60) && (x.sek >= GUZVA_MIN_SEK || x.kat === "ROAD_CLOSURE"));
+  return { zastoji: z, kasnjenje: z.reduce((s, x) => s + guzvaMin(x) * 60, 0) };
+}
+/** JEDAN predikat za sve sto se prikazuje (Stizes, crven deo rute, redovi u Upozorenjima, recenica): provera OVE rute, za ovaj polazak,
+    sveza (do GUZVA_PRIKAZ_MS), i ne u voznji - u voznji se guzva jos ne proverava iznova, pa izmerena pri planu ne sme da stoji kao trenutna. */
+function guzvaVazi(route) {
+  const g = route && route._guzva;
+  if (!g || g.stanje !== "ok") return false;
+  try { if (document.body.classList.contains("riding")) return false; } catch (e) {}
+  const dep = state.lastDeparture instanceof Date ? state.lastDeparture.getTime() : Date.now();
+  return Math.abs((g.dep || 0) - dep) <= 90000 && Date.now() - (g.ts || 0) <= GUZVA_PRIKAZ_MS;
+}
+/** Jedan izvor za vreme dolaska. */
+function guzvaKasnjenjeSek(route) { return guzvaVazi(route) ? guzvaUProzoru(route._guzva).kasnjenje : 0; }
+function guzvaUrl(route, uz) {
+  const a = route.coords[0], b = route.coords[uz.kraj];
+  return "https://api.tomtom.com/routing/1/calculateRoute/" + a[1].toFixed(6) + "," + a[0].toFixed(6) + ":" + b[1].toFixed(6) + "," + b[0].toFixed(6) +
+    "/json?key=" + TT_KEY + "&traffic=true&travelMode=motorcycle&sectionType=traffic&computeTravelTimeFor=all&minDeviationDistance=0&minDeviationTime=0&routeRepresentation=polyline";
+}
+function guzvaTelo(route, uz) { return { supportingPoints: uz.idx.map((i) => ({ latitude: +route.coords[i][1].toFixed(6), longitude: +route.coords[i][0].toFixed(6) })) }; }
+async function guzvaProveri(route, departure) {
+  if (!route || !route.coords || route.coords.length < 2) return null;
+  const sad = Date.now(), dep = (departure instanceof Date ? departure : new Date()).getTime();
+  if (dep - sad > GUZVA_SADA_MIN * 60000) return (route._guzva = { stanje: "kasnije", dep, ts: sad });
+  const st = route._guzva;
+  if (st && st.stanje === "ok" && sad - st.ts < GUZVA_VAZI_MS && Math.abs(st.dep - dep) <= 90000) return st;
+  if (typeof TT_KEY !== "string" || !TT_KEY) return (route._guzva = { stanje: "nije", zasto: "kljuc", dep, ts: sad });
+  const uz = guzvaUzorak(route, GUZVA_SALJE_MIN * 60);
+  if (!uz) return null;
+  let rez;
+  try { rez = guzvaMapiraj(route, uz, await ttJSON(guzvaUrl(route, uz), guzvaTelo(route, uz))); }
+  catch (e) { rez = { stanje: "nije", zasto: e && e.offline ? "mreza" : "http " + ((e && e.status) || "?") }; }
+  rez.ts = sad; rez.dep = dep; rez.preko = ttPreko();
+  try { navLog("guzva", { stanje: rez.stanje, n: (rez.zastoji || []).length, zasto: rez.zasto || "", preko: rez.preko }); } catch (e) {}
+  try { console.log("[guzve] " + rez.stanje + " " + (rez.zasto || "") + " zastoja=" + (rez.zastoji || []).length + " preko=" + rez.preko); } catch (e) {}
+  return (route._guzva = rez);
+}
+
+/* ---- 3) ZAOBILAZAK (Bosko 14.10.: "da ubacimo odmah i zaobidji guzvu pa da sve odjednom pustimo") ----
+   Kad zastoji u prozoru kostaju bar GUZVA_ZAOB_PRAG_SEK (ili je put na ruti zatvoren), aplikacija proba obilazak SAMO oko zastoja:
+   od starta do tacke GUZVA_ZAOB_POSLE_M posle poslednjeg zastoja ruter trazi najbrzi put sa zabranjenim zonama na zastojima (ista
+   traka kao za zatvorene puteve - _koridor - ali u ZASEBNOM stanju, samo za taj jedan zahtev: state._izbegniPoly vazi i za skretanje u
+   voznji, a zastoj se razidje), a ostatak izabrane rute ostaje ISTI (vijugavi deo se ne dira). Pa TomTom uz zivu guzvu vozi i staru i
+   novu geometriju od starta do te tacke: obilazak se nudi kao nova kartica SAMO kad je brzi bar GUZVA_ZAOB_USTEDA_SEK. Inace se kaze
+   da obilazak ne bi bio brzi - isto TomTom prema TomTom-u, nikad nase vreme prema njegovom. */
+const GUZVA_ZAOB_PRAG_SEK = 180;
+const GUZVA_ZAOB_USTEDA_SEK = 120;
+const GUZVA_ZAOB_POSLE_M = 1500;
+/* obilazak duzi od 2x deonice koju zamenjuje (ili +10 km) nije obilazak nego druga tura - ni ne pita se TomTom (proba 14.10.: zone na
+   zastojima kod Autokomande su ruter terale na 48 km umesto 11) */
+function guzvaZaobRazuman(duzObilaskaM, duzDelaM) { return duzObilaskaM <= Math.max(2 * duzDelaM, duzDelaM + 10000); }
+/** TomTom zivo vreme voznje po NASOJ geometriji od starta do tacke `kraj` (sek); null kad TomTom padne ili ne vozi nasu geometriju. */
+async function guzvaVremeDo(route, kraj) {
+  const uz = guzvaUzorak(route, null, kraj); if (!uz) return null;
+  try {
+    const tt = await ttJSON(guzvaUrl(route, uz), guzvaTelo(route, uz));
+    const r0 = tt && tt.routes && tt.routes[0], d = r0 && r0.summary && +r0.summary.lengthInMeters;
+    if (!(d > 0) || Math.abs(d - uz.duzM) / Math.max(1, uz.duzM) > GUZVA_ODSTUPANJE) return null;
+    return +r0.summary.travelTimeInSeconds || null;
+  } catch (e) { return null; }
+}
+function guzvaNajbliziIdx(route, lonlat) {
+  const C = route.coords; let bi = 0, bd = Infinity;
+  for (let i = 0; i < C.length; i++) { const d = haversine(lonlat[1], lonlat[0], C[i][1], C[i][0]); if (d < bd) { bd = d; bi = i; } }
+  return bi;
+}
+/** Prvi deo (obilazak, start -> tacka povratka) + ostatak izabrane rute od te tacke. Manevar izabrane rute koji je poceo PRE tacke
+    povratka postaje "Nastavi pravo" (isto pravilo kao spojiTripove) - njegovo skretanje je na delu koji se vise ne vozi. */
+function guzvaSpoji(a, b, oR) {
+  const nA = a.coords.length, offD = a.totalDist - b.cumDist[oR], offT = a.totalDur - b.cumDur[oR];
+  const pom = (i) => i - oR + (nA - 1);
+  const mA = (a.maneuvers || []).filter((m) => !(m.type >= 4 && m.type <= 6));
+  /* + zavrsni "stigao si" izabrane rute UVEK (kad je tacka povratka sam cilj, njegov begin = end = oR pa bi ga filter "end > oR" bacio,
+     a obilazak bi ostao bez dolaska - izmereno 14.10. u probi: poslednji manevar je bio skretanje) */
+  const mB = (b.maneuvers || []).filter((m) => (m.end_shape_index | 0) > oR || (m.type >= 4 && m.type <= 6)).map((m) => (m.begin_shape_index | 0) < oR
+    ? { ...m, type: 8, begin_shape_index: nA - 1, end_shape_index: pom(m.end_shape_index | 0) }
+    : { ...m, begin_shape_index: pom(m.begin_shape_index | 0), end_shape_index: pom(m.end_shape_index | 0) });
+  const kmR = b.cumDist[oR] / 1000, kmA = a.totalDist / 1000;
+  return {
+    coords: a.coords.concat(b.coords.slice(oR + 1)),
+    cumDist: a.cumDist.concat(b.cumDist.slice(oR + 1).map((d) => d + offD)),
+    cumDur: a.cumDur.concat(b.cumDur.slice(oR + 1).map((t) => t + offT)),
+    totalDist: a.totalDist + (b.totalDist - b.cumDist[oR]), totalDur: a.totalDur + (b.totalDur - b.cumDur[oR]),
+    label: b.label, styleIdx: b.styleIdx, hasHighway: !!(a.hasHighway || b.hasHighway), hasFerry: !!(a.hasFerry || b.hasFerry),
+    tollSegs: (a.tollSegs || []).concat((b.tollSegs || []).filter((t) => t.km >= kmR).map((t) => ({ km: t.km - kmR + kmA, len: t.len }))),
+    tollKm: (a.tollKm || 0) + (b.tollSegs || []).filter((t) => t.km >= kmR).reduce((s, t) => s + (t.len || 0), 0),
+    roughAt: (a.roughAt || []).concat((b.roughAt || []).filter((k) => k >= kmR).map((k) => k - kmR + kmA)),
+    roughKm: (a.roughKm || 0), maneuvers: mA.concat(mB),
+  };
+}
+async function guzvaZaobidji(route) {
+  if (!route || route._zaobilaz) return null;
+  if (route._zaob && route._zaob.za === route._guzva) return route._zaob;   // ista provera guzve = isti odgovor
+  if (!guzvaVazi(route) || state.engine === "osrm" || !(route.maneuvers && route.maneuvers.length)) return null;
+  const g = route._guzva, { zastoji, kasnjenje } = guzvaUProzoru(g);
+  if (!zastoji.length || (kasnjenje < GUZVA_ZAOB_PRAG_SEK && !zastoji.some((x) => x.kat === "ROAD_CLOSURE"))) return null;
+  const C = route.coords, D = route.cumDist;
+  const posl = Math.max(...zastoji.map((x) => x.iB));
+  let oR = posl; while (oR < C.length - 1 && D[oR] - D[posl] < GUZVA_ZAOB_POSLE_M) oR++;
+  const gotovo = (o) => (route._zaob = Object.assign({ za: g }, o));
+  // stanica pre tacke povratka: obilazak od starta je ne bi prosao - iskreno se kaze, ne racuna se
+  if ((state.vias || []).some((v) => v && v.v && guzvaNajbliziIdx(route, v.v) <= oR)) return gotovo({ stanje: "stanice" });
+  // zone: najveci zastoji prvi; obim deli javni Valhalla limit (10 km) sa zatvaranjima, koja imaju prednost
+  const vec = (state._izbegniPoly || []).reduce((s, q) => s + _obimKm(q), 0), budzet = 9.2 - vec;
+  if (budzet < 0.6) return gotovo({ stanje: "nije", zasto: "budzet" });
+  const lista = zastoji.slice().sort((x, y) => y.sek - x.sek).slice(0, 3);
+  const kor = (k) => lista.map((x) => _koridor(route, Math.round((x.iA + x.iB) / 2), Math.max(0.2, ((x.kmDo - x.kmOd) / 2 + 0.15) * k))).filter(Boolean);
+  let polys = kor(1); const obim = polys.reduce((s, q) => s + _obimKm(q), 0);
+  if (obim > budzet) polys = kor(budzet / obim);
+  if (!polys.length) return gotovo({ stanje: "nije", zasto: "zone" });
+  let a;
+  try { a = await valhallaRoute({ lat: C[0][1], lon: C[0][0] }, { lat: C[oR][1], lon: C[oR][0] }, ROUTE_STYLES[3], { noVias: true, noLoop: true, izbegni: polys, retries: 1 }); }
+  catch (e) { return gotovo({ stanje: "nije", zasto: "ruter" }); }
+  if (!a || !a.coords || a.coords.length < 2) return gotovo({ stanje: "nije", zasto: "ruter" });
+  if (a.coords.some((c) => polys.some((pl) => _uPoligonu(c[1], c[0], pl)))) return gotovo({ stanje: "nije", zasto: "kroz" });   // obilazak kroz zastoj nije obilazak
+  if (!guzvaZaobRazuman(a.totalDist, D[oR] - D[0])) return gotovo({ stanje: "nemaObilaska", kmObilaska: a.totalDist / 1000, kmDela: (D[oR] - D[0]) / 1000 });
+  const [tO, tN] = await Promise.all([guzvaVremeDo(route, oR), guzvaVremeDo(a, a.coords.length - 1)]);
+  if (tO == null || tN == null) return gotovo({ stanje: "nije", zasto: "tomtom" });
+  const usteda = tO - tN;
+  try { navLog("guzva-zaob", { usteda: Math.round(usteda), tO: Math.round(tO), tN: Math.round(tN) }); } catch (e) {}
+  if (usteda < GUZVA_ZAOB_USTEDA_SEK) return gotovo({ stanje: "nijeBrze", usteda, tO, tN });
+  const n = guzvaSpoji(a, route, oR);
+  n._zaobilaz = { od: route, usteda, tO, tN };
+  n.label = T("guz.zaobLabel", { 0: Math.round(usteda / 60) });
+  return gotovo({ stanje: "ok", usteda, tO, tN, ruta: n, kmViska: (n.totalDist - route.totalDist) / 1000 });
+}
+/** Obilazak ulazi u spisak varijanti kao jos jedna kartica (prognoza i ocena kao svaka ruta); ponuda u Upozorenjima. */
+async function guzvaZaobPonudi(route, departure, seq) {
+  /* selectRoute ume da dobije polazak undefined (pa sam upise new Date u state.lastDeparture) - prognoza i ocena obilaska bez pravog
+     polaska nisu nastajale, pa izabran obilazak nije imao ni liniju na mapi ni ocenu (proba 14.10.) */
+  const dep = departure instanceof Date ? departure : (state.lastDeparture instanceof Date ? state.lastDeparture : new Date());
+  let z = null;
+  try { z = await guzvaZaobidji(route); } catch (e) { z = null; }
+  if (seq !== state.planSeq) return;
+  if (z && z.stanje === "ok" && !(state.routes || []).includes(z.ruta)) {
+    const n = z.ruta;
+    try { buildSamples(n); } catch (e) {}
+    try { await fetchWeather(n, dep); n.wxFail = false; } catch (e) { n.weather = null; n.wxFail = true; }   // fetchWeather sam upisuje route.weather (kao u plan())
+    if (seq !== state.planSeq) return;
+    try { n.assess = assessRoute(n, dep); } catch (e) { try { navLog("guzva-zaob-assess", { greska: String(e && e.message || e).slice(0, 80) }); } catch (e2) {} }
+    if (!Array.isArray(n.assess) || n.assess.length < 2) return;   // bez ocene se ne nudi: izabrana ruta bez nje nema ni liniju na mapi
+    state.routes.push(n);
+    try { riVarijanteCrtaj(); } catch (e) {}
+    try { drawRoute(route, route.assess); guzvaRutaCrtaj(route); } catch (e) {}   // obilazak se vidi kao siva varijanta na mapi
+    try { renderResultHero(route); } catch (e) {}   // recenica ispod brojeva kaze da obilazak postoji
+  }
+  guzvaZaobCrtaj();
+  try { riPresude(route); } catch (e) {}
+}
+function guzvaZaobCrtaj() {
+  const ul = document.getElementById("warnList"); if (!ul || !ul.parentNode) return;
+  let el = document.getElementById("guzvaZaob");
+  if (!el) {
+    el = document.createElement("div"); el.id = "guzvaZaob"; el.className = "sugg"; el.hidden = true;
+    el.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-zaob]"); if (!b) return;
+      const sel = state.routes[state.selected], n = sel && sel._zaob && sel._zaob.ruta, i = (state.routes || []).indexOf(n);
+      if (i >= 0) { state.selected = i; selectRoute(state.lastDeparture); }
+    });
+  }
+  if (el.parentNode !== ul.parentNode || el.previousSibling !== ul) ul.parentNode.insertBefore(el, ul.nextSibling);
+  const sel = state.routes && state.routes[state.selected];
+  const pokazi = (html) => { el.hidden = !html; el.innerHTML = html || ""; };
+  if (sel && sel._zaobilaz) return pokazi(rIco("route", 14) + " " + esc(T("guz.zaobIzabran", { 0: Math.round(sel._zaobilaz.usteda / 60) })));
+  const z = sel && sel._zaob;
+  if (!z || !guzvaVazi(sel) || z.za !== sel._guzva) return pokazi("");
+  if (z.stanje === "ok" && (state.routes || []).includes(z.ruta)) {
+    const km = Math.round(z.kmViska * 10) / 10;
+    return pokazi(rIco("route", 14) + " " + T("guz.zaobPonuda", { 0: Math.round(z.usteda / 60), 1: esc(km > 0.05 ? T("guz.zaobDuze", { 0: DEC(km.toFixed(1)) }) : T("guz.zaobKrace", { 0: DEC((-km).toFixed(1)) })) }) +
+      ' <button type="button" data-zaob="1">' + esc(T("guz.zaobIzaberi")) + "</button>");
+  }
+  if (z.stanje === "nijeBrze") return pokazi(esc(T("guz.zaobNijeBrze")));
+  if (z.stanje === "stanice") return pokazi(esc(T("guz.zaobStanice")));
+  if (z.stanje === "nemaObilaska") return pokazi(esc(T("guz.zaobNema")));
+  return pokazi("");
+}
+
+/* ---- prikaz: zastoji na liniji rute, redovi u Upozorenjima, vreme dolaska, recenica ispod brojeva ---- */
+function guzvaUlica(route, i) {
+  const m = ((route && route.maneuvers) || []).find((x) => i >= (x.begin_shape_index | 0) && i <= (x.end_shape_index | 0));
+  const ime = m ? String((m.street_names && m.street_names[0]) || (m.begin_street_names && m.begin_street_names[0]) || "").trim() : "";
+  return typeof cyr2lat === "function" ? cyr2lat(ime) : ime;   // ruter daje imena iz OSM-a cirilicom ("Јурија Гагарина"), aplikacija pise latinicom
+}
+function guzvaJaka(z) { return z.kat === "ROAD_CLOSURE" || (z.kmh != null && z.kmh <= 10) || z.sek >= 300; }
+function guzvaRutaGasi() {
+  try { if (map.getLayer("guzva-ruta")) map.removeLayer("guzva-ruta"); if (map.getSource("guzva-ruta")) map.removeSource("guzva-ruta"); } catch (e) {}
+}
+function guzvaRutaCrtaj(route) {
+  if (typeof map === "undefined" || !map) return;
+  guzvaRutaGasi();
+  if (!guzvaVazi(route)) return;
+  const g = route._guzva;
+  const { zastoji } = guzvaUProzoru(g); if (!zastoji.length) return;
+  const feats = zastoji.map((z) => ({ type: "Feature", properties: { c: guzvaJaka(z) ? "#ea3d57" : "#f59a3c" },
+    geometry: { type: "LineString", coordinates: route.coords.slice(z.iA, z.iB + 1) } }));
+  try {
+    map.addSource("guzva-ruta", { type: "geojson", data: { type: "FeatureCollection", features: feats } });
+    map.addLayer({ id: "guzva-ruta", type: "line", source: "guzva-ruta", layout: { "line-cap": "round" },
+      paint: { "line-color": ["get", "c"], "line-width": 6 } }, map.getLayer("nav-risk") ? "nav-risk" : undefined);
+  } catch (e) {}
+}
+function guzvaKm(v) { return v < 10 ? DEC(v.toFixed(1)) : String(Math.round(v)); }
+function _guzvaUWarn() {   // redovi zastoja zive u #warnList (sekcija Upozorenja), kao Meteoalarm: renderWarnings ih brise, pa ih vraca ovo
+  const ul = document.getElementById("warnList"); if (!ul) return;
+  ul.querySelectorAll("li[data-guzva]").forEach((l) => l.remove());
+  const route = state.routes && state.routes[state.selected];
+  if (!guzvaVazi(route)) return;
+  const { zastoji } = guzvaUProzoru(route._guzva); if (!zastoji.length) return;
+  ul.querySelectorAll(":scope > *").forEach((el) => { if (!(el.matches && el.matches("li.warn-li, li.bad-li"))) el.remove(); });   // "Nema upozorenja" ne sme da stoji iznad zastoja
+  const dep = state.lastDeparture instanceof Date ? state.lastDeparture.getTime() : Date.now();
+  const html = zastoji.slice(0, 5).map((z) => {
+    const ulica = guzvaUlica(route, z.iA);
+    const km = z.kmDo - z.kmOd >= 0.3 ? T("fmt.kmOdDo", { 0: guzvaKm(z.kmOd), 1: guzvaKm(z.kmDo) }) : T("fmt.km", { 0: guzvaKm(z.kmOd) });
+    const opis = z.kat === "ROAD_CLOSURE" ? T("guz.zatvoreno") : T("guz.zastoj", { 0: z.kmh != null ? z.kmh : "?", 1: guzvaMin(z) });
+    return '<li data-guzva="1" class="' + (guzvaJaka(z) ? "bad-li" : "warn-li") + '">' + rIco("warning", 15) + " ~" + fmtTime(new Date(dep + (z.kadSek || 0) * 1000)) +
+      (ulica ? T("fmt.kodMesta", { 0: esc(ulica) }) : "") + " (" + km + "): " + esc(opis) + " (" + esc(T("guz.izvor")) + ")</li>";
+  });
+  ul.insertAdjacentHTML("afterbegin", html.join(""));   // guzva je najbliza stvar na putu - ide iznad vremenskih zona
+}
+/** Kratka napomena za presudu Upozorenja kad nema zastoja za prikaz - nikad "bez guzve" bez provere. */
+function guzvaNapomena(route) {
+  const g = route && route._guzva; if (!g) return "";
+  if (g.stanje === "kasnije") return T("guz.priPolasku");
+  if (!guzvaVazi(route)) return T("guz.nijeProvereno");   // pala, odstupila ILI zastarela provera - nikad "bez zastoja" na staroj proveri
+  return guzvaUProzoru(g).zastoji.length ? "" : T("guz.bezZastoja", { 0: GUZVA_PROZOR_MIN });
+}
+/** Recenica ispod brojeva u pregledu rute: zastoji idu ispred vremenske recenice. */
+function guzvaMeta(route) {
+  if (!guzvaVazi(route)) return "";
+  const { zastoji, kasnjenje } = guzvaUProzoru(route._guzva); if (!zastoji.length) return "";
+  const prvi = zastoji[0], ulica = guzvaUlica(route, prvi.iA), z = route._zaob;
+  return T(zastoji.length === 1 ? "guz.meta1" : "guz.metaN", { 0: ulica || T("fmt.km", { 0: guzvaKm(prvi.kmOd) }), 1: Math.round(kasnjenje / 60), 2: zastoji.length }) +
+    (z && z.stanje === "ok" && z.za === route._guzva && (state.routes || []).includes(z.ruta) ? ". " + T("guz.metaZaob", { 0: Math.round(z.usteda / 60) }) : "");
+}
+function guzvaPrikazi(route) {
+  if (!route || route !== (state.routes && state.routes[state.selected])) return;
+  guzvaRutaCrtaj(route);
+  try { _guzvaUWarn(); } catch (e) {}
+  try { renderResultHero(route); } catch (e) {}   // instrument: Stizes i recenica ispod brojeva citaju guzvaKasnjenjeSek / guzvaMeta
+  try { guzvaZaobCrtaj(); } catch (e) {}
+  try { riPresude(route); } catch (e) {}
+}
+
+/* sloj se pali kad mapa ima stil, i ponovo posle svake promene stila (tema) */
+(function guzvaStart() {
+  const kreni = () => { try { guzvaSlojPali(); } catch (e) {} };
+  const cekaj = () => {
+    if (typeof map === "undefined" || !map || !map.on) { setTimeout(cekaj, 600); return; }
+    try { map.on("style.load", kreni); } catch (e) {}
+    try { if (map.isStyleLoaded && map.isStyleLoaded()) kreni(); else map.once("load", kreni); } catch (e) {}
+  };
+  cekaj();
+  setInterval(guzvaSlojOsvezi, GUZVA_SLOJ_OSVEZI_MS);
+})();
 /* ===== KARTICE ZA DELJENJE - Filipov crtaci sloj (v2, 15.9.2026), prenet 16.9.2026 ==================
    Boskova odluka 16.9.2026: "implementiraj sve sto je Filip uradio. Ta topla tamna narandzasta. I to
    sve sa V2 sto stoji." Ovo je NJEGOV kod iz grane filip/app-structure, prenet bez promene izgleda:
