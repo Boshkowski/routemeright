@@ -4839,7 +4839,7 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
       <div class="jset">
         <a class="jlink" href="privatnost.html" data-href-en="privatnost-en.html" target="_blank" rel="noopener" style="display:block;text-align:left" data-i18n="ja.politika">Politika privatnosti - šta ostaje na telefonu, a šta ne</a>
         <a class="jlink" href="privatnost.html#odricanje" data-href-en="privatnost-en.html" target="_blank" rel="noopener" style="display:block;text-align:left" data-i18n="ja.odricanje">Odricanje odgovornosti - ti voziš, ne aplikacija</a>
-        <div class="jnote" data-i18n="ja.privatnostNapomena">GPS trag vožnje ostaje na ovom telefonu i ne čuva se ni na jednom serveru. Na naš server idu nalog (mejl, ime, slika, motor), prijatelji, poslednja lokacija za prijatelje (dok je prekidač uključen) i sažetak vožnje bez traga. Pretragu mesta radi Google Maps, a gužve TomTom (dobija deo mape koji gledaš i tačke rute za prvih sat vremena vožnje). Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Sve je nabrojano u politici privatnosti. Bez reklama, bez alata za praćenje.</div>
+        <div class="jnote" data-i18n="ja.privatnostNapomena">GPS trag vožnje ostaje na ovom telefonu i ne čuva se ni na jednom serveru. Na naš server idu nalog (mejl, ime, slika, motor), prijatelji, poslednja lokacija za prijatelje (dok je prekidač uključen) i sažetak vožnje bez traga. Pretragu mesta radi Google Maps, a gužve TomTom (dobija deo mape koji gledaš i tačke rute za sat vožnje ispred tebe; u vožnji na oko 5 minuta, od mesta gde si). Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš, gužva ispred tebe - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Sve je nabrojano u politici privatnosti. Bez reklama, bez alata za praćenje.</div>
       </div>
     </div>
     <div class="stub"><b data-i18n="ja.izvori">Izvori podataka</b>
@@ -4906,7 +4906,7 @@ const RECNIK_SR = {
   "ja.privatnost": "Privatnost i uslovi",
   "ja.politika": "Politika privatnosti - šta ostaje na telefonu, a šta ne",
   "ja.odricanje": "Odricanje odgovornosti - ti voziš, ne aplikacija",
-  "ja.privatnostNapomena": "GPS trag vožnje ostaje na ovom telefonu i ne čuva se ni na jednom serveru. Na naš server idu nalog (mejl, ime, slika, motor), prijatelji, poslednja lokacija za prijatelje (dok je prekidač uključen) i sažetak vožnje bez traga. Pretragu mesta radi Google Maps, a gužve TomTom (dobija deo mape koji gledaš i tačke rute za prvih sat vremena vožnje). Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Sve je nabrojano u politici privatnosti. Bez reklama, bez alata za praćenje.",
+  "ja.privatnostNapomena": "GPS trag vožnje ostaje na ovom telefonu i ne čuva se ni na jednom serveru. Na naš server idu nalog (mejl, ime, slika, motor), prijatelji, poslednja lokacija za prijatelje (dok je prekidač uključen) i sažetak vožnje bez traga. Pretragu mesta radi Google Maps, a gužve TomTom (dobija deo mape koji gledaš i tačke rute za sat vožnje ispred tebe; u vožnji na oko 5 minuta, od mesta gde si). Kad aplikacija treba da zna nešto o mestu na kome si baš sad - ograničenje brzine, prognoza tu gde jesi, ime mesta za dnevnik, nova ruta kad skreneš, gužva ispred tebe - to pitanje u prolazu ide javnom servisu, sa par tačaka i bez tvog imena. Sve je nabrojano u politici privatnosti. Bez reklama, bez alata za praćenje.",
   "ja.izvori": "Izvori podataka",
   "ja.izvoriTekst": "Mape i putevi: OpenStreetMap saradnici, prikaz preko OpenFreeMap. Rutiranje: Valhalla moto profil. Prognoza: Open-Meteo i CHMI Aladin 2,3 km, based on data from MET Norway. Radar: RainViewer.<br><b>Stanje na putevima</b> (zatvaranja, radovi, gužve na granici): zvanični izvori po zemljama - HAK, Putevi Srbije, AMSS, promet.si, BIHAMK, AMSCG, plus Meteoalarm upozorenja državnih meteo zavoda.<br><b>Ocene kvaliteta puta</b> (kakav je asfalt): uneli motociklisti koji su tuda prošli, uz njihovu dozvolu. Hvala svima koji su podelili svoje iskustvo.",
   // ---- staticki HTML (body.html), obelezen alatom tools/i18n-oznaci.py ----
@@ -5793,6 +5793,9 @@ const RECNIK_SR = {
   "pl.minut.1": "minut",
   "pl.minut.2": "minuta",
   "pl.minut.5": "minuta",
+  "pl.kilometar.1": "{n} kilometar",
+  "pl.kilometar.2": "{n} kilometra",
+  "pl.kilometar.5": "{n} kilometara",
   "nav.trajeMin": " · traje ~{0} min",
   "nav.zaMin": " za ~{0} min",
   "nav.paznja": "Pažnja. ",
@@ -6941,6 +6944,15 @@ const RECNIK_SR = {
   "guz.zaobStanice": "Obilazak gužve se ne računa kad je stanica pre zastoja.",
   "guz.metaZaob": "Obilazak je {0} min brži - vidi Upozorenja",
   "guz.zaobNema": "Oko ovog zastoja nema razumnog obilaska - ruter bi te vodio mnogo duže.",
+  "guz.vozGlas": "Gužva za {0}, plus {1} {2}.",
+  "guz.vozZatvoreno": "Put napred je zatvoren, za {0}.",
+  "guz.vozPrelazim": "Gužva napred, plus {0} {1}. Prelazim na brži put, štediš {2} {3}.",
+  "guz.vozZatvorenoPrelazim": "Put napred je zatvoren. Prelazim na obilazak.",
+  "guz.vozMetara": "{0} metara",
+  "guz.vozTraka": "Gužva za ~{0} km · +{1} min",
+  "guz.vozTrakaZatv": "Put zatvoren za ~{0} km",
+  "guz.vozTrakaPresao": "Brži put oko gužve · {0} min brže",
+  "guz.vozTrakaZatvPresao": "Put zatvoren · vodim te obilaskom",
 };
 /* English dictionary. Same keys as sr.js - the test fails on any key missing on either side.
    Plain hyphens, no em dashes (house rule). */
@@ -6983,7 +6995,7 @@ const RECNIK_EN = {
   "ja.privatnost": "Privacy and terms",
   "ja.politika": "Privacy policy - what stays on the phone and what does not",
   "ja.odricanje": "Disclaimer - you ride, not the app",
-  "ja.privatnostNapomena": "The GPS trace of your ride stays on this phone and is not stored on any server. Our server holds your account (email, name, photo, motorcycle), friends, your last location for friends (while the switch is on) and a ride summary without the trace. Place search is done by Google Maps, and traffic by TomTom (it receives the part of the map you are looking at and the route points for the first hour of riding). When the app needs to know something about the place you are at right now - the speed limit, the forecast where you are, a place name for the log, a new route when you turn off - that question goes in passing to a public service, with a few points and without your name. Everything is listed in the privacy policy. No ads, no tracking tools.",
+  "ja.privatnostNapomena": "The GPS trace of your ride stays on this phone and is not stored on any server. Our server holds your account (email, name, photo, motorcycle), friends, your last location for friends (while the switch is on) and a ride summary without the trace. Place search is done by Google Maps, and traffic by TomTom (it receives the part of the map you are looking at and the route points for the hour of riding ahead of you; while riding about every 5 minutes, from where you are). When the app needs to know something about the place you are at right now - the speed limit, the forecast where you are, a place name for the log, a new route when you turn off, the traffic ahead of you - that question goes in passing to a public service, with a few points and without your name. Everything is listed in the privacy policy. No ads, no tracking tools.",
   "ja.izvori": "Data sources",
   "ja.izvoriTekst": "Maps and roads: OpenStreetMap contributors, rendered via OpenFreeMap. Routing: Valhalla motorcycle profile. Forecast: Open-Meteo and CHMI Aladin 2.3 km, based on data from MET Norway. Radar: RainViewer.<br><b>Road conditions</b> (closures, roadworks, border queues): official sources per country - HAK, Putevi Srbije, AMSS, promet.si, BIHAMK, AMSCG, plus Meteoalarm warnings from national weather services.<br><b>Road quality ratings</b> (what the asphalt is like): entered by motorcyclists who rode there, with their permission. Thanks to everyone who shared their experience.",
   // ---- static HTML (body.html), marked by tools/i18n-oznaci.py ----
@@ -7847,6 +7859,8 @@ const RECNIK_EN = {
   "nav.kisaZa": "Rain in {0} {1}, lasting about {2} minutes",
   "pl.minut.1": "minute",
   "pl.minut.n": "minutes",
+  "pl.kilometar.1": "{n} kilometre",
+  "pl.kilometar.n": "{n} kilometres",
   "nav.trajeMin": " · lasts ~{0} min",
   "nav.zaMin": " in ~{0} min",
   "nav.paznja": "Attention. ",
@@ -8990,6 +9004,15 @@ const RECNIK_EN = {
   "guz.zaobStanice": "A detour is not calculated when a stop comes before the jam.",
   "guz.metaZaob": "A detour is {0} min faster - see Warnings",
   "guz.zaobNema": "There is no sensible detour around this jam - the router would take you much further.",
+  "guz.vozGlas": "Traffic jam in {0}, plus {1} {2}.",
+  "guz.vozZatvoreno": "Road closed ahead, in {0}.",
+  "guz.vozPrelazim": "Traffic jam ahead, plus {0} {1}. Switching to a faster route, saving {2} {3}.",
+  "guz.vozZatvorenoPrelazim": "Road closed ahead. Switching to a detour.",
+  "guz.vozMetara": "{0} metres",
+  "guz.vozTraka": "Jam in ~{0} km · +{1} min",
+  "guz.vozTrakaZatv": "Road closed in ~{0} km",
+  "guz.vozTrakaPresao": "Faster route around the jam · {0} min faster",
+  "guz.vozTrakaZatvPresao": "Road closed · taking you around it",
 };
 /* ---- Jezik aplikacije / app language (0.9.159) ----
    Jedan recnik po jeziku (i18n/sr.js, i18n/en.js), jedan kljuc po natpisu. Staticni HTML nosi
@@ -11238,7 +11261,8 @@ function tripToRoute(trip, label) {
 async function valhallaRoute(from, to, style, netOpts) {
   const vias = (netOpts && netOpts.noVias) ? []
     : (state.vias || []).map((it) => ({ lat: it.v[1], lon: it.v[0], type: it.t === "stop" ? "break" : "through" }));
-  const locations = [{ lat: from.lat, lon: from.lon }, ...vias, { lat: to.lat, lon: to.lon }];
+  /* from.heading (14.10., obilazak guzve u voznji): pravac kretanja, da ruter ne uzme suprotnu traku podeljenog puta i ne vrati te polukruznim okretom */
+  const locations = [Object.assign({ lat: from.lat, lon: from.lon }, Number.isFinite(from.heading) ? { heading: Math.round(from.heading), heading_tolerance: 60 } : {}), ...vias, { lat: to.lat, lon: to.lon }];
   // povratno: krug se zatvara na loopFrom (pravi dom) ako je zadat - reroute salje trenutnu poziciju kao from,
   // pa bi bez ovoga "povratak kuci" postao povratak na mesto skretanja s rute (review nalaz 6.8.)
   if (isRoundTrip() && !(netOpts && netOpts.noLoop)) {
@@ -19006,8 +19030,16 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.205";
+const APP_VERSION = "0.9.206";
 const CHANGELOG = [
+  { v: "0.9.206", d: "14.10.2026.", stavke: [
+    "<b>Gužva i u vožnji, i ruta se menja sama</b> (tvoje pitanje: tura od 4 sata, a gužva nastane kad si na sat od cilja). Dok voziš po ruti, na svakih 5 minuta TomTom proveri sat puta ispred tebe, od mesta gde si. Na sat od cilja proverava baš taj poslednji sat.",
+    "<b>Kad je obilazak brži bar 5 minuta, aplikacija sama prelazi na njega</b> i kaže glasom: \"Gužva napred, plus 12 minuta. Prelazim na brži put, štediš 6 minuta.\" Ne moraš da diraš ekran. Obilazak ide samo oko gužve: kreće najviše 4 km pre nje, a tvoja ruta do tamo i posle gužve ostaje ista, sa stanicama.",
+    "<b>Ušteda je ušteda od gužve.</b> Obilazak ide najbržim putem, pa bi na vijugavoj ruti autoput izgledao kao \"ušteda\". Zato aplikacija ne priznaje uštedu veću od samog zastoja, i ne menja ti vijugavu rutu u autoput zbog gužve od 4 minuta. Isto važi za \"Zaobiđi gužvu\" u planeru, koji usput više ne preskače tačku okreta povratne ture.",
+    "<b>Kad obilazak nije brži</b>, glas kaže \"Gužva za 3 kilometra, plus 7 minuta\", traka to piše, deo rute sa zastojem je crven, a vreme dolaska uključuje kašnjenje. Isti zastoj se ne ponavlja, osim kad naraste za 5 minuta.",
+    "<b>\"Druga ruta\" u vožnji više ne izbacuje stanice</b> koje još nisi prošao. Do sada je računala pravo do cilja, pa bi izbor druge rute tiho preskočio stanicu. Povratni krug se i tu zatvara kod kuće.",
+    "Ne proverava se u pauzi, kad je aplikacija sklonjena, na GPX ruti ni bez svežeg GPS-a. Ako ne skreneš na obilazak i nastaviš starim putem, aplikacija to razume: taj zastoj posle samo najavljuje i ne vrti te u krug. Uputstvo za skretanje koje je baš sad uvek ide prvo, i preko rečenice o obilasku."
+  ] },
   { v: "0.9.205", d: "14.10.2026.", stavke: [
     "<b>Gužve uživo na mapi</b> (tvoj nalog posle vožnje kroz Beograd). Novi sloj u Slojevima, uključen: TomTom crta samo puteve gde se sporo vozi - žuto sporo, crveno stoji. Vidi se kad uvećaš grad.",
     "<b>Zastoji na tvojoj ruti</b>: posle plana TomTom proveri baš tvoju rutu. Zastoj ide u Upozorenja (gde, kada stižeš, brzina, koliko kasniš), deo rute sa zastojem je obojen na mapi, a vreme dolaska u Stižeš uključuje kašnjenje.",
@@ -22701,7 +22733,7 @@ async function freeWxTick(lo, la) {
     }
   } catch (e) {}
 }
-function speakSr(text, sporedno) {
+function speakSr(text, sporedno, hitno) {   // hitno: skretanje SAD (do 95 m) - uvek sece red, i recenicu o prelasku na obilazak
   try {
     if (!window.speechSynthesis) return;
     if (localStorage.getItem("rmr2_mute") === "1") return;   // korisnik utisao glas
@@ -22717,7 +22749,8 @@ function speakSr(text, sporedno) {
     if (sporedno) {   // najava opasnosti NE SME da presece instrukciju skretanja - ceka red, a ako je red pun, preskace
       if (speechSynthesis.pending) return;
       speechSynthesis.speak(u);
-    } else { speechSynthesis.cancel(); speechSynthesis.speak(u); }
+    } else if (!hitno && (RIDE._neSeciDo || 0) > Date.now()) speechSynthesis.speak(u);   // 14.10.: "Prelazim na brzi put..." se ne sece - najava skretanja ide odmah posle nje
+    else { speechSynthesis.cancel(); speechSynthesis.speak(u); }
   } catch (e) {}
 }
 async function rideLock() {
@@ -23107,13 +23140,16 @@ async function altOpen() {
   s.hidden = false;
   if (!pos || !to) { lst.innerHTML = T("alt.nemaGps"); return; }
   lst.innerHTML = T("alt.racunam");
-  let _kmSad = 0; try { _kmSad = navProject(route, pos.lo, pos.la).d / 1000; } catch (e) {}
+  let _kmSad = 0; try { _kmSad = navProject(route, pos.lo, pos.la, RIDE.lastRouteI).d / 1000; } catch (e) {}   // sa hintom: na povratnoj ruti globalni sken ume da uhvati drugu traku
   const sada = stilNaKm(route, _kmSad);   // kod kombinovane rute stil zavisi od toga GDE si (autoput ili krivine)
-  const savedVias = state.vias; state.vias = [];   // odavde do cilja, bez starih stanica
+  const savedVias = state.vias;
+  const odv = rideOdavde(route, _kmSad * 1000, savedVias);
+  if (!odv) { lst.innerHTML = T("alt.nemaGps"); return; }
+  state.vias = odv.vias;   // odavde do cilja KROZ stanice koje jos nisi prosao (do 14.10. su ispadale)
   let res = [];
   try {
     res = await Promise.all(ROUTE_STYLES.map(async (st) => {
-      try { return await valhallaRoute({ lat: pos.la, lon: pos.lo }, to, st); } catch (e) { return null; }
+      try { return await valhallaRoute({ lat: pos.la, lon: pos.lo }, odv.dest, st, odv.opts); } catch (e) { return null; }
     }));
   } finally { state.vias = savedVias; }
   if (s.hidden) return;   // korisnik je u medjuvremenu zatvorio
@@ -23136,12 +23172,17 @@ async function altOpen() {
     lst.appendChild(b);
   });
 }
-function altApply(nr) {
+function altApply(nr) { rideZameniRutu(nr); }
+/* Nova ruta od vozaca do cilja, bez cekanja na skretanje: "Druga ruta" (altApply) i automatski obilazak guzve u voznji
+   (guzve.js). opt.hibrid: obilazak menja samo deo oko zastoja, pa sastav sasivene ture OSTAJE (pomeren na nove km) i nema
+   poruke "vise nije kombinovana"; opt.glas / opt.log: sta se kaze i belezi. */
+function rideZameniRutu(nr, opt) {
   const route = RIDE.route; if (!route) return;
+  opt = opt || {};
   try {   // pre zamene geometrije: obelezi prodjene stanice po STAROJ ruti (kasniji reroute ih ne sme uskrsnuti)
     const pos = RIDE.pos;
     if (pos) {
-      const prA = navProject(route, pos.lo, pos.la);
+      const prA = navProject(route, pos.lo, pos.la, RIDE.lastRouteI);
       for (const v of state.vias || []) if (!v._passed) {
         const pv = navProject(route, v.v[0], v.v[1]);
         if (pv.offM <= 2000 && pv.d <= prA.d + 100) v._passed = true;
@@ -23150,32 +23191,20 @@ function altApply(nr) {
   } catch (e) {}
   const beseHibrid = !!(route.hibrid && route.hibrid.length >= 2);   // isti prag kao u rideReroute
   Object.assign(route, nr);                       // isti objekat - ostatak app-a drzi referencu
-  if (beseHibrid) {
+  if ("hibrid" in opt) {
+    if (opt.hibrid && opt.hibrid.length) { route.hibrid = opt.hibrid; if (opt.hibNaz) route._hibNaz = opt.hibNaz; else delete route._hibNaz; }
+    else { delete route.hibrid; delete route._hibNaz; }
+  } else if (beseHibrid) {
     /* alternativa je jedna ruta jednog stila do cilja - sastav sasivene ture prestaje da vazi,
        a `route.hibrid` bi prezivelo Object.assign (nr taj kljuc nema); isti razlog kao u rideReroute */
     delete route.hibrid; delete route._hibNaz;
     tihoObavestenje(T("alt.nijeKombinovana"));
   }
-
-  RIDE.baseD = (RIDE.baseD || 0) + (RIDE.maxD || 0); RIDE.maxD = 0;   // nova ruta = nova cumDist skala (dnevnik sabira etape)
-  try { route._curves = analyzeCurves(route); } catch (e) { delete route._curves; }   // serpentine sa SVEZE geometrije
-  RIDE.nav = buildNav(route, true);   // ruta pocinje na vozacu - bez "Kreni 0 m"
-  /* 0.9.95 (QA nalaz 104, prva polovina): brisanje hinta je sledeci fiks slalo na GLOBALNI sken
-     po CELOJ ruti, koji nema pojma ni o smeru ni o tome gde si bio - a na povratnoj (out-and-back)
-     ruti su dve trake cesto 20-60 m jedna od druge, pa se projekcija zalepi na POVRATNU deonicu:
-     "još X km" raste umesto da opada, sat dolaska je pomeren za sate, a off-route rastojanje je
-     5 m pa reroute nikad ne krene. Ovde se ZNA gde si: alternativa se racuna bas iz tvoje
-     pozicije, dakle indeks 0. Los seme hvata postojeci gard (promasaj > 250 m) i pada na
-     danasnje ponasanje - izmena ne moze da odmogne. */
-  RIDE.lastRouteI = 0; if (RIDE.offSt) RIDE.offSt.offMs = 0;
-  RIDE.total = route.cumDist[route.cumDist.length - 1];
-  route._limits = []; loadSpeedLimits(route);
-  route._cams = []; buildAhead(route);
-  state._zones = [];                              // vremenske zone su bile na km stare rute
-  wxLiveRebuild(route);                           // ista stvar pri prelasku na drugu rutu
+  rideNovaGeometrija(route);
   navPaintRoute(route);
-  navLog("alt-apply", { km: +(RIDE.total / 1000).toFixed(2) });
-  speakSr(T("nav.prelazim"));
+  navLog(opt.log || "alt-apply", Object.assign({ km: +(RIDE.total / 1000).toFixed(2) }, opt.logPodaci || {}));
+  speakSr(opt.glas || T("nav.prelazim"));
+  if (opt.neSeci) RIDE._neSeciDo = Date.now() + opt.neSeci;
 }
 const NAV_GPS_OPTS = { enableHighAccuracy: true, maximumAge: 1500, timeout: 15000 };
 const NAVLOG_MAX = 4000;   // ~66 min na 1 Hz - crna kutija poslednjeg dela voznje
@@ -23423,6 +23452,61 @@ function startNavCam() {
   };
   RIDE.camRAF = requestAnimationFrame(loop);
 }
+/* Odakle-dokle kad se ruta racuna IZ VOZNJE: skretanje s rute (rideReroute) i "Druga ruta" (altOpen) idu kroz isto.
+   14.10.: "Druga ruta" je racunala pravo do cilja bez stanica (state.vias = []), pa je izbor druge rute tiho izbacivao
+   stanice koje jos nisi prosao, a povratni krug zatvarala na mestu gde si stao umesto kod kuce. */
+function rideOdavde(route, dNow, vias) {
+  const to = state.geocode && state.geocode.to; if (!to) return null;
+  // NEPROĐENE stanice OSTAJU u ruti - 5.8. je reroute tiho brisao celu turu i vodio pravo na cilj.
+  // Prodjenost je TRAJNA oznaka (v._passed): geometrijski test na novoj ruti bi "uskrsnuo"
+  // davno prodjenu stanicu preko offM>2000 grane (review nalaz 6.8.)
+  const ostale = (vias || []).filter((v) => { try {
+    if (v._passed) return false;
+    const pv = navProject(route, v.v[0], v.v[1]);   // po STAROJ geometriji, pre zamene
+    if (pv.offM <= 2000 && pv.d <= (dNow || 0) + 100) { v._passed = true; return false; }
+    return true;
+  } catch (e) { return true; } });
+  // povratno putovanje: krug se zatvara na DOM, ne na trenutnu poziciju; prodjena tacka okreta = pravo kuci
+  let dest = to;
+  const opts = {};
+  if (isRoundTrip() && state.geocode && state.geocode.from && state.geocode.from.lat != null) {
+    const pvTo = navProject(route, to.lon, to.lat);
+    if (pvTo.offM <= 2000 && pvTo.d <= (dNow || 0) + 100) { dest = state.geocode.from; opts.noLoop = true; }
+    else opts.loopFrom = state.geocode.from;
+  }
+  return { vias: ostale, dest, opts };
+}
+/* Sve sto je nosilo kilometre STARE rute gradi se ponovo: jedno mesto za skretanje s rute, "Druga ruta" i obilazak guzve
+   u voznji (guzve.js) - treca kopija ovih koraka bi prvom sledecom izmenom zaboravila neki od njih. Linija na mapi nije ovde:
+   skretanje je crta PRE ovoga (paint-first, 0.9.82), ostali posle. */
+/* 14.10. (pregled koda): stanica je prodjena kad joj STVARNO pridjes (ziv GPS), ne tek na skretanju s rute ili Drugoj ruti. Inace bi
+   na povratnoj turi stanica sa odlaska (20-60 m od povratka) zauvek blokirala obilazak guzve. Redom: gleda se samo prva neprodjena. */
+const STANICA_PROSAO_M = 150;
+function stanicaProlaz(lo, la) {
+  const v = (state.vias || []).find((x) => x && Array.isArray(x.v) && !x._passed);
+  if (v && haversine(la, lo, v.v[1], v.v[0]) * 1000 <= STANICA_PROSAO_M) v._passed = true;
+}
+function rideNovaGeometrija(route) {
+  RIDE.baseD = (RIDE.baseD || 0) + (RIDE.maxD || 0); RIDE.maxD = 0;   // nova ruta = nova cumDist skala (dnevnik sabira etape)
+  try { route._curves = analyzeCurves(route); } catch (e) { delete route._curves; }   // serpentine sa SVEZE geometrije
+  RIDE.nav = buildNav(route, true);   // preskoci "Kreni" - nova ruta pocinje NA vozacu, "Kreni 0 m" je bio simptom 5.8.
+  /* 0.9.95 (QA nalaz 104, prva polovina): brisanje hinta je sledeci fiks slalo na GLOBALNI sken
+     po CELOJ ruti, koji nema pojma ni o smeru ni o tome gde si bio - a na povratnoj (out-and-back)
+     ruti su dve trake cesto 20-60 m jedna od druge, pa se projekcija zalepi na POVRATNU deonicu:
+     "još X km" raste umesto da opada, sat dolaska je pomeren za sate, a off-route rastojanje je
+     5 m pa reroute nikad ne krene. Ovde se ZNA gde si: nova ruta se racuna bas iz tvoje
+     pozicije, dakle indeks 0. Los seme hvata postojeci gard (promasaj > 250 m) i pada na
+     danasnje ponasanje - izmena ne moze da odmogne. */
+  RIDE.lastRouteI = 0;
+  if (RIDE.offSt) RIDE.offSt.offMs = 0;
+  RIDE.total = route.cumDist[route.cumDist.length - 1];   // R13: ETA/preostalo/"Stigao si" po NOVOJ ruti
+  route._limits = []; loadSpeedLimits(route);   // ogranicenja su bila na km stare rute
+  route._cams = [];   // kamere su imale km stare rute - bolje bez najave nego pogresna
+  buildAhead(route);
+  state._zones = [];   // wx zone imale km stare rute - traka se gasi umesto da laze
+  wxLiveRebuild(route);   // tacke prognoze su nosile km stare rute - gradi ih ponovo (u pozadini)
+  try { if (typeof guzvaVoznjaNovaRuta === "function") guzvaVoznjaNovaRuta(route); } catch (e) {}   // 14.10.: zastoji su bili na km stare rute
+}
 async function rideReroute(route, lo, la, dNow, force) {
   const now = Date.now();
   // throttle cuva od GPS suma; NAMERNA komanda (add stop sa dugmeta, 13.8.) ga preskace
@@ -23444,27 +23528,12 @@ async function rideReroute(route, lo, la, dNow, force) {
     document.getElementById("rideStreet").textContent = "";
     document.getElementById("rideShields").innerHTML = "";
     speakSr(T("nav.menjamRutu"));
-    const to = state.geocode && state.geocode.to; if (!to) return;
+    const odv = rideOdavde(route, dNow, savedVias); if (!odv) return;
     const style = stilNaKm(route, (dNow || 0) / 1000);   // sasivena ruta: uzmi stil deonice na kojoj si, ne "prosek rute"
-    // NEPROĐENE stanice OSTAJU u ruti - 5.8. je reroute tiho brisao celu turu i vodio pravo na cilj.
-    // Prodjenost je TRAJNA oznaka (v._passed): geometrijski test na novoj ruti bi "uskrsnuo"
-    // davno prodjenu stanicu preko offM>2000 grane (review nalaz 6.8.)
-    state.vias = (savedVias || []).filter((v) => { try {
-      if (v._passed) return false;
-      const pv = navProject(route, v.v[0], v.v[1]);   // po STAROJ geometriji, pre zamene
-      if (pv.offM <= 2000 && pv.d <= (dNow || 0) + 100) { v._passed = true; return false; }
-      return true;
-    } catch (e) { return true; } });
-    // povratno putovanje: krug se zatvara na DOM, ne na trenutnu poziciju; prodjena tacka okreta = pravo kuci
-    let dest = to;
-    const netOpts = { timeoutMs: 7000, retries: 1 };
-    if (isRoundTrip() && state.geocode && state.geocode.from && state.geocode.from.lat != null) {
-      const pvTo = navProject(route, to.lon, to.lat);
-      if (pvTo.offM <= 2000 && pvTo.d <= (dNow || 0) + 100) { dest = state.geocode.from; netOpts.noLoop = true; }
-      else netOpts.loopFrom = state.geocode.from;
-    }
+    state.vias = odv.vias;
+    const netOpts = Object.assign({ timeoutMs: 7000, retries: 1 }, odv.opts);
     const tok = RIDE.t0;   // stopRide u toku cekanja ne sme da dobije zombi-rutu (review nalaz 6.8.)
-    const nr = await valhallaRoute({ lat: la, lon: lo }, dest, style, netOpts);
+    const nr = await valhallaRoute({ lat: la, lon: lo }, odv.dest, style, netOpts);
     if (!document.body.classList.contains("riding") || RIDE.t0 !== tok) return;
     // sastav vazi samo dok je tura sasivena od bar dva komada - isti prag koji koristi hibridSastav()
     const beseHibrid = !!(route.hibrid && route.hibrid.length >= 2);
@@ -23480,17 +23549,7 @@ async function rideReroute(route, lo, la, dNow, force) {
       tihoObavestenje(T("alt.nijeKombinovana"));
     }
 
-    RIDE.baseD = (RIDE.baseD || 0) + (RIDE.maxD || 0); RIDE.maxD = 0;   // nova ruta = nova cumDist skala (dnevnik sabira etape)
-    try { route._curves = analyzeCurves(route); } catch (e) { delete route._curves; }   // serpentine sa SVEZE geometrije
-    RIDE.nav = buildNav(route, true);   // preskoci "Kreni" - nova ruta pocinje NA vozacu, "Kreni 0 m" je bio simptom 5.8.
-    RIDE.lastRouteI = 0;                // 0.9.95 (nalaz 104): nova ruta se racuna BAS iz tvoje pozicije - hint je 0, ne "ne znam"
-    if (RIDE.offSt) RIDE.offSt.offMs = 0;
-    RIDE.total = route.cumDist[route.cumDist.length - 1];   // R13: ETA/preostalo/"Stigao si" po NOVOJ ruti
-    route._limits = []; loadSpeedLimits(route);   // ogranicenja su bila na km stare rute
-    route._cams = [];   // kamere su imale km stare rute - bolje bez najave nego pogresna
-    buildAhead(route);
-    state._zones = [];   // wx zone imale km stare rute - traka se gasi umesto da laze
-    wxLiveRebuild(route);   // tacke prognoze su nosile km stare rute - gradi ih ponovo (u pozadini)
+    rideNovaGeometrija(route);
     navLog("reroute-ok", { km: +(RIDE.total / 1000).toFixed(2), vias: state.vias.length });   // linija je vec na mapi (paint-first, 0.9.82)
   } catch (e) {
     navLog("reroute-fail", { err: String((e && e.message) || e).slice(0, 80) });
@@ -24120,7 +24179,7 @@ function pauzaNavTick(p, tsMs, route) {
       if (!m.spoke400 && distTo < (spdK > 22 ? 600 : 400) && distTo > 120) { m.spoke400 = true;
         speakSr(T("nav.zaMetara", { 0: Math.round(distTo / 50) * 50, 1: m.sr.t.toLowerCase(), 2: m.sr.street ? T("nav.naUlicu", { 0: m.sr.street }) : "" })); }
       if (!m.spoke90 && distTo <= 95) { m.spoke90 = true;
-        speakSr(m.sr.arrive ? m.sr.t : m.sr.t + (m.sr.street ? T("nav.naUlicuZarez", { 0: m.sr.street }) : "")); }
+        speakSr(m.sr.arrive ? m.sr.t : m.sr.t + (m.sr.street ? T("nav.naUlicuZarez", { 0: m.sr.street }) : ""), false, true); }
     }
   }
   const remM = Math.max(0, total - d);
@@ -24129,7 +24188,8 @@ function pauzaNavTick(p, tsMs, route) {
     /* 31.8.2026 (Boskov zahtev: "Google ima i koliko jos sati vozimo"). Sekunde do cilja su se
        VEC racunale - iz njih je nastajao sat dolaska - ali se broj nikad nije pokazao. Sada je
        on glavni, a kilometri i sat dolaska stoje uz njega. */
-    const preostMs = route.totalDur * 1000 * (remM / Math.max(1, total));
+    const preostMs = route.totalDur * 1000 * (remM / Math.max(1, total)) +
+      (typeof guzvaVoznjaKasnjenjeSek === "function" ? guzvaVoznjaKasnjenjeSek(route, d) : 0) * 1000;   // 14.10.: isto vreme dolaska kao van pauze (zastoji ispred)
     /* Redosled upisa NIJE kozmetika: ceo blok deli jedan try, pa greska u prvom redu proguta i
        sve ispod njega. Nov podatak zato ide POSLEDNJI - da ne moze da obori kilometre, sat
        dolaska i brzinu, koji su vazniji. Uhvaceno testom P1 istog dana. */
@@ -24184,6 +24244,7 @@ function fixKorak(p, tsMs, replay) {
   const accFix = p.coords.accuracy || 0;
   const spdK = fixBrzina(p, lo, la, tsMs);
   try { rideAltBrzina(spdK, tsMs, replay); } catch (e) {}   // i slobodna voznja vodi _stajeOd (W1 parnost: auto-pauza + "Druga ruta")
+  if (accFix < 80 && RIDE.route && !RIDE.freeRide) { try { stanicaProlaz(lo, la); } catch (e) {} }   // 14.10.: prodjena stanica po zivom GPS-u, i u replay-u pozadine
   if (accFix < 80) {   // odometar iz TRAGA - odometar duz rute je 5.8. STAO cim te (lazno) proglasi van rute
     if (RIDE.lastTrk && spdK > 2) {
       const stepM = haversine(RIDE.lastTrk.la, RIDE.lastTrk.lo, la, lo) * 1000;
@@ -24566,7 +24627,7 @@ function startRide() {
   try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
   rideSensorsInit();
   document.body.classList.remove("planning"); document.body.classList.add("riding");
-  try { if (typeof guzvaRutaGasi === "function") guzvaRutaGasi(); } catch (e) {}   // 14.10.: zastoj izmeren pri planu nije trenutni u voznji (guzvaVazi = ne u voznji; provera u voznji = sledeci korak)
+  try { if (typeof guzvaRutaGasi === "function") guzvaRutaGasi(); } catch (e) {}   // 14.10.: zastoj izmeren pri planu nije trenutni u voznji (guzvaVazi = ne u voznji); u voznji proverava guzvaVoznjaStart
   /* Atribucija se skuplja na (i) cim krene voznja (11.8.). Kontrola jeste compact, ali stoji
      otvorena dok je korisnik ne dodirne - a otvoren tekst "OpenFreeMap (c) OpenMapTiles / from
      OpenStreetMap" lezi tacno ispod pilule "jos X km · HH:MM" i meša se sa njom. Tap na (i) je i
@@ -24685,6 +24746,7 @@ function startRide() {
   RIDE.total = route.cumDist[route.cumDist.length - 1];   // R13: na RIDE - reroute ga azurira (closure je lagao ETA/dolazak)
   RIDE.route = route;   // sheet "druga ruta" je van ovog scope-a
   try { min15Prime(route); } catch (e) {}   // TEK POSLE RIDE.route: min15Prime proverava da ruta nije u medjuvremenu zamenjena
+  try { if (typeof guzvaVoznjaStart === "function") guzvaVoznjaStart(route); } catch (e) {}   // 14.10.: guzva ispred tebe na 5 min, obilazak sam (guzve.js)
   if (!RIDE._altReg) {  // registracija ovde, na load-u dugmad jos ne postoje u DOM-u
     RIDE._altReg = 1;
     const ab = document.getElementById("rideAlt"), bk = document.getElementById("altBack"),
@@ -24776,7 +24838,7 @@ function startRide() {
       if (!vanRute && !m.spoke400 && distTo < (spd > 22 ? 600 : 400) && distTo > 120) { m.spoke400 = true;
         speakSr(T("nav.zaMetara", { 0: Math.round(distTo / 50) * 50, 1: m.sr.t.toLowerCase(), 2: m.sr.street ? T("nav.naUlicu", { 0: m.sr.street }) : "" })); }
       if (!vanRute && !m.spoke90 && distTo <= 95) { m.spoke90 = true;
-        speakSr(m.sr.arrive ? m.sr.t : m.sr.t + (m.sr.street ? T("nav.naUlicuZarez", { 0: m.sr.street }) : "")); }
+        speakSr(m.sr.arrive ? m.sr.t : m.sr.t + (m.sr.street ? T("nav.naUlicuZarez", { 0: m.sr.street }) : ""), false, true); }
       /* 15.9.: nov manevar ulazi u znak, a "Zatim" izlazi ispod njega - samo kad se manevar PROMENI,
          ne na svaki GPS fiks (inace bi znak treperio). / A new maneuver slides into the sign and
          "then" drops out under it, only when the maneuver changes, never on every fix. */
@@ -24869,7 +24931,9 @@ function startRide() {
     }
     // meta traka
     if (pr.offM < NAV_OFF_M) try { navProgress(d / Math.max(1, total), total); } catch (e) {}   // predjeni deo rute plavi (fallback; rAF petlja vodi glatku granicu); 0.9.82: ISTI gate kao rAF - van rute projekcija d bezi NAPRED pa je plava granica prestizala vozaca
-    const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total));
+    /* 14.10.: jedno vreme dolaska - kad glas kaze "guzva napred, plus 7 minuta", i ETA ih ukljucuje (guzve.js, dok je provera sveza) */
+    const _gzV = typeof guzvaVoznjaKasnjenjeSek === "function" ? guzvaVoznjaKasnjenjeSek(route, d) : 0;
+    const etaMs = Date.now() + route.totalDur * 1000 * (remM / Math.max(1, total)) + _gzV * 1000;
     /* Na cilju NE prepisuj (11.8.): grana dolaska iznad je ocistila polje, a ovaj red ga je u istom
        otkucaju bezuslovno vracao, pa je uz "Stigao si!" pisalo "još 0,0 km". */
     if (!stigaoSad) {
@@ -25171,6 +25235,7 @@ function stopRide() {
   rmrGpsSignal("stop");   // nativni kolektor se gasi sa voznjom; njegov disk-bafer se tada brise (0.9.83)
   try { rmrGpsDeliStani(); } catch (e) {}
   try { clearInterval(RIDE.prijInt); RIDE.prijInt = null; } catch (e) {}
+  try { if (typeof guzvaVoznjaStop === "function") guzvaVoznjaStop(); } catch (e) {}   // 14.10.: provera guzve u voznji staje sa voznjom
   try { nightRoads(false); } catch (e) {}   // svetlina mape nazad na pregledni nivo
   try { map.setPadding({ top: 0, bottom: 0, left: 0, right: 0 }); } catch (e) {}   // vrati kameru na centriranje van voznje
   try { if (RIDE.marker) { RIDE.marker.remove(); RIDE.marker = null; } } catch (e) {}
@@ -32147,21 +32212,25 @@ function guzvaSlojOsvezi() {
 
 /* ---- 2) GUZVA NA NASOJ RUTI ---- */
 /** Tacke nase rute za TomTom: samo deo do kog se stize za `doSek` (ziv podatak dalje ne vazi) - ili tacno do indeksa `doIdx` -
-    razmak >= GUZVA_RAZMAK_M, najvise GUZVA_TACAKA_MAX. */
-function guzvaUzorak(route, doSek, doIdx) {
+    razmak >= GUZVA_RAZMAK_M, najvise GUZVA_TACAKA_MAX. `od` = indeks odakle se gleda: 0 u planeru, mesto vozaca u voznji
+    (i vreme `doSek` se meri OD njega - duga tura na sat od cilja gleda bas taj poslednji sat). */
+function guzvaUzorak(route, doSek, doIdx, od) {
   const C = (route && route.coords) || [], D = (route && route.cumDist) || [], S = (route && route.cumDur) || [];
   if (C.length < 2 || D.length !== C.length) return null;
+  const o = Math.max(0, Math.min(C.length - 2, (od | 0)));
   let kraj = C.length - 1;
-  if (doIdx != null) kraj = Math.max(1, Math.min(C.length - 1, doIdx | 0));
-  else if (doSek && S.length === C.length) for (let i = 1; i < C.length; i++) if (S[i] > doSek) { kraj = i; break; }
-  const duzM = D[kraj] - D[0];
+  if (doIdx != null) kraj = Math.max(o + 1, Math.min(C.length - 1, doIdx | 0));
+  else if (doSek && S.length === C.length) for (let i = o + 1; i < C.length; i++) if (S[i] - S[o] > doSek) { kraj = i; break; }
+  const duzM = D[kraj] - D[o];
   const razmak = Math.max(GUZVA_RAZMAK_M, duzM / (GUZVA_TACAKA_MAX - 1));
-  const idx = [0]; let posl = D[0];
-  for (let i = 1; i < kraj; i++) if (D[i] - posl >= razmak) { idx.push(i); posl = D[i]; }
+  const idx = [o]; let posl = D[o];
+  for (let i = o + 1; i < kraj; i++) if (D[i] - posl >= razmak) { idx.push(i); posl = D[i]; }
   idx.push(kraj);
   return { kraj, idx, duzM };
 }
-/** TomTom odgovor -> zastoji na NASOJ ruti (indeksi, km, nase vreme do zastoja). Pretraga je monotona: zastoji idu redom duz rute. */
+/** TomTom odgovor -> zastoji na NASOJ ruti (indeksi, km, nase vreme do zastoja OD pocetka uzorka). Pretraga je monotona: zastoji
+    idu redom duz rute, i krece od pocetka uzorka - na povratnoj ruti su dve trake 20-60 m jedna od druge, pa bi pretraga od nule
+    zastoj ispred vozaca stavila na vec predjenu traku. */
 function guzvaMapiraj(route, uz, tt) {
   const r0 = tt && tt.routes && tt.routes[0];
   if (!r0 || !uz) return { stanje: "nije", zasto: "prazno" };
@@ -32174,7 +32243,7 @@ function guzvaMapiraj(route, uz, tt) {
     for (let i = od; i <= uz.kraj; i++) { const d = haversine(p.latitude, p.longitude, C[i][1], C[i][0]); if (d < bd) { bd = d; bi = i; } }
     return { i: bi, d: bd };
   };
-  const zastoji = []; let od = 0;
+  const o = uz.idx[0], zastoji = []; let od = o;
   for (const s of (r0.sections || [])) {
     if (s.sectionType !== "TRAFFIC") continue;
     const pa = P[s.startPointIndex], pb = P[s.endPointIndex]; if (!pa || !pb) continue;
@@ -32182,7 +32251,7 @@ function guzvaMapiraj(route, uz, tt) {
     if (a.d > 0.15 || b.d > 0.15) continue;   // tacka zastoja nije na nasoj ruti (km)
     od = a.i;
     const iB = Math.max(a.i + 1, b.i);
-    zastoji.push({ iA: a.i, iB, kmOd: D[a.i] / 1000, kmDo: D[iB] / 1000, kadSek: S.length === C.length ? S[a.i] : null,
+    zastoji.push({ iA: a.i, iB, kmOd: D[a.i] / 1000, kmDo: D[iB] / 1000, kadSek: S.length === C.length ? S[a.i] - S[o] : null,
       sek: +s.delayInSeconds || 0, kmh: s.effectiveSpeedInKmh != null ? +s.effectiveSpeedInKmh : null,
       kat: s.simpleCategory || "OTHER", jacina: +s.magnitudeOfDelay || 0 });
   }
@@ -32207,7 +32276,7 @@ function guzvaVazi(route) {
 /** Jedan izvor za vreme dolaska. */
 function guzvaKasnjenjeSek(route) { return guzvaVazi(route) ? guzvaUProzoru(route._guzva).kasnjenje : 0; }
 function guzvaUrl(route, uz) {
-  const a = route.coords[0], b = route.coords[uz.kraj];
+  const a = route.coords[uz.idx[0]], b = route.coords[uz.kraj];
   return "https://api.tomtom.com/routing/1/calculateRoute/" + a[1].toFixed(6) + "," + a[0].toFixed(6) + ":" + b[1].toFixed(6) + "," + b[0].toFixed(6) +
     "/json?key=" + TT_KEY + "&traffic=true&travelMode=motorcycle&sectionType=traffic&computeTravelTimeFor=all&minDeviationDistance=0&minDeviationTime=0&routeRepresentation=polyline";
 }
@@ -32243,9 +32312,11 @@ const GUZVA_ZAOB_POSLE_M = 1500;
 /* obilazak duzi od 2x deonice koju zamenjuje (ili +10 km) nije obilazak nego druga tura - ni ne pita se TomTom (proba 14.10.: zone na
    zastojima kod Autokomande su ruter terale na 48 km umesto 11) */
 function guzvaZaobRazuman(duzObilaskaM, duzDelaM) { return duzObilaskaM <= Math.max(2 * duzDelaM, duzDelaM + 10000); }
-/** TomTom zivo vreme voznje po NASOJ geometriji od starta do tacke `kraj` (sek); null kad TomTom padne ili ne vozi nasu geometriju. */
-async function guzvaVremeDo(route, kraj) {
-  const uz = guzvaUzorak(route, null, kraj); if (!uz) return null;
+/** TomTom zivo vreme voznje po NASOJ geometriji od tacke `od` (start ili mesto vozaca) do tacke `kraj` (sek); null kad TomTom padne
+    ili ne vozi nasu geometriju. U voznji `od` MORA biti mesto vozaca: od starta bi stara ruta nosila i vec predjeni deo, pa bi
+    obilazak izgledao mnogo brzi nego sto jeste. */
+async function guzvaVremeDo(route, kraj, od) {
+  const uz = guzvaUzorak(route, null, kraj, od); if (!uz) return null;
   try {
     const tt = await ttJSON(guzvaUrl(route, uz), guzvaTelo(route, uz));
     const r0 = tt && tt.routes && tt.routes[0], d = r0 && r0.summary && +r0.summary.lengthInMeters;
@@ -32253,28 +32324,27 @@ async function guzvaVremeDo(route, kraj) {
     return +r0.summary.travelTimeInSeconds || null;
   } catch (e) { return null; }
 }
-function guzvaNajbliziIdx(route, lonlat) {
-  const C = route.coords; let bi = 0, bd = Infinity;
-  for (let i = 0; i < C.length; i++) { const d = haversine(lonlat[1], lonlat[0], C[i][1], C[i][0]); if (d < bd) { bd = d; bi = i; } }
-  return bi;
-}
 /** Prvi deo (obilazak, start -> tacka povratka) + ostatak izabrane rute od te tacke. Manevar izabrane rute koji je poceo PRE tacke
-    povratka postaje "Nastavi pravo" (isto pravilo kao spojiTripove) - njegovo skretanje je na delu koji se vise ne vozi. */
+    povratka postaje "Nastavi pravo" (isto pravilo kao spojiTripove) - njegovo skretanje je na delu koji se vise ne vozi. Spoj ide po
+    kumulativnim nizovima (ne po Valhalla zbiru), da kilometri na savu ne skoce. */
 function guzvaSpoji(a, b, oR) {
-  const nA = a.coords.length, offD = a.totalDist - b.cumDist[oR], offT = a.totalDur - b.cumDur[oR];
+  const nA = a.coords.length, dA = a.cumDist[nA - 1], tA = a.cumDur[nA - 1];
+  const offD = dA - b.cumDist[oR], offT = tA - b.cumDur[oR];
   const pom = (i) => i - oR + (nA - 1);
-  const mA = (a.maneuvers || []).filter((m) => !(m.type >= 4 && m.type <= 6));
+  const dolazak = (m) => m.type >= 4 && m.type <= 6;
+  // iz prvog dela pada samo NJEGOV zavrsni dolazak (na savu); dolazak na stanicu usred prvog dela ostaje
+  const mA = (a.maneuvers || []).filter((m) => !(dolazak(m) && (m.begin_shape_index | 0) >= nA - 1));
   /* + zavrsni "stigao si" izabrane rute UVEK (kad je tacka povratka sam cilj, njegov begin = end = oR pa bi ga filter "end > oR" bacio,
-     a obilazak bi ostao bez dolaska - izmereno 14.10. u probi: poslednji manevar je bio skretanje) */
-  const mB = (b.maneuvers || []).filter((m) => (m.end_shape_index | 0) > oR || (m.type >= 4 && m.type <= 6)).map((m) => (m.begin_shape_index | 0) < oR
+     a obilazak bi ostao bez dolaska - izmereno 14.10. u probi: poslednji manevar je bio skretanje). Dolazak na stanicu PRE tacke
+     povratka ne ulazi (u voznji: vec prodjena stanica bi dala lazno "nastavi" na savu). */
+  const mB = (b.maneuvers || []).filter((m) => (m.end_shape_index | 0) > oR || (dolazak(m) && (m.end_shape_index | 0) >= oR)).map((m) => (m.begin_shape_index | 0) < oR
     ? { ...m, type: 8, begin_shape_index: nA - 1, end_shape_index: pom(m.end_shape_index | 0) }
     : { ...m, begin_shape_index: pom(m.begin_shape_index | 0), end_shape_index: pom(m.end_shape_index | 0) });
-  const kmR = b.cumDist[oR] / 1000, kmA = a.totalDist / 1000;
+  const kmR = b.cumDist[oR] / 1000, kmA = dA / 1000;
+  const cumDist = a.cumDist.concat(b.cumDist.slice(oR + 1).map((d) => d + offD)), cumDur = a.cumDur.concat(b.cumDur.slice(oR + 1).map((t) => t + offT));
   return {
-    coords: a.coords.concat(b.coords.slice(oR + 1)),
-    cumDist: a.cumDist.concat(b.cumDist.slice(oR + 1).map((d) => d + offD)),
-    cumDur: a.cumDur.concat(b.cumDur.slice(oR + 1).map((t) => t + offT)),
-    totalDist: a.totalDist + (b.totalDist - b.cumDist[oR]), totalDur: a.totalDur + (b.totalDur - b.cumDur[oR]),
+    coords: a.coords.concat(b.coords.slice(oR + 1)), cumDist, cumDur,
+    totalDist: cumDist[cumDist.length - 1], totalDur: cumDur[cumDur.length - 1],
     label: b.label, styleIdx: b.styleIdx, hasHighway: !!(a.hasHighway || b.hasHighway), hasFerry: !!(a.hasFerry || b.hasFerry),
     tollSegs: (a.tollSegs || []).concat((b.tollSegs || []).filter((t) => t.km >= kmR).map((t) => ({ km: t.km - kmR + kmA, len: t.len }))),
     tollKm: (a.tollKm || 0) + (b.tollSegs || []).filter((t) => t.km >= kmR).reduce((s, t) => s + (t.len || 0), 0),
@@ -32282,41 +32352,112 @@ function guzvaSpoji(a, b, oR) {
     roughKm: (a.roughKm || 0), maneuvers: mA.concat(mB),
   };
 }
+/** Nasa ruta od vozaca (indeks `od`) do pocetka obilaska (`i1`), pa obilazak `a` (krece sa tacke i1). U voznji obilazak ne krece od
+    vozaca nego najvise GUZVA_VOZ_PRE_M pre zastoja: menja se samo deo oko guzve, a ne pola tvoje vijugave rute (pregled koda 14.10.).
+    Manevri prefiksa ostaju (i stanice na njemu); manevar koji je poceo iza vozaca postaje "nastavi", a pocetni manevar obilaska otpada
+    (vozac vec vozi tim putem - "Nastavi pravo" usred puta bi bio sum). */
+function guzvaPrefiks(route, od, i1, a) {
+  const C = route.coords, D = route.cumDist, S = route.cumDur;
+  const pc = C.slice(od, i1 + 1), pd = D.slice(od, i1 + 1).map((d) => d - D[od]), ps = S.slice(od, i1 + 1).map((t) => t - S[od]);
+  const nP = pc.length, dP = pd[nP - 1], sP = ps[nP - 1], kmOd = D[od] / 1000, kmDo = D[i1] / 1000;
+  const mP = (route.maneuvers || []).filter((m) => (m.end_shape_index | 0) > od && (m.begin_shape_index | 0) < i1)
+    .map((m) => ({ ...m, type: (m.begin_shape_index | 0) < od ? 8 : m.type,
+      begin_shape_index: Math.max(0, (m.begin_shape_index | 0) - od), end_shape_index: Math.min(nP - 1, (m.end_shape_index | 0) - od) }));
+  const mA = (a.maneuvers || []).filter((m) => !(m.type >= 1 && m.type <= 3)).map((m) => ({ ...m,
+    begin_shape_index: (m.begin_shape_index | 0) + nP - 1, end_shape_index: (m.end_shape_index | 0) + nP - 1 }));
+  const cumDist = pd.concat(a.cumDist.slice(1).map((d) => d - a.cumDist[0] + dP)), cumDur = ps.concat(a.cumDur.slice(1).map((t) => t - a.cumDur[0] + sP));
+  const uDelu = (k) => k >= kmOd && k < kmDo;
+  return {
+    coords: pc.concat(a.coords.slice(1)), cumDist, cumDur, totalDist: cumDist[cumDist.length - 1], totalDur: cumDur[cumDur.length - 1],
+    maneuvers: mP.concat(mA), hasHighway: !!(route.hasHighway || a.hasHighway), hasFerry: !!(route.hasFerry || a.hasFerry),
+    tollSegs: (route.tollSegs || []).filter((t) => uDelu(t.km)).map((t) => ({ km: t.km - kmOd, len: t.len })).concat((a.tollSegs || []).map((t) => ({ km: t.km + dP / 1000, len: t.len }))),
+    tollKm: (a.tollKm || 0) + (route.tollSegs || []).filter((t) => uDelu(t.km)).reduce((s, t) => s + (t.len || 0), 0),
+    roughAt: (route.roughAt || []).filter(uDelu).map((k) => k - kmOd).concat((a.roughAt || []).map((k) => k + dP / 1000)), roughKm: a.roughKm || 0,
+  };
+}
+/** Zone zastoja za ruter: najveci zastoji prvi; obim deli javni Valhalla limit (10 km) sa zatvaranjima, koja imaju prednost. */
+function guzvaZone(route, zastoji) {
+  const vec = (state._izbegniPoly || []).reduce((s, q) => s + _obimKm(q), 0), budzet = 9.2 - vec;
+  if (budzet < 0.6) return { zasto: "budzet" };
+  const lista = zastoji.slice().sort((x, y) => y.sek - x.sek).slice(0, 3);
+  const kor = (k) => lista.map((x) => _koridor(route, Math.round((x.iA + x.iB) / 2), Math.max(0.2, ((x.kmDo - x.kmOd) / 2 + 0.15) * k))).filter(Boolean);
+  let polys = kor(1); const obim = polys.reduce((s, q) => s + _obimKm(q), 0);
+  if (obim > budzet) polys = kor(budzet / obim);
+  return polys.length ? { polys } : { zasto: "zone" };
+}
+/** Mesta koja ruta MORA da prodje, a lezu na delu koji obilazak zamenjuje (od..oR): stanice i, na povratnoj turi, tacka okreta.
+    Mera je blizina tom delu rute (STANICA_MAX_M), ne projekcija: na povratnoj ruti su trake 20-60 m jedna od druge, pa bi projekcija
+    stanicu sa odlaska stavila na povratak (pregled koda 14.10.). U voznji prodjena stanica ne smeta. */
+function guzvaPreskace(route, od, oR, uVoznji) {
+  const C = route.coords, D = route.cumDist, mesta = [];
+  for (const v of state.vias || []) if (v && v.v && !(uVoznji && v._passed)) mesta.push(v.v);
+  try {
+    const to = state.geocode && state.geocode.to;
+    if (to && to.lat != null && isRoundTrip()) {
+      const pv = navProject(route, to.lon, to.lat);
+      if (!(pv.offM <= 2000 && pv.d <= D[od])) mesta.push([to.lon, to.lat]);   // okret jos nije prodjen
+    }
+  } catch (e) {}
+  return mesta.some((m) => { for (let i = od; i < oR; i++) if (guzvaDoDuzi(m, C[i], C[i + 1]) <= STANICA_MAX_M) return true; return false; });
+}
+/** Rastojanje tacke p od duzi a-b (m, lokalna ravan): stanica usred dugacke duzi je blizu rute, iako je daleko od oba temena. */
+function guzvaDoDuzi(p, a, b) {
+  const kx = 111320 * Math.cos(p[1] * Math.PI / 180), ky = 110540;
+  const ax = (a[0] - p[0]) * kx, ay = (a[1] - p[1]) * ky, bx = (b[0] - p[0]) * kx, by = (b[1] - p[1]) * ky;
+  const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy, t = l2 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / l2)) : 0;
+  return Math.hypot(ax + t * dx, ay + t * dy);
+}
+/** Obilazak oko zastoja u prozoru: od tacke `start` (start rute u planeru; u voznji tacka na ruti pre zastoja ili vozac; na nasoj ruti je
+    to indeks `od`) do tacke GUZVA_ZAOB_POSLE_M posle poslednjeg zastoja, pa TomTom uz zivu guzvu vozi i stari i novi put od `od`. Isti
+    racun za planer i voznju. Usteda se ne priznaje veca od samih zastoja: obilazak ide najbrzim stilom, pa bi razlika STILA (autoput
+    umesto vijugavog) inace izgledala kao usteda od guzve. Zatvoren put: obilazak je obavezan (`zatvoreno`). */
+async function guzvaObilazak(route, zastoji, od, start, uVoznji) {
+  const C = route.coords, D = route.cumDist;
+  const posl = Math.max(...zastoji.map((x) => x.iB));
+  let oR = posl; while (oR < C.length - 1 && D[oR] - D[posl] < GUZVA_ZAOB_POSLE_M) oR++;
+  // stanica (ili okret povratne ture) na delu koji se zamenjuje: obilazak bi je preskocio - iskreno se kaze, ne racuna se
+  if (guzvaPreskace(route, od, oR, uVoznji)) return { stanje: "stanice" };
+  const z = guzvaZone(route, zastoji);
+  if (!z.polys) return { stanje: "nije", zasto: z.zasto };
+  const polys = z.polys;
+  let a;
+  try { a = await valhallaRoute(start, { lat: C[oR][1], lon: C[oR][0] }, ROUTE_STYLES[3], { noVias: true, noLoop: true, izbegni: polys, retries: 1 }); }
+  catch (e) { return { stanje: "nije", zasto: "ruter" }; }
+  if (!a || !a.coords || a.coords.length < 2) return { stanje: "nije", zasto: "ruter" };
+  if (a.coords.some((c) => polys.some((pl) => _uPoligonu(c[1], c[0], pl)))) return { stanje: "nije", zasto: "kroz" };   // obilazak kroz zastoj nije obilazak
+  if (!guzvaZaobRazuman(a.totalDist, D[oR] - D[od])) return { stanje: "nemaObilaska", kmObilaska: a.totalDist / 1000, kmDela: (D[oR] - D[od]) / 1000 };
+  /* obilazak mora da se vrati NA rutu u njenom pravcu: kad stigne u tacku povratka iz sporedne ulice ili sa suprotne strane, tamo treba
+     skretanje koje spoj ne ume da kaze (manevar rute postaje "nastavi") - takav obilazak se ne nudi (pregled koda 14.10.) */
+  if (uVoznji && oR < C.length - 1) {
+    /* pravac se meri na poslednjih ~30 m (Valhalla ponavlja zavrsnu tacku, pa je zadnja duz 0 m i "pravac 0°" - izmereno 14.10. u
+       Beogradu), i poredi sa tim kako STARA ruta stize u tacku povratka (ako ona tu skrece, to skretanje ostaje u spoju) */
+    const razl = Math.abs(((guzvaSmerDolaska(a.coords, a.coords.length - 1) - guzvaSmerDolaska(C, oR)) % 360 + 540) % 360 - 180);
+    if (razl > 60) return { stanje: "nije", zasto: "spoj", razl: Math.round(razl) };
+  }
+  const zatvoreno = zastoji.some((x) => x.kat === "ROAD_CLOSURE");
+  const [tO, tN] = await Promise.all([guzvaVremeDo(route, oR, od), guzvaVremeDo(a, a.coords.length - 1)]);
+  if (tO == null || tN == null) return zatvoreno && uVoznji ? { stanje: "racunat", usteda: null, zatvoreno, a, oR } : { stanje: "nije", zasto: "tomtom" };
+  const sirovo = tO - tN, zastojSek = zastoji.reduce((s, x) => s + guzvaMin(x) * 60, 0);
+  const usteda = zatvoreno ? sirovo : Math.min(sirovo, zastojSek);
+  try { navLog("guzva-zaob", { usteda: Math.round(usteda), sirovo: Math.round(sirovo), tO: Math.round(tO), tN: Math.round(tN), od }); } catch (e) {}
+  return { stanje: "racunat", usteda, sirovo, tO, tN, a, oR, zatvoreno };
+}
 async function guzvaZaobidji(route) {
   if (!route || route._zaobilaz) return null;
   if (route._zaob && route._zaob.za === route._guzva) return route._zaob;   // ista provera guzve = isti odgovor
   if (!guzvaVazi(route) || state.engine === "osrm" || !(route.maneuvers && route.maneuvers.length)) return null;
   const g = route._guzva, { zastoji, kasnjenje } = guzvaUProzoru(g);
   if (!zastoji.length || (kasnjenje < GUZVA_ZAOB_PRAG_SEK && !zastoji.some((x) => x.kat === "ROAD_CLOSURE"))) return null;
-  const C = route.coords, D = route.cumDist;
-  const posl = Math.max(...zastoji.map((x) => x.iB));
-  let oR = posl; while (oR < C.length - 1 && D[oR] - D[posl] < GUZVA_ZAOB_POSLE_M) oR++;
   const gotovo = (o) => (route._zaob = Object.assign({ za: g }, o));
-  // stanica pre tacke povratka: obilazak od starta je ne bi prosao - iskreno se kaze, ne racuna se
-  if ((state.vias || []).some((v) => v && v.v && guzvaNajbliziIdx(route, v.v) <= oR)) return gotovo({ stanje: "stanice" });
-  // zone: najveci zastoji prvi; obim deli javni Valhalla limit (10 km) sa zatvaranjima, koja imaju prednost
-  const vec = (state._izbegniPoly || []).reduce((s, q) => s + _obimKm(q), 0), budzet = 9.2 - vec;
-  if (budzet < 0.6) return gotovo({ stanje: "nije", zasto: "budzet" });
-  const lista = zastoji.slice().sort((x, y) => y.sek - x.sek).slice(0, 3);
-  const kor = (k) => lista.map((x) => _koridor(route, Math.round((x.iA + x.iB) / 2), Math.max(0.2, ((x.kmDo - x.kmOd) / 2 + 0.15) * k))).filter(Boolean);
-  let polys = kor(1); const obim = polys.reduce((s, q) => s + _obimKm(q), 0);
-  if (obim > budzet) polys = kor(budzet / obim);
-  if (!polys.length) return gotovo({ stanje: "nije", zasto: "zone" });
-  let a;
-  try { a = await valhallaRoute({ lat: C[0][1], lon: C[0][0] }, { lat: C[oR][1], lon: C[oR][0] }, ROUTE_STYLES[3], { noVias: true, noLoop: true, izbegni: polys, retries: 1 }); }
-  catch (e) { return gotovo({ stanje: "nije", zasto: "ruter" }); }
-  if (!a || !a.coords || a.coords.length < 2) return gotovo({ stanje: "nije", zasto: "ruter" });
-  if (a.coords.some((c) => polys.some((pl) => _uPoligonu(c[1], c[0], pl)))) return gotovo({ stanje: "nije", zasto: "kroz" });   // obilazak kroz zastoj nije obilazak
-  if (!guzvaZaobRazuman(a.totalDist, D[oR] - D[0])) return gotovo({ stanje: "nemaObilaska", kmObilaska: a.totalDist / 1000, kmDela: (D[oR] - D[0]) / 1000 });
-  const [tO, tN] = await Promise.all([guzvaVremeDo(route, oR), guzvaVremeDo(a, a.coords.length - 1)]);
-  if (tO == null || tN == null) return gotovo({ stanje: "nije", zasto: "tomtom" });
-  const usteda = tO - tN;
-  try { navLog("guzva-zaob", { usteda: Math.round(usteda), tO: Math.round(tO), tN: Math.round(tN) }); } catch (e) {}
+  const C = route.coords;
+  const o = await guzvaObilazak(route, zastoji, 0, { lat: C[0][1], lon: C[0][0] }, false);
+  if (o.stanje !== "racunat") return gotovo(o);
+  const { usteda, tO, tN } = o;
   if (usteda < GUZVA_ZAOB_USTEDA_SEK) return gotovo({ stanje: "nijeBrze", usteda, tO, tN });
-  const n = guzvaSpoji(a, route, oR);
+  const n = guzvaSpoji(o.a, route, o.oR);
   n._zaobilaz = { od: route, usteda, tO, tN };
   n.label = T("guz.zaobLabel", { 0: Math.round(usteda / 60) });
-  return gotovo({ stanje: "ok", usteda, tO, tN, ruta: n, kmViska: (n.totalDist - route.totalDist) / 1000 });
+  return gotovo({ stanje: "ok", usteda, tO, tN, ruta: n, kmViska: (n.totalDist - route.cumDist[route.cumDist.length - 1]) / 1000 });   // obe po kumulativnim nizovima (spoj ne koristi Valhalla zbir)
 }
 /** Obilazak ulazi u spisak varijanti kao jos jedna kartica (prognoza i ocena kao svaka ruta); ponuda u Upozorenjima. */
 async function guzvaZaobPonudi(route, departure, seq) {
@@ -32383,8 +32524,10 @@ function guzvaRutaCrtaj(route) {
   if (typeof map === "undefined" || !map) return;
   guzvaRutaGasi();
   if (!guzvaVazi(route)) return;
-  const g = route._guzva;
-  const { zastoji } = guzvaUProzoru(g); if (!zastoji.length) return;
+  _guzvaCrtaj(route, guzvaUProzoru(route._guzva).zastoji);
+}
+function _guzvaCrtaj(route, zastoji) {   // planer (guzvaRutaCrtaj) i voznja (guzvaVoznjaCrtaj): isti crven/narandzast deo rute
+  if (!zastoji.length) return;
   const feats = zastoji.map((z) => ({ type: "Feature", properties: { c: guzvaJaka(z) ? "#ea3d57" : "#f59a3c" },
     geometry: { type: "LineString", coordinates: route.coords.slice(z.iA, z.iB + 1) } }));
   try {
@@ -32433,6 +32576,336 @@ function guzvaPrikazi(route) {
   try { renderResultHero(route); } catch (e) {}   // instrument: Stizes i recenica ispod brojeva citaju guzvaKasnjenjeSek / guzvaMeta
   try { guzvaZaobCrtaj(); } catch (e) {}
   try { riPresude(route); } catch (e) {}
+}
+
+/* ---- 4) GUZVA U VOZNJI (Bosko 14.10.: "Automatski nek se menja. Jer sta ako meni do destinacije treba 4 sata i kad krenem nema
+   guzve ali kada dodjem na sat vremena od destinacije formira se guzva?") ----
+   Provera putuje SA vozacem: na GUZVA_VOZ_MS TomTom vozi sat rute ispred, od mesta gde si (ne od starta), a broje se zastoji do kojih
+   stizes u GUZVA_PROZOR_MIN. Na sat od cilja proverava se bas taj poslednji sat; guzva koja je sada tri sata ispred ne znaci nista,
+   do tvog dolaska bice druga.
+   - zastoji kostaju bar GUZVA_ZAOB_PRAG_SEK (ili zatvoren put): obilazak SAMO oko guzve - krece najvise GUZVA_VOZ_PRE_M pre prvog
+     zastoja, ne od vozaca (inace bi pola vijugave rute zamenio autoput, pa bi razlika stila izgledala kao usteda). Usteda se priznaje
+     najvise koliko zastoji kostaju. Brzi bar GUZVA_VOZ_USTEDA_SEK (zatvoren put: uvek) = aplikacija SAMA predje i kaze glasom:
+     motociklista ne dodiruje ekran u voznji (zato je i "Druga ruta" u pokretu siva). Stanice, okret povratne ture i ostatak rute ostaju.
+   - inace glas i traka "Guzva za X km, +N min", jednom po zastoju (ponovo tek kad naraste za GUZVA_VOZ_PONOVI_MIN).
+   - jedno vreme dolaska: ETA u voznji ukljucuje kasnjenje zastoja ispred dok je provera sveza; posle prelaska ETA = stara minus usteda
+     koju je glas rekao, do sledece provere (guzvaVoznjaKasnjenjeSek).
+   - stanje zivi u RIDE.guz, NE u route._guzva: planer (guzvaVazi) u voznji namerno nista ne prikazuje.
+   - zastareo odgovor se baca: ruta se menja NA ISTOM objektu (Object.assign), pa se poredi niz koordinata, ne objekat; pala provera ne
+     brise vazecu (istekne sama) i nikad ne znaci "bez guzve".
+   - vozac koji ne skrene na obilazak (skretanje s rute ga vrati ka guzvi) je obilazak ODBIO: ti zastoji se posle samo najavljuju. */
+const GUZVA_VOZ_MS = 5 * 60000;            // ritam provere u voznji
+const GUZVA_VOZ_TIK_MS = 30000;            // koliko cesto se gleda da li je vreme za proveru
+const GUZVA_VOZ_USTEDA_SEK = 300;          // sam prelazi tek kad obilazak stedi bar 5 min (planer nudi od 2 min - tamo biras sam)
+const GUZVA_VOZ_MIRUJ_MS = 15 * 60000;     // posle prelaska 15 min nema novog prelaska
+const GUZVA_VOZ_ZAOB_MS = 10 * 60000;      // obilazak (ruter + dva TomTom poziva) najvise na 10 min - kvota
+const GUZVA_VOZ_PRE_M = 4000;              // obilazak krece najvise 4 km pre prvog zastoja (blize - od vozaca)
+const GUZVA_VOZ_RAZILAZ_M = 300;           // vozac mora biti bar ovoliko PRE mesta gde obilazak napusta rutu...
+const GUZVA_VOZ_RAZILAZ_S = 30;            // ...i bar 30 s voznje (300 m je 9 s na 120 km/h - glas ne stigne)
+const GUZVA_VOZ_VAZI_MS = 12 * 60000;      // kasnjenje u ETA i crven deo vaze dok je provera mladja od ovoga
+const GUZVA_VOZ_PONOVI_MIN = 5;            // isti zastoj se ponovo najavljuje tek kad naraste za 5 min
+const GUZVA_VOZ_ISTI_M = 300;              // zastoj ciji deo lezi do 300 m od vec najavljenog je isti (rep guzve raste unazad)
+const GUZVA_VOZ_KVOTA_MS = 30 * 60000;     // TomTom odbio (403/429): pola sata bez provere u voznji
+const GUZVA_VOZ_GRUPA_M = 4000;            // zastoji blizi od 4 km su jedna guzva; dalji se obilaze posebno (sledeca provera)
+
+function guzvaVoznjaStart(route) {
+  guzvaVoznjaStop();
+  const g0 = route && route._guzva, sad = Date.now();
+  const g = RIDE.guz = { ts: 0, rez: null, rekao: [], odbijeni: [], presao: null, pomak: null, presaoTs: 0, zaobTs: 0, pauzaDo: 0, radi: false, najaviOdmah: false };
+  /* provera iz plana je vozena bas odavde (start rute = ti): ako je sveza, ona je prva provera u voznji - kasnjenje odmah u ETA, crven
+     deo rute, najava glasom na prvom svezem fiksu; sledeca provera tek kad ona zastari */
+  if (g0 && g0.stanje === "ok" && sad - (g0.ts || 0) < GUZVA_VOZ_MS && route.coords) {
+    g.ts = g0.ts; g.rez = Object.assign({}, g0, { geo: route.coords }); g.najaviOdmah = true;
+    guzvaVoznjaCrtaj(route);
+  }
+  RIDE.guzInt = setInterval(() => { guzvaVoznjaTik().catch(() => {}); }, GUZVA_VOZ_TIK_MS);
+}
+function guzvaVoznjaStop() {
+  try { clearInterval(RIDE.guzInt); } catch (e) {}
+  RIDE.guzInt = null; RIDE.guz = null;
+  guzvaRutaGasi();
+}
+/** Geometrija se promenila (skretanje, Druga ruta, obilazak): zastoji su bili na km stare rute. Brise se i provera iz plana - posle
+    voznje bi planer crtao zastoje na geometriji koje vise nema. Ako vozac nije skrenuo na obilazak (napustio ga pre mesta gde se
+    skrece), ti zastoji su odbijeni: od sad samo najava, bez novog prelaska u krug. */
+function guzvaVoznjaNovaRuta(route) {
+  try { if (route) { delete route._guzva; delete route._zaob; } } catch (e) {}
+  const g = RIDE.guz;
+  if (g) {
+    const bilo = !!(g.rez && guzvaUProzoru(g.rez).zastoji.length);
+    g.rez = null; g.pomak = null;
+    if (!g.uPrelasku) {
+      const p = g.presao;
+      if (p && Date.now() - p.ts < GUZVA_VOZ_MIRUJ_MS && RIDE.pos) {
+        try {   // na STAROJ ruti (ne na obilasku), iza mesta gde obilazak skrece, a pre tacke povratka: nastavio je ka guzvi
+          const s0 = navProject({ coords: p.staraC, cumDist: p.staraD }, RIDE.pos.lo, RIDE.pos.la, p.iRaz);
+          if (s0.offM < NAV_OFF_M && s0.d > p.dRaz && s0.d < p.dOR) { g.odbijeni.push(...p.mesta); g.presao = null; navLog("guzva-odbijen", { d: Math.round(s0.d), dRaz: Math.round(p.dRaz) }); }
+        } catch (e) {}
+      }
+      if (bilo) g.ts = Math.min(g.ts, Date.now() - GUZVA_VOZ_MS + 60000);   // zastoj je bio poznat: nova ruta se proverava za minut, ne za 5
+    }
+  }
+  guzvaRutaGasi();
+}
+function guzvaVoznjaSme(route, pos, sad, g) {
+  if (!document.body.classList.contains("riding") || RIDE.freeRide || RIDE.paused || RIDE.rerouting || document.hidden) return false;
+  if (!route || !pos || !route.coords || route.coords.length < 2 || route.gpxRaw || route.bezManevara) return false;
+  if (typeof JURI !== "undefined" && JURI && JURI.f) return false;   // "Juri ga": cilj se pomera, ruta se sama preracunava
+  if (typeof TT_KEY !== "string" || !TT_KEY || sad < (g.pauzaDo || 0)) return false;
+  if (sad - (RIDE.lastFixTs || 0) > 15000) return false;   // bez svezeg GPS-a ne znam odakle da gledam
+  return sad - (g.ts || 0) >= GUZVA_VOZ_MS;
+}
+async function guzvaVoznjaTik() {
+  const g = RIDE.guz, sad = Date.now();
+  if (!g) return;
+  if (g.rez && sad - g.rez.ts > GUZVA_VOZ_VAZI_MS) { g.rez = null; guzvaRutaGasi(); }   // i u pauzi: stara guzva ne stoji kao trenutna
+  if (g.pomak && sad - g.pomak.ts > GUZVA_VOZ_VAZI_MS) g.pomak = null;
+  const route = RIDE.route, pos = RIDE.pos;
+  if (g.radi) return;
+  if (g.najaviOdmah && g.rez && route && pos && g.rez.geo === route.coords && !RIDE.paused && sad - (RIDE.lastFixTs || 0) <= 15000) {
+    g.najaviOdmah = false;
+    try { guzvaVoznjaNajavi(route, guzvaUProzoru(g.rez).zastoji, navProject(route, pos.lo, pos.la, RIDE.lastRouteI).d, g); } catch (e) {}
+  }
+  if (!guzvaVoznjaSme(route, pos, sad, g)) return;
+  g.radi = true;
+  try { await guzvaVoznjaKorak(route, pos, sad, g); }
+  catch (e) { try { navLog("guzva-voz-greska", { e: String((e && e.message) || e).slice(0, 80) }); } catch (e2) {} }
+  finally { g.radi = false; }
+}
+/** Gde obilazak napusta staru rutu (m duz stare rute): prva tacka obilaska dalje od NAV_OFF_M od nje. */
+function guzvaRazilaz(route, a, od) {
+  let hint = od, dPosl = route.cumDist[od];
+  for (const c of a.coords) {
+    const p = navProject(route, c[0], c[1], hint);
+    if (p.offM > NAV_OFF_M) return dPosl;
+    hint = p.i; dPosl = p.d;
+  }
+  return dPosl;
+}
+function guzvaSmer(route, i) {   // pravac rute u tacki i (stepeni od severa): ruter ne sme da uzme suprotnu traku
+  const C = route.coords, j = Math.min(i, C.length - 2);
+  return guzvaSmerDuzi(C[j], C[j + 1]);
+}
+/** Pravac dolaska u tacku i niza (stepeni): od tacke ~30 m ranije, preskacuci duzi od 0 m. */
+function guzvaSmerDolaska(C, i) {
+  let j = i, d = 0;
+  while (j > 0 && d < 30) { d += haversine(C[j - 1][1], C[j - 1][0], C[j][1], C[j][0]) * 1000; j--; }
+  return j < i ? guzvaSmerDuzi(C[j], C[i]) : 0;
+}
+function guzvaSmerDuzi(a, b) { const k = Math.cos(a[1] * Math.PI / 180); return (Math.atan2((b[0] - a[0]) * k, b[1] - a[1]) * 180 / Math.PI + 360) % 360; }
+/** Odluka posle provere, bez mreze i ekrana: "predji" na obilazak, "kasno" (vredi, ali si preblizu mestu gde se skrece s rute) ili
+    "najavi". dSad = gde je vozac SADA na staroj ruti (m), dRaz = gde obilazak napusta staru rutu (m), kmh = brzina (razmak raste s njom). */
+function guzvaVoznjaOdluka(ob, dSad, dRaz, sad, g, kmh, odbijen) {
+  if (!ob || ob.stanje !== "racunat" || odbijen || sad - (g.presaoTs || 0) < GUZVA_VOZ_MIRUJ_MS) return "najavi";
+  if (!ob.zatvoreno && !(ob.usteda >= GUZVA_VOZ_USTEDA_SEK)) return "najavi";
+  const razmak = Math.max(GUZVA_VOZ_RAZILAZ_M, (kmh || 0) / 3.6 * GUZVA_VOZ_RAZILAZ_S);
+  return dSad <= dRaz - razmak ? "predji" : "kasno";
+}
+/** Tacke zastoja na ruti (do 25): po njima se prepoznaje isti zastoj na drugoj ruti i kad mu se pocetak pomeri. */
+function guzvaTacke(route, z) {
+  const k = Math.max(1, Math.floor((z.iB - z.iA) / 24)), t = [];
+  for (let i = z.iA; i <= z.iB; i += k) t.push(route.coords[i]);
+  if (t[t.length - 1] !== route.coords[z.iB]) t.push(route.coords[z.iB]);
+  return t;
+}
+function guzvaPreklapa(t1, t2) { return t1.some((a) => t2.some((b) => haversine(a[1], a[0], b[1], b[0]) * 1000 <= GUZVA_VOZ_ISTI_M)); }
+/** Koji zastoj se najavljuje: prvi ispred vozaca koji jos nije recen, ili je od tad narastao za GUZVA_VOZ_PONOVI_MIN. Pamte se mesta
+    (tacke zastoja), ne km rute. */
+function guzvaVoznjaNajava(route, zastoji, rekao, dSad) {
+  const D = route.cumDist;
+  for (const z of zastoji) {
+    if (D[z.iB] <= dSad) continue;
+    const t = guzvaTacke(route, z), m = guzvaMin(z);
+    const bilo = rekao.find((r) => guzvaPreklapa(r.t, t));
+    if (bilo && (z.kat === "ROAD_CLOSURE" || m < bilo.m + GUZVA_VOZ_PONOVI_MIN)) continue;
+    return { z, m, t, km: Math.max(0, (D[z.iA] - dSad) / 1000), uNjoj: D[z.iA] <= dSad + 100, bilo };
+  }
+  return null;
+}
+function guzvaVoznjaZapamti(rekao, n) {
+  if (n.bilo) { n.bilo.m = n.m; n.bilo.t = n.t; } else rekao.push({ t: n.t, m: n.m });
+}
+/** Najava zastoja ispred: zastoj u kome vec jesi se zapamti bez glasa, a sledeci ispred se ne precutkuje. Najava ne sece skretanje:
+    ceka da se red glasa isprazni (do ~12 s), pa ide kao sporedna. */
+function guzvaVoznjaNajavi(route, zastoji, dSad, g) {
+  for (let k = 0; k <= zastoji.length; k++) {
+    const n = guzvaVoznjaNajava(route, zastoji, g.rekao, dSad);
+    if (!n) return;
+    guzvaVoznjaZapamti(g.rekao, n);
+    if (n.uNjoj) continue;
+    const zatv = n.z.kat === "ROAD_CLOSURE", daljina = guzvaDaljina(n.km), kmTr = n.km < 10 ? DEC(n.km.toFixed(1)) : String(Math.round(n.km));
+    guzvaGovori(zatv ? T("guz.vozZatvoreno", { 0: daljina }) : T("guz.vozGlas", { 0: daljina, 1: n.m, 2: TN(n.m, "pl.minut") }));
+    guzvaVoznjaTraka(rIco("warning", 15) + " " + esc(zatv ? T("guz.vozTrakaZatv", { 0: kmTr }) : T("guz.vozTraka", { 0: kmTr, 1: n.m })),
+      route.cumDist[n.z.iA] / 1000);
+    return;
+  }
+}
+function guzvaGovori(tekst) {
+  let k = 0;
+  const probaj = () => {
+    try { if (window.speechSynthesis && speechSynthesis.pending && k++ < 3) { setTimeout(probaj, 4000); return; } } catch (e) {}
+    try { speakSr(tekst, true); } catch (e) {}
+  };
+  probaj();
+}
+/** Kasnjenje (sek) koje ETA u voznji dodaje modelu: zastoji ISPRED vozaca dok je provera sveza i za OVU geometriju (zastoj u kome si:
+    koliko ga je jos ostalo); posle prelaska na obilazak pomak koji ETA drzi na "stara minus usteda" do sledece provere. */
+function guzvaVoznjaKasnjenjeSek(route, d) {
+  const g = RIDE.guz; if (!g || !route || !route.cumDist) return 0;
+  const sad = Date.now(), rez = g.rez, D = route.cumDist;
+  let s = 0;
+  const rezVazi = !!(rez && rez.geo === route.coords && sad - rez.ts <= GUZVA_VOZ_VAZI_MS);
+  if (rezVazi) for (const z of guzvaUProzoru(rez).zastoji) {
+    if (z.kat === "ROAD_CLOSURE") continue;
+    const a = D[z.iA], b = D[z.iB];
+    if (b <= d) continue;
+    s += guzvaMin(z) * 60 * (d <= a ? 1 : (b - d) / Math.max(1, b - a));
+  }
+  const p = g.pomak;
+  if (p && p.geo === route.coords && sad - p.ts <= GUZVA_VOZ_VAZI_MS && !(rezVazi && rez.ts > p.ts)) s += p.sek;
+  const tot = D[D.length - 1] || 1, model = (route.totalDur || 0) * Math.max(0, tot - d) / tot;
+  return Math.round(Math.max(s, -0.9 * model));   // pomak ne sme da obeca dolazak pre nego sto je fizicki moguc
+}
+function guzvaVoznjaCrtaj(route) {
+  if (typeof map === "undefined" || !map) return;
+  guzvaRutaGasi();
+  const g = RIDE.guz, rez = g && g.rez;
+  if (!rez || !route || rez.geo !== route.coords) return;
+  _guzvaCrtaj(route, guzvaUProzoru(rez).zastoji);
+}
+function guzvaDaljina(km) {   // za glas: "500 metara", "3 kilometra"
+  if (km < 1) return T("guz.vozMetara", { 0: Math.max(100, Math.round(km * 10) * 100) });
+  const k = Math.round(km);
+  return TN(k, "pl.kilometar");
+}
+function guzvaVoznjaTraka(html, km) {
+  const ab = document.getElementById("rideAhead"); if (!ab) return;
+  ab.innerHTML = html; ab.classList.add("on");
+  RIDE.aheadHideAt = Date.now() + 15000; RIDE.aheadKm = km;   // baner nestaje posle 15 s ili kad prodjes tacku (isto kao najave kamera)
+}
+/** Sastav kombinovane ture posle obilaska, na km NOVE rute: do pocetka obilaska (kmDet) km - kmOd, od tacke povratka (kmR) km - kmR +
+    kmPrvi, a deo izmedju se srazmerno rasteze preko obilaska. Komadi iza vozaca otpadaju; ime pocetka presecenog komada otpada (ne pocinje
+    tamo), zavrsno ime ostaje. Obilazak menja samo deo oko guzve - "ruta vise nije kombinovana" bi bila laz. */
+function guzvaHibridPomeri(route, kmOd, kmDet, kmR, kmP, kmPrvi) {
+  const H = route.hibrid; if (!H || !H.length) return { h: null };
+  const m = (k) => k <= kmDet ? k - kmOd : k >= kmR ? k - kmR + kmPrvi : kmP + (k - kmDet) * (kmPrvi - kmP) / Math.max(1e-9, kmR - kmDet);
+  const h = [], naz = [], N = route._hibNaz;
+  H.forEach((x, i) => {
+    const od = Math.max(0, m(x.od)), d = m(x.do);
+    if (d - od <= 1e-6) return;
+    h.push(Object.assign({}, x, { od, do: d }));
+    if (N) naz.push(x.od >= kmOd ? N[i] : null);
+  });
+  if (N && h.length) naz.push(N[N.length - 1]);
+  return { h, naz: N && h.length ? naz : null };
+}
+/** Vozac je od provere odmakao: gde je na novoj ruti (trazi se u prvih 5 km), za hint projekcije i kilometrazu. */
+function guzvaVozacNaNovoj(route, p) {
+  const C = route.coords, D = route.cumDist; let bi = 0, bd = Infinity;
+  for (let i = 0; i < C.length && D[i] <= 5000; i++) { const x = haversine(p.la, p.lo, C[i][1], C[i][0]); if (x < bd) { bd = x; bi = i; } }
+  const pr = navProject(route, p.lo, p.la, Math.max(0, bi - 1));
+  return { i: pr.i, d: pr.d };
+}
+/** Prelazak na obilazak. `iSad` = segment na kome je vozac SADA (pocetak sacuvanog dela, iza vozaca): kad bi sacuvani deo poceo tackom
+    ispred vozaca, vozac bi posle prelaska bio van rute pa bi odmah usledilo "Menjam rutu" (pregled koda 14.10.). `saPrefiksom`: obilazak
+    krece sa tacke na ruti (odDet), ne sa mesta vozaca. */
+function guzvaVoznjaPredji(route, ob, zastoji, kasnjenje, iSad, odDet, saPrefiksom, dRaz, g) {
+  const D0 = route.cumDist, prefiks = saPrefiksom && iSad < odDet, iPoc = prefiks ? iSad : odDet;
+  const kmOd = D0[iPoc] / 1000, kmDet = D0[odDet] / 1000, kmR = D0[ob.oR] / 1000;
+  const prvi = prefiks ? guzvaPrefiks(route, iSad, odDet, ob.a) : ob.a;
+  const kmP = (D0[odDet] - D0[iPoc]) / 1000, kmPrvi = prvi.cumDist[prvi.cumDist.length - 1] / 1000;
+  const n = guzvaSpoji(prvi, route, ob.oR);
+  const hib = guzvaHibridPomeri(route, kmOd, kmDet, kmR, kmP, kmPrvi);
+  const mesta = zastoji.map((z) => guzvaTacke(route, z));
+  const stara = { staraC: route.coords, staraD: route.cumDist, dRaz, dOR: D0[ob.oR], iRaz: Math.max(0, D0.findIndex((d) => d >= dRaz) - 1) };
+  // ETA pre prelaska (model + zastoji ispred), da posle prelaska bude "stara minus usteda" - isti broj koji glas kaze
+  const p = RIDE.pos, dStara = navProject(route, p.lo, p.la, RIDE.lastRouteI).d, totS = D0[D0.length - 1] || 1;
+  const etaStara = Date.now() + ((route.totalDur || 0) * Math.max(0, totS - dStara) / totS + guzvaVoznjaKasnjenjeSek(route, dStara)) * 1000;
+  const usMin = ob.usteda != null ? Math.max(1, Math.round(ob.usteda / 60)) : 0, kasMin = Math.max(1, Math.round(kasnjenje / 60));
+  const glas = ob.zatvoreno ? T("guz.vozZatvorenoPrelazim")
+    : T("guz.vozPrelazim", { 0: kasMin, 1: TN(kasMin, "pl.minut"), 2: usMin, 3: TN(usMin, "pl.minut") });
+  g.uPrelasku = true;
+  try {
+    rideZameniRutu(n, { hibrid: hib.h, hibNaz: hib.naz, glas, neSeci: 8000, log: "guzva-predji",
+      logPodaci: { usteda: ob.usteda != null ? Math.round(ob.usteda) : null, sirovo: ob.sirovo != null ? Math.round(ob.sirovo) : null, kmR: +kmR.toFixed(2), kmDet: +kmDet.toFixed(2) } });
+  } finally { g.uPrelasku = false; }
+  // nova ruta pocinje na mestu provere, a vozac je od tad odmakao: hint projekcije i kilometraza (bez duplog brojanja tog komada)
+  const na = guzvaVozacNaNovoj(route, RIDE.pos || p);
+  RIDE.lastRouteI = na.i; RIDE.baseD = Math.max(0, (RIDE.baseD || 0) - na.d);
+  if (!ob.zatvoreno && ob.usteda != null) {
+    const tot = route.cumDist[route.cumDist.length - 1] || 1, model = (route.totalDur || 0) * Math.max(0, tot - na.d) / tot;
+    const sek = (etaStara - ob.usteda * 1000 - (Date.now() + model * 1000)) / 1000;
+    g.pomak = { sek: Math.max(-1800, Math.min(1800, sek)), ts: Date.now(), geo: route.coords };
+    try { navLog("guzva-eta", { staraMin: Math.round((etaStara - Date.now()) / 60000), pomakSek: Math.round(g.pomak.sek) }); } catch (e) {}
+  }
+  g.presao = Object.assign({ ts: Date.now(), mesta }, stara);
+  guzvaVoznjaTraka(rIco("route", 15) + " " + esc(ob.zatvoreno ? T("guz.vozTrakaZatvPresao") : T("guz.vozTrakaPresao", { 0: usMin })), null);
+}
+/** Zastoji u grupe po redu duz rute: od kraja jednog do pocetka sledeceg manje od GUZVA_VOZ_GRUPA_M = ista guzva. */
+function guzvaGrupe(route, zastoji) {
+  const D = route.cumDist, grupe = [];
+  for (const x of zastoji.slice().sort((a, b) => a.iA - b.iA)) {
+    const gr = grupe[grupe.length - 1];
+    if (gr && D[x.iA] - Math.max(...gr.map((y) => D[y.iB])) < GUZVA_VOZ_GRUPA_M) gr.push(x); else grupe.push([x]);
+  }
+  return grupe;
+}
+async function guzvaVoznjaKorak(route, pos, sad, g) {
+  const pr = navProject(route, pos.lo, pos.la, RIDE.lastRouteI);
+  if (!pr || pr.offM > NAV_OFF_M) return;   // van rute: tu radi preracunavanje rute, ne guzva
+  g.ts = sad;
+  const geo = route.coords, tok = RIDE.t0, od = Math.min(geo.length - 2, pr.i + 1), D = route.cumDist;
+  const svez = () => RIDE.guz === g && RIDE.t0 === tok && RIDE.route === route && route.coords === geo && !RIDE.rerouting && !RIDE.paused &&
+    Date.now() - sad < 90000 && document.body.classList.contains("riding");
+  const uz = guzvaUzorak(route, GUZVA_SALJE_MIN * 60, null, od);
+  if (!uz) return;
+  let rez;
+  try { rez = guzvaMapiraj(route, uz, await ttJSON(guzvaUrl(route, uz), guzvaTelo(route, uz))); }
+  catch (e) {
+    rez = { stanje: "nije", zasto: e && e.offline ? "mreza" : "http " + ((e && e.status) || "?") };
+    if (e && (e.status === 403 || e.status === 429)) g.pauzaDo = sad + GUZVA_VOZ_KVOTA_MS;   // kvota ili kljuc: ne kucaj na 5 min
+  }
+  if (!svez()) return;   // u medjuvremenu nova ruta, pauza ili kraj voznje: odgovor je za geometriju/trenutak koji vise ne vazi
+  rez.ts = sad; rez.geo = geo; rez.preko = ttPreko();
+  const { zastoji, kasnjenje } = rez.stanje === "ok" ? guzvaUProzoru(rez) : { zastoji: [], kasnjenje: 0 };
+  try { navLog("guzva-voz", { stanje: rez.stanje, zasto: rez.zasto || "", n: zastoji.length, min: Math.round(kasnjenje / 60), km: +(D[od] / 1000).toFixed(1), preko: rez.preko }); } catch (e) {}
+  if (rez.stanje !== "ok") return;   // pala provera ne brise vazecu (istekne sama) i nikad ne znaci "bez guzve"
+  g.rez = rez;
+  guzvaVoznjaCrtaj(route);
+  if (!zastoji.length) return;
+  /* obilazi se PRVA guzva koja kosta bar prag (zastoji blizi od GUZVA_VOZ_GRUPA_M su jedna guzva); dalju gleda sledeca provera - jedan
+     obilazak ne sme da zameni 40 km tvoje rute izmedju dve udaljene guzve (pregled koda 14.10.) */
+  const zatvF = (gr) => gr.some((x) => x.kat === "ROAD_CLOSURE"), kostaF = (gr) => gr.reduce((s, x) => s + guzvaMin(x) * 60, 0);
+  const grupa = guzvaGrupe(route, zastoji).find((gr) => zatvF(gr) || kostaF(gr) >= GUZVA_ZAOB_PRAG_SEK) || null;
+  const kasG = grupa ? kostaF(grupa) : 0;
+  const odbijen = !!grupa && grupa.every((z) => g.odbijeni.some((t) => guzvaPreklapa(guzvaTacke(route, z), t)));
+  let ob = null, odDet = od;
+  const traziOb = !!grupa && !odbijen && state.engine !== "osrm" && route.maneuvers && route.maneuvers.length &&
+    sad - (g.zaobTs || 0) >= GUZVA_VOZ_ZAOB_MS && sad - (g.presaoTs || 0) >= GUZVA_VOZ_MIRUJ_MS;
+  if (traziOb) {
+    g.zaobTs = sad;
+    const prviZ = Math.min(...grupa.map((z) => z.iA));
+    while (odDet < prviZ && D[prviZ] - D[odDet] > GUZVA_VOZ_PRE_M) odDet++;
+    /* obilazak ne krece sa temena na kom ruta skrece: to skretanje bi otpalo iz sacuvanog dela, a obilazak bi tu pocinjao pravo */
+    const skretanja = new Set((route.maneuvers || []).map((m) => m.begin_shape_index | 0));
+    while (odDet > od && skretanja.has(odDet)) odDet--;
+    const start = odDet > od ? { lat: geo[odDet][1], lon: geo[odDet][0], heading: guzvaSmer(route, odDet) } : { lat: pos.la, lon: pos.lo, heading: guzvaSmer(route, pr.i) };
+    try { ob = await guzvaObilazak(route, grupa, odDet, start, true); } catch (e) { ob = null; }
+    if (!svez()) { g.zaobTs = 0; return; }
+  }
+  // racun traje sekundama: gde je vozac SADA
+  const p2 = RIDE.pos || pos, pr2 = navProject(route, p2.lo, p2.la, RIDE.lastRouteI);
+  const dRaz = ob && ob.stanje === "racunat" ? guzvaRazilaz(route, ob.a, odDet) : 0;
+  const odluka = guzvaVoznjaOdluka(ob, pr2.d, dRaz, Date.now(), g, RIDE.spdKmh, odbijen);
+  try { navLog("guzva-voz-odluka", { odluka, ob: ob ? ob.stanje : null, zasto: ob && ob.zasto || "", usteda: ob && ob.usteda != null ? Math.round(ob.usteda) : null, dSad: Math.round(pr2.d), dRaz: Math.round(dRaz), odbijen, grupa: grupa ? grupa.length : 0 }); } catch (e) {}
+  if (odluka === "predji") {
+    g.presaoTs = Date.now();
+    for (const z of grupa) { const n = guzvaVoznjaNajava(route, [z], g.rekao, -1); if (n) guzvaVoznjaZapamti(g.rekao, n); }   // receno u istoj recenici
+    guzvaVoznjaPredji(route, ob, grupa, kasG, pr2.i, odDet, odDet > od, dRaz, g);
+    return;
+  }
+  if (odluka === "kasno") g.zaobTs = 0;   // sledeca provera sme odmah da trazi obilazak sa novog mesta
+  guzvaVoznjaNajavi(route, zastoji, pr2.d, g);
 }
 
 /* sloj se pali kad mapa ima stil, i ponovo posle svake promene stila (tema) */
