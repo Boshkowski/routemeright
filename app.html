@@ -2734,6 +2734,12 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
        km 19, sat 15,5. Sada 16 px / 800, i dalje jedan red, i dalje ispod zelenog banera. */
     #rideBar .wx { display: none; background: #9b1c32; color: #ffe7ea; padding: 10px 14px; font-size: 16px; font-weight: 700; line-height: 1.2; border-radius: 12px; box-shadow: var(--shadow-md); }
     #rideBar .wx.on { display: block; }
+    /* 15.10.2026 (Boskov izbor A, maketa/kisa-15-10/A-tabla-dva-reda.png): kisna pauza - drugi red
+       iste table kaze GDE da stanes i DO KAD. Nov red je nastavak table, ne nov sloj preko mape. */
+    #rideBar .wx .l1, #rideBar .wx .l2 { display: block; }
+    #rideBar .wx .l2 { margin-top: 5px; font-size: 15px; font-weight: 600; color: #ffd9de; }
+    #rideBar .wx .l2 b { color: #fff; font-weight: 800; }
+    #rideBar .wx .nw { white-space: nowrap; }   /* "čekaj do ~19 h" se ne lomi: dug naziv mesta prelama red PRE njega */
     #rideBarBottom { display: none; }
     body.riding #rideBarBottom { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 40; align-items: stretch; gap: 12px; }
     #rideBarBottom .pill { background: var(--bg-veil); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 9px 13px; display: flex; align-items: center; }
@@ -3597,6 +3603,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #rideBar .plates { margin-top: 6px; }
     #rideBar .ahead { padding: 7px 12px; font-size: 13px; }   /* landscape je uzi, ali najava ostaje citljiva */
     #rideBar .wx { padding: 7px 12px; font-size: 13px; }   /* landscape je uzi, ali nevreme ostaje citljivo */
+    #rideBar .wx .l2 { margin-top: 3px; font-size: 12.5px; }   /* 15.10.: drugi red kisne pauze, ista srazmera */
     body.riding #rideBarBottom { left: calc(10px + var(--sl)); right: auto; width: var(--col);
       bottom: calc(8px + var(--sb)); gap: 8px; }
     body.riding #rideEtaRow { left: calc(10px + var(--sl)); bottom: calc(70px + var(--sb)); max-width: var(--col); }
@@ -5788,19 +5795,35 @@ const RECNIK_SR = {
   "nav.naUlicu": " na {0}",
   "nav.naUlicuZarez": ", na {0}",
   "nav.dodajemStanicu": "Dodajem stanicu. {0}.",
-  "nav.kisaZaHtml": " Kiša za ~{0} min · traje ~{1} min",
-  "nav.kisaZa": "Kiša za {0} {1}, traje oko {2} minuta",
+  "nav.kisaUskoroHtml": " Kiša uskoro · do {0}",
+  "nav.kisaOdDoHtml": " Kiša od {0} · do {1}",
+  "nav.kisaUskoroGlas": "Kiša uskoro, do oko {0}.",
+  "nav.kisaOdDoGlas": "Kiša od oko {0}, do oko {1}.",
+  "nav.kpSat": "~{0} h",
+  "nav.kpSatBez": "{0} h",
+  "nav.kpKisa": "Kiša za {0} km · do {1}",
+  "nav.kpOluja": "Grmljavina za {0} km · do {1}",
+  "nav.kpStani": "Stani: <b>{0}</b> <span class=\"nw\">za {1} ·</span> <span class=\"nw\">čekaj do {2}</span>",
+  "nav.kpGlas": "{0} za {1}, do oko {2}. {3} je za {4}, stani tamo i sačekaj.",
+  "nav.kpGlasKisa": "Kiša",
+  "nav.kpGlasOluja": "Grmljavina",
+  "nav.kpPauza": "Pauza za kišu · kreni oko {0}",
+  "nav.kpJos": "<span class=\"nw\">još <b>{0}</b> ·</span> posle toga {1}",
+  "nav.kpSuvoCilj": "suvo do cilja",
+  "nav.kpSuvoKm": "suvo sledećih {0} km",
+  "nav.kpProsla": "Kiša je prošla. Možeš dalje.",
+  "nav.kpNoviSat": "Nova prognoza: čekaj do oko {0}.",
   "pl.minut.1": "minut",
   "pl.minut.2": "minuta",
   "pl.minut.5": "minuta",
   "pl.kilometar.1": "{n} kilometar",
   "pl.kilometar.2": "{n} kilometra",
   "pl.kilometar.5": "{n} kilometara",
-  "nav.trajeMin": " · traje ~{0} min",
+  "nav.doSat": " · do {0}",
   "nav.zaMin": " za ~{0} min",
   "nav.paznja": "Pažnja. ",
   "nav.pojavaZa": "{0} za {1} {2}{3}",
-  "nav.trajeOko": ", traje oko {0} minuta",
+  "nav.doOkoGlas": ", do oko {0}",
   "nav.paznjaIspred": "Pažnja, {0} ispred",
   "haz.tip.policija": "policija",
   "haz.tip.kamera": "kamera",
@@ -6826,7 +6849,8 @@ const RECNIK_SR = {
   "mesto.omiljenoN": "Omiljeno mesto {0}",
   "mesto.dodajIme": "dodaj i daj mu ime",
   "mesto.novoOmiljeno": "Novo omiljeno mesto",
-  "wx.kisaStizeZa": "Kiša stiže za ~{0} min",
+  "wx.kisaUskoroDo": "Kiša uskoro · do {0}",
+  "wx.kisaOdDo": "Kiša od {0} · do {1}",
   "ride.deoNijeSnimljen": "Deo puta nije snimljen - oko {0}. Ekran je bio zaključan ili nije bilo signala.",
   "sum.maxNagibV": "MAX NAGIB",
   "sum.najbrzeV": "NAJBRŽE",
@@ -7855,17 +7879,33 @@ const RECNIK_EN = {
   "nav.naUlicu": " onto {0}",
   "nav.naUlicuZarez": ", onto {0}",
   "nav.dodajemStanicu": "Adding a stop. {0}.",
-  "nav.kisaZaHtml": " Rain in ~{0} min · lasts ~{1} min",
-  "nav.kisaZa": "Rain in {0} {1}, lasting about {2} minutes",
+  "nav.kisaUskoroHtml": " Rain soon · until {0}",
+  "nav.kisaOdDoHtml": " Rain from {0} · until {1}",
+  "nav.kisaUskoroGlas": "Rain soon, until about {0}.",
+  "nav.kisaOdDoGlas": "Rain from about {0}, until about {1}.",
+  "nav.kpSat": "~{0}:00",
+  "nav.kpSatBez": "{0}:00",
+  "nav.kpKisa": "Rain in {0} km · until {1}",
+  "nav.kpOluja": "Thunderstorm in {0} km · until {1}",
+  "nav.kpStani": "Stop: <b>{0}</b> <span class=\"nw\">in {1} ·</span> <span class=\"nw\">wait until {2}</span>",
+  "nav.kpGlas": "{0} in {1}, until about {2}. {3} is in {4}, stop there and wait.",
+  "nav.kpGlasKisa": "Rain",
+  "nav.kpGlasOluja": "Thunderstorm",
+  "nav.kpPauza": "Rain break · leave around {0}",
+  "nav.kpJos": "<span class=\"nw\"><b>{0}</b> left ·</span> then {1}",
+  "nav.kpSuvoCilj": "dry to the destination",
+  "nav.kpSuvoKm": "dry for the next {0} km",
+  "nav.kpProsla": "The rain has passed. You can ride on.",
+  "nav.kpNoviSat": "New forecast: wait until about {0}.",
   "pl.minut.1": "minute",
   "pl.minut.n": "minutes",
   "pl.kilometar.1": "{n} kilometre",
   "pl.kilometar.n": "{n} kilometres",
-  "nav.trajeMin": " · lasts ~{0} min",
+  "nav.doSat": " · until {0}",
   "nav.zaMin": " in ~{0} min",
   "nav.paznja": "Attention. ",
   "nav.pojavaZa": "{0} in {1} {2}{3}",
-  "nav.trajeOko": ", lasting about {0} minutes",
+  "nav.doOkoGlas": ", until about {0}",
   "nav.paznjaIspred": "Attention, {0} ahead",
   "haz.tip.policija": "police",
   "haz.tip.kamera": "speed camera",
@@ -8886,7 +8926,8 @@ const RECNIK_EN = {
   "mesto.omiljenoN": "Favourite place {0}",
   "mesto.dodajIme": "add it and give it a name",
   "mesto.novoOmiljeno": "New favourite place",
-  "wx.kisaStizeZa": "Rain arrives in ~{0} min",
+  "wx.kisaUskoroDo": "Rain soon · until {0}",
+  "wx.kisaOdDo": "Rain from {0} · until {1}",
   "ride.deoNijeSnimljen": "Part of the route was not recorded - about {0}. The screen was locked or there was no signal.",
   "sum.maxNagibV": "MAX LEAN",
   "sum.najbrzeV": "FASTEST",
@@ -17108,7 +17149,7 @@ function zabeleziVoznju() {
       rupaMin: RIDE.rupaMs > 0 ? Math.max(1, Math.round(RIDE.rupaMs / 60000)) : 0,
       rupaN: RIDE.rupaN || 0,
       kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa, ts: Date.now() };
-    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kolProslave = []; RIDE.arrived = false; RIDE.turaTs = null; RIDE.rel = null; return "kratka"; }
+    if (!(ukupnoD > 2000)) { RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kisaPauza = null; RIDE.kpRekao = null; RIDE.kpZone = null; RIDE.kpSat = null; RIDE._kpCekaOd = null; RIDE.kolProslave = []; RIDE.arrived = false; RIDE.turaTs = null; RIDE.rel = null; return "kratka"; }
     const v0 = _zajCitaj("mr_voznje", []);
     const v = Array.isArray(v0) ? v0 : [];
     /* ts zapisa = ts sazetka (isti trenutak) - asinhrona preimena i tura-append ga traze po ts */
@@ -17235,7 +17276,7 @@ function zabeleziVoznju() {
     }
     for (const t of RIDE.kolProslave || []) shareToast(t);   // proslave odlozene sa voznje (pogled ne ide na ekran u krivini); poeni za njih su vec dodeljeni u voznji
   } catch (e) {}
-  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kolProslave = []; RIDE.arrived = false; RIDE.turaTs = null; RIDE.rel = null;
+  RIDE.t0 = null; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kisaPauza = null; RIDE.kpRekao = null; RIDE.kpZone = null; RIDE.kpSat = null; RIDE._kpCekaOd = null; RIDE.kolProslave = []; RIDE.arrived = false; RIDE.turaTs = null; RIDE.rel = null;
   return ishod;
 }
 /* ---- render sekcija taba Zajednica ---- */
@@ -19030,8 +19071,15 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.206";
+const APP_VERSION = "0.9.207";
 const CHANGELOG = [
+  { v: "0.9.207", d: "15.10.2026.", stavke: [
+    "<b>Kišna pauza u vožnji</b> (tvoje pitanje: kad vidimo kišu, da li i dalje kaže gde da staneš i sačekaš). Kad je kiša ispred tebe na ruti, crvena tabla dobija drugi red: \"Stani: NIS Petrol za 8 km · čekaj do ~15 h\". Mapa se ne pomera, a glas to kaže jednom.",
+    "Mesto je pumpa, lokal ili naša kafana, najviše 300 m od rute, i to poslednje do kog sigurno stižeš suv. Naša kafana ima prednost ako je do 3 km ranije. Noću se nude samo non-stop pumpe. Predlog stiže samo kad kiša po prognozi prestaje za najviše sat i po čekanja; bez mesta uz put ostaje obična najava.",
+    "Ako je pre kiše bliža opasnost (olujni vetar, poledica, magla), tabla pokazuje nju i predloga nema - pauza iza opasnosti nije pauza. Kad predlog jednom stigne, mesto se usput ne menja.",
+    "<b>Kad staneš pre kiše</b>, tabla kaže \"Pauza za kišu · kreni oko 15 h\" i koliko je još, a vreme dolaska računa od tog polaska. Kad prognoza kaže da je prošla, glas kaže \"Kiša je prošla. Možeš dalje.\"",
+    "<b>Kraj kiše se sada kaže kao sat</b> (\"do ~15 h\"), ne \"traje oko 30 minuta\". Prognoza na 15 minuta za Srbiju zapravo ne postoji: satna kiša se samo podeli na četiri dela, pa su minuti bili prividno tačni. Isto važi za najavu u slobodnoj vožnji i u pauzi."
+  ] },
   { v: "0.9.206", d: "14.10.2026.", stavke: [
     "<b>Gužva i u vožnji, i ruta se menja sama</b> (tvoje pitanje: tura od 4 sata, a gužva nastane kad si na sat od cilja). Dok voziš po ruti, na svakih 5 minuta TomTom proveri sat puta ispred tebe, od mesta gde si. Na sat od cilja proverava baš taj poslednji sat.",
     "<b>Kad je obilazak brži bar 5 minuta, aplikacija sama prelazi na njega</b> i kaže glasom: \"Gužva napred, plus 12 minuta. Prelazim na brži put, štediš 6 minuta.\" Ne moraš da diraš ekran. Obilazak ide samo oko gužve: kreće najviše 4 km pre nje, a tvoja ruta do tamo i posle gužve ostaje ista, sa stanicama.",
@@ -22694,7 +22742,8 @@ async function freeLimitTick(lo, la) {
    dobijali obaveštenja tipa kiša za toliko"). Najava na ruti živi u wxLiveTick i traži rutu sa
    prognozom - slobodna vožnja je nema, pa je bila i bez najave. Ovde: minutna prognoza za TVOJU
    tačku na 20 min (jedan Open-Meteo poziv), preračun iz keša na 5 min, najava kad kiša ulazi u
-   ~40 min prozor - isti baner i isti glas kao na ruti. */
+   ~45 min prozor - isti baner i isti glas kao na ruti.
+   15.10.2026: najava je SAT, ne minut ("Kiša od ~14 h · do ~15 h"), vidi kisaProzorTacka. */
 async function freeWxTick(lo, la) {
   const W = RIDE._fwx || (RIDE._fwx = { t: 0, calc: 0, m: null, said: new Set() });
   const now = Date.now();
@@ -22706,31 +22755,22 @@ async function freeWxTick(lo, la) {
     }
     if (!W.m || now - W.calc < 5 * 60000) return;
     W.calc = now;
-    const m = W.m;
-    if (!m.time || !m.precipitation) return;
-    const t0 = wxMs(m.time[0]);
-    for (let k = 0; k < m.precipitation.length; k++) {
-      const ts = t0 + k * M15_MS;
-      if (ts < now - M15_MS) continue;
-      if (ts > now + 45 * 60000) break;
-      const v = m.precipitation[k];
-      if (v != null && v >= 0.1) {
-        const kljuc = "fw" + Math.round(ts / M15_MS);
-        if (W.said.has(kljuc)) return;
-        W.said.add(kljuc);
-        const min = Math.max(1, Math.round((ts - now) / 60000));
-        let kraj = k; while (kraj + 1 < m.precipitation.length && (m.precipitation[kraj + 1] || 0) >= 0.1) kraj++;
-        const traje = (kraj - k + 1) * 15;
-        const ab = document.getElementById("rideAhead");
-        if (ab) {
-          ab.innerHTML = rIco("warning", 15) + T("nav.kisaZaHtml", { 0: min, 1: traje });
-          ab.classList.add("on");
-          RIDE.aheadHideAt = now + 15000;
-        }
-        speakSr(T("nav.kisaZa", { 0: min, 1: TN(min, "pl.minut"), 2: traje }), true);
-        return;
-      }
+    const kp = kisaProzorTacka(W.m, now, 45);
+    if (!kp) return;
+    /* kljuc je KRAJ kise: ista kisa se najavljuje jednom (stari kljuc po cetvrtini sata se menjao
+       svakih 15 min dok pada, pa bi se ista kisa ponavljala) */
+    const kljuc = "fw" + kp.doMs;
+    if (W.said.has(kljuc)) return;
+    W.said.add(kljuc);
+    const ab = document.getElementById("rideAhead");
+    if (ab) {
+      ab.innerHTML = rIco("warning", 15) + (kp.uskoro ? T("nav.kisaUskoroHtml", { 0: kpSat(kp.doMs) })
+        : T("nav.kisaOdDoHtml", { 0: kpSat(kp.odMs), 1: kpSat(kp.doMs) }));
+      ab.classList.add("on");
+      RIDE.aheadHideAt = now + 15000;
     }
+    speakSr(kp.uskoro ? T("nav.kisaUskoroGlas", { 0: kpSatGlas(kp.doMs) })
+      : T("nav.kisaOdDoGlas", { 0: kpSatGlas(kp.odMs), 1: kpSatGlas(kp.doMs) }), true);
   } catch (e) {}
 }
 function speakSr(text, sporedno, hitno) {   // hitno: skretanje SAD (do 95 m) - uvek sece red, i recenicu o prelasku na obilazak
@@ -22875,13 +22915,14 @@ function zoomForSpeed(kmh) {   // 9.8. Google-perspektiva (Boskov zahtev sa test
 }
 const NAV_PITCH = 45;   // bio 56: previse je sabijao daljinu i zgrade su zaklanjale put; 45 = 3D dubina + otvoren horizont
 /* [NAVCORE kraj] */
-/* ---------- PROGNOZA NA 15 MINUTA: tajming, ne jacina ----------
-   Podela posla je namerna i vazna:
-   - Aladin 2,3 km daje najbolju SLIKU U PROSTORU (gde tacno pada) - ali po satu.
-   - minutely_15 daje najbolji TAJMING (u kojoj cetvrtini sata pocinje) - ali na gruboj mrezi.
-   Zato 15-minutni sloj NE menja ocenu ni jacinu, nego samo precizira "za koliko minuta"
-   i "koliko ce trajati" u najavi tokom voznje. Provereno 10.8.: radi u Beogradu,
-   svih 5 velicina puno (192/192), tezina 1,4 po tacki umesto 1,0. */
+/* ---------- PROGNOZA NA 15 MINUTA: samo "da li pada u narednih sat vremena", NE minut ----------
+   15.10.2026 (nalaz uz kisnu pauzu): minutely_15 je PRAVI samo za ICON-D2 (srednja Evropa) i
+   AROME. Za Srbiju servis satnu kisu deli na cetiri jednaka dela - izmereno 15.10.: Nis 0,3 mm/h
+   = [0.1, 0.1, 0.1, 0.1], Skoplje isto. Najave "Kiša za 12 minuta, traje oko 30" su zato bile
+   lazna preciznost: pocetak je bio pocetak sata, trajanje umnozak od 60. Radar prognoza
+   (RainViewer nowcast) je ugasena 2025, pa pravih minuta za Balkan iz besplatnih izvora nema.
+   Sada: kraj kise se kaze kao SAT ("do ~15 h"), a ovaj sloj se vuce samo za JEDNU tacku (slobodna
+   voznja, pauza) kao brz odgovor "pada li ovde u narednih sat vremena". Ruta ga vise ne vuce. */
 const M15_VARS = "precipitation,wind_gusts_10m,precipitation_probability";
 const M15_MS = 900000;
 async function min15Points(pts, days) {
@@ -22901,31 +22942,35 @@ async function min15Points(pts, days) {
     return out;
   } catch { return null; }
 }
-function min15At(m, when) {
-  if (!m || !m.time || !m.time.length) return null;
+/* Kisa na JEDNOJ tacki u narednih `prozorMin` minuta, izrecena u SATIMA (15.10.2026).
+   Vrednost cetvrtine je "za prethodnih 15 min", pa vreme t pokriva (t-15 min, t]. Pocetak se
+   zaokruzuje NANIZE na pun sat, kraj NAVISE - obe greske idu na stranu opreza, a za Srbiju
+   (satni podatak podeljen na cetiri) su ionako tacni sati. `uskoro`: sat u kom kisa pocinje je
+   vec poceo, pa "od ~14 h" ne bi imalo smisla. Null = nema kise u prozoru ili nema podatka. */
+function kisaProzorTacka(m, now, prozorMin) {
+  if (!m || !m.time || !m.time.length || !m.precipitation) return null;
   const t0 = wxMs(m.time[0]);   // K1: unixtime (sekunde) ili stari tekst iz kesa
-  const last = m.time.length - 1;
-  const x = (when.getTime() - t0) / M15_MS;
-  if (x < -1 || x > last) return null;
-  return Math.max(0, Math.min(last, Math.ceil(x)));   // "za prethodnih 15 min" - interval koji sadrzi trenutak
+  const pada = (k) => { const v = m.precipitation[k]; return v != null && v >= 0.1; };
+  for (let k = 0; k < m.precipitation.length; k++) {
+    const ts = t0 + k * M15_MS;
+    if (ts <= now) continue;                        // cetvrtina se zavrsila
+    if (ts > now + prozorMin * 60000) break;
+    if (!pada(k)) continue;
+    let kraj = k;
+    while (kraj + 1 < m.precipitation.length && pada(kraj + 1)) kraj++;
+    const od = new Date(ts - M15_MS); od.setMinutes(0, 0, 0);
+    const doD = new Date(t0 + kraj * M15_MS);
+    if (doD.getMinutes() || doD.getSeconds() || doD.getMilliseconds()) { doD.setMinutes(0, 0, 0); doD.setTime(doD.getTime() + 3600e3); }
+    return { uskoro: od.getTime() <= now, odMs: od.getTime(), doMs: doD.getTime() };
+  }
+  return null;
 }
-/* Kada tacno pocinje i koliko traje neprilika oko procenjenog sata prolaska.
-   Vraca null ako 15-minutni sloj nema podatak - tada najava ostaje na satnoj proceni. */
-function m15Prozor(m, eta, kisa) {
-  const i = min15At(m, eta);
-  if (i === null) return null;
-  const prag = kisa ? 0.1 : 45;                       // mm/15min za kisu, km/h za udare
-  const niz = kisa ? m.precipitation : m.wind_gusts_10m;
-  if (!niz) return null;
-  const jeste = (k) => { const v = niz[k]; return v !== null && v !== undefined && v >= prag; };
-  const okvir = 8;                                    // +/- 2 sata oko procene
-  let poc = null;
-  for (let k = Math.max(0, i - okvir); k <= Math.min(niz.length - 1, i + okvir); k++)
-    if (jeste(k)) { poc = k; break; }
-  if (poc === null) return null;
-  let kraj = poc;
-  while (kraj + 1 < niz.length && jeste(kraj + 1)) kraj++;
-  return { pocetak: new Date(wxMs(m.time[0]) + (poc - 1) * M15_MS), trajanjeMin: (kraj - poc + 1) * 15 };
+/* Sat za tablu i glas (15.10.2026): "~15 h" / "15 sati". Brojke ispod sata se ne pisu - podatak ih nema. */
+function kpSat(ms) { return T("nav.kpSat", { 0: new Date(ms).getHours() }); }
+function kpSatBez(ms) { return T("nav.kpSatBez", { 0: new Date(ms).getHours() }); }
+function kpSatGlas(ms) {
+  const h = new Date(ms).getHours();
+  return jezikAktivan() === "sr" ? h + " " + TN(h, "pl.sat") : fmtTime(new Date(ms));
 }
 /* ---------------- ZIVA PROGNOZA U VOZNJI ----------------
    Tri stvari se menjaju razlicitim ritmom, pa se i osvezavaju razlicito:
@@ -22944,21 +22989,6 @@ function wxLiveReset(novaVoznja) {
   WXLIVE.said = new Set();
   if (novaVoznja || !WXLIVE.lastFetch) WXLIVE.lastFetch = Date.now();
 }
-/* 15-minutni sloj na startu voznje: prvo redovno osvezavanje je tek za 20 minuta, a najava
-   treba da bude precizna od prvog kilometra. Vuce SAMO minutni sloj (satni je svez iz plana). */
-async function min15Prime(route) {
-  try {
-    if (!route || !route.samples) return;
-    const idx = [], pts = [];
-    route.samples.forEach((s, i) => { if (s.km <= WXLIVE.aheadKm) { idx.push(i); pts.push(s); } });
-    if (!pts.length) return;
-    const ms = await min15Points(pts, 2);
-    if (!ms || RIDE.route !== route) return;
-    route.min15 = route.min15 || new Array(route.samples.length).fill(null);
-    idx.forEach((gi, k) => { if (ms[k]) route.min15[gi] = ms[k]; });
-    WXLIVE.lastCalc = 0;
-  } catch (e) { /* bez minutnog sloja najava ostaje na satnoj proceni */ }
-}
 async function wxLiveRefetch(route, curKm) {
   try {
     const idx = [], pts = [];
@@ -22970,9 +23000,6 @@ async function wxLiveRefetch(route, curKm) {
       const fs = await finePoints(pts, 2);
       if (fs) idx.forEach((gi, k) => { if (fs[k]) route.fine[gi] = fs[k]; });
     }
-    // 15-minutni sloj samo za deo ispred - on je taj koji pretvara "negde u tom satu" u "za 12 minuta"
-    const ms = await min15Points(pts, 2);
-    if (ms) { route.min15 = route.min15 || new Array(route.samples.length).fill(null); idx.forEach((gi, k) => { if (ms[k]) route.min15[gi] = ms[k]; }); }
     WXLIVE.lastCalc = 0;   // sledeci otkucaj racuna sa svezim brojkama
     logState({ phase: "wx-live", tacaka: pts.length, km: Math.round(curKm) });
   } catch (e) { /* tiho: stara prognoza i dalje vazi, voznja se ne prekida */ }
@@ -22987,29 +23014,167 @@ function wxLiveCalc(route, curKm, now) {
   // ZONA, ne pojedinacna tacka: duga deonica sa niskim suncem inace okine deset najava zaredom
   const zona = groupZones(assess).find((z) => z.to.km > curKm + 0.3) || null;
   const prvi = zona ? (zona.from.km > curKm + 0.3 ? zona.from : assess.find((x) => x.km > curKm + 0.3 && x.level >= 1) || zona.from) : null;
-  let minuta = prvi ? Math.max(1, Math.round((prvi.eta - now) / 60000)) : null;
-  let trajanjeMin = null;
-  // 15-minutni sloj precizira SAMO trenutak i trajanje (jacina i ocena ostaju sa fine mreze)
-  if (prvi && route.min15) {
-    const i = assess.indexOf(prvi);
-    const m = i >= 0 ? route.min15[i] : null;
-    // V2 (3.10.): sudi se po zastavicama assessHour-a, ne po tekstu razloga (tekst je od 0.9.160 na jeziku vozaca)
-    const f = prvi.flags || {};
-    const kisa = !!(f.rain || f.heavyRain || f.storm);
-    const vetar = !!(f.wind || f.crosswind);
-    if (m && (kisa || vetar)) {
-      const p = m15Prozor(m, prvi.eta, kisa);
-      if (p) {
-        const m2 = Math.round((p.pocetak - now) / 60000);
-        if (m2 >= 0 && m2 < minuta + 90) { minuta = Math.max(1, m2); trajanjeMin = p.trajanjeMin; }
-      }
-    }
-  }
+  /* 15.10.2026: minuti su VREME VOZNJE do mesta gde pada (to znamo), ne trenutak pocetka kise
+     iz 15-minutnog sloja - za Srbiju je taj bio pocetak sata (vidi PROGNOZA NA 15 MINUTA). */
+  const minuta = prvi ? Math.max(1, Math.round((prvi.eta - now) / 60000)) : null;
   return {
-    assess, prvi, zona, minuta, trajanjeMin,
+    assess, prvi, zona, minuta,
     kljuc: zona ? zona.level + "|" + (zona.reasons[0] || "") + "|" + Math.round(zona.from.km / 10) : null,
     eff,
   };
+}
+/* ---------------- KISNA PAUZA U VOZNJI (15.10.2026, Boskov izbor A) ----------------
+   "Kiša za 11 km · do ~15 h / Stani: NIS Petrol za 8 km · čekaj do ~15 h" - maketa
+   maketa/kisa-15-10/A-tabla-dva-reda.png je ugovor, C-cekas-kod-pumpe.png je stanje cekanja.
+   Pravila (sva ovde, jer ih tabla, glas, cekanje i vreme dolaska dele):
+   - kisa = grmljavina ili kisa sa KOLICINOM (>= 0,3 mm/h); sama verovatnoca ne zaustavlja vozaca;
+   - pocinje ispred, najvise 30 km i 30 min voznje, a tacka pre nje je suva (nisi vec u njoj);
+   - tacke prognoze su ~8-12 km jedna od druge, pa kisa moze da pocne bilo gde posle poslednje suve.
+     Zato mesto mora da bude najdalje NA POLA puta izmedju poslednje suve i prve mokre tacke;
+   - mesto: pumpa, lokal ili nasa kafana, najvise 300 m od rute i najmanje 1 km ispred;
+     bira se POSLEDNJE takvo (najvise suvih km), nasa kafana do 3 km ranije ima prednost;
+   - "kreni oko" je PUN SAT: podatak je satni, pa je to jedini posten trenutak. Pomera se SAMO
+     deo rute posle mesta - deo do mesta vozis sada. Cekanje od 10 do 90 min, inace nema predloga;
+   - "suvo do cilja" se pise samo kad prognoza pokriva CEO ostatak, inace "suvo sledecih N km".
+   Bez mesta nema predloga - ostaje obicna najava (tako je obecano uz maketu).
+   Dopune posle nezavisnog pregleda koda (15.10.):
+   - opasnost PRE kise (olujni vetar, poledica, magla, moguca kisa, sve nivoa 2) = nema predloga: tabla kise bi je
+     sakrila, a mesto za pauzu bi bilo iza nje. Obicna tabla i najava tada kazu blizu opasnost. Hladnoca nivoa 1 ne smeta;
+   - predlog koji STOJI se ne menja usput (na 1 km od nase kafane bi se inace prebacio na pumpu iza nje i ponovio glas):
+     samo se osvezava (sat) ili gasi (kisa nestala, primakla se mestu, cekanje preko 90 min);
+   - cekanje ne sme samo da zameni ovu kisu drugom: ako bi posle cekanja pokisao ranije nego bez njega, nema predloga;
+   - noc (dolazak 22-6 h): samo non-stop pumpe. */
+const KP_KISA_MM = 0.3, KP_PRED_KM = 30, KP_PRED_MIN = 30, KP_MESTO_M = 300, KP_MESTO_MIN_KM = 1,
+  KP_NASA_KM = 3, KP_CEKANJE_MIN = 10, KP_CEKANJE_MAX = 90, KP_CEKANJE_PAUZA_MAX = 180;
+function kisaJe(a) { const f = (a && a.flags) || {}; return !!(f.storm || (f.rain && (a.precip || 0) >= KP_KISA_MM)); }
+function kisaMokro(a) { const f = (a && a.flags) || {}; return !!(f.rain || f.heavyRain || f.storm); }
+/* Opasnost pre kise koja gasi predlog. Jak vetar nivoa 1 (45-65) i bocni vetar NE: to su udari istog fronta
+   (drugi pregled 15.10., prave prognoze maj-nov 2025: oko pola blokada bili su bas oni); njih najavljuje obicna
+   najava, a olujni vetar je nivo 2 i gasi predlog. */
+function kpPrepreka(a) {
+  const f = (a && a.flags) || {};
+  return !!(a && !a.outOfRange && (a.level >= 2 || kisaMokro(a) || f.fog || f.ice));
+}
+/* Prvi pun sat POSLE dolaska na odKm (u trenutku tOd) od kog je put od odKm (iskljucivo) do bar
+   doKm suv i pokriven prognozom. Tacke do odKm se ne pomeraju (njih vozis pre cekanja).
+   Vraca { kreniMs, doCilja, suvoDoKm, mokroKm } ili null (nema suvog sata u maxMin, ili prognoza ne
+   pokriva). mokroKm = prva mokra tacka posle suvog dela (null: suvo do cilja ili do kraja prognoze). */
+function kisaSuvoOd(route, eff, odKm, tOd, doKm, maxMin) {
+  const h0 = new Date(tOd); h0.setMinutes(0, 0, 0);
+  for (let H = h0.getTime() + 3600e3; H - tOd <= maxMin * 60000; H += 3600e3) {
+    /* +1 s: tacka u istom segmentu kao mesto dobila bi TACNO pun sat, a to cita zapis prethodnog (kisnog) sata */
+    const posle = assessRoute(route, eff, (H + 1000 - tOd) / 3600e3).filter((x) => x.km > odKm);
+    const kroz = posle.filter((x) => x.km <= doKm);
+    if (!wxCover(kroz).puna) return null;   // ne znamo (ili nema tacaka) - ne obecavamo
+    if (kroz.some(kisaMokro)) continue;     // i tada jos pada
+    let i = 0;
+    while (i < posle.length && !posle[i].outOfRange && !kisaMokro(posle[i])) i++;
+    return { kreniMs: H, doCilja: i === posle.length, suvoDoKm: i ? posle[i - 1].km : odKm,
+      mokroKm: i < posle.length && kisaMokro(posle[i]) ? posle[i].km : null };
+  }
+  return null;
+}
+/* Mesta (pumpe, lokali, nase kafane) uz rutu izmedju odKm i doKm: km duz rute i rastojanje od nje.
+   Projekcija je na SEGMENTE samo tog dela rute - povratna ruta ne moze da ukrade mesto sa druge trake.
+   Grubo pa fino (pregled 15.10.: gradska ruta x hiljade lokala = 20-50 ms na racunaru): temena na svakih k,
+   pa segmenti samo oko temena koja su dovoljno blizu: segment do maxM od mesta lezi u prozoru temena udaljenog
+   najvise maxM + najduzi raspon izmedju dva gruba temena (uz 2% rezerve - ravan racun i duzina rute se
+   razlikuju ~0,1%, drugi pregled je napravio primer na samoj ivici od 300 m). */
+function kpMestaNaRuti(route, odKm, doKm, mesta, maxM) {
+  if (!(doKm > odKm) || !mesta || !mesta.length) return [];
+  const co = route.coords, cum = route.cumDist, n = co.length;
+  if (n < 2) return [];
+  let i0 = 0; while (i0 < n - 2 && cum[i0 + 1] < odKm * 1000) i0++;
+  let i1 = i0 + 1; while (i1 < n - 1 && cum[i1] < doKm * 1000) i1++;
+  const k = Math.max(1, Math.ceil((i1 - i0) / 150));
+  let raspon = 0;
+  for (let v = i0; v < i1; v += k) raspon = Math.max(raspon, cum[Math.min(i1, v + k)] - cum[v]);
+  const out = [];
+  for (const m of mesta) {
+    if (!m || m.lat == null || m.lon == null) continue;
+    const ky = 110540, kx = 111320 * Math.cos(m.lat * Math.PI / 180);
+    const px = m.lon * kx, py = m.lat * ky, prag = maxM + raspon * 1.02 + 2;   // rezerva: ravan racun i duzina rute se razlikuju ~0,1%
+    let best = Infinity, bestD = 0;
+    for (let v = i0; v <= i1; v += k) {
+      const vx = co[v][0] * kx - px, vy = co[v][1] * ky - py;
+      if (vx * vx + vy * vy > prag * prag) continue;
+      for (let i = Math.max(i0, v - k); i < Math.min(i1, v + k); i++) {
+        const ax = co[i][0] * kx, ay = co[i][1] * ky, bx = co[i + 1][0] * kx, by = co[i + 1][1] * ky;
+        const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+        const t = l2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / l2)) : 0;
+        const qx = ax + t * dx - px, qy = ay + t * dy - py, d2 = qx * qx + qy * qy;
+        if (d2 < best) { best = d2; bestD = cum[i] + t * (cum[i + 1] - cum[i]); }
+      }
+    }
+    const km = bestD / 1000, off = Math.sqrt(best);
+    if (off <= maxM && km >= odKm && km <= doKm) out.push(Object.assign({}, m, { km, offM: Math.round(off) }));
+  }
+  return out.sort((a, b) => a.km - b.km);
+}
+/* Predlog kisne pauze ili null. `daj(odKm, doKm)` vraca kandidate (pumpe, lokali, nase kafane) za
+   taj deo rute - zove se tek kad je kisa stvarno ispred, da se 31.000 lokala ne pretresa bez potrebe.
+   `staro` = predlog koji vec stoji: mesto se ne bira iznova, samo se proverava i osvezava. */
+function kisaPauzaCalc(route, curKm, now, daj, staro) {
+  if (!route || !route.samples || !route.weather) return null;
+  const c = coordAtKm(route, Math.max(0, curKm));
+  const eff = new Date(now - (c.durSec || 0) * 1000);
+  const a = assessRoute(route, eff);
+  const ik = a.findIndex((x) => x.km > curKm + 0.3 && !x.outOfRange && kisaJe(x));
+  if (ik < 1) return null;
+  const prvi = a[ik], pre = a[ik - 1];
+  if (pre.outOfRange || kisaMokro(pre)) return null;   // tacka pre kise nije suva: mozda si vec u njoj
+  if (a.some((x, i) => i < ik && x.km > curKm + 0.3 && kpPrepreka(x))) return null;   // blize opasnost ima prednost
+  if (prvi.km - curKm > KP_PRED_KM || prvi.eta - now > KP_PRED_MIN * 60000) return null;
+  let iDo = ik;
+  while (iDo + 1 < a.length && !a[iDo + 1].outOfRange && kisaMokro(a[iDo + 1])) iDo++;
+  const zonaDoKm = a[iDo].km;
+  const granicaKm = (pre.km + prvi.km) / 2;
+  /* sledeca PRAVA kisa (ne samo verovatnoca) u 40 km posle zone AKO NE CEKAS - dalje od toga prognoza vise ne
+     razlikuje "sada" i "za sat" (drugi pregled: zamena je bila medijana 50 km dalje, cesto samo "moguca kisa") */
+  const KP_ZAMENA_KM = 40;
+  const iza = a.slice(iDo + 1).find((x) => !x.outOfRange && kisaJe(x) && x.km <= zonaDoKm + KP_ZAMENA_KM);
+  const sa = (sv) => ({ kisaKm: prvi.km, zonaDoKm, oluja: !!prvi.flags.storm, kreniMs: sv.kreniMs, doCilja: sv.doCilja, suvoDoKm: sv.suvoDoKm });
+  let mesto;
+  if (staro) {
+    if (Math.abs(prvi.km - staro.kisaKm) > 13) return null;   // druga kisa - predlog se racuna iznova
+    mesto = staro.mesto;
+    if (curKm * 1000 >= mesto.km * 1000 - 60) {
+      /* mesto je za tobom: predlog ostaje do ulaska u kisu (ako stanes pre nje, vazi cekanje C), sat od TVOJE tacke */
+      const sv = kisaSuvoOd(route, eff, curKm, now, zonaDoKm, KP_CEKANJE_PAUZA_MAX);
+      return sv ? Object.assign({}, staro, sa(sv), { prosao: true }) : null;
+    }
+    if (mesto.km > granicaKm) return null;   // kisa se primakla - mesto vise nije sigurno pre nje
+  } else {
+    const odKm = curKm + KP_MESTO_MIN_KM;
+    const kand = kpMestaNaRuti(route, odKm, granicaKm, daj(odKm, granicaKm), KP_MESTO_M).filter((m) => {
+      const h = new Date(eff.getTime() + (coordAtKm(route, m.km).durSec || 0) * 1000).getHours();
+      return (h >= 6 && h < 22) || (m.tip === "pumpa" && !!m.h24);   // noc: kafana i obicna pumpa su mozda zatvorene
+    });
+    if (!kand.length) return null;
+    const poslednje = kand[kand.length - 1];
+    mesto = kand.filter((m) => m.tip === "nasa" && m.km >= poslednje.km - KP_NASA_KM).pop() || poslednje;
+  }
+  const tP = eff.getTime() + (coordAtKm(route, mesto.km).durSec || 0) * 1000;   // stizes do mesta (bez cekanja)
+  const sv = kisaSuvoOd(route, eff, mesto.km, tP, zonaDoKm, KP_CEKANJE_MAX);
+  if (!sv) return null;
+  /* cekanjem bi samo zamenio ovu kisu drugom (prava kisa posle cekanja RANIJE nego bez njega) */
+  const posleCek = assessRoute(route, eff, (sv.kreniMs + 1000 - tP) / 3600e3)
+    .find((x) => x.km > zonaDoKm && x.km <= zonaDoKm + KP_ZAMENA_KM && !x.outOfRange && kisaJe(x));
+  if (posleCek && (!iza || posleCek.km < iza.km)) return null;
+  if (!staro && sv.kreniMs - tP < KP_CEKANJE_MIN * 60000) return null;    // dat predlog ne nestaje zato sto se cekanje skratilo
+  return Object.assign({}, staro || {}, sa(sv), { mesto, prosao: false, kljuc: "kp|" + mesto.lat.toFixed(4) + "," + mesto.lon.toFixed(4) });
+}
+/* Cekanje pre kise (stanje C): stojis na curKm u trenutku now. Ako je put kroz zonu sad suv,
+   kisa je prosla; inace prvi pun sat od kog je suv. Isti racun kao predlog, samo od tvoje tacke. */
+function kisaCekanjeCalc(route, curKm, now, zonaDoKm) {
+  if (!route || !route.samples || !route.weather) return null;
+  const c = coordAtKm(route, Math.max(0, curKm));
+  const eff = new Date(now - (c.durSec || 0) * 1000);
+  const ispred = assessRoute(route, eff).filter((x) => x.km > curKm && x.km <= zonaDoKm);
+  if (!wxCover(ispred).puna) return null;
+  if (!ispred.some(kisaMokro)) return { prosla: true };
+  const sv = kisaSuvoOd(route, eff, curKm, now, zonaDoKm, KP_CEKANJE_PAUZA_MAX);
+  return sv ? { prosla: false, kreniMs: sv.kreniMs, doCilja: sv.doCilja, suvoDoKm: sv.suvoDoKm } : null;
 }
 /* Posle reroute-a geometrija je nova, a tacke prognoze nose km i trajanje STARE rute - racun
    bi najavljivao kisu na pogresnom mestu. Zato se prognoza gasi i tiho gradi ponovo za novu rutu
@@ -23018,7 +23183,8 @@ async function wxLiveRebuild(route) {
   try {
     if (!route || !route.coords) return;
     RIDE.wx = null; RIDE.wxZona = null;   // 0.9.95: nova geometrija - stara ziva zona nosi km STARE rute
-    route.weather = null; route.fine = undefined; route.min15 = null; route._dense = false;
+    route.weather = null; route.fine = undefined; route._dense = false;
+    RIDE.kisaPauza = null; RIDE.kpZone = null;   // 15.10.: predlog kisne pauze nosi km STARE rute (mesto i kisa)
     // NE cistiti spisak izgovorenog: nova geometrija ide istim krajem, pa bi se ista kisa
     // najavljivala iznova na svakom reroute-u (vijugav put ume da ih ima desetak)
     WXLIVE.lastCalc = 0;
@@ -23055,27 +23221,245 @@ function wxLiveTick(route, curKm) {
      i dalje pise po satu prolaska koji je vazio dok si sedeo kod kuce. Oblik je isti (groupZones),
      pa je prikljucivanje drop-in. */
   RIDE.wxZona = r.zona || null;
+  try { kisaPauzaTik(route, curKm, now, r); } catch (e) {}   // 15.10.: kisna pauza (predlog mesta) ide PRE obicne najave
   if (r.prvi && r.kljuc) {
-    if (r.minuta <= WXLIVE.najavaMin && !WXLIVE.said.has(r.kljuc)) {
+    /* Kisu koju je najavio predlog kisne pauze obicna najava ne ponavlja (jedna recenica, ne dve) */
+    let kpNosi = false; try { kpNosi = (RIDE._kpCeka && kisaMokro(r.prvi)) || kpNajavljena(r, RIDE.kpZone); } catch (e) {}
+    if (r.minuta <= WXLIVE.najavaMin && !WXLIVE.said.has(r.kljuc) && !kpNosi) {
       WXLIVE.said.add(r.kljuc);
       try {
-        const traje = r.trajanjeMin ? T("nav.trajeMin", { 0: r.trajanjeMin }) : "";
+        /* 15.10.: kraj kise kao SAT ("do ~15 h"), ne "traje ~30 min" - podatak je satni */
+        const krajMs = kisaMokro(r.prvi) ? kisaKrajMs(route, r, curKm, now) : null;
         const ab = document.getElementById("rideAhead");
         if (ab) {
           /* 15.9.: kljuc "danger" ne postoji u RMR_ICONS, pa je ikonica ozbiljnog nevremena bila prazna.
              Ikona sada ide po vrsti pojave, kao u traci #rideWx. / "danger" is not an icon key, so the
              severe-weather icon was blank; it now follows the kind of weather, as #rideWx does. */
           ab.innerHTML = wxIco(r.prvi.reasons[0], r.prvi.level, 15) + " " + esc(r.prvi.reasons[0]) +
-            T("nav.zaMin", { 0: r.minuta }) + traje;
+            T("nav.zaMin", { 0: r.minuta }) + (krajMs ? T("nav.doSat", { 0: kpSat(krajMs) }) : "");
           ab.classList.add("on");
           RIDE.aheadHideAt = now + 15000; RIDE.aheadKm = r.prvi.km;
         }
         speakSr((r.prvi.level >= 2 ? T("nav.paznja") : "") + T("nav.pojavaZa", { 0: r.prvi.reasons[0], 1: r.minuta, 2: TN(r.minuta, "pl.minut"),
-          3: r.trajanjeMin ? T("nav.trajeOko", { 0: r.trajanjeMin }) : "" }), true);
+          3: krajMs ? T("nav.doOkoGlas", { 0: kpSatGlas(krajMs) }) : "" }), true);
       } catch (e) {}
     }
   }
   if (now - WXLIVE.lastFetch > WXLIVE.fetchMs) { WXLIVE.lastFetch = now; wxLiveRefetch(route, curKm); }
+}
+/* Kraj kise na tvom putu za obicnu najavu: od kog punog sata bi put kroz zonu bio suv da kreces odavde. */
+function kisaKrajMs(route, r, curKm, now) {
+  const i = r.assess.indexOf(r.prvi);
+  if (i < 0) return null;
+  let iDo = i;
+  while (iDo + 1 < r.assess.length && !r.assess[iDo + 1].outOfRange && kisaMokro(r.assess[iDo + 1])) iDo++;
+  const sv = kisaSuvoOd(route, r.eff, curKm, now, r.assess[iDo].km, 360);
+  return sv ? sv.kreniMs : null;
+}
+/* Ime za tablu i glas: bez dodatka u zagradi. U bazi mesta 112 od 638 imena nosi zagradu ("Gurman
+   (kod gazda Tise)", "Pecenjara u Ljigu (ime nije navedeno)") - na tabli lomi red, a glas bi je procitao. */
+function kpIme(ime) { const k = String(ime || "").replace(/\s*\([^)]*\)/g, "").replace(/\s+/g, " ").trim(); return k || String(ime || ""); }
+/* Kandidati za kisnu pauzu u okviru dela rute (lokalni fajlovi, bez mreze): pumpe, lokali, nase kafane. */
+function kpKandidati(route, odKm, doKm) {
+  const co = route.coords, cum = route.cumDist;
+  let la0 = 90, la1 = -90, lo0 = 180, lo1 = -180;
+  for (let i = 0; i < co.length; i++) {
+    if (cum[i] < odKm * 1000 - 500) continue;
+    if (cum[i] > doKm * 1000 + 500) break;
+    la0 = Math.min(la0, co[i][1]); la1 = Math.max(la1, co[i][1]); lo0 = Math.min(lo0, co[i][0]); lo1 = Math.max(lo1, co[i][0]);
+  }
+  if (la0 > la1) return [];
+  if (!PUMPE) { try { pumpeUcitaj(); } catch (e) {} }          // lenjo, tek kad je kisa ispred: sledeci otkucaj ih ima
+  if (!RESTORANI) { try { restoraniUcitaj(); } catch (e) {} }
+  const dLa = 0.005, dLo = 0.005 / Math.max(0.2, Math.cos(la0 * Math.PI / 180));   // ~550 m okvir oko dela rute
+  const u = (la, lo) => la >= la0 - dLa && la <= la1 + dLa && lo >= lo0 - dLo && lo <= lo1 + dLo;
+  const out = [];
+  if (PUMPE && PUMPE.pumpe) for (const z of PUMPE.pumpe) if (u(z[0], z[1]))
+    out.push({ ime: z[2] >= 0 ? (PUMPE.brendovi[z[2]] || T("fuel.pumpa")) : T("fuel.pumpa"), lat: z[0], lon: z[1], tip: "pumpa", h24: !!z[3] });
+  if (RESTORANI && RESTORANI.restorani) for (const z of RESTORANI.restorani) if (z[2] && u(z[0], z[1]))
+    out.push({ ime: kpIme(z[2]), lat: z[0], lon: z[1], tip: "lokal" });
+  for (const e of (state.editorial || [])) if (e.type === "kafana" && e.lat != null && e.name && u(e.lat, e.lon))
+    out.push({ ime: kpIme(e.name), lat: e.lat, lon: e.lon, tip: "nasa" });
+  return out;
+}
+/* Otkucaj predloga (30 s, iz wxLiveTick). Predlog koji stoji se samo osvezava ili gasi (vidi kisaPauzaCalc,
+   `staro`); nov se trazi tek kad starog nema. Kad mesto prodjes, predlog ostaje do ulaska u kisu - tabla tada
+   nosi samo prvi red, a ako stanes pre kise, vazi cekanje (C).
+   Obicna najava iste kise cuti SAMO dok predlog stoji (izgovoren) ili kad si u tu kisu usao. Predlog koji
+   nestane iz drugog razloga (kisa se primakla pre mesta, traje predugo) vraca obicnu najavu (drugi pregled 15.10.). */
+function kisaPauzaTik(route, curKm, now, r) {
+  if (!RIDE.kpRekao) RIDE.kpRekao = new Set();
+  if (!RIDE.kpSat) RIDE.kpSat = new Map();   // mesto -> { sat koji je glas poslednji rekao, kada }
+  RIDE._kpCeka = false;
+  const st = RIDE.kisaPauza;
+  const kisaIspred = !!(r && r.prvi && kisaMokro(r.prvi) && r.minuta <= KP_PRED_MIN);
+  if (kisaIspred) {
+    /* pumpe i lokali (lokalni fajlovi) se ucitavaju tek kad zatrebaju. Dok stizu, izbor bi bio od pola spiska, a
+       izbor se posle ne menja - zato se ceka, ali NAJVISE 20 s po voznji (fajl koji ne stize ne sme da utisa najavu) */
+    if (!PUMPE) { try { pumpeUcitaj(); } catch (e) {} }
+    if (!RESTORANI) { try { restoraniUcitaj(); } catch (e) {} }
+    const ucitava = (!PUMPE && pumpeUcitaj._p) || (!RESTORANI && restoraniUcitaj._p);
+    if (!st && ucitava) {
+      if (RIDE._kpCekaOd == null) RIDE._kpCekaOd = now;
+      if (now - RIDE._kpCekaOd < 20000) { RIDE._kpCeka = true; WXLIVE.lastCalc = now - WXLIVE.calcMs + 5000; return; }
+    }
+  }
+  const daj = (od, dd) => kpKandidati(route, od, dd);
+  let kp = st ? kisaPauzaCalc(route, curKm, now, daj, st) : null;
+  if (!kp) kp = kisaPauzaCalc(route, curKm, now, daj);
+  if (!kp) {
+    /* usao si u kisu koju je predlog najavio (po starom pocetku ILI po svezoj prognozi): obicna najava i dalje cuti */
+    const zr = r && r.zona, uKisi = !!(zr && zr.from && zr.from.km <= curKm + 0.3 && zr.flags && (zr.flags.rain || zr.flags.storm || zr.flags.heavyRain));
+    kpUgasi(st, !!st && (curKm >= st.kisaKm - 0.5 || uKisi));
+    return;
+  }
+  RIDE.kisaPauza = kp;
+  let zauzet = false;
+  try { zauzet = !!(window.speechSynthesis && speechSynthesis.pending); } catch (e) {}   // red glasa pun (skretanje): recenica bi bila tiho odbacena
+  const rekao = RIDE.kpSat.get(kp.kljuc);
+  if (!kp.prosao && !RIDE.kpRekao.has(kp.kljuc)) {
+    if (zauzet) { RIDE._kpCeka = true; return; }   // brava se pali tek kad recenica stvarno krene; sledeci otkucaj
+    RIDE.kpRekao.add(kp.kljuc);   // kljuc je MESTO: posle cekanja (ili reroute-a) ista pumpa se ne predlaze ponovo
+    RIDE.kpSat.set(kp.kljuc, { sat: kp.kreniMs, t: now });
+    const kisaKm = Math.max(1, Math.round(kp.kisaKm - curKm)), mestoKm = Math.max(1, Math.round(kp.mesto.km - curKm));
+    speakSr(T("nav.kpGlas", { 0: T(kp.oluja ? "nav.kpGlasOluja" : "nav.kpGlasKisa"), 1: TN(kisaKm, "pl.kilometar"),
+      2: kpSatGlas(kp.kreniMs), 3: kp.mesto.ime, 4: TN(mestoKm, "pl.kilometar") }), true);
+    try { navLog("kisna-pauza", { kisaKm: Math.round(kp.kisaKm), mestoKm: +kp.mesto.km.toFixed(1), tip: kp.mesto.tip, kreni: fmtTime(new Date(kp.kreniMs)) }); } catch (e) {}
+  } else if (!kp.prosao && rekao && kp.kreniMs !== rekao.sat && !zauzet && now - rekao.t >= 90000) {
+    /* nova prognoza pomerila sat: tabla bi rekla jedno, a glas ranije drugo. Ne odmah posle prve recenice
+       (sveze brojke umeju da stignu sekundama posle nje) - tabla se menja odmah, glas posle 90 s */
+    RIDE.kpSat.set(kp.kljuc, { sat: kp.kreniMs, t: now });
+    speakSr(T("nav.kpNoviSat", { 0: kpSatGlas(kp.kreniMs) }), true);
+  }
+  if (RIDE.kpRekao.has(kp.kljuc)) {   // zona se belezi samo za IZGOVOREN predlog
+    RIDE.kpZone = (RIDE.kpZone || []).filter((z) => z.kljuc !== kp.kljuc);
+    RIDE.kpZone.push({ od: kp.kisaKm, do: kp.zonaDoKm, kljuc: kp.kljuc });
+  }
+}
+/* JEDINO mesto gde predlog prestaje (voznja, cekanje u pauzi, kisa prosla). `usao` = vozac je u kisi koju je
+   predlog najavio: tada obicna najava iste kise i dalje cuti. Inace (kisa prosla, primakla se pre mesta, traje
+   predugo) padaju i cutanje i brava glasa za to mesto - nova kisa se najavljuje, a isto mesto, ako se vrati, kaze
+   se ponovo celom recenicom. QA 15.10. (N1): grane u pauzi su gasile predlog mimo ovoga, pa je posle
+   "Kiša je prošla" nova kisa na istom delu rute ostajala bez najave. */
+function kpUgasi(st, usao) {
+  RIDE.kisaPauza = null;
+  if (!st || usao) return;
+  RIDE.kpZone = (RIDE.kpZone || []).filter((z) => z.kljuc !== st.kljuc);
+  if (RIDE.kpRekao) RIDE.kpRekao.delete(st.kljuc);
+  if (RIDE.kpSat) RIDE.kpSat.delete(st.kljuc);
+}
+/* Da li je ova kisa vec najavljena predlogom (tada obicna najava iste zone cuti). Gleda se CELA zona
+   zivog racuna, ne samo njena prva tacka: kad vozis brze od procene, ista kisa ti "naraste" napred
+   (tacka koja je bila suva sada je mokra), pa bi na ulasku u kisu stigla najava kao za novu
+   (proba 15.10., WebKit sa satom pomerenim na :50 - "Pažnja, jaka kiša za 16 minuta" usred kise). */
+function kpNajavljena(r, kpZone) {
+  const a = r && r.prvi;
+  if (!a || !kisaMokro(a)) return false;
+  const z0 = r.zona, od = Math.min(a.km, z0 && z0.from ? z0.from.km : a.km), dok = Math.max(a.km, z0 && z0.to ? z0.to.km : a.km);
+  return (kpZone || []).some((z) => od <= z.do + 1 && dok >= z.od - 1);
+}
+/* Obicna tabla nevremena: zona ispred (ziva ima prednost, planska je rezerva dok ziv racun ne stigne -
+   prvih ~30 s voznje, ili kad zive prognoze uopste nema), do 30 km. Isti crtac za voznju i za pauzu. */
+function wxZonaIspred(d) {
+  const zZiva = (RIDE.wxZona && RIDE.wxZona.from && RIDE.wxZona.from.km * 1000 > d - 500) ? RIDE.wxZona : null;
+  const z = zZiva || (state._zones || []).find((zz) => zz.from && zz.from.km * 1000 > d - 500);
+  return (z && z.from.km * 1000 - d < 30000) ? z : null;
+}
+function wxZonaHtml(z, d) {
+  const inKm = Math.max(0, (z.from.km * 1000 - d) / 1000);
+  const rz = (z.reasons && z.reasons[0]) || "Nevreme";
+  return wxIco(rz, 1, 15) + " " + esc(rz) + T("nav.zaKm", { 0: inKm < 1 ? T("fmt.manjeOd1") : Math.round(inKm) });
+}
+/* Tabla A (dva reda) dok se vozi ka kisi; null = tabla ostaje obicna. dM = predjeni metri rute. */
+function kisaPauzaTabla(dM) {
+  const kp = RIDE.kisaPauza;
+  if (!kp || dM >= kp.kisaKm * 1000) return null;
+  const sat = kpSat(kp.kreniMs), doKise = (kp.kisaKm * 1000 - dM) / 1000;
+  let h = '<span class="l1">' + rIco(kp.oluja ? "storm" : "rain", 16) + " " +
+    T(kp.oluja ? "nav.kpOluja" : "nav.kpKisa", { 0: doKise < 1 ? T("fmt.manjeOd1") : Math.round(doKise), 1: sat }) + "</span>";
+  const doMesta = kp.mesto.km * 1000 - dM;
+  if (doMesta > 60) h += '<span class="l2">' + rIco(kp.mesto.tip === "pumpa" ? "fuel" : "tavern", 15) + " " +
+    T("nav.kpStani", { 0: esc(kp.mesto.ime), 1: doMesta < 950 ? fmtM(doMesta) : Math.round(doMesta / 1000) + " km", 2: sat }) + "</span>";
+  return h;
+}
+/* JEDAN predikat cekanja (C) - citaju ga tabla i vreme dolaska, da nikad ne kazu dve razlicite stvari. */
+function kpCekanje() {
+  const kp = RIDE.kisaPauza;
+  return (RIDE.paused && kp && kp.c) ? kp.c : null;
+}
+/* Preostalo vreme voznje od tacke d (bez cekanja): ruta + zastoji ispred. Deli ga pauza i cekanje. */
+function ridePreostaloMs(route, d) {
+  const total = RIDE.total || route.cumDist[route.cumDist.length - 1];
+  const remM = Math.max(0, total - d);
+  return route.totalDur * 1000 * (remM / Math.max(1, total)) +
+    (typeof guzvaVoznjaKasnjenjeSek === "function" ? guzvaVoznjaKasnjenjeSek(route, d) : 0) * 1000;
+}
+/* Otkucaj cekanja u pauzi (30 s, pauzaWxStart): racun od TVOJE tacke, sveze brojke na 20 min,
+   jednom glas kad kisa prodje. U pauzi redovna petlja (wxLiveTick) ne radi, pa ovo radi umesto nje. */
+function kisaCekanjeTik() {
+  try { kisaCekanjeRacun(); } finally { if (RIDE.paused) kisaCekanjeCrtaj(); }   // tabla se uvek uskladi sa racunom (i kad predloga nema)
+}
+function kisaCekanjeRacun() {
+  const kp = RIDE.kisaPauza, route = RIDE.route;
+  if (!kp || !route || !RIDE.paused || !RIDE.pos || RIDE.pos.la == null) { if (kp) kp.c = null; return; }
+  let curKm;
+  try { curKm = navProject(route, RIDE.pos.lo, RIDE.pos.la, RIDE.lastRouteI).d / 1000; } catch (e) { return; }
+  if (curKm >= kp.kisaKm) { kp.c = null; return; }   // stao si u kisi ili posle nje - to nije cekanje pred njom
+  const now = Date.now();
+  if (now - WXLIVE.lastFetch > WXLIVE.fetchMs) { WXLIVE.lastFetch = now; wxLiveRefetch(route, curKm); }
+  const r = kisaCekanjeCalc(route, curKm, now, kp.zonaDoKm);
+  if (r && r.prosla) {
+    const cekao = !!kp.c;
+    kpUgasi(kp, false);   // kisa je prosla: nova kisa na istom mestu je NOVA kisa
+    if (cekao) {
+      speakSr(T("nav.kpProsla"), true);
+      try { navLog("kisna-pauza-prosla", { km: Math.round(curKm) }); } catch (e) {}
+    }
+  } else if (r) kp.c = { kreniMs: r.kreniMs, doCilja: r.doCilja, suvoDoKm: r.suvoDoKm, km: curKm };
+  else kpUgasi(kp, false);   // kisa traje preko 3 h ili prognoza ne pokriva: stari sat bi lagao - predlog se gasi
+}
+/* Tabla C i vreme dolaska dok cekas: polazak = "kreni oko", dolazak = polazak + ostatak voznje. */
+function kisaCekanjeCrtaj() {
+  try {
+    const c = kpCekanje(), wxEl = document.getElementById("rideWx");
+    if (!wxEl) return;
+    const now = Date.now();
+    if (!c) {
+      /* tabla predloga (A) ili cekanja (C) bez vazeceg predloga se brise - u pauzi je fiksevi ne prepisuju,
+         pa bi stari sat stajao zamrznut. Posle cekanja i vreme dolaska se vraca na "sada + ostatak". */
+      const bio = wxEl.dataset.kp;
+      const d0 = (RIDE.route && RIDE.pos) ? navProject(RIDE.route, RIDE.pos.lo, RIDE.pos.la, RIDE.lastRouteI).d : null;
+      if (bio) {   // umesto prazne table: obicna tabla zone ispred, ako je ima (drugi pregled 15.10.)
+        delete wxEl.dataset.kp;
+        /* zona po SVEZEM racunu od tvoje tacke (cist wxLiveCalc, bez upisa u stanje voznje): RIDE.wxZona je od pre
+           pauze, pa bi posle "Kiša je prošla" tabla jos pisala staru kisu (treci pregled 15.10.) */
+        let z = null;
+        try {
+          if (d0 != null && RIDE.route.weather) {
+            const zz = wxLiveCalc(RIDE.route, d0 / 1000, now).zona;
+            if (zz && zz.from && zz.from.km * 1000 > d0 - 500 && zz.from.km * 1000 - d0 < 30000) z = zz;
+          }
+        } catch (e) {}
+        if (z) { wxEl.innerHTML = wxZonaHtml(z, d0); wxEl.classList.add("on"); } else { wxEl.classList.remove("on"); wxEl.innerHTML = ""; }
+      }
+      if (bio === "c" && d0 != null) {
+        const ost0 = ridePreostaloMs(RIDE.route, d0);
+        document.getElementById("rideRemT").textContent = fmtPreostalo(ost0);
+        document.getElementById("rideEta").textContent = new Date(now + ost0).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
+      }
+      return;
+    }
+    wxEl.innerHTML = '<span class="l1">' + rIco("rain", 16) + " " + T("nav.kpPauza", { 0: kpSatBez(c.kreniMs) }) + "</span>" +
+      '<span class="l2">' + T("nav.kpJos", { 0: fmtPreostalo(c.kreniMs - now),
+        1: c.doCilja ? T("nav.kpSuvoCilj") : T("nav.kpSuvoKm", { 0: Math.max(1, Math.round(c.suvoDoKm - c.km)) }) }) + "</span>";
+    wxEl.classList.add("on"); wxEl.dataset.kp = "c";
+    const route = RIDE.route;
+    if (!route || !RIDE.pos) return;
+    const d = navProject(route, RIDE.pos.lo, RIDE.pos.la, RIDE.lastRouteI).d;
+    const ost = ridePreostaloMs(route, d);
+    document.getElementById("rideRemT").textContent = fmtPreostalo(c.kreniMs - now + ost);
+    document.getElementById("rideEta").textContent = new Date(c.kreniMs + ost).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
+  } catch (e) {}
 }
 function buildAhead(route) {   // najave ispred: kamere sa rute + lokalne prijave (km preko najblize tacke NOVE geometrije)
   try {
@@ -23730,7 +24114,9 @@ const PAUZA_WX_MS = 10 * 60000, PAUZA_WX_PRVI_MS = 30000, PAUZA_WX_PROZOR_MIN = 
 function pauzaWxStop() {
   try { clearTimeout(RIDE._pauzaWxT0); } catch (e) {}
   try { clearInterval(RIDE._pauzaWxInt); } catch (e) {}
-  RIDE._pauzaWxT0 = null; RIDE._pauzaWxInt = null;
+  try { clearInterval(RIDE._kpInt); } catch (e) {}
+  RIDE._pauzaWxT0 = null; RIDE._pauzaWxInt = null; RIDE._kpInt = null;
+  if (RIDE.kisaPauza) RIDE.kisaPauza.c = null;   // cekanje (C) postoji samo u pauzi
 }
 function pauzaWxStart() {
   pauzaWxStop();
@@ -23739,6 +24125,9 @@ function pauzaWxStart() {
     pauzaWxTik();
     RIDE._pauzaWxInt = setInterval(pauzaWxTik, PAUZA_WX_MS);
   }, PAUZA_WX_PRVI_MS);
+  /* 15.10.: kisna pauza - stanje cekanja odmah (tabla "kreni oko 15 h" i vreme dolaska), pa na 30 s */
+  try { kisaCekanjeTik(); } catch (e) {}
+  RIDE._kpInt = setInterval(() => { try { kisaCekanjeTik(); } catch (e) {} }, 30000);
 }
 async function pauzaWxTik() {
   if (!RIDE.paused || !document.body.classList.contains("riding")) { pauzaWxStop(); return; }
@@ -23749,20 +24138,14 @@ async function pauzaWxTik() {
     const ms = await min15Points([{ lat: pos.la, lon: pos.lo }], 1);   // jedan poziv na 10 min, za JEDNU tačku
     const m = ms && ms[0];
     if (!m || !m.time || !m.precipitation || !RIDE.paused) return;   // pauza se u međuvremenu mogla završiti
-    const now = Date.now(), t0 = wxMs(m.time[0]);
-    for (let k = 0; k < m.precipitation.length; k++) {
-      const ts = t0 + k * M15_MS;
-      if (ts < now - M15_MS) continue;
-      if (ts > now + PAUZA_WX_PROZOR_MIN * 60000) break;
-      const v = m.precipitation[k];
-      if (v != null && v >= 0.1) {
-        const kljuc = "pw" + Math.round(ts / M15_MS);
-        if (RIDE._pauzaWxRek && RIDE._pauzaWxRek.has(kljuc)) return;
-        if (RIDE._pauzaWxRek) RIDE._pauzaWxRek.add(kljuc);
-        tihoObavestenje(T("wx.kisaStizeZa", { 0: Math.max(1, Math.round((ts - now) / 60000)) }));
-        return;
-      }
-    }
+    /* 15.10.: dok tabla kaze "Pauza za kišu · kreni oko 15 h", druga poruka o kisi bi joj protivrecila */
+    if (kpCekanje()) return;
+    const kp = kisaProzorTacka(m, Date.now(), PAUZA_WX_PROZOR_MIN);   // SAT, ne minut (vidi PROGNOZA NA 15 MINUTA)
+    if (!kp) return;
+    const kljuc = "pw" + kp.doMs;
+    if (RIDE._pauzaWxRek && RIDE._pauzaWxRek.has(kljuc)) return;
+    if (RIDE._pauzaWxRek) RIDE._pauzaWxRek.add(kljuc);
+    tihoObavestenje(kp.uskoro ? T("wx.kisaUskoroDo", { 0: kpSat(kp.doMs) }) : T("wx.kisaOdDo", { 0: kpSat(kp.odMs), 1: kpSat(kp.doMs) }));
   } catch (e) { /* bez prognoze pauza radi isto - ovo je dodatak, ne uslov */ }
 }
 /* Nastavak posle pauze: OBAVEZNO oboje - svež radar i preračun prognoze za OSTATAK rute sa novim
@@ -23770,6 +24153,9 @@ async function pauzaWxTik() {
    ceo ostatak ture. Sam preračun ne košta poziv (wxLiveCalc računa iz "efektivnog polaska"), a
    wxLiveRefetch dovuče sveže brojke samo za deo ispred vozača. */
 function pauzaWxNastavak(trajalaMs) {
+  /* 15.10.: krenuo si dok je tabla jos govorila "kreni oko 15 h" - kisa je i dalje ispred, pa predlog i
+     njegovo cutanje padaju: sledeci otkucaj najavljuje kisu (ili nudi novo mesto) kao prvi put */
+  if (RIDE.kisaPauza && RIDE.kisaPauza.c) { RIDE.kisaPauza = null; RIDE.kpZone = null; }
   pauzaWxStop(); RIDE._pauzaWxRek = null;
   try { radarNoviFrame().catch(() => {}); } catch (e) {}
   if (RIDE.freeRide) {
@@ -23784,7 +24170,7 @@ function pauzaWxNastavak(trajalaMs) {
     /* Duga pauza briše spisak izgovorenog: ključ zone je nivo+razlog+km, pa bi posle sata sedenja
        ista zona ćutala iako je sad na sasvim drugom vremenu prolaska. Kratka pauza (kafa, gorivo)
        ga čuva, da se ista najava ne ponovi dvaput u razmaku od par minuta. */
-    if (trajalaMs >= 15 * 60000) WXLIVE.said = new Set();
+    if (trajalaMs >= 15 * 60000) { WXLIVE.said = new Set(); RIDE.kpZone = null; }   // 15.10.: i kisa koju je najavio predlog - ako i dalje pada, sme ponovo
     WXLIVE.lastCalc = 0;             // prvi sledeći otkucaj računa sate prolaska od SADA
     WXLIVE.lastFetch = Date.now();   // sveže brojke vučemo odmah ovde - da ih wxLiveTick ne traži još jednom
     wxLiveRefetch(route, kmSad);
@@ -24188,17 +24574,19 @@ function pauzaNavTick(p, tsMs, route) {
     /* 31.8.2026 (Boskov zahtev: "Google ima i koliko jos sati vozimo"). Sekunde do cilja su se
        VEC racunale - iz njih je nastajao sat dolaska - ali se broj nikad nije pokazao. Sada je
        on glavni, a kilometri i sat dolaska stoje uz njega. */
-    const preostMs = route.totalDur * 1000 * (remM / Math.max(1, total)) +
-      (typeof guzvaVoznjaKasnjenjeSek === "function" ? guzvaVoznjaKasnjenjeSek(route, d) : 0) * 1000;   // 14.10.: isto vreme dolaska kao van pauze (zastoji ispred)
+    const preostMs = ridePreostaloMs(route, d);   // 14.10.: isto vreme dolaska kao van pauze (zastoji ispred)
+    /* 15.10.: dok cekas kisu, dolazak = "kreni oko" + ostatak voznje (isti predikat kao tabla C) */
+    const _kc = kpCekanje(), polazak = _kc ? _kc.kreniMs : Date.now();
     /* Redosled upisa NIJE kozmetika: ceo blok deli jedan try, pa greska u prvom redu proguta i
        sve ispod njega. Nov podatak zato ide POSLEDNJI - da ne moze da obori kilometre, sat
        dolaska i brzinu, koji su vazniji. Uhvaceno testom P1 istog dana. */
     document.getElementById("rideRem").textContent = DEC((remM / 1000).toFixed(remM < 10000 ? 1 : 0)) + " km";
-    document.getElementById("rideRemT").textContent = fmtPreostalo(preostMs);
+    document.getElementById("rideRemT").textContent = fmtPreostalo(polazak - Date.now() + preostMs);
     document.getElementById("rideEta").textContent =
-      new Date(Date.now() + preostMs).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
+      new Date(polazak + preostMs).toLocaleTimeString(LOKAL(), { hour: "2-digit", minute: "2-digit" });
     metrikaCrtaj();
   } catch (e) {}
+  kisaCekanjeCrtaj();
   try { drawRoadLabel(route, d, lo, la); } catch (e) {}
   try {
     const lim = limitAt(route, d), limEl = document.getElementById("rideLim");
@@ -24466,7 +24854,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   RIDE._flim = null; RIDE._flimV = 0; RIDE._flimT = 0; RIDE._flimAt = null;   // svež limit-stroj (znak prošle vožnje ne sme da preživi)
   RIDE._fwx = null;   // sveza kisna najava
   RIDE.offCount = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
-  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kolProslave = []; RIDE.arrived = false;
+  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kisaPauza = null; RIDE.kpRekao = null; RIDE.kpZone = null; RIDE.kpSat = null; RIDE._kpCekaOd = null; RIDE.kolProslave = []; RIDE.arrived = false;
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;
   RIDE._stajeOd = null;   // ostaci prethodne voznje: stari trenutak stajanja ne sme da predje u novu
   try { pauzaWxStop(); RIDE._pauzaWxRek = null; } catch (e) {}   // i nijedan tajmer pauze ne prelazi u novu vožnju
@@ -24657,7 +25045,7 @@ function startRide() {
       stil: stilKoren(route.label),
     } : null;
   } catch (e) { RIDE.rel = null; }
-  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kolProslave = []; RIDE.arrived = false;   // dnevnik voznje + kolekcije
+  RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kisaPauza = null; RIDE.kpRekao = null; RIDE.kpZone = null; RIDE.kpSat = null; RIDE._kpCekaOd = null; RIDE.kolProslave = []; RIDE.arrived = false;   // dnevnik voznje + kolekcije
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
   RIDE._stajeOd = null;   // ostaci prethodne voznje: stari trenutak stajanja bi "Drugu rutu" upalio na startu
   try { pauzaWxStop(); RIDE._pauzaWxRek = null; } catch (e) {}   // i nijedan tajmer pauze ne prelazi u novu vožnju
@@ -24745,7 +25133,6 @@ function startRide() {
   } catch (e) {}
   RIDE.total = route.cumDist[route.cumDist.length - 1];   // R13: na RIDE - reroute ga azurira (closure je lagao ETA/dolazak)
   RIDE.route = route;   // sheet "druga ruta" je van ovog scope-a
-  try { min15Prime(route); } catch (e) {}   // TEK POSLE RIDE.route: min15Prime proverava da ruta nije u medjuvremenu zamenjena
   try { if (typeof guzvaVoznjaStart === "function") guzvaVoznjaStart(route); } catch (e) {}   // 14.10.: guzva ispred tebe na 5 min, obilazak sam (guzve.js)
   if (!RIDE._altReg) {  // registracija ovde, na load-u dugmad jos ne postoje u DOM-u
     RIDE._altReg = 1;
@@ -24856,20 +25243,23 @@ function startRide() {
       const wxEl = document.getElementById("rideWx");
       /* Ziva zona ima prednost; planska ostaje rezerva dok ziv racun ne stigne (prvih ~30 s
          voznje, ili kad zive prognoze uopste nema). */
-      const zZiva = (RIDE.wxZona && RIDE.wxZona.from && RIDE.wxZona.from.km * 1000 > d - 500) ? RIDE.wxZona : null;
-      const z = zZiva || (state._zones || []).find((zz) => zz.from && zz.from.km * 1000 > d - 500);
-      if (z && z.from.km * 1000 - d < 30000) {
-        const inKm = Math.max(0, (z.from.km * 1000 - d) / 1000);
+      const z = wxZonaIspred(d);
+      if (z) {
         const rz = (z.reasons && z.reasons[0]) || "Nevreme";
-        wxEl.innerHTML = wxIco(rz, 1, 15) + " " + esc(rz) + T("nav.zaKm", { 0: inKm < 1 ? T("fmt.manjeOd1") : Math.round(inKm) });
+        wxEl.innerHTML = wxZonaHtml(z, d);
         wxEl.classList.add("on");
+        delete wxEl.dataset.kp;
         /* Zastavica "istrpeo kisu" se pali tek kad si STVARNO usao u zonu, ne kad ti je najavljena
            (11.8.). Ranije je uslov bio `inKm < 3`, dakle "nevreme pocinje 3 km ispred tebe" - a ti
            si mozda skrenuo, stao, ili kise nije ni bilo. Za to se dodeljivalo priznanje i pisalo u
            dnevnik. Ista klasa greske kao "vreme na svakom kilometru" iz 0.9.38: tvrdnja sira od
            merenja. Sada se pamti pocetak zone, pa se zastavica pali tek kad predjes 500 m U nju. */
-        if (/kiš|pljus|nevreme|grmljav/i.test(rz)) RIDE.kisaZona = z.from.km * 1000;
-      } else wxEl.classList.remove("on");
+        /* 15.10.: i po zastavicama - od 0.9.160 razlog je na jeziku vozaca, pa engleski tekst regex nije hvatao */
+        if ((z.flags && (z.flags.rain || z.flags.storm)) || /kiš|pljus|nevreme|grmljav/i.test(rz)) RIDE.kisaZona = z.from.km * 1000;
+      } else { wxEl.classList.remove("on"); delete wxEl.dataset.kp; }
+      /* 15.10.2026 (Boskov izbor A): predlog kisne pauze - tabla u dva reda, mapa se ne pomera */
+      const kpH = kisaPauzaTabla(d);
+      if (kpH) { wxEl.innerHTML = kpH; wxEl.classList.add("on"); wxEl.dataset.kp = "a"; }
       if (RIDE.kisaZona != null && d > RIDE.kisaZona + 500 && !RIDE.kisa) {
         RIDE.kisa = true;
         RIDE.kisaAt = Math.round(RIDE.kisaZona / 1000);   // km na kom je usao - koristi sazetak
@@ -25082,7 +25472,7 @@ function voznjaCkpHidrat(snap) {   // snimak -> RIDE/LEAN stanje, spremno za zab
   RIDE.turaTs = snap.turaTs || null;   // TURA (0.9.86): oporavljena etapa se i dalje lepi na svoju turu
   RIDE.rel = snap.rel || null;   // planirana relacija (0.9.88): stariji snimak je nema - zapis tada ide bez linka, tiho
   RIDE.leanChk = (snap.leanChk && snap.leanChk.n) ? { n: snap.leanChk.n, sum: snap.leanChk.sum || 0 } : null;
-  RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kolProslave = [];
+  RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kisaPauza = null; RIDE.kpRekao = null; RIDE.kpZone = null; RIDE.kpSat = null; RIDE._kpCekaOd = null; RIDE.kolProslave = [];
   LEAN.momL = snap.momL || null; LEAN.momR = snap.momR || null;
   LEAN.on = snap.lnL != null || snap.lnR != null;
   LEAN.maxL = snap.lnL || 0; LEAN.maxR = snap.lnR || 0;
@@ -25152,7 +25542,7 @@ function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne 
     RIDE.trace = []; RIDE.samples = []; RIDE.trkM = 0; RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.rupaM = 0; RIDE.rupaMs = 0; RIDE.rupaN = 0;
     RIDE.maxD = 0; RIDE.baseD = 0; RIDE.arrived = false;
     RIDE.pauseMs = 0; RIDE.paused = false; RIDE.pauseT0 = null; RIDE.pauzeNa = null; RIDE.momBrz = null;
-    RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kolProslave = [];
+    RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kisaPauza = null; RIDE.kpRekao = null; RIDE.kpZone = null; RIDE.kpSat = null; RIDE._kpCekaOd = null; RIDE.kolProslave = [];
     RIDE.leanChk = null; RIDE.turaTs = null; RIDE.rel = null;
     RIDE.lastFixTs = 0; RIDE.lastFixObj = null; RIDE.lastTrk = null; RIDE._smpT = 0;   // rep se replay-uje i kad se voznja odbaci
     try { leanReset(); } catch (e) {}
@@ -28298,7 +28688,7 @@ async function offlineOpen(id) {
         r.weather = w;
         const fineOsvezen = !!f;
         if (f) r.fine = f;   // pad finog modela ne sme da obrise ono sto je snimljeno
-        r.min15 = null; r.consensus = undefined; r.metno = undefined;
+        r.consensus = undefined; r.metno = undefined;
         r.assess = assessRoute(r, dep);
         redrawWx(r, dep);
         try { renderConsensus(r, dep); } catch (e) {}   // presuda modela je nulirana - stari tekst ne sme da ostane u DOM-u
