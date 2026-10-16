@@ -3122,7 +3122,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
   #rideSum .rsmap .chip { color: var(--orange-400); position: absolute; top: 14px; left: 16px; }
   #rideSum h3 { margin: 0; padding: 18px 20px 0; }
   #rideSum .rshead { padding: 12px 20px 0; }
-  #rideSum .rel { font-size: 20px; font-weight: 800; color: var(--fg-strong); letter-spacing: -.02em; }
+  #rideSum .rel { font-size: 20px; font-weight: 800; color: var(--fg-strong); letter-spacing: -.02em; text-wrap: balance; }   /* 16.10.: "Zemun → Beograd (4 km pre cilja)" se lomi u dva ravna reda, ne "pre / cilja)" */
   #rideSum .dt { font-size: 13px; color: var(--fg-muted); margin-top: 1px; }
   #rideSum .rstats { padding: 14px 14px 0; font-variant-numeric: tabular-nums; }
   /* dva reda kad ima vise od 4 brojke: 6 celija u jednom redu na 390 px daje 65 px po celiji,
@@ -4979,6 +4979,7 @@ const RECNIK_SR = {
   "pl.riStanica.5": "{n} stanica",
   "srch.deonicaSub": "deonica · {0} km · ★ {1}",
   "srch.deonicaSubBez": "deonica · {0} km · bez ocene",
+  "srch.deonicaKraj": " · kraj: {0}",
   "atl.bezOceneRec": "bez ocene",
   "planer.riBezAutoputa": "Bez autoputa",
   "planer.polazakSada": "Polazak: sada",
@@ -5639,7 +5640,6 @@ const RECNIK_SR = {
   "kol.memorijaPuna": "Memorija telefona je puna - nove tačke kolekcije NISU sačuvane.",
   "kol.tackeSacuvanePoeniNisu": "Tačke su sačuvane, ali poeni nisu - memorija telefona je puna.",
   "dn.kruznaTura": " (kružna tura)",
-  "dn.turaPrekinuto": "Tura (prekinuto)",
   "dn.primaIspala": "Dnevnik prima {0} vožnji - ispala je najstarija{1}.",
   "dn.izaberiDve": "Izaberi bar dve vožnje.",
   "dn.punTuraNije": "Dnevnik je pun - tura NIJE povezana.",
@@ -5661,7 +5661,8 @@ const RECNIK_SR = {
   "dn.voznjaN": "{0}. vožnja · {1}",
   "dn.retaRow": "<div class=\"reta\" data-ts=\"{0}\" role=\"button\" tabindex=\"0\" aria-label=\"Otvori {1}: {2}\"><span class=\"rn\"><span class=\"rlab\">{3}</span><span class=\"rnaz\">{4}</span></span><b>{5} km</b></div>",
   "dn.slobodna": "Slobodna vožnja",
-  "dn.prekinutoNa": " (prekinuto na {0} km)",
+  "dn.preCilja": " ({0} km pre cilja)",
+  "dn.preCiljaBez": " (završeno pre cilja)",
   "dn.gradska": "Gradska vožnja",
   "dn.otvoreniPut": "Otvoreni put",
   "dn.turaIzNajave": "Tura iz najave nije više u dnevniku - vožnja je upisana zasebno.",
@@ -6827,7 +6828,6 @@ const RECNIK_SR = {
 
   // V16 drugi prolaz (3.10.2026): natpisi iz app.js 7000+, share/kartice.js i share/galerija.js
   "dn.tura": "Tura",
-  "dn.prekinutoSufiks": " (prekinuto)",
   "dn.ariaIzaberi": "Izaberi",
   "dn.ariaOtvoriSazetak": "Otvori sažetak",
   "ja.poenaOveNedelje": "poena ove nedelje",
@@ -7084,6 +7084,7 @@ const RECNIK_EN = {
   "pl.riStanica.n": "{n} stops",
   "srch.deonicaSub": "segment · {0} km · ★ {1}",
   "srch.deonicaSubBez": "segment · {0} km · no rating",
+  "srch.deonicaKraj": " · ends: {0}",
   "atl.bezOceneRec": "no rating",
   "planer.riBezAutoputa": "No motorway",
   "planer.polazakSada": "Leaving: now",
@@ -7723,7 +7724,6 @@ const RECNIK_EN = {
   "kol.memorijaPuna": "Phone storage is full - new collection points were NOT saved.",
   "kol.tackeSacuvanePoeniNisu": "The points were saved, but the score was not - phone storage is full.",
   "dn.kruznaTura": " (loop ride)",
-  "dn.turaPrekinuto": "Tour (interrupted)",
   "dn.primaIspala": "The log holds {0} rides - the oldest one dropped out{1}.",
   "dn.izaberiDve": "Pick at least two rides.",
   "dn.punTuraNije": "The log is full - the tour was NOT linked.",
@@ -7745,7 +7745,8 @@ const RECNIK_EN = {
   "dn.voznjaN": "Ride {0} · {1}",
   "dn.retaRow": "<div class=\"reta\" data-ts=\"{0}\" role=\"button\" tabindex=\"0\" aria-label=\"Open {1}: {2}\"><span class=\"rn\"><span class=\"rlab\">{3}</span><span class=\"rnaz\">{4}</span></span><b>{5} km</b></div>",
   "dn.slobodna": "Free ride",
-  "dn.prekinutoNa": " (interrupted at {0} km)",
+  "dn.preCilja": " ({0} km short of destination)",
+  "dn.preCiljaBez": " (ended before destination)",
   "dn.gradska": "City ride",
   "dn.otvoreniPut": "Open road",
   "dn.turaIzNajave": "The announced tour is no longer in the log - the ride was saved separately.",
@@ -8904,7 +8905,6 @@ const RECNIK_EN = {
 
   // V16 second pass (3.10.2026): labels from app.js 7000+, share/kartice.js and share/galerija.js
   "dn.tura": "Tour",
-  "dn.prekinutoSufiks": " (interrupted)",
   "dn.ariaIzaberi": "Select",
   "dn.ariaOtvoriSazetak": "Open the summary",
   "ja.poenaOveNedelje": "points this week",
@@ -10033,8 +10033,25 @@ function geoRef() {
   try { const lp = JSON.parse(localStorage.getItem("rmr2_lastpos") || "null"); if (lp && lp.lat != null) return { lat: lp.lat, lon: lp.lon, sveze: svez(lp.t), t: lp.t || null }; } catch (e) {}
   return null;
 }
+/* 16.10.2026 (nalaz 10.10.: "bez lokacije nudi Rudnik u Poljskoj"): kad app nema NIKAKVU tacku (sveza instalacija,
+   lokacija iskljucena, nijedan plan), pretraga je bila slepa - Photon bez tacke usmeravanja vrati 10 Rudnika po Evropi,
+   a nas (Moravicki okrug) nije ni medju njima (tools/fixtures/photon-rudnik-*.json). Tada se SAMO PRETRAGA usmerava na
+   Beograd (najveci deo vozaca): tacka ide u upit i u bodovanje, a `region` gasi sve sto bi je predstavilo kao poziciju
+   vozaca - nista se ne izbacuje po daljini i ne pise se "~X km". Ostatak aplikacije i dalje vidi geoRef() = null.
+   Pregled 0.9.208 (P1): tacka regiona SAMO POREDJA listu predloga koju vozac bira ocima (geoPhotonSugg). Sve sto aplikacija
+   bira SAMA - neresen vrh adrese, auto-izbor, Enter, TomTom, okvir Nominatim upita - gleda samo stvarnu lokaciju (geoRef),
+   inace dve iste adrese u dva grada tiho postanu beogradska (vrsta kvara Kaluderica 27.8.). Region dolazi iz VREMENSKE ZONE
+   telefona (bez dozvole za lokaciju): vozac iz Crne Gore dobija Podgoricu, ne Beograd; zona van regiona = bez usmeravanja. */
+const GEO_REGIONI = { "Europe/Belgrade": [44.8125, 20.4612], "Europe/Podgorica": [42.4410, 19.2627], "Europe/Sarajevo": [43.8563, 18.4131],
+  "Europe/Zagreb": [45.8150, 15.9819], "Europe/Skopje": [41.9981, 21.4254], "Europe/Ljubljana": [46.0569, 14.5058] };
+function geoRegion() {
+  let z = ""; try { z = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
+  const t = GEO_REGIONI[z];
+  return t ? { lat: t[0], lon: t[1], sveze: false, region: true } : null;
+}
+function geoRefPretraga() { return geoRef() || geoRegion(); }
 function geoViewbox() {   // ~120 km oko korisnika - BIAS, ne ograda (bez bounded: Stelvio/Bormio i dalje rade)
-  const p = geoRef();
+  const p = geoRef();   // okvir bira KANDIDATE za auto-izbor (adresa, Enter) - samo stvarna lokacija (P1)
   if (!p || p.lat == null) return "";
   return `&viewbox=${(p.lon - 0.75).toFixed(3)},${(p.lat + 0.55).toFixed(3)},${(p.lon + 0.75).toFixed(3)},${(p.lat - 0.55).toFixed(3)}`;
 }
@@ -10091,7 +10108,7 @@ function _geoNaselje(x) {
 }
 function geoPickList(j, q) {   // rangirana lista + da li je vrh NERESEN (tada se ne sme birati cutke)
   if (!j || !j.length) return { lista: [], tie: false };
-  const ref = geoRef();
+  const ref = geoRef();   // ODLUKA (neresen vrh / pobednik) - tacka regiona ne sme da presudi (P1)
   const looksAddr = /\d/.test(q);
   const bod = (x) => _geoBod(x, looksAddr, ref);
   const lista = j.slice().sort((a, b) => bod(b) - bod(a));
@@ -10183,9 +10200,31 @@ function _phTip(key, val) {   // doprinos TIPA mesta; gradovi se ne diraju - nji
   return 0;
 }
 const PH_TIE_EPS = 0.5;
+/* Drugi pregled 0.9.208 (nalaz 1): predlozi sa mreze su se spajali SAMO po imenu, pa su dve "Kafana Breza" u dva grada postajale jedna -
+   i to ona koju je tacka regiona stavila prvu. Enter tako nije ni mogao da vidi da je nereseno. Isto ime je duplikat samo kad je i
+   ISTO MESTO (do 2 km); nasi redovi pokrivaju po imenu, kao do sada. */
+function netBezDuplikata(lista, nasi) {
+  /* Nasi redovi (baza, Nedavno) pokrivaju mrezne PO IMENU, kao u 0.9.207 (cetvrti pregled: drugacije je Enter, koji uzima prvi MREZNI
+     red, umeo da ode u istoimeno mesto u drugom gradu ispod reda Nedavno). Mrezni medju sobom se spajaju samo kad su i ISTO MESTO
+     (do 2 km - Photon ume da da selo i njegovu granicu 1,14 km jedno od drugog). */
+  const nasa = new Set((nasi || []).map((h) => SFOLD(h.n)));
+  const vec = [];
+  const isti = (a, b) => a.f === b.f && haversine(a.lat, a.lon, b.lat, b.lon) < 2;
+  return (lista || []).filter((x) => {
+    const k = { f: SFOLD(x.n), lat: x.lat, lon: x.lon };
+    if (!x.n || nasa.has(k.f) || vec.some((y) => isti(k, y))) return false;
+    vec.push(k); return true;
+  });
+}
 function suggNeresen(lista) {   // vrh je NERESEN - isto pravilo koje je resilo "Breza 10" (30.8.)
   if (!Array.isArray(lista) || lista.length < 2) return false;
-  return Math.abs((lista[0].bod || 0) - (lista[1].bod || 0)) < PH_TIE_EPS;
+  if (lista[0].bodOdl == null) return Math.abs((lista[0].bod || 0) - (lista[1].bod || 0)) < PH_TIE_EPS;
+  /* Lista poredjana tackom regiona (nema lokacije, P1): neresen je kad je NAJBOLJI po bodovima bez regiona deljen -
+     tacka regiona razdvaja dve iste kafane u dva grada samo po tome koja je bliza Beogradu. I kad red 0 (koji Enter uzima)
+     NIJE najbolji bez regiona: tada ga je region gurnuo napred, pa Enter pita umesto da bira (drugi pregled, nalaz 4). */
+  const b = (x) => (x.bodOdl != null ? x.bodOdl : x.bod) || 0;
+  const max = Math.max(...lista.map(b));
+  return max - b(lista[0]) >= PH_TIE_EPS || lista.filter((x) => max - b(x) < PH_TIE_EPS).length >= 2;
 }
 function _phBod(p, q, d, adr) {   // 10.8.: znacaj mesta i tacno ime, pa tek onda daljina
   const nm = _geoFold(cyr2lat(p.name || "")), qq = _geoFold(cyr2lat(q || ""));   // OSM u Srbiji pise cirilicom
@@ -10216,7 +10255,7 @@ function _phBod(p, q, d, adr) {   // 10.8.: znacaj mesta i tacno ime, pa tek ond
   return s;
 }
 async function geoPhotonRaw(q, n) {   // Photon (komoot): fuzzy POI pretraga - nalazi "Motor Bike Shop" za "Moto Bike Shop".
-  const ref = geoRef();                //  Adresama NE veruj (test 6.8: "Trgovacka 20" vraca skole u Hrvatskoj) - zato samo POI klase.
+  const ref = geoRef();               //  Adresama NE veruj (test 6.8: "Trgovacka 20" vraca skole u Hrvatskoj) - zato samo POI klase. Auto-izbor: bez regiona (P1).
   const bias = ref && ref.lat != null ? `&lat=${ref.lat.toFixed(4)}&lon=${ref.lon.toFixed(4)}` : "";
   try {
     const j = await fetchJSON(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}${bias}&limit=8&lang=default`, { timeoutMs: 7000, retries: 0 });
@@ -10235,9 +10274,10 @@ async function geoPhotonRaw(q, n) {   // Photon (komoot): fuzzy POI pretraga - n
   } catch (e) { return []; }
 }
 async function geoPhoton(q) { const r = await geoPhotonRaw(q, 1); return r.length ? { lat: r[0].lat, lon: r[0].lon, name: r[0].name } : null; }
-async function geoPhotonSugg(q, n) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SIRE klase - mesta, ulice, adrese, POI.
+async function geoPhotonSugg(q, n, bezRegiona) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SIRE klase - mesta, ulice, adrese, POI.
   const adr = !!_geoAdresa(q);   // upit sa kucnim brojem se rangira po blizini, ne po znacaju mesta
-  const ref = geoRef();                //  Ovde covek BIRA OCIMA iz liste (sub red nosi grad+daljinu), pa fuzzy promasaj ne odvede nikud;
+  // bezRegiona: poziv za AUTO-IZBOR (geocode) - tacka regiona ne sme ni da bira kandidate u upitu (drugi pregled, nalaz 5)
+  const ref = bezRegiona ? geoRef() : geoRefPretraga();               //  Ovde covek BIRA OCIMA iz liste (sub red nosi grad+daljinu), pa fuzzy promasaj ne odvede nikud;
   /* nalaz 106: BIAS ostaje i kad je referenca ustajala (blizi rezultat ide vise - to je 6.8.
      resilo Temisvar bug). Tvrde granice ispod se gase: nista se ne IZBACUJE iz liste. */
   const _refSvez = !(ref && ref.sveze === false);
@@ -10251,10 +10291,13 @@ async function geoPhotonSugg(q, n) {   // TYPEAHEAD varijanta (Faza 1, 9.8.): SI
     const scored = cand.map((x) => {
       const base = x.p.name || [x.p.street, x.p.housenumber].filter(Boolean).join(" ");
       const nm = lat0(base) + (x.p.name && x.p.housenumber ? " " + x.p.housenumber : "");
-      const d = ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null;
+      const dBod = ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null;
+      const d = ref && ref.region ? null : dBod;   // tacka regiona boduje, ali nije "od tebe" - red ne pise "~X km"
       return { name: nm, lat: x.c[1], lon: x.c[0],
         sub: [lat0(x.p.city || x.p.county), lat0(x.p.country)].filter(Boolean).join(", "),
-        d, bod: _phBod(x.p, q, d, adr) };
+        d, bod: _phBod(x.p, q, dBod, adr),
+        // bodovi BEZ tacke regiona: po njima Enter i auto-izbor odlucuju (P1); red i dalje stoji po `bod`
+        bodOdl: ref && ref.region ? _phBod(x.p, q, null, adr) : undefined };
     /* 900 km: Alpi i Grcka ostaju u predlozima, drugi kraj sveta ne (review 9.8.). Ali ADRESA
        (upit sa kucnim brojem) je mesna stvar - tu je granica 300 km, inace se u listu popne
        "broj 3" iz druge zupanije (Boskov nalaz 19.8.). */
@@ -10286,7 +10329,8 @@ function tomtomMozeOdavde() {
 }
 async function geoTomTom(q) {   // komercijalna POI baza + jake adrese; cuvar: POI mora da deli rec sa upitom (fuzzy ume "Nike" za "Motor Bike Shop")
   if (!tomtomMozeOdavde()) return null;
-  const ref = geoRef();
+  const ref = geoRef();   // auto-izbor: bez lokacije TomTom nema daljinu, pa ne nudi nista (kao pre 0.9.208, P1)
+  if (!ref || ref.lat == null) return null;   // ...pa se ni zahtev ne salje: trosio bi kvotu za odgovor koji se uvek odbaci
   try {
     const bias = ref && ref.lat != null ? `&lat=${ref.lat.toFixed(4)}&lon=${ref.lon.toFixed(4)}` : "";
     const j = await fetchJSON(`https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json?key=${TT_KEY}${bias}&limit=5`, { timeoutMs: 7000, retries: 0 });
@@ -10614,7 +10658,11 @@ async function geocode(q) {
     // ume da vrati kafanu "Sarajevo" u Subotici umesto grada Sarajeva. Zato prvo siri Photon sa bodovanjem
     // (mesta + ulice + POI), pa tek onda uski POI spas.
     if (!/\d/.test(qq)) {
-      const wide = await geoPhotonSugg(qq, 5);
+      /* Auto-izbor: upit BEZ tacke regiona (drugi pregled, nalaz 5 - region je birao i koji kandidati uopste stizu i sekao listu na 5
+         posle sortiranja po sebi). Pravilo izbora je isto kao u 0.9.207: bez lokacije bodovi nemaju daljinu, pa region ne odlucuje.
+         Da ovaj korak (i uski Photon ispod) bez lokacije tiho bira izmedju dva ista mesta postoji od ranije - otvoreno u docs/ODLUKE.md
+         (treci pregled 16.10.); greska "izaberi iz liste" ovde nije resenje jer geocode zovu i polja Od/Do, deljeni linkovi i Kuca/Posao. */
+      const wide = await geoPhotonSugg(qq, 5, true);
       if (wide && wide.length) {
         const naj = wide[0];
         if (naj.bod >= 2 || wide.length === 1) return { lat: naj.lat, lon: naj.lon, name: naj.name };
@@ -12649,7 +12697,7 @@ function assessHour(h, tt, ctx, fine, ft) {
   let level = 0; const r2 = [], r1 = [];
   if (wc >= 95) { level = 2; r2.push(T("wx.rGrmljavina")); flags.storm = true; }
   if (wc === 45 || wc === 48) { level = Math.max(level, 1); r1.push(wc === 48 ? T("wx.rLedenaMagla") : T("wx.rMagla")); flags.fog = true; if (wc === 48) flags.ice = true; }   // 10.8.: jedina rupa u hazardima (nalaz analize konkurencije)
-  if (p >= 2.5 || (p >= 1 && pp >= 70)) { level = 2; r2.push(T("wx.jakaKisa", { 0: p.toFixed(1) })); flags.rain = true; flags.heavyRain = true; }
+  if (p >= 2.5 || (p >= 1 && pp >= 70)) { level = 2; r2.push(T("wx.jakaKisa", { 0: DEC(p.toFixed(1)) })); flags.rain = true; flags.heavyRain = true; }
   else if ((p >= 0.3 && pp >= 40) || pp >= 65) { level = Math.max(level, 1); r1.push(T("wx.mogucaKisa", { 0: pp })); flags.rain = true; }
   if (g >= 65) { level = 2; r2.push(T("wx.olujniVetar", { 0: Math.round(g) })); flags.wind = true; }
   else if (g >= 45) { level = Math.max(level, 1); r1.push(T("wx.jakVetar", { 0: Math.round(g) })); flags.wind = true; }
@@ -16493,6 +16541,24 @@ function _zapisRaspakuj(r) {
   let o = r;
   if (typeof o.tragP === "string") { o = _pakOznaci(Object.assign({}, o, { trag: tragRaspakuj(o.tragP) })); delete o.tragP; }
   if (o.tura && Array.isArray(o.etape)) { o = o === r ? Object.assign({}, o) : o; o.etape = o.etape.map(_zapisRaspakuj); }
+  /* 16.10.2026: tura sastavljena pre nego sto je zapis nosio `mov` ima prosek 0 i "u pokretu" 0. Etape su tu, pa se
+     racun ponovi (turaAgregat sada vraca vreme etape iz njenog proseka). Citanje ne pise; ispravka ode na disk i u
+     bazu sa sledecim upisom dnevnika / sinhronizacijom. Red sa servera nema etape - ostaje kakav je. */
+  /* Svako lecenje u SVOM try-u (pregled 0.9.208, P2): izuzetak ovde bi isao do _zajCitaj, koji tada vraca prazan
+     dnevnik - a sledeci upis bi ga takvog i snimio. Lecenje koje ne uspe ostavlja zapis kakav jeste. */
+  try {
+    if (o.tura && !(o.avgK > 0) && Array.isArray(o.etape) && o.etape.length) {
+      const a = turaAgregat(o.etape);
+      if (a.avgK > 0) { o = o === r ? Object.assign({}, o) : o; o.avgK = a.avgK; o.mov = a.mov; }
+    }
+  } catch (e) {}
+  /* 16.10.2026 (Boskov izbor A): zatecen "(prekinuto)" / "(prekinuto na X km)" / "(interrupted ...)" postaje
+     "(završeno pre cilja)" - broj se ne zna, pa ga nema. Etape su vec izlecene mapiranjem gore. Ispravka ode u bazu
+     sa sledecim upisom dnevnika, kao i lecenje proseka. */
+  try {
+    const n2 = o.nazRucno ? o.naz : nazIzleci(o.naz);   // ime koje je vozac sam ukucao ("Kotor (prekinuto kisom)") se ne dira
+    if (n2 !== o.naz) { o = o === r ? Object.assign({}, o) : o; o.naz = n2; }
+  } catch (e) {}
   return o;
 }
 function voznjeZaUpis(lista) { return Array.isArray(lista) ? lista.map(_zapisPakuj) : lista; }
@@ -16611,11 +16677,16 @@ function turaAgregat(sl) {
      istodnevni razmaci; maxK/lnL/lnR = max; kisa = ILI; momenti iz etape koja nosi maksimum;
      avgK se UVEK preracunava km/(zbir mov) - prosek proseka bi lagao. sl = etape RASTUCE po ts. */
   let km = 0, min = 0, mov = 0, pauz = 0, serp = 0, kriv = 0, kol = 0, poeni = 0, maxK = 0, kisa = false;
+  let kmPokret = 0;   // km samo onih etapa cije vreme u pokretu znamo - prosek ne sme da deli tudje kilometre
   let lnL = null, lnR = null, momLnL = null, momLnR = null, momBrz = null, bK = -1;
   const pauzeNa = [], dani = new Set();
   for (let i = 0; i < sl.length; i++) {
     const e = sl[i];
-    km += e.km || 0; min += e.min || 0; mov += e.mov || 0; pauz += e.pauz || 0;
+    km += e.km || 0; min += e.min || 0; pauz += e.pauz || 0;
+    /* 16.10.2026: zapisi do tog dana nemaju `mov` (nosio ga je samo svez sazetak), ali imaju avgK izracunat iz
+       ISTOG merenja (km / movMs) - vreme u pokretu etape se vraca iz njega. Etapa bez oba ne ulazi u prosek. */
+    const movE = e.mov > 0 ? e.mov : (e.avgK > 0 && e.km > 0 ? e.km / e.avgK * 60 : 0);
+    if (movE > 0) { mov += movE; kmPokret += e.km || 0; }
     serp += e.serp || 0; kriv += e.kriv || 0; kol += e.kol || 0; poeni += e.poeni || 0;
     maxK = Math.max(maxK, e.maxK || 0); kisa = kisa || !!e.kisa;
     if ((e.maxK || 0) > bK) { bK = e.maxK || 0; momBrz = e.momBrz || null; }   // momBrz iz etape sa max maxK
@@ -16630,7 +16701,8 @@ function turaAgregat(sl) {
     }
   }
   km = Math.round(km * 10) / 10;
-  const avgK = mov > 0 ? Math.round(km / (mov / 60)) : 0;   // ista formula kao svez zapis (km / (movMs/3600000))
+  const avgK = mov > 0 ? Math.round(kmPokret / (mov / 60)) : 0;   // ista formula kao svez zapis (km / (movMs/3600000))
+  mov = Math.round(mov);
   return { ts: sl[sl.length - 1].ts, tsOd: turaEtapaPocetak(sl[0]), dana: dani.size, etapeCnt: sl.length,
     km, min, mov, pauz, serp, kriv, kol, poeni, maxK, avgK, lnL, lnR, kisa,
     momBrz, momLnL, momLnR, pauzeNa: pauzeNa.length ? pauzeNa : null };
@@ -16650,11 +16722,34 @@ function turaAutoNaz(sl) {   // auto-ime: start PRVE -> kraj POSLEDNJE etape (ob
      Kotor", tvrdeci da je vozac stigao tamo gde nije. Prvi deo (start) je uvek posten - odatle je
      stvarno krenuo; oznaka se prenosi samo sa poslednje etape. */
   const zadNaz = sl[sl.length - 1] && sl[sl.length - 1].naz;
-  const prek = /\((prekinut|interrupt)/i.test(String(zadNaz || ""));   // oznaka u imenu je na jeziku u kom je voznja zapisana
+  const suf = nazPreCiljaSuf(zadNaz);   // 16.10.2026: "(N km pre cilja)" poslednje etape; stara "(prekinuto...)" postaje oznaka bez broja
   const a = turaNazDeo(sl[0] && sl[0].naz, false), b = turaNazDeo(zadNaz, true);
-  if (a && b && a !== b) return a + " → " + b + (prek ? T("dn.prekinutoSufiks") : "");
-  if (a) return a + (prek ? T("dn.prekinutoSufiks") : T("dn.kruznaTura"));
-  return prek ? T("dn.turaPrekinuto") : T("dn.tura");
+  if (a && b && a !== b) return a + " → " + b + suf;
+  if (a) return a + (suf || T("dn.kruznaTura"));   // pre cilja nije "kruzna tura": nije se vratio, samo je stao blizu starta
+  return T("dn.tura") + suf;
+}
+/* ZAVRSENO PRE CILJA (16.10.2026, Boskov izbor A: "Okej onda idemo na opciju A"). Voznja koja nije stigla do planiranog
+   cilja vise se ne zove "prekinuta": ime kaze gde je stvarno zavrsena (ime iz traga) i koliko je to pre cilja,
+   "Čukarica → Vrbica (14 km pre cilja)". Bez pitanja - app ne pita sto zna. Oznaka je u ZAGRADI kao "(kružno)", pa je
+   turaNazDeo sece i kraj ture ostaje mesto. Broj je preostali put DUZ RUTE (RIDE.total - RIDE.maxD), ne vazdusna linija;
+   kad ga nema, oznaka ide bez broja - broj se ne izmislja. Baza 16.10.: sva tri "(prekinuto)" su bila iz oporavka voznje
+   koju je iOS ugasio (voznjaCkpHidrat), ne sa dugmeta Zavrsi. / Ride that ended short of the destination: no "interrupted". */
+function preCiljaSufiks(m) {   // m = preostalo do cilja u metrima (ili null)
+  if (!(Number.isFinite(m) && m >= 0)) return T("dn.preCiljaBez");
+  if (m < ARR_BLIZU_KM * 1000) return "";   // do 150 m (krug dolaska) si kod cilja: "0,1 km pre cilja" bi bio izmisljen broj (drugi pregled)
+  const km = m / 1000;
+  return T("dn.preCilja", { 0: km < 0.95 ? DEC(Math.max(0.1, Math.round(km * 10) / 10).toFixed(1)) : Math.round(km) });
+}
+function nazPreCiljaSuf(naz) {   // oznaka "pre cilja" sa kraja imena (sa razmakom ispred) ili ""; stara "(prekinuto...)" -> nova bez broja
+  const m = /\s*\(([^()]*)\)\s*$/.exec(typeof naz === "string" ? naz : "");
+  if (!m) return "";
+  if (/prekinut|interrupt/i.test(m[1])) return T("dn.preCiljaBez");
+  return /pre cilja|before destination|short of destination/i.test(m[1]) ? " (" + m[1] + ")" : "";
+}
+function nazIzleci(naz) {   // zatecen zapis: "(prekinuto)", "(prekinuto na 120 km)", "(interrupted ...)" -> "(završeno pre cilja)"
+  if (typeof naz !== "string") return naz;
+  const m = /\s*\(([^()]*)\)\s*$/.exec(naz);
+  return (m && /prekinut|interrupt/i.test(m[1])) ? naz.slice(0, m.index) + T("dn.preCiljaBez") : naz;
 }
 function turaNapravi(etape) {   // etape (bilo koji red) -> zapis ture; etape unutra RASTUCE po ts
   const sl = etape.slice().sort((a, b) => (a.ts || 0) - (b.ts || 0));
@@ -16697,7 +16792,10 @@ function turaRazdvoji(v, ts) {
   if (!Array.isArray(v)) return null;
   const i = v.findIndex((x) => x && x.tura && x.ts === ts);
   if (i === -1) return null;
-  const nova = v.slice(0, i).concat(v[i].etape || [], v.slice(i + 1));
+  /* Etape se vracaju kakve jesu (drugi/treci pregled): tura sa drugog telefona je na serveru pregazila red POSLEDNJE etape (isti ts),
+     pa samo ta etapa gubi oznaku servera i ide opet gore. Ostale su na serveru netaknute - ne salju se nazad (P3). */
+  const etape = (v[i].etape || []).map((e) => { if (!e || !e._server || e.ts !== v[i].ts) return e; const c = Object.assign({}, e); delete c._server; return c; });
+  const nova = v.slice(0, i).concat(etape, v.slice(i + 1));
   nova.sort((a, b) => (b.ts || 0) - (a.ts || 0));
   return { v: nova, visak: Math.max(0, nova.length - DNEVNIK_CAP), etapeCnt: (v[i].etape || []).length };
 }
@@ -16868,7 +16966,9 @@ async function voznjeNaServer(lista) {   // upsert: isti (korisnik, ts) se prepi
      telefonu ostaju na njemu. Posle upisa zapis dobija _uid. Svih 13 kolona ide eksplicitno (null gde nema) da upsert sa raznorodnim
      kljucevima ne ostavi stare vrednosti na serveru. / Only unowned or my own records; stamp owner after upload; all columns explicit. */
   const izvor = Array.isArray(lista) ? lista : _zajCitaj("mr_voznje", []);
-  const redovi = izvor.filter((r) => r && (!r._uid || r._uid === n.uid)).slice(0, 50).map(voznjaZaServer).filter(Boolean)
+  /* Pregled 0.9.208 (P3): red koji je STIGAO sa servera (_server) se ne vraca gore - drugi telefon bi svojim starim redom
+     (npr. prosek ture 0) pregazio ono sto je vlasnik u medjuvremenu izlecio. Rucno preimenovanje skida oznaku. */
+  const redovi = izvor.filter((r) => r && !r._server && (!r._uid || r._uid === n.uid)).slice(0, 50).map(voznjaZaServer).filter(Boolean)
     .map((o) => { for (const k of VOZ_POLJA) { const kol = VOZ_KOL[k] || k; if (!(kol in o)) o[kol] = null; } return o; });
   if (!redovi.length) return false;
   try {
@@ -16927,7 +17027,9 @@ function turaNazSveze(tura) {
         const imeA = await reverseName(a[1], a[0], 12, true);
         const imeB = await reverseName(b[1], b[0], 12, true);
         if (!imeA || !imeB) return;
-        const novi = imeA === imeB ? imeA + T("dn.kruznaTura") : imeA + " → " + imeB;
+        // oznaka poslednje etape ostaje (drugi pregled, nalaz 3) - isto pravilo kao turaAutoNaz
+        const suf = nazPreCiljaSuf(sl[sl.length - 1] && sl[sl.length - 1].naz);
+        const novi = imeA === imeB ? imeA + (suf || T("dn.kruznaTura")) : imeA + " → " + imeB + suf;
         const v2 = _zajCitaj("mr_voznje", []);
         const t2 = Array.isArray(v2) ? v2.find((x) => x && x.tura && x.ts === tsMoj) : null;
         if (!t2 || t2.nazRucno) return;
@@ -16976,7 +17078,7 @@ function turaPreimenujUI(ts) {   // opciona preimena (prompt obrazac kao "Gde ti
   if (!t) { shareToast(T("dn.turaNijeUDnevniku")); return; }
   const val = prompt("Ime ture:", t.naz || "");
   if (!val || !val.trim()) return;
-  t.naz = val.trim().slice(0, 80); t.nazRucno = true;
+  t.naz = val.trim().slice(0, 80); t.nazRucno = true; delete t._server;   // rucna izmena je moja - ide na server (P3)
   if (!dnevnikUpisi(v)) { shareToast(T("dn.upisPun")); return; }
   const rel = document.getElementById("rsRel");
   if (rel && rel.dataset.ts === String(ts)) rel.textContent = t.naz;
@@ -17089,9 +17191,11 @@ function zabeleziVoznju() {
        seli u `RIDE.baseD`, pa bi zavrsena voznja umela da dobije netacnu napomenu "(prekinuto)".
        Iz istog razloga se u napomeni pise `km` (trag + sve etape), a ne `maxD` (samo zadnja etapa). */
     const stigao = !RIDE.freeRide && !!RIDE.arrived;
+    // 16.10.2026 (Boskov izbor A): umesto "(prekinuto na X km)" ime kaze koliko je ostalo do cilja, duz rute
+    const preM = (!stigao && RIDE.route && RIDE.total > 0) ? Math.max(0, RIDE.total - (RIDE.maxD || 0)) : null;
     const naz = RIDE.freeRide ? (RIDE.freeNaz || T("dn.slobodna"))
       : (g.from && g.from.name && g.to && g.to.name)
-      ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` + (stigao ? "" : T("dn.prekinutoNa", { 0: Math.round(km) })) : T("planer.rsRel");
+      ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` + (stigao ? "" : preCiljaSufiks(preM)) : T("planer.rsRel");
     /* Ime ODREDISTA se cuva posebno (19.8.): naslov relacije mora da bude MESTO
        ("Murter -> Sibenik"), a ime kafica ("Azimut") ide u podnaslov. */
     const nazPoi = (!RIDE.freeRide && g.to && g.to.name) ? g.to.name.split(",")[0] : null;
@@ -17155,6 +17259,9 @@ function zabeleziVoznju() {
     /* ts zapisa = ts sazetka (isti trenutak) - asinhrona preimena i tura-append ga traze po ts */
     const rec = ({ ts: (RIDE.lastSummary && RIDE.lastSummary.ts) || Date.now(), naz, nazPoi, tip, km: Math.round(km * 10) / 10, min, serp, poeni, kol: RIDE.kolCnt || 0, kisa: !!RIDE.kisa,
       kriv, maxK, avgK, lnL, lnR, lnChk, pauz, lnPok: lnPok == null ? undefined : lnPok,
+      /* Vreme u pokretu i u ZAPISU (16.10.2026): do sada ga je nosio samo svez sazetak, pa je tura sabirala nule -
+         svaka tura u bazi je imala prosek 0 i "u pokretu" 0. Isti izraz kao lastSummary.mov. */
+      mov: RIDE.movMs > 30000 ? Math.max(1, Math.round(RIDE.movMs / 60000)) : 0,
       /* Planirana relacija (0.9.88): zapis nosi rel {from, to, vias, stil} uhvacen na startu -
          deljenje kasnije gradi "Vozi i ti" link kroz postojeci ?demo= format. Slobodna voznja
          i stari zapisi ga nemaju - link se tada tiho izostavlja, bez placeholder-a. */
@@ -17207,7 +17314,11 @@ function zabeleziVoznju() {
        Zvornika - naslov je pisao "Beograd → Jadrija (prekinuto...)" po PLANIRANOJ relaciji. Merenje
        počinje na prvom fiksu i staje gde si stao - naslov sme da tvrdi samo ta dva mesta. Imena stižu
        asinhrono; dok ne stignu stoji planirana relacija, pa se zameni i u sažetku i u dnevniku. */
-    if (upis && !RIDE.freeRide && trag && trag.length > 1) {
+    /* 16.10.2026: oznaka "(N km pre cilja)" PREZIVLJAVA ime iz traga - ranije ga je ovo preimenovanje brisalo, pa je
+       voznja zavrsena pre cilja izgledala kao obicna. Oporavljena NAV voznja (posle hidratacije je freeRide) nosi oznaku,
+       pa i ona dobija stvarna imena: do sada je ostajala planirana relacija sa "(prekinuto)". */
+    const sufCilj = nazPreCiljaSuf(naz);
+    if (upis && (!RIDE.freeRide || sufCilj) && trag && trag.length > 1) {
       const tsMoje = RIDE.lastSummary ? RIDE.lastSummary.ts : 0;
       const a = trag[0], b = trag[trag.length - 1];
       (async () => {
@@ -17215,7 +17326,7 @@ function zabeleziVoznju() {
           const imeA = await reverseName(a[1], a[0], 12, true);   // true = naselje, ne kvart
           const imeB = await reverseName(b[1], b[0], 12, true);
           if (!imeA || !imeB) return;
-          const novi = imeA === imeB ? T("dn.kruzno", { 0: imeA }) : `${imeA} → ${imeB}`;
+          const novi = (imeA === imeB ? (sufCilj ? imeA : T("dn.kruzno", { 0: imeA })) : `${imeA} → ${imeB}`) + sufCilj;
           if (RIDE.lastSummary && RIDE.lastSummary.ts === tsMoje) RIDE.lastSummary.naz = novi;
           const rel = document.getElementById("rsRel");   // sazetak je verovatno vec na ekranu
           if (rel && rel.dataset.ts === String(tsMoje)) {
@@ -19071,8 +19182,16 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.207";
+const APP_VERSION = "0.9.208";
 const CHANGELOG = [
+  { v: "0.9.208", d: "16.10.2026.", stavke: [
+    "<b>Prosek i vreme u pokretu za ture.</b> Tura (spojene etape) ih do sada nije imala: zapis vožnje nije čuvao vreme u pokretu, pa je zbir bio nula (tvoje ture od 4.10, 88 i 170 km). Sada ga zapis čuva, a postojeće ture se same poprave čim otvoriš dnevnik.",
+    "<b>Pretraga bez lokacije.</b> Kad telefon nema nijednu tačku (nova instalacija, isključena lokacija), \"Rudnik\" je nudio Poljsku. Sada se lista predloga ređa prema tvom kraju (po vremenskoj zoni telefona: Srbija, Crna Gora, BiH, Hrvatska, Severna Makedonija, Slovenija), a red ne piše \"~X km\", jer to nije tvoja pozicija. Kad su dve iste adrese u različitim gradovima, aplikacija i dalje pita koju, ne bira sama.",
+    "<b>Gužva dok stojiš.</b> Posle 3 minuta u koloni pali se tiha pauza, a ona je gasila i proveru gužve, pa je posle 12 minuta vreme dolaska zaboravljalo zastoj. Sada provera radi i u pauzi dok stojiš u zastoju, tiho, bez glasa i bez promene rute. Ručna pauza i pauza na pumpi i dalje je ne troše.",
+    "<b>Vožnja završena pre cilja više nije \"prekinuta\".</b> Kad staneš pre planiranog cilja, ili telefon usput ugasi aplikaciju, dnevnik piše gde si stvarno završio i koliko je to pre cilja: \"Čukarica → Vrbica (14 km pre cilja)\". Ništa te ne pita. Starije vožnje sa oznakom \"prekinuto\" sada pišu \"završeno pre cilja\".",
+    "<b>Deonica kao cilj kaže gde se završava.</b> Kad u pretrazi cilja izabereš deonicu, ruta vodi preko cele deonice do njenog daljeg kraja. Red sada piše i taj kraj (\"kraj: G. Milanovac\"), pre nego što je izabereš.",
+    "Sitno: pređeni kilometri u sažetku i jačina kiše pišu decimalni zarez (114,5 km, 3,0 mm/h).",
+  ] },
   { v: "0.9.207", d: "15.10.2026.", stavke: [
     "<b>Kišna pauza u vožnji</b> (tvoje pitanje: kad vidimo kišu, da li i dalje kaže gde da staneš i sačekaš). Kad je kiša ispred tebe na ruti, crvena tabla dobija drugi red: \"Stani: NIS Petrol za 8 km · čekaj do ~15 h\". Mapa se ne pomera, a glas to kaže jednom.",
     "Mesto je pumpa, lokal ili naša kafana, najviše 300 m od rute, i to poslednje do kog sigurno stižeš suv. Naša kafana ima prednost ako je do 3 km ranije. Noću se nude samo non-stop pumpe. Predlog stiže samo kad kiša po prognozi prestaje za najviše sat i po čekanja; bez mesta uz put ostaje obična najava.",
@@ -21103,17 +21222,16 @@ function scheduleNetSugg(q) {   // FAZA 1 typeahead (9.8., Google princip "biras
       if (seq !== _netSuggSeq) return;   // korisnik je odkucao dalje
       const sugg = document.getElementById("sSugg");
       if (!sugg || sugg._q !== q) return;
-      const seen = new Set((sugg._hits || []).map((h) => SFOLD(h.n)));
+
       /* 0.9.95 (nalaz 80c): daljina se meri od geoRef-a, a on ume da bude mesec dana star zapis.
          Bez ove ograde "~12 km" znaci "od tebe", a stvarno znaci "od mesta gde si poslednji put
          imao signal". Broj ostaje isti - menja se od cega je merena. */
       const _r = geoRef();
       const _odKoga = (_r && _r.sveze === false) ? T("poi.odPoslednjeFrag") : "";
-      // `bod` se prenosi da bi Enter mogao da vidi da li je vrh neresen (30.8.)
-      const net = (ph || []).map((p) => ({ n: p.name, lat: p.lat, lon: p.lon, bod: p.bod,
-          sub: (p.d != null ? "~" + (p.d < 1 ? T("fmt.manjeOd1") : Math.round(p.d)) + " km" + _odKoga + (p.sub ? " · " : "") : "") + (p.sub || "") }))
-        .filter((x) => { const f = SFOLD(x.n); if (!x.n || seen.has(f)) return false; seen.add(f); return true; })
-        .slice(0, 6);
+      // `bod` se prenosi da bi Enter mogao da vidi da li je vrh neresen (30.8.); `bodOdl` = isto, bez tacke regiona (P1)
+      const net0 = (ph || []).map((p) => ({ n: p.name, lat: p.lat, lon: p.lon, bod: p.bod, bodOdl: p.bodOdl,
+          sub: (p.d != null ? "~" + (p.d < 1 ? T("fmt.manjeOd1") : Math.round(p.d)) + " km" + _odKoga + (p.sub ? " · " : "") : "") + (p.sub || "") }));
+      const net = netBezDuplikata(net0, sugg._hits || []).slice(0, 6);
       sugg._net = net;
       const html = net.map((h, i) =>
         `<div class="srow" role="button" tabindex="0" data-net="${i}"><span class="sic">${rIco("pin", 18)}</span><div class="st"><b>${esc(h.n)}</b><span>${esc(h.sub)}</span></div></div>`).join("");
@@ -21168,7 +21286,7 @@ function renderSugg(q) {
     if (SEARCH_MODE === "via" || SEARCH_MODE === "to") {
       if (!ATLAS.baza && !renderSugg._bazaTrazim) { renderSugg._bazaTrazim = true; atlasBaza().catch(() => { renderSugg._bazaTrazim = false; }).then(() => { try { const si = document.getElementById("sInput"); if (si && document.body.classList.contains("searching") && si.value.trim().length >= 2) renderSugg(si.value); } catch (e) {} }).catch(() => {}); }
       const deo = (ATLAS.baza || []).map((d) => ({ d, s: bod(SFOLD(atlasNaslov(d.naziv))) })).filter((h) => h.s > 0).sort((a, b) => b.s - a.s).slice(0, 3)
-        .map((h) => ({ x: { n: atlasNaslov(h.d.naziv), sub: (h.d.ocena != null && ocenaPrava(h.d)) ? T("srch.deonicaSub", { 0: atlasKmTx(h.d.km), 1: DEC((Math.round(h.d.ocena * 10) / 10).toFixed(1)) }) : T("srch.deonicaSubBez", { 0: atlasKmTx(h.d.km) }),
+        .map((h) => ({ x: { n: atlasNaslov(h.d.naziv), sub: deonicaRedSub(h.d, SEARCH_MODE === "to"),
           lat: h.d.coords && h.d.coords[0] ? h.d.coords[0][1] : null, lon: h.d.coords && h.d.coords[0] ? h.d.coords[0][0] : null, t: "deonica", deo: h.d.kljuc }, s: h.s }));
       sc = sc.concat(deo).sort((a, b) => b.s - a.s);
     }
@@ -25297,7 +25415,7 @@ function startRide() {
     const stigaoSad = remM < 35 && (!m || m.sr.arrive) &&
       !!_kraj && haversine(la, lo, _kraj[1], _kraj[0]) < ARR_BLIZU_KM;
     if (stigaoSad) {
-      RIDE.arrived = true;   // dnevnik po ovoj zastavici odlucuje da li da doda "(prekinuto na X km)"
+      RIDE.arrived = true;   // dnevnik po ovoj zastavici odlucuje da li da doda "(N km pre cilja)"
       document.getElementById("rideArr").innerHTML = arrSvg("flag");
       document.getElementById("rideInstr").textContent = "Stigao si!";
       document.getElementById("rideDist").textContent = "";
@@ -25313,7 +25431,7 @@ function startRide() {
          sledece fikseve. Gard samo na ulaznom uslovu zato nije bio popravka.
          HISTEREZA (obavezna): opoziv NE SME da deli prag sa naoruzavanjem. Da deli, jedan trzaj
          GPS-a preko 150 m u tih 8 sekundi ubio bi tajmer BAS DOK vozac stvarno stize - voznja se
-         ne bi ugasila, a dnevnik bi je zapisao kao "(prekinuto)". Zato se opoziva tek kad si
+         ne bi ugasila, a dnevnik bi je zapisao kao "(N km pre cilja)". Zato se opoziva tek kad si
          nedvosmisleno DALEKO (400 m), ne cim izadjes iz kruga dolaska. */
       try { clearTimeout(RIDE.arrTo); } catch (e) {}
       RIDE.arrTo = null; RIDE.arrived = false;
@@ -25436,6 +25554,9 @@ function voznjaCkpSnimak(cilj) {   // snimak tekuce voznje (cist objekat - testi
     t0: RIDE.t0, ts: now, freeRide: !!RIDE.freeRide,
     naz: RIDE.freeRide ? (RIDE.freeNaz || T("dn.slobodna"))
        : (g.from && g.from.name && g.to && g.to.name) ? `${g.from.name.split(",")[0]} → ${g.to.name.split(",")[0]}` : null,
+    // 16.10.2026: koliko je ostalo do cilja (duz rute) i da li je stigao - posle iOS kill-a ime kaze "(N km pre cilja)"
+    preM: (RIDE.route && RIDE.total > 0) ? Math.round(Math.max(0, RIDE.total - (RIDE.maxD || 0))) : null,
+    stigao: !!RIDE.arrived,
     trkM: Math.round(RIDE.trkM || 0), maxKmh: Math.round(RIDE.maxKmh || 0), movMs: Math.round(RIDE.movMs || 0),
     pauzMs: Math.round((RIDE.pauseMs || 0) + (RIDE.paused && RIDE.pauseT0 ? Math.max(0, now - RIDE.pauseT0) : 0)),   // klamp: sat ume nazad (0.9.83 review)
     lnL: (LEAN.on || LEAN.rekal) ? Math.round(LEAN.maxL) : null, lnR: (LEAN.on || LEAN.rekal) ? Math.round(LEAN.maxR) : null,   // i U TOKU re-kalibracije maksimumi moraju u snimak (0.9.83)
@@ -25456,9 +25577,11 @@ function voznjaCkpSnimak(cilj) {   // snimak tekuce voznje (cist objekat - testi
 }
 function voznjaCkpHidrat(snap) {   // snimak -> RIDE/LEAN stanje, spremno za zabeleziVoznju()
   RIDE.freeRide = true;   // rute i geocode-a vise nema - zapis ide sa sacuvanim imenom relacije
-  /* Prekinuta NAV voznja ne sme da nosi naslov koji tvrdi da je relacija ispunjena (0.9.82 review,
-     isti "posten naslov" zakon od 11.8.) - cuva se ime relacije + " (prekinuto)". */
-  RIDE.freeNaz = snap.freeRide ? (snap.naz || T("dn.slobodna")) : ((snap.naz || T("planer.rsRel")) + T("dn.prekinutoSufiks"));
+  /* NAV voznja koja nije stigla ne sme da nosi naslov koji tvrdi da je relacija ispunjena (0.9.82 review, isti
+     "posten naslov" zakon od 11.8.). 16.10.2026 (Boskov izbor A): umesto " (prekinuto)" ide " (N km pre cilja)" iz
+     kontrolne tacke; tacka iz starije verzije nema preM, pa oznaka ide bez broja. Stigao = bez oznake. */
+  RIDE.freeNaz = snap.freeRide ? (snap.naz || T("dn.slobodna"))
+    : ((snap.naz || T("planer.rsRel")) + (snap.stigao ? "" : preCiljaSufiks(snap.preM)));
   RIDE.route = null; RIDE.total = 0; RIDE.maxD = 0; RIDE.baseD = 0; RIDE.arrived = false;
   RIDE.t0 = Date.now() - Math.max(60000, (snap.ts || 0) - (snap.t0 || 0));   // trajanje = do poslednje kontrolne tacke, ne do ponovnog pokretanja
   RIDE.trkM = snap.trkM || 0; RIDE.maxKmh = snap.maxKmh || 0; RIDE.movMs = snap.movMs || 0;
@@ -25529,6 +25652,17 @@ function voznjaOporavakRep(snap) {
     fixKorak({ coords: { latitude: f.la, longitude: f.lo, speed: f.spd, accuracy: f.acc, heading: null } }, f.ts + shift, true);
   const rep = Math.max(0, Math.min(batch[batch.length - 1].ts - snap.ts, 864e5));   // klamp na dan (review #7; 864e5 - B8 gard brani satne prozore u oporavku)
   RIDE.t0 -= rep;   // trajanje = do kraja repa, ne do kontrolne tacke
+  /* Drugi pregled 0.9.208 (nalaz 2): "(N km pre cilja)" iz tacke je star cim rep donese nove kilometre - JS u pozadini ne radi, pa je
+     tacka poslednja PRE odlaska u pozadinu. Posle repa: kraj traga u krugu dolaska oko kraja rute = stigao (bez oznake); inace oznaka
+     bez broja - preostali put duz rute posle repa se ne zna, a broj se ne izmislja. */
+  if (!snap.freeRide && RIDE.freeNaz && nazPreCiljaSuf(RIDE.freeNaz)) {
+    /* Treci/cetvrti pregled: posle repa se NE pogadja da li je vozac stigao (na kruznoj turi kraj rute je start, a pragovi po km i
+       vazdusnoj liniji su procena) - kad se rep pomerio, broj iz tacke vise ne vazi i oznaka ide bez broja. Nikad ne tvrdi dolazak;
+       0.9.207 je ovde pisao "(prekinuto)". Rep koji STOJI (manje od 200 m) ne menja nista - broj iz tacke je i dalje tacan. */
+    const k = RIDE.trace && RIDE.trace[RIDE.trace.length - 1], t0 = snap.trag && snap.trag[snap.trag.length - 1];
+    const dodato = Math.max(0, (RIDE.trkM || 0) - (snap.trkM || 0)), pomak = (k && t0) ? haversine(t0[1], t0[0], k[1], k[0]) * 1000 : 0;
+    if (Math.max(dodato, pomak) >= 200) RIDE.freeNaz = (snap.naz || T("planer.rsRel")) + T("dn.preCiljaBez");
+  }
   try { navLog("gps-rep-oporavak", { n: batch.length, repMs: rep }); } catch (e) {}
 }
 function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne tacke -> Sacuvaj / Odbaci
@@ -26845,7 +26979,7 @@ function rideSumShow(sIn) {
      ispod (rsRedovi), svaki u jednoj liniji, tap na red leti na mapu. Nista ne stoji otvoreno sto se ne
      cita svaki put - grafik brzine se otvara iz svog reda. */
   const R1 = [];
-  R1.push([s.km, "km", T("sum.predjeno"), (pts && pts.length > 1) ? "trag" : null]);
+  R1.push([DEC(s.km), "km", T("sum.predjeno"), (pts && pts.length > 1) ? "trag" : null]);   // 16.10.: "114,5" na srpskom (bilo "114.5")
   if (s.tura && s.dana > 1) R1.push([T("sum.danaH", { 0: s.dana, 1: Math.round((s.min || 0) / 60) }), "", T("sum.ukupno")]);   // visednevna tura: dani + sati, NIKAD hiljade minuta (0.9.86)
   else R1.push([hm(s.min), s.min >= 60 ? "" : "min", T("sum.trajanje")]);
   if (s.maxK) R1.push([s.maxK, "km/h", T("sum.najbrze"), s.momBrz ? "brz" : null, "", "najbrze"]);
@@ -27361,7 +27495,8 @@ function _vidHud(x, s, z, tr, napredak) {
   // naslov voznje i potpis
   x.textAlign = "left"; x.fillStyle = "rgba(236,232,228,.92)";
   x.font = "800 44px ui-sans-serif,system-ui,sans-serif";
-  x.fillText(String(s.naz || T("planer.rsRel")).slice(0, 26), 64, 148);
+  const vNaz = String(s.naz || T("planer.rsRel"));   // dugo ime (i "(N km pre cilja)") se sece sa "…", ne usred reci bez traga
+  x.fillText(vNaz.length > 26 ? vNaz.slice(0, 25).trimEnd() + "…" : vNaz, 64, 148);
   rmrLogoCrtaj(x, 64, 186, 20, "rgba(236,232,228,.92)", "rgba(255,122,46,.95)");
   x.restore();
 }
@@ -30471,6 +30606,16 @@ function atlasKrajevi(d) {   // imena ulaza/izlaza deonice, isto kao u atlasVias
   if (!odIme || !doIme) { const par = atlasCistoIme(String(d.naziv || "")).split(" - "); if (par.length === 2) { odIme = odIme || par[0].trim(); doIme = doIme || par[1].trim(); } }
   return { odIme, doIme };
 }
+/* Red deonice u pretrazi (16.10.2026, uz Boskov izbor A): kad se bira CILJ, red kaze i gde se deonica zavrsava - deonica
+   kao cilj vodi preko cele deonice do njenog daljeg kraja, a ne do mesta iz prve polovine imena (analiza voznji 10.10.).
+   Kraj racuna ISTI atlasIzlaz kojim izbor reda postavlja cilj, pa red ne moze da obeca drugi kraj od onog u ruti. */
+function deonicaRedSub(d, kaoCilj) {
+  const osn = (d.ocena != null && ocenaPrava(d)) ? T("srch.deonicaSub", { 0: atlasKmTx(d.km), 1: DEC((Math.round(d.ocena * 10) / 10).toFixed(1)) }) : T("srch.deonicaSubBez", { 0: atlasKmTx(d.km) });
+  if (!kaoCilj) return osn;
+  const iz = atlasIzlaz(d), k = atlasKrajevi(d);
+  // samo pravo ime kraja: bez njega atlasIzlaz vraca ime same deonice, a "kraj: Kapija Sumadije" nije mesto (drugi pregled)
+  return iz && iz.name && (iz.name === k.odIme || iz.name === k.doIme) ? osn + T("srch.deonicaKraj", { 0: iz.name }) : osn;
+}
 function atlasIzlaz(d, poz) {   // izlaz = kraj deonice DALJI od mene (ulaz je blizi); bez pozicije - kraj po zapisu
   if (!d || !Array.isArray(d.coords) || d.coords.length < 2) return null;
   const cs = d.coords, u = cs[0], z = cs[cs.length - 1], k = atlasKrajevi(d);
@@ -32997,6 +33142,13 @@ const GUZVA_VOZ_PONOVI_MIN = 5;            // isti zastoj se ponovo najavljuje t
 const GUZVA_VOZ_ISTI_M = 300;              // zastoj ciji deo lezi do 300 m od vec najavljenog je isti (rep guzve raste unazad)
 const GUZVA_VOZ_KVOTA_MS = 30 * 60000;     // TomTom odbio (403/429): pola sata bez provere u voznji
 const GUZVA_VOZ_GRUPA_M = 4000;            // zastoji blizi od 4 km su jedna guzva; dalji se obilaze posebno (sledeca provera)
+const GUZVA_VOZ_POSLE_PAUZE_MS = 60000;    // posle provere u pauzi (ili bacenog odgovora) prva provera u voznji ide za minut, ne za 5 (pregled 0.9.208, P4)
+const GUZVA_VOZ_PAUZA_MAX = 6;             // najvise provera u JEDNOJ pauzi: kafana uz zonu stalne guzve ne sme da trosi kvotu satima (P6)
+const GUZVA_VOZ_PAUZA_PADOVI = 2;          // dve pale provere u istoj pauzi gase proveru do kraja te pauze (P6)
+/* Rep kolone: auto-pauza do 600 m PRED javljenim pocetkom zastoja je stajanje u koloni. 300 m (GUZVA_VOZ_ISTI_M) nije dovoljno: sveza
+   provera mapira pocetak zastoja na PRVU tacku uzorka unutar njega, a uzorak krece ispred vozaca i ide na 100-200 m - pa je posle
+   prve provere u pauzi vozac na repu (250 m pred zastojem) ispadao iz pravila i provera je stajala (pregled 0.9.208, test V-P9). */
+const GUZVA_VOZ_PAUZA_REP_M = 600;
 
 function guzvaVoznjaStart(route) {
   guzvaVoznjaStop();
@@ -33037,13 +33189,35 @@ function guzvaVoznjaNovaRuta(route) {
   }
   guzvaRutaGasi();
 }
+/** 16.10.2026 (otvoreno od 0.9.206): posle 3 min stajanja pali se tiha AUTO-pauza, a ona je gasila i proveru guzve. Provera vazi 12 min,
+    pa je vreme dolaska u pauzi posle toga izgubilo kasnjenje zastoja dok vozac i dalje stoji u koloni. Pauza se zato ne racuna kao "ne
+    voziS" kad je auto-pauza nastala TAMO gde poslednja provera vidi zastoj (u njemu ili do GUZVA_VOZ_ISTI_M pred njim) - pumpa ili
+    kafana daleko od zastoja, mesto van rute i rucna pauza (dugme) i dalje ne trose kvotu. Kad kolona nestane iz odgovora, uslov pada sam. */
+function guzvaPauzaUZastoju(route, pos, g) {
+  if (!RIDE.paused || !RIDE.pauseAuto) return false;
+  const rez = g && g.rez;
+  if (!rez || !route || !pos || !route.coords || !route.cumDist || rez.geo !== route.coords) return false;
+  const pr = navProject(route, pos.lo, pos.la, RIDE.lastRouteI);
+  if (!pr || pr.offM > NAV_OFF_M) return false;
+  const D = route.cumDist;
+  // zatvoren put ne menja vreme dolaska (guzvaMin = 0), pa ne drzi proveru u pauzi - samo bi trosio kvotu (pregled 0.9.208, P6)
+  return guzvaUProzoru(rez).zastoji.some((z) => z.kat !== "ROAD_CLOSURE" && pr.d >= D[z.iA] - GUZVA_VOZ_PAUZA_REP_M && pr.d <= D[z.iB]);
+}
 function guzvaVoznjaSme(route, pos, sad, g) {
-  if (!document.body.classList.contains("riding") || RIDE.freeRide || RIDE.paused || RIDE.rerouting || document.hidden) return false;
+  const uZastoju = guzvaPauzaUZastoju(route, pos, g);
+  if (!document.body.classList.contains("riding") || RIDE.freeRide || (RIDE.paused && !uZastoju) || RIDE.rerouting || document.hidden) return false;
   if (!route || !pos || !route.coords || route.coords.length < 2 || route.gpxRaw || route.bezManevara) return false;
   if (typeof JURI !== "undefined" && JURI && JURI.f) return false;   // "Juri ga": cilj se pomera, ruta se sama preracunava
   if (typeof TT_KEY !== "string" || !TT_KEY || sad < (g.pauzaDo || 0)) return false;
-  if (sad - (RIDE.lastFixTs || 0) > 15000) return false;   // bez svezeg GPS-a ne znam odakle da gledam
-  return sad - (g.ts || 0) >= GUZVA_VOZ_MS;
+  if (uZastoju) {
+    /* P5: u pauzi nativni GPS salje tacku tek posle 50 m, pa fiks "zastari" bas kad stojis najduze - u zastoju se svez fiks ne trazi
+       (auto-pauza je dokaz da stojis; cim kreneS, prvi fiks je skida). P6: jedna pauza ima granicu - dve pale provere ili
+       GUZVA_VOZ_PAUZA_MAX provera, pa do kraja te pauze (RIDE.pauseT0 je njen identitet) nista. */
+    const p = g.pauza && g.pauza.t0 === RIDE.pauseT0 ? g.pauza : null;
+    if (p && (p.padovi >= GUZVA_VOZ_PAUZA_PADOVI || p.n >= GUZVA_VOZ_PAUZA_MAX)) return false;
+  } else if (sad - (RIDE.lastFixTs || 0) > 15000) return false;   // bez svezeg GPS-a ne znam odakle da gledam
+  // P4: posle provere u pauzi (ili bacenog odgovora) prva provera u voznji ide za minut - obilazak i najava cekaju bas nju
+  return sad - (g.ts || 0) >= (g.brzo && !RIDE.paused ? GUZVA_VOZ_POSLE_PAUZE_MS : GUZVA_VOZ_MS);
 }
 async function guzvaVoznjaTik() {
   const g = RIDE.guz, sad = Date.now();
@@ -33244,8 +33418,14 @@ async function guzvaVoznjaKorak(route, pos, sad, g) {
   const pr = navProject(route, pos.lo, pos.la, RIDE.lastRouteI);
   if (!pr || pr.offM > NAV_OFF_M) return;   // van rute: tu radi preracunavanje rute, ne guzva
   g.ts = sad;
+  const uPauzi = !!RIDE.paused;   // Sme pusta pauzu samo u zastoju (16.10.): tada TIHO - samo svez odgovor za vreme dolaska, bez glasa i prelaska
+  g.brzo = uPauzi;   // provera u pauzi ne odlaze prvu proveru posle nastavka (P4)
+  if (uPauzi) {   // P6: brojac provera i padova JEDNE pauze
+    if (!g.pauza || g.pauza.t0 !== RIDE.pauseT0) g.pauza = { t0: RIDE.pauseT0, n: 0, padovi: 0 };
+    g.pauza.n++;
+  }
   const geo = route.coords, tok = RIDE.t0, od = Math.min(geo.length - 2, pr.i + 1), D = route.cumDist;
-  const svez = () => RIDE.guz === g && RIDE.t0 === tok && RIDE.route === route && route.coords === geo && !RIDE.rerouting && !RIDE.paused &&
+  const svez = () => RIDE.guz === g && RIDE.t0 === tok && RIDE.route === route && route.coords === geo && !RIDE.rerouting && !!RIDE.paused === uPauzi &&
     Date.now() - sad < 90000 && document.body.classList.contains("riding");
   const uz = guzvaUzorak(route, GUZVA_SALJE_MIN * 60, null, od);
   if (!uz) return;
@@ -33255,13 +33435,15 @@ async function guzvaVoznjaKorak(route, pos, sad, g) {
     rez = { stanje: "nije", zasto: e && e.offline ? "mreza" : "http " + ((e && e.status) || "?") };
     if (e && (e.status === 403 || e.status === 429)) g.pauzaDo = sad + GUZVA_VOZ_KVOTA_MS;   // kvota ili kljuc: ne kucaj na 5 min
   }
-  if (!svez()) return;   // u medjuvremenu nova ruta, pauza ili kraj voznje: odgovor je za geometriju/trenutak koji vise ne vazi
+  if (!svez()) { g.brzo = true; return; }   // u medjuvremenu nova ruta, pauza ili kraj voznje: odgovor se baca, nova provera za minut (P4)
+  if (uPauzi && rez.stanje !== "ok" && g.pauza) g.pauza.padovi++;
   rez.ts = sad; rez.geo = geo; rez.preko = ttPreko();
   const { zastoji, kasnjenje } = rez.stanje === "ok" ? guzvaUProzoru(rez) : { zastoji: [], kasnjenje: 0 };
   try { navLog("guzva-voz", { stanje: rez.stanje, zasto: rez.zasto || "", n: zastoji.length, min: Math.round(kasnjenje / 60), km: +(D[od] / 1000).toFixed(1), preko: rez.preko }); } catch (e) {}
   if (rez.stanje !== "ok") return;   // pala provera ne brise vazecu (istekne sama) i nikad ne znaci "bez guzve"
   g.rez = rez;
   guzvaVoznjaCrtaj(route);
+  if (uPauzi) return;   // pauza je tiha: obilazak i najava cekaju da krenes (prva provera posle nastavka ih radi)
   if (!zastoji.length) return;
   /* obilazi se PRVA guzva koja kosta bar prag (zastoji blizi od GUZVA_VOZ_GRUPA_M su jedna guzva); dalju gleda sledeca provera - jedan
      obilazak ne sme da zameni 40 km tvoje rute izmedju dve udaljene guzve (pregled koda 14.10.) */
