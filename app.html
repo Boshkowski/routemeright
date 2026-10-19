@@ -815,8 +815,10 @@
   .radar-btn.on { background: var(--c-teal); color: #fff; border-color: var(--c-teal); }
   .hz-btn svg { width: 19px; height: 19px; stroke-width: 2.3px; }   /* Prijavi: veci trougao + deblji uzvicnik da se vidi */
   .hz-btn.on { background: var(--danger-700); border-color: var(--danger-700); color: var(--paper-0); }
+  /* z-index 240 i na racunaru (19.10.2026, QA 17.10. nalaz 2): bilo je 9, a zatamnjenje .hz-back je 238 - lezalo je PREKO
+     prozora i nijedno dugme nije primalo klik; na telefonu je prozor vec bio 240. Prozor uvek iznad svog zatamnjenja. */
   .hz-pop {
-    position: absolute; z-index: 9; background: var(--bg); border: 1px solid rgba(255,122,46,.4);
+    position: absolute; z-index: 240; background: var(--bg); border: 1px solid rgba(255,122,46,.4);
     border-radius: var(--r-lg); box-shadow: var(--shadow-lg); padding: 13px; width: 252px;
     animation: pop 160ms var(--ease) backwards;
   }
@@ -3552,6 +3554,9 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
       transition: transform 300ms var(--ease); }
     #peekBar { position: static; margin: 0 -14px 6px; padding: 8px 14px; }
     #peekBar .grabber { width: 4.5px; height: 34px; margin: 0 0 0 auto; }   /* handle uspravan: sheet se povlaci U STRANU */
+    /* sklopljen stub (pregled 0.9.210): na uskom polozenom ekranu (stub 294-307 px) tri brojke nisu htele da se skupe ispod svoje sirine,
+       pa su gurale Kreni preko desne ivice stuba i ivica mu je bila odsecena. Brojke se skupljaju (vecina je ionako van ekrana), Kreni ostaje ceo. */
+    body.qplan.planning.hasroute #panel:not(.open) .pk-metrics { min-width: 0; overflow: hidden; }
     #resCta { margin: 10px -14px 0; padding: 10px 14px calc(8px + var(--sb)); }   /* landscape: stub drzi dno ekrana pa traka nosi safe-area */
     body.qplan.planning #panel, body.qplan.planning.qdetails #panel { padding-bottom: 0; }   /* dok usidren i u landscape-u; .qdetails MORA da stoji tu - njegov selektor je specificniji (review 9.8.) */
     /* 3.10. 20:30: u pejzazu kartica Od/Do lezi u levom stubu preko lista (izmereno: kartica do 146 px, list od 0) - stub dobija gornji odmak = kartica + 8 px */
@@ -3588,6 +3593,12 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #verBadge { left: auto; right: calc(64px + var(--sr)); bottom: calc(6px + var(--sb)); }
     .lay-pop { top: 10px; left: auto; right: calc(64px + var(--sr)); }
     .maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right { bottom: calc(2px + var(--sb)); opacity: .65; }
+    /* navod izvora mape pocinje desno od levog raila (19.10.2026, QA 17.10. nalaz 3: rail je pokrivao "Open" u "OpenFreeMap").
+       Samo dok rail postoji: u voznji je rail skriven, pa pomak samo gura navod pod kutiju "0 min · 0,1 km" (pregled 0.9.210). */
+    body:not(.riding) .maplibregl-ctrl-bottom-left { left: calc(var(--rail) + var(--sl)); }
+    /* dok se planira, navod pocinje i desno od SKLOPLJENOG stuba (--ls-sklop pise applySheet; otvoren = 0px, pa je navod pod panelom kao u 0.9.209).
+       QA 0.9.210 (N1): traka sa celim Kreni je inace pokrivala "OpenFreeMap ©". */
+    body.qplan.planning:not(.riding) .maplibregl-ctrl-bottom-left { left: calc(var(--rail) + var(--sl) + var(--ls-sklop, 0px)); }
 
     /* --- VOZNJA: baner levo-gore, brzina/ETA levo-dole, Prijavi kao FAB desno-dole --- */
     body.riding #rideBar { left: calc(10px + var(--sl)); right: auto; top: 8px; width: var(--col); }
@@ -9139,6 +9150,13 @@ function primeniJezik(root) {
   // pravne strane imaju englesku varijantu (-en.html): link prati jezik
   if (j !== "sr") r.querySelectorAll("a[data-href-en]").forEach((a) => { a.setAttribute("href", a.getAttribute("data-href-en")); });
 }
+/* CELINA 01 - PODACI: "use strict" (bez dejstva: skript ne pocinje njime, prvi su i18n fajlovi), baza motora, kurirane balkanske rute, sezona prevoja; na vrhu je i `state`, stanje planera.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: layerVis, catMarkers, editorialMarkers, prijaveMarkers
+   Zovu je druge celine: applyLayerVis, isRoundTrip, loadPrelazi, sezonaRazlog, turaBlokirana,
+     turaSezona, famousVariant, loadLayerVis, sezonaCip, sezonaDanas
+   Koristi celine: 02, 06, 07, 12 */
 "use strict";
 
 /* ---------------- baza motora: [proizvođač, model, generacija/godišta, rezervoar L, WMTC potrošnja L/100km]
@@ -9680,6 +9698,13 @@ function famousVariant(f, A, B) {
   return seg.slice(1, -1); // međutačke; start/cilj ostaju korisnikovi
 }
 
+/* CELINA 02 - POMOCNE GEOKOD: male pomocne funkcije (format, mnozina, status), prsten "Blizu tebe", geokodiranje, adrese sa kucnim brojem.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: gpsFrom, geocode, revCache, gpsArea, routes, editorial, planSeq, selected
+   Zovu je druge celine: esc, haversine, rIco, reverseName, fetchJSON, fmtTime, setStatus, _seqGuard,
+     logState, fmtDur, geocode, markerBadge, (+24)
+   Koristi celine: 01, 06, 13, 14, 15, 20 */
 /* ---------------- pomoćne ---------------- */
 function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 function destPoint(lat, lon, brgDeg, distM) {
@@ -9914,7 +9939,9 @@ function geoCacheGet(k) {
   return v.j;
 }
 function geoCachePut(k, j) { try { GEONET.cache.set(k, { j, t: Date.now() }); if (GEONET.cache.size > 80) GEONET.cache.delete(GEONET.cache.keys().next().value); } catch (e) {} }
-async function geoFetch(url, timeoutMs = 8000) {
+/* jedanPokusaj: bez tihog ponavljanja (drugi upit bez lokacije ima svoj kratak rok, pregled 0.9.210: visio je 8 + 1,2 + 8 s i drzao ceo red).
+   prihvati: odgovor koji ne prodje proveru (npr. 200 sa objektom umesto niza) je greska - ne kesira se i ne ide dalje kao da je ispravan. */
+async function geoFetch(url, timeoutMs = 8000, { jedanPokusaj = false, prihvati = null } = {}) {
   const hit = geoCacheGet(url); if (hit) return hit;
   const run = GEONET.chain.then(async () => {
     const again = geoCacheGet(url); if (again) return again;   // stigao u kes dok smo cekali red
@@ -9922,10 +9949,13 @@ async function geoFetch(url, timeoutMs = 8000) {
     if (gap) await new Promise((r) => setTimeout(r, gap));
     for (let a = 0; ; a++) {
       GEONET.last = Date.now();
-      try { const j = await fetchJSON(url, { timeoutMs, retries: 0 }); geoCachePut(url, j); return j; }
-      catch (e) {
+      try {
+        const j = await fetchJSON(url, { timeoutMs, retries: 0 });
+        if (prihvati && !prihvati(j)) { const e = new Error("neispravan odgovor"); e.neispravan = true; throw e; }
+        geoCachePut(url, j); return j;
+      } catch (e) {
         if (e && e.status === 429) GEONET.cool = Date.now() + 30000;
-        if (a >= 1) throw e;
+        if (jedanPokusaj || a >= 1) throw e;
         await new Promise((r) => setTimeout(r, 1200));
       }
     }
@@ -9964,44 +9994,6 @@ function fmtPreostalo(ms) {
      posle pet sati voznje minut zavisi od pauza, goriva i vremena, ne od nase procene. */
   if (h >= 5) return h + " h";
   return h ? (m ? h + " h " + m + " min" : h + " h") : min + " min";
-}
-/* KLIZNE BROJKE U VOZNJI (1.9.2026, Boskov zahtev: "taj deo brzina da se slajduje pa da bude
-   brzina, visina, i jos nesto"). Treca je TEMPERATURA - jedina od kandidata koja je i ziva i
-   bezbednosno korisna (hladnoca, poledica); domet goriva se racuna samo u planeru, ne u voznji.
-   Tap ili prevlacenje menja brojku; izbor prezivljava restart. Nedostupan podatak se NE izmislja
-   nego se pise "-" i jedinica ostaje, da vozac vidi STA gleda a ne samo prazninu. */
-const METRIKE = ["brzina", "visina", "temp"];
-const METRIKA_KEY = "rmr2_metrika";
-function metrikaIdx() {
-  try { const i = METRIKE.indexOf(localStorage.getItem(METRIKA_KEY) || "brzina"); return i < 0 ? 0 : i; }
-  catch (e) { return 0; }
-}
-function metrikaVrednost(koja) {
-  if (koja === "visina") {
-    const a = RIDE.alt;
-    return { v: (a == null || !isFinite(a)) ? "-" : String(Math.round(a)), u: "m" };
-  }
-  if (koja === "temp") {
-    const t = RIDE.wxTemp;
-    return { v: (t == null || !isFinite(t)) ? "-" : String(Math.round(t)), u: "°C" };
-  }
-  const sp = RIDE.spdKmh;
-  return { v: (sp == null || !isFinite(sp)) ? "0" : String(Math.round(sp)), u: "km/h" };
-}
-function metrikaCrtaj() {
-  try {
-    const { v, u } = metrikaVrednost(METRIKE[metrikaIdx()]);
-    const ev = document.getElementById("rideKmh"), eu = document.getElementById("rideKmhU");
-    if (ev) ev.textContent = v;
-    if (eu) eu.textContent = u;
-  } catch (e) {}
-}
-function metrikaSledeca(smer) {
-  try {
-    const i = (metrikaIdx() + (smer || 1) + METRIKE.length) % METRIKE.length;
-    localStorage.setItem(METRIKA_KEY, METRIKE[i]);
-  } catch (e) {}
-  metrikaCrtaj();
 }
 /* srpska mnozina: TN(2, "pl.tacka") -> "tačke" (11-14 izuzetak) */
 function plSrp(n, jed, mala, velika) {
@@ -10072,6 +10064,11 @@ function geoRegion() {
   return t ? { lat: t[0], lon: t[1], sveze: false, region: true } : null;
 }
 function geoRefPretraga() { return geoRef() || geoRegion(); }
+/* Drzave na koje se aplikacija usmerava (ISO kod kao Nominatimov country_code; Kosovo = xk), za drugi upit bez lokacije (geoDrugiUpitRegion).
+   Nije GEO_REGIONI: to je sest vremenskih zona (Srbija i Kosovo, CG, BiH, HR, SLO, S. Makedonija) za redosled predloga, bez Albanije, Grcke,
+   Bugarske, Rumunije i Madjarske, a tamo idu kurirane ture i pretres od 19.10. - sa tim spiskom bi Korçë, Aleksandrupolis, Lugoj, Orșova i
+   Temišvar (tacan izbor) slali drugi upit. Nije ni data/countries_bbox.json (24 zemlje za cenu goriva, i Italija, Turska, Ukrajina). */
+const GEO_DRZAVE_REGIONA = ["rs", "me", "ba", "hr", "si", "mk", "xk", "al", "gr", "bg", "ro", "hu"];
 function geoViewbox() {   // ~120 km oko korisnika - BIAS, ne ograda (bez bounded: Stelvio/Bormio i dalje rade)
   const p = geoRef();   // okvir bira KANDIDATE za auto-izbor (adresa, Enter) - samo stvarna lokacija (P1)
   if (!p || p.lat == null) return "";
@@ -10082,9 +10079,13 @@ function geoCityCtx() {   // ime kraja korisnika za retry ("Stivale" -> "Stivale
   const n = state.gpsFrom && state.gpsFrom.name;
   return (n && n !== "Moja lokacija") ? n : "";
 }
-async function geoQuery(q) {
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=jsonv2&limit=6&addressdetails=1&namedetails=1&accept-language=hr,sr-Latn,en${geoViewbox()}`;
-  return geoFetch(url, 8000);   // kroz geoNet red: razmak, kes, tihi retry (429 lekcija 6.8.)
+async function geoQuery(q, drzave) {   // drzave: samo drugi upit bez lokacije (geoDrugiUpitRegion) - isti upit, ogranicen na region
+  const region = !!(drzave && drzave.length);
+  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=jsonv2&limit=6&addressdetails=1&namedetails=1&accept-language=hr,sr-Latn,en${geoViewbox()}` +
+    (region ? "&countrycodes=" + drzave.join(",") : "");
+  /* kroz geoNet red: razmak, kes, tihi retry (429 lekcija 6.8.). Odgovor mora biti niz. Drugi upit (region): jedan pokusaj, 4 s - pa najvise
+     oko 5 s cekanja i zadrzavanja reda, posle cega ostaje prvi izbor (pregled 0.9.210). */
+  return geoFetch(url, region ? 4000 : 8000, { jedanPokusaj: region, prihvati: Array.isArray });
 }
 /* JEDINSTVEN kriterijum "ovo je kucni broj / nije ime" (0.9.82 review: cetiri mesta su imala cetiri
    razlicita regexa, pa je "10a" prolazilo kroz jedan a padalo na drugom). Broj je: cist niz cifara
@@ -10117,40 +10118,78 @@ function geoKrajIDrzava(x) {   // Nominatim: "Opština Gornji Milanovac, Srbija"
   return [kraj, a.country].filter(Boolean).join(", ");
 }
 /* Vrsta naselja za "Koje mesto?" (pregled 0.9.209): 3 grad, 2 selo, 1 zaseok, 0 nije naselje (planina, reka, lokal), -1 upravna oblast. Sediste opstine
-   istog imena je grad i kad ga OSM vodi kao selo: Golubac ("Opština Golubac") naspram sela Golubac u Mionici se ne pita. */
+   istog imena je grad i kad ga OSM vodi kao selo: Golubac ("Opština Golubac") naspram sela Golubac u Mionici se ne pita.
+   Drzava i kontinent su upravna oblast (19.10.2026): Nominatim za "Inđija" vraca Indiju, za "Šid" Juznu Ameriku - to nije mesto cijim se
+   znacajem meri grad (geoIzborBezLokacije). */
 function geoVrsta(tip, ime, uprava) {
   const v = { city: 3, town: 3, village: 2, suburb: 2, municipality: 2, city_district: 2, hamlet: 1, isolated_dwelling: 1, farm: 1, locality: 1,
     neighbourhood: 1, quarter: 1, croft: 1, allotments: 1 }[tip] || 0;
-  if (/^(state|province|county|state_district|region)$/.test(tip || "")) return -1;   // upravna oblast (pokrajina, okrug), ne naselje
+  if (/^(state|province|county|state_district|region|country|continent)$/.test(tip || "")) return -1;   // upravna oblast (pokrajina, okrug, drzava), ne naselje
   if (v < 1 || v === 3) return v;
   const g = (t) => _geoFold(cyr2lat(String(t || "")).trim()), f = (t) => g(t).replace(/^(gradska opstina|opstina|opcina|grad|gmina|municipality of)\s+/, "").replace(/\s+(municipality|opstina|opcina)$/, "");
   // polje koje je samo ime mesta nije opstina NAZVANA po njemu: ceska opstina "Úžice" u svom polju municipality nosi sebe
   return (uprava || []).some((u) => u && g(u) !== g(ime) && f(u) === f(ime)) ? 3 : v;
 }
-async function geoIzborBezLokacije(kand, qq, inace) {   // kand: [{ name, lat, lon, sub, bod, vrsta, znacaj? }]; inace: { name, imena } onoga sto bi
-  // geocode izabrao bez ovoga. Vraca izabrano (ili jedino ocigledno) mesto, null (nema sta da se pita) ili baca geo gresku (otkazano)
+/* ISTO IME KAO OTKUCANO (geoIzborBezLokacije, geoDrugiUpitRegion). Cirilica se poredi preko latinice: "Липовац" je "Lipovac" (pregled 0.9.209).
+   KVACICE (19.10.2026, Bosko: "Kako je moguće da se brka NICA i NIŠ"): ko otkuca kvacicu ili cirilicu, rekao je tacno koje slovo - "Niš" nije
+   "Nis". Svodjenje bez kvacica je pravilo "Belgrade" (geoIzborBezLokacije) vodilo u Nicu, jer Nica u Nominatimu nosi turski i ujgurski naziv "Nis"
+   i izgovor "nis"; isto "Peć" u Pečuj (azerski "Peç"), a "Foča" i "Višegrad" su pitali za tursku Foçu i madjarski Visegrád. Ko kuca bez kvacica
+   ("Nis", "Foca"), poredi se kao do sada: tada su Foča i Foça zaista isto otkucano ime. Pretres 790 pravih odgovora: tools/fixtures/nominatim-balkan-19-10.json. */
+function geoIstoIme(qq) {
+  const ime = (t) => _geoFold(cyr2lat(String(t || "")).trim()), f = ime(qq);
+  const slova = (t) => cyr2lat(String(t || "")).normalize("NFC").trim().toLowerCase();
+  const tacno = /[Ѐ-ӿ]/.test(qq) || slova(qq) !== f;
+  return (t) => (tacno ? slova(t) === slova(qq) : ime(t) === f);
+}
+const GEO_JEZIK_VOZACA = /^name(:(sr|sr-Latn|hr|bs|sl|mk|en))?$/;   // imena na jeziku vozaca: srpski, hrvatski, bosanski, slovenacki, makedonski, engleski, lokalno ime
+async function geoIzborBezLokacije(kand, qq, inace) {   // kand: [{ name, ime?, lat, lon, cc?, sub, bod, vrsta, znacaj? }]; inace: { name, ime?, lat?, lon?, imena: [[kljuc, ime]], cc?, znacaj?, vrsta?, bod? }
+  // onoga sto bi geocode izabrao bez ovoga. Vraca izabrano (ili jedino ocigledno) mesto, null (nema sta da se pita) ili baca geo gresku (otkazano)
   if (geoRef() || /,/.test(qq) || !Array.isArray(kand) || kand.length < 2) return null;
   /* Poredi se sa onim sto je vozac OTKUCAO, ne sa prvim rezultatom: pravi Nominatim za "Rudnik" stavlja na vrh "Rudnik nad Sanem" (grad u
      Poljskoj), pa bi poredjenje sa njim proglasilo da drugih istih nema i tiho ga izabralo - bas kvar sa kog je sve krenulo (proba 16.10.).
-     Cirilica se poredi preko latinice: "Липовац" pita kao "Lipovac" (pregled 0.9.209). */
-  const ime = (t) => _geoFold(cyr2lat(String(t || "")).trim()), f = ime(qq);
-  let sv = kand.filter((c) => ime(c.name) === f && Number.isFinite(c.lat) && Number.isFinite(c.lon)).sort((x, y) => (y.bod || 0) - (x.bod || 0));
+     Sa kvacicama i cirilicom: geoIstoIme. Photon (Nominatim prazan) dopisuje kucni broj na ime objekta ("Dogma 3"); poredi se ime BEZ njega
+     (`ime`), inace bi "dogma" tiho otisla u jedini goli "Dogma" u Garešnici umesto da pita (pregled 0.9.210). */
+  const ime = (t) => _geoFold(cyr2lat(String(t || "")).trim()), isto = geoIstoIme(qq), imeZa = (c) => (c.ime != null ? c.ime : c.name);
+  let sv = kand.filter((c) => isto(imeZa(c)) && Number.isFinite(c.lat) && Number.isFinite(c.lon)).sort((x, y) => (y.bod || 0) - (x.bod || 0));
   /* Mesto koje bi geocode ionako izabrao nosi i otkucano ime, pod drugim imenom ili na drugom jeziku ("Belgrade" je name:en Beograda,
      "Vienna" Beca): nema sta da se pita ni menja, bira se kao u 0.9.208. Bez ovoga je "Belgrade" vodio u Montanu, "Rome" u Dzordziju, a
      "Vienna" nudio samo americka mesta (drugi pregled 0.9.209). Uslov "i znacajnije je od istoimenih" (da Studenica ostane u Srbiji) je
-     treci pregled oborio: "Sparta" je tada nudila samo dve americke Sparte, bez grcke - zato jednostavno pravilo. */
-  if (inace && ime(inace.name) !== f && (inace.imena || []).some((n) => ime(n) === f)) return null;
-  if (sv.length < 2) return null;
+     treci pregled oborio: "Sparta" je tada nudila samo dve americke Sparte, bez grcke - zato jednostavno pravilo.
+     STRANI JEZIK (19.10.2026): ime na jeziku vozaca (srpski, hrvatski, bosanski, slovenacki, makedonski, engleski, lokalno ime) drzi izbor uvek, kao
+     do sada - na tome stoje Belgrade, Vienna i Sparta. Ime na STRANOM jeziku drzi izbor dok mesto koje se tako ZOVE nije znacajnije od njega (a nije
+     nize naselje: selo ne obara grad ni kad je znacajnije - u 882 prava odgovora se to ne desava, cuva ga test P1zh). Uvedeno zbog "Studenice"
+     (selo u Ukrajini, rusko ime "Студеница", 0,31; reka Studenica u Srbiji 0,41) - nju danas odlucuje pravilo "izbor van regiona" ispod, a ovo jos
+     "Stara Pazova" (opstina sa slovackim nazivom -> grad). Ostaje (odlucuje ZNACAJ): Ragusa -> Dubrovnik
+     (lombardski naziv, 0,65 naspram 0,55), Laibach -> Ljubljana (0,71 naspram 0,40), "Lučani" -> nasi Lučani (rusko "Лучани", 0,49 naspram
+     zaselaka 0,13), Korča -> Korçë (0,56 naspram sela u BiH 0,15). */
+  const nizeNaselje = (c, d) => (c.vrsta || 0) >= 1 && (d.vrsta || 0) >= 1 && c.vrsta < d.vrsta;
+  const nosi = inace && !isto(imeZa(inace)) ? (inace.imena || []).filter(([, n]) => isto(n)) : [];
+  if (nosi.some(([k]) => GEO_JEZIK_VOZACA.test(k))) return null;
+  /* IZBOR VAN REGIONA (19.10.2026, "Ruma" -> Rim): Rim nosi "Ruma" samo na malteskom i znacajniji je od Rume (0,86 naspram 0,53), pa ga je pravilo
+     iznad drzalo. Kad je izbor VAN regiona (GEO_DRZAVE_REGIONA) i nosi upit samo na stranom jeziku, a medju odgovorima ima mesta tog imena U
+     regionu, takmice se samo ta mesta (pravila 0.9.209 ispod), bez merenja znacaja naspram izbora - aplikacija planira rute po Balkanu. Izbor U
+     regionu se ne dira: Ragusa -> Dubrovnik (Ragusa na Siciliji je van regiona), Scutari -> Skadar, Laibach -> Ljubljana. Svako mesto tog imena,
+     ne samo naselje: sa "samo naselja" bi "Studenica" otisla iz reke Studenice (Srbija) u selo Studenica na Kosovu (pretres 882 odgovora). */
+  const uRegionu = (c) => GEO_DRZAVE_REGIONA.includes(c.cc);
+  const regionalno = nosi.length > 0 && !!inace.cc && !GEO_DRZAVE_REGIONA.includes(inace.cc) && sv.some(uRegionu);
+  if (regionalno) sv = sv.filter(uRegionu);
+  else if (nosi.length && !sv.some((c) => Number.isFinite(c.znacaj) && c.znacaj > inace.znacaj && !nizeNaselje(c, inace))) return null;
+  const jednoIme = sv.length === 1;
+  if (!sv.length) return null;
   /* PODJEDNAKO ZNACAJNA (pregled 0.9.209, 40 pravih odgovora Nominatima): bodovi su za to bili pretesni - vrh planine nosi samo znacaj x 6,
      pa su Avala (2,69) i tri bezimena vrha (0,96) bili "do 2 boda". Nominatim daje znacaj mesta 0..1: drugo mesto mora imati bar 3/4
      znacaja najjaceg. Gde znacaja nema (Photon) ostaje pravilo do 2 boda. */
+  /* SEDISTE NE ISPADA ZBOG SELA (pregled 0.9.210, "Жабари"): rez 3/4 ne skida naselje VISE vrste od najjaceg kad je najjace i samo naselje.
+     Sediste opstine Žabari (u OSM selo, 0,31, geoVrsta 3) je ispadalo zbog sela Žabari kod Valjeva (0,43). Kad je najjace reka ili planina, rez
+     vazi kao do sada (inace bi "Studenica" pitala za selo na Kosovu pored reke Studenice). */
   const saZnacajem = sv.every((c) => Number.isFinite(c.znacaj)), najZ = saZnacajem ? Math.max(...sv.map((c) => c.znacaj)) : 0, naj = sv[0].bod || 0;
-  sv = sv.filter((c) => (saZnacajem ? c.znacaj >= 0.75 * najZ : naj - (c.bod || 0) <= 2));
+  const najjace = saZnacajem ? sv.reduce((a, c) => (c.znacaj > a.znacaj ? c : a)) : sv[0];
+  sv = sv.filter((c) => (saZnacajem ? c.znacaj >= 0.75 * najZ : naj - (c.bod || 0) <= 2) || ((najjace.vrsta || 0) >= 1 && (c.vrsta || 0) > (najjace.vrsta || 0)));
   /* ISTA VRSTA: ne nudi se naselje nize vrste od najjaceg kandidata - grad naspram sela, selo naspram zaseoka (Zabljak; Golubac kao
      sediste opstine, geoVrsta). Planine, reke i lokali nisu naselja i ovo ih ne dira. Jedno odrediste = jedan red: na 5 km jedno od
      drugog (selo Kopaonik i planina Kopaonik su 2,3 km - za vozaca isto odrediste), ili isti red na ekranu (dva "Cer | Grad Loznica,
      Srbija" se ne mogu razlikovati). */
-  const vrh = sv[0].vrsta || 0, isti = [];
+  const vrh = Math.max(...sv.map((c) => c.vrsta || 0)), isti = [];   // najvisa vrsta posle reza (pregled 0.9.210: sediste ispred sela istog imena)
   for (const c of sv) {
     if ((c.vrsta || 0) >= 1 && (c.vrsta || 0) < vrh) continue;
     if ((c.vrsta || 0) < 0 && vrh >= 1) continue;   // pokrajina/okrug istog imena ne takmici se sa gradom (Istanbul, Varna, Konstanca)
@@ -10158,12 +10197,54 @@ async function geoIzborBezLokacije(kand, qq, inace) {   // kand: [{ name, lat, l
     isti.push(c);
   }
   /* Ime nosi vise mesta, a jedno je ocigledno pravo: uzima se ONO, a ne nesto drugog imena sto bi bodovanje izabralo - bez lokacije je
-     "Cer" vodio na aerodrom Cherbourg u Francuskoj, "Рудник" u Rusiju, "Zlatibor" u centar okruga (isto u 0.9.208; pregled 0.9.209). */
-  if (isti.length === 1 && inace && ime(inace.name) !== f && !/\d/.test(qq)) return { lat: isti[0].lat, lon: isti[0].lon, name: isti[0].name };
+     "Cer" vodio na aerodrom Cherbourg u Francuskoj, "Рудник" u Rusiju, "Zlatibor" u centar okruga (isto u 0.9.208; pregled 0.9.209).
+     JEDNO MESTO TOG IMENA (19.10.2026): i kad ime nosi samo jedno mesto, ono zamenjuje izbor drugog imena - "Niš" je vodio u Nicu, "Inđija" u
+     Indiju, "Ub" u Ulan Bator, "Peć" u Pečuj, "Kovin" u Rackeve, "Ражањ" u Rjazanj. Ali samo ako je bar 3/4 znacajno kao izbor (isto merilo kao
+     "podjednako znacajna" gore; Photon: do 2 boda): hotel "Mileševa" (znacaj 0) ne zamenjuje manastir Mileševa, stanica "Mladenovac" gradsku
+     opstinu. Upravna oblast (drzava, kontinent, okrug) se ne meri: Indija nije grad. Kad ime nosi vise mesta, pravilo je kao u 0.9.209. */
+  /* IZBOR ISTOG IMENA NIZE VRSTE (pregled 0.9.210): "Жабари" bira selo Žabari kod Valjeva (isto ime), a jedino preostalo je sediste opstine -
+     uzima se sediste. Samo kad je preostalo naselje VISE vrste od izbora koji je i sam naselje: banka "Lovćen" ostaje, Montana u Bugarskoj ne
+     ustupa americkoj saveznoj drzavi. */
+  const izbor0 = (c) => inace && Math.abs(c.lat - inace.lat) < 1e-9 && Math.abs(c.lon - inace.lon) < 1e-9;
+  const nizaVrsta = isti.length === 1 && !!inace && isto(imeZa(inace)) && Number.isFinite(inace.lat) && !izbor0(isti[0])
+    && (inace.vrsta || 0) >= 1 && (isti[0].vrsta || 0) > (inace.vrsta || 0);
+  if (isti.length === 1 && inace && (!isto(imeZa(inace)) || nizaVrsta) && !/\d/.test(qq)) {
+    const c = isti[0];
+    const uporedivo = regionalno || !jednoIme || (inace.vrsta || 0) < 0 || (Number.isFinite(inace.znacaj) && Number.isFinite(c.znacaj) ? c.znacaj >= 0.75 * inace.znacaj
+      : !Number.isFinite(inace.bod) || inace.bod - (c.bod || 0) <= 2);
+    return uporedivo ? { lat: c.lat, lon: c.lon, name: c.name } : null;
+  }
   if (isti.length < 2) return null;
   const izbor = await mestoIzborPitaj(qq, isti.slice(0, 5));
   if (!izbor) { const err = new Error(T("geo.izborOtkazan")); err.geo = true; err.otkazano = true; throw err; }   // otkazano: pozivalac ne nastavlja tiho (izbor ture)
   return { lat: izbor.lat, lon: izbor.lon, name: izbor.name };
+}
+function geoKandidat(x, qq) {   // red za "Koje mesto?" iz Nominatimovog odgovora (geoIzborBezLokacije, geoDrugiUpitRegion)
+  const a = x.address || {}, nm = geoName(x, qq);
+  return { name: nm, lat: +x.lat, lon: +x.lon, cc: String(a.country_code || "").toLowerCase(), sub: geoKrajIDrzava(x), bod: _geoBod(x, /\d/.test(qq), null),
+    znacaj: x.importance != null ? +x.importance : NaN,
+    vrsta: geoVrsta(x.addresstype, nm, [a.city, a.municipality, a.county, a.state_district]) };
+}
+/* "NIS" BEZ KVACICE (19.10.2026, posle "Niš" -> Nica): za "Nis" grada Niša NEMA medju 6 Nominatimovih odgovora. Izbor je Nica, koja "Nis" nosi samo
+   na turskom i ujgurskom (i izgovor); "Koje mesto?" nema sta da ponudi. Tada se salje JOS JEDAN upit - isti, plus countrycodes (GEO_DRZAVE_REGIONA) -
+   i uzima se NASELJE u regionu koje se tako zove: jedno = ono; vise = pravila 0.9.209 (podjednako znacajna -> dijalog, ocigledno -> ono); nijedno =
+   izbor ostaje. Samo kad vazi SVE: bez lokacije, bez zareza i broja u upitu, izbor nosi upit iskljucivo na stranom jeziku (ne na jeziku vozaca:
+   "Belgrade" ostaje Beograd), nijedan odgovor se ne zove tako ("Ruma": Ruma u Srbiji je medju odgovorima) i izbor je VAN regiona ("Agram",
+   "Laibach", "Temeswar" i "Ragusa" ostaju u Hrvatskoj, Sloveniji, Rumuniji). Od 790 upita pretresa i 92 iz P1p okida samo "Nis" (P1zb). */
+async function geoDrugiUpitRegion(j, best, qq) {
+  if (geoRef() || /,/.test(qq) || /\d/.test(qq) || !best || !Array.isArray(j)) return null;
+  const isto = geoIstoIme(qq);
+  if (isto(geoName(best, qq))) return null;
+  const nosi = Object.entries(best.namedetails || {}).filter(([k, n]) => (k === "name" || k.startsWith("name:")) && isto(n));
+  if (!nosi.length || nosi.some(([k]) => GEO_JEZIK_VOZACA.test(k))) return null;   // nosi ga na jeziku vozaca, ili ga uopste ne nosi
+  if (j.some((x) => isto(geoName(x, qq)))) return null;   // medju odgovorima vec postoji mesto tog imena - odlucuje geoIzborBezLokacije
+  if (GEO_DRZAVE_REGIONA.includes(String((best.address || {}).country_code || "").toLowerCase())) return null;
+  let j2 = null;
+  try { j2 = await geoQuery(qq, GEO_DRZAVE_REGIONA); } catch (e) { return null; }   // bez mreze, istekao rok ili neispravan odgovor: izbor ostaje
+  if (!Array.isArray(j2)) return null;
+  const naselja = j2.map((x) => geoKandidat(x, qq)).filter((c) => (c.vrsta || 0) >= 1 && isto(c.name) && Number.isFinite(c.lat) && Number.isFinite(c.lon));
+  if (naselja.length === 1) return { lat: naselja[0].lat, lon: naselja[0].lon, name: naselja[0].name };
+  return naselja.length ? geoIzborBezLokacije(naselja, qq, { name: geoName(best, qq), imena: [] }) : null;
 }
 const _geoCls = (x) => x.class || x.category || "";   // json format ima "class", jsonv2 "category" - uhvaceno zivim testom 6.8.
 /* TEREN 27.8.2026 (Boskovi nalazi 4-6, "Breza 10"). U Srbiji postoji PET ulica Breza sa brojem
@@ -10373,7 +10454,7 @@ async function geoPhotonSugg(q, n, bezRegiona) {   // TYPEAHEAD varijanta (Faza 
       const nm = lat0(base) + (x.p.name && x.p.housenumber ? " " + x.p.housenumber : "");
       const dBod = ref && ref.lat != null ? haversine(ref.lat, ref.lon, x.c[1], x.c[0]) : null;
       const d = ref && ref.region ? null : dBod;   // tacka regiona boduje, ali nije "od tebe" - red ne pise "~X km"
-      return { name: nm, lat: x.c[1], lon: x.c[0],
+      return { name: nm, ime: lat0(base), lat: x.c[1], lon: x.c[0],   // ime: bez kucnog broja koji je dopisan na ime objekta ("Dogma 3" -> "Dogma")
         sub: [lat0(x.p.city || x.p.county), lat0(x.p.country)].filter(Boolean).join(", "),
         d, bod: _phBod(x.p, q, dBod, adr),
         tip: x.p.osm_key === "place" ? x.p.osm_value : "", uprava: [x.p.city, x.p.county, x.p.district],   // "Koje mesto?" (geoVrsta): grad naspram sela se ne pita
@@ -10745,7 +10826,8 @@ async function geocode(q) {
          (treci pregled 16.10.); greska "izaberi iz liste" ovde nije resenje jer geocode zovu i polja Od/Do, deljeni linkovi i Kuca/Posao. */
       const wide = await geoPhotonSugg(qq, 5, true);
       if (wide && wide.length) {
-        const izb = await geoIzborBezLokacije(wide.map((x) => ({ name: x.name, lat: x.lat, lon: x.lon, sub: x.sub, bod: x.bod, vrsta: geoVrsta(x.tip, x.name, x.uprava) })), qq, { name: wide[0].name, imena: [] });
+        const izb = await geoIzborBezLokacije(wide.map((x) => ({ name: x.name, ime: x.ime, lat: x.lat, lon: x.lon, sub: x.sub, bod: x.bod, vrsta: geoVrsta(x.tip, x.name, x.uprava) })), qq,
+          { name: wide[0].name, ime: wide[0].ime, imena: [], bod: wide[0].bod, vrsta: geoVrsta(wide[0].tip, wide[0].name, wide[0].uprava) });
         if (izb) return izb;
         const naj = wide[0];
         if (naj.bod >= 2 || wide.length === 1) return { lat: naj.lat, lon: naj.lon, name: naj.name };
@@ -10767,13 +10849,12 @@ async function geocode(q) {
   const best = geoPick(j, qq);
   const ref = geoRef();
   if (!ref) {   // bez lokacije: dva ista mesta se ne biraju tiho (dijalog "Koje mesto?")
-    const adrQ = /\d/.test(qq);
-    const izb = await geoIzborBezLokacije(j.map((x) => {
-      const a = x.address || {}, nm = geoName(x, qq);
-      return { name: nm, lat: +x.lat, lon: +x.lon, sub: geoKrajIDrzava(x), bod: _geoBod(x, adrQ, null), znacaj: x.importance != null ? +x.importance : NaN,
-        vrsta: geoVrsta(x.addresstype, nm, [a.city, a.municipality, a.county, a.state_district]) };
-    }), qq, best ? { name: geoName(best, qq), imena: Object.entries(best.namedetails || {}).filter(([k]) => k === "name" || k.startsWith("name:")).map(([, v]) => v) } : null);
+    const k0 = best ? geoKandidat(best, qq) : null;
+    const izb = await geoIzborBezLokacije(j.map((x) => geoKandidat(x, qq)), qq, best ? { name: k0.name, lat: k0.lat, lon: k0.lon, cc: k0.cc, znacaj: k0.znacaj, bod: k0.bod, vrsta: k0.vrsta,
+      imena: Object.entries(best.namedetails || {}).filter(([k]) => k === "name" || k.startsWith("name:")) } : null);   // imena: [kljuc, ime] - jezik odlucuje (geoIzborBezLokacije)
     if (izb) return izb;
+    const reg = await geoDrugiUpitRegion(j, best, qq);   // "Nis" bez kvacice: grada nema medju odgovorima, a izbor je Nica (19.10.2026)
+    if (reg) return reg;
   }
   // POI daleko od korisnika a fuzzy varijanta postoji BLIZU? ("Moto Bike Shop": Nominatim zna samo Temisvar ~120 km,
   // Photon nadje "Motor Bike Shop" na Vracaru ~8 km - blizi pogodak pobedjuje, 6.8.)
@@ -10845,6 +10926,14 @@ async function reverseName(lat, lon, zoom = 10, mesto = false) {
   } catch { return ""; }
 }
 
+/* CELINA 03 - RUTE: ruter: Valhalla moto profil (OSRM rezerva), kombinovana i kurirana ruta, pametan izlaz iz grada, GPX uvoz, Moje rute.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: atlasCoords, vias, planSeq, routes, atlasApplied, bjpKur, geocode, bezAutoputa, _gradska,
+     _izbegniPoly, _lastRelKey, arriveTarget, famousApplied, recommended, (+2)
+   Zovu je druge celine: rutaNaziv, importGpxCoords, stilNaKm, valhallaRoute, fetchRoutes, importGpx,
+     mojeCitaj, mojeUpisi, preporucenaRuta, stilIzLinkaIndeks, traceGpxRoute
+   Koristi celine: 01, 02, 04, 05, 07, 08, 11, 15, 19, 20 */
 /* ---------------- rute: Valhalla moto profil (fallback OSRM) ---------------- */
 /* 4 nivoa (Kurviger obrazac: fastest → extra curvy), preporuka = Ekstra vijugava */
 /* 0.9.160: `label` je INTERNA oznaka (kod je poredi: startsWith("Najbrža"), includes("autoput")...)
@@ -11855,6 +11944,13 @@ async function importGpxCoords(coords, label, bezSirovog) {   // zajednicki moto
   }
 }
 
+/* CELINA 04 - TROSAK: trosak puta (gorivo, putarine), krivine, uspon.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: planSeq, routes, selected
+   Zovu je druge celine: analyzeCurves, countryAtLocal, bearingDeg, renderCost, _ccUcitaj, countryAt,
+     difficultyScore, fetchElevation, routeCountries
+   Koristi celine: 01, 02, 05, 06, 12, 18 */
 /* ---------------- trošak, krivine, uspon ---------------- */
 // fallback ako data/prices.json nije dostupan (pravi izvor istine je JSON sa izvorima i datumima)
 const FUEL_PRICES = { RS: 1.69, HR: 1.54, BA: 1.42, ME: 1.64, SI: 1.52, MK: 1.48, AL: 2.02, XK: 1.45,
@@ -12224,6 +12320,13 @@ function difficultyScore(curvesPerKm, serpPer100, ascentPerKm, gradP95, totalKm)
   if (!zasto.length) zasto.push(pts === 0 ? T("krv.pravRavan") : T("krv.blagi"));
   return { label, pts, zasto };
 }
+/* CELINA 05 - VREME: grafici duz rute, prognoza (Open-Meteo, Aladin, MET Norway), tacan trenutak prolaska, pokrivenost prognoze, ocena voznje.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: planSeq, routes, selected
+   Zovu je druge celine: wxCover, assessRoute, coordAtKm, rideScore, buildSamples, groupZones,
+     fetchWeather, fineDays, finePoints, renderConsensus, wxMs, wxPoints, (+12)
+   Koristi celine: 01, 02, 04, 18 */
 /* ---------- grafici duz rute (kisa, temperatura, vetar) ----------
    Podaci vec postoje u assess: po uzorku imamo km, precip, temp, wind i gust u satu prolaska.
    Crta se inline SVG, bez ijedne biblioteke, isto kao profil visine. */
@@ -12956,6 +13059,13 @@ function rideScore(route) {
   return { score, why };
 }
 
+/* CELINA 06 - MAPA: POI iz Overpass-a, moja lokacija na pocetnom ekranu, mapa (MapLibre) i njeno pokretanje.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: mapTheme, hazardMode, markers, catMarkers, layerVis
+   Zovu je druge celine: fetchData, clearMap, emojiMarker, markerPopup, homeLocHide, homeLocRecenter,
+     homeLocSet, homeLocStart, initMap, nearestTo, nightRoads, overpass, (+1)
+   Koristi celine: 01, 02, 07, 09, 12, 14, 16, 17, 19, 20 */
 /* ---------------- Overpass POI ---------------- */
 async function overpass(query) {
   if (navigator.onLine === false) return null;   // bez mreze ne gadjaj cetiri mirrora redom
@@ -13344,6 +13454,15 @@ function emojiMarker(lat, lon, emoji, title) {
   }
   state.markers.push(m);
 }
+/* CELINA 07 - SLOJEVI PUTEVI: slojevi mape: okupljalista, stanje na putevima i upozorenja, izbegavanje radova, znanje zajednice o putu, mesta, pumpe, hrana, dugmad "nadji mi", kisni radar.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: bjp, editorial, routes, layerVis, bjpKurOk, roadStatus, rsProbano, bjpProbano, edProbano,
+     geocode, planSeq, _mestaUzRutu, editorialMarkers, rsErr, (+11)
+   RIDE: pos, cam, route, freeRide, paused
+   Zovu je druge celine: loadPutevi, loadEditorial, bjpPokrivenost, pumpeUcitaj, restoraniUcitaj,
+     _jesteProsla, _meteoUWarn, _radKmOdRute, _radRelevantan, _uPoligonu, bjpNaRuti, bjpStarost, (+16)
+   Koristi celine: 01, 02, 04, 05, 06, 08, 09, 10, 11, 12, 13, 14, 15, 16, 19, 20 */
 /* ---------------- editorial sloj: kafane/okupljalista iz moto zajednice ----------------
    Trajni markeri (ne brisu se pri ponovnom planiranju) - zato NE idu u state.markers. */
 const BJB_CAT = { kafana: "food", okupljaliste: "meet", upozorenje: "hazard", vidikovac: "pause", mesto: "mesto" };
@@ -14804,6 +14923,14 @@ function radarPodnaslov() {
   return min > 25 ? T("radar.snimakStar", { 0: sat, 1: min }) : T("radar.snimak", { 0: sat });
 }
 
+/* CELINA 08 - REZULTAT: klasican prikaz rezultata plana: presuda, vremenska linija, kad krenuti, oprema, upozorenja, predlozi.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: vias, routes, _whenWin, _pt, arriveTarget, famousApplied, planSeq, atlasApplied, editorial,
+     selected, _bjbPop, atlasCoords, geocode, viaMarkers, (+1)
+   Zovu je druge celine: renderViaChips, bjbAlongRoute, renderFood, renderFuel, renderGear,
+     renderSuggestions, renderTimeline, renderVerdict, renderWarnings, renderWhen, scoreAssess
+   Koristi celine: 01, 02, 03, 04, 05, 06, 07, 11, 15, 18, 19, 20 */
 /* ---------------- prikaz rezultata ---------------- */
 function renderVerdict(assess, route, departure) {
   const cov = wxCover(assess);           // 0.9.95: presuda ima cetvrto stanje - "ne znam"
@@ -15798,6 +15925,15 @@ function renderViaChips() {
   $("doGrip").onpointerdown = (ev) => startEndpointDrag(ev, "do");
 }
 
+/* CELINA 09 - ZAJEDNICA: prijave opasnosti (i izbor vrste prijave), zajednicke prijave, ocene deonica, feed zajednice.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: bjpKur, bjp, catMarkers, _prijaveTs, _prijaveSeq, prijaveMarkers, _prijaveRoute, layerVis,
+     prijave, gpsFrom, hazardMode
+   RIDE: kolProslave, _oceneKand, _oceneSeq, kolCnt, _svezSum, lastSummary, route
+   Zovu je druge celine: _zajCitaj, supa, getHazards, kolStanje, loadPrijave, prijavaZiva, _pakOznaci,
+     _zajPisi, deonicaKljuc, dodeliPriznanje, flushPrijave, glasajPrijava, (+15)
+   Koristi celine: 01, 02, 06, 07, 10, 14, 15, 19, 20 */
 /* ---------------- prijave opasnosti (lokalno, do servera) ---------------- */
 const HAZARD_TYPES = ["policija", "kamera", "šljunak", "ulje", "radovi", "rupa", "divljač", "udes"];
 /* 0.9.160: identifikator prijave ostaje srpski (tako je u bazi), a prikaz i glas idu kroz recnik. */
@@ -15846,6 +15982,55 @@ function hazardMarker(h) {
   };
 }
 function loadHazards() { getHazards().forEach(hazardMarker); }
+
+function hazardPopup(e, btn) {
+  const old = document.querySelector(".hz-pop"); if (old) old.remove();
+  const ob = document.querySelector(".hz-back"); if (ob) ob.remove();
+  const closeAll = () => {
+    document.querySelectorAll(".hz-pop, .hz-back").forEach((n) => n.remove());
+    state.hazardMode = false; btn.classList.remove("on");
+    window._hzGuard = Date.now() + 600;   // iOS ghost-click: tap na kartici "procuri" na Prijavi dugme ISPOD sheeta i ponovo ga otvori
+  };
+  const back = document.createElement("div");
+  back.className = "hz-back";
+  back.addEventListener("click", closeAll);
+  document.body.appendChild(back);
+  const pop = document.createElement("div");
+  pop.className = "hz-pop";
+  pop._closeAll = closeAll;
+  const mrect = map.getContainer().getBoundingClientRect();   // pop ide na body (map pravi svoj stacking context pa bi ostao ISPOD donjih traka)
+  pop.style.position = "fixed";
+  pop.style.left = (mrect.left + Math.min(e.point.x, map.getContainer().clientWidth - 220)) + "px";
+  pop.style.top = (mrect.top + e.point.y + 8) + "px";
+  // naslov je element, ne CSS ::before (3.10., pregled S3): prevodi se i NE izlazi na kartici potvrde (.zajpop)
+  const naslov = document.createElement("div"); naslov.className = "hz-naslov"; naslov.textContent = T("hz.naslov"); pop.appendChild(naslov);
+  const grid = document.createElement("div"); grid.className = "hzgrid"; pop.appendChild(grid);
+  for (const t of HAZARD_TYPES) {
+    const b = document.createElement("button");
+    b.innerHTML = '<span class="hzi">' + (RMR_ICONS[HZ2ICON[t]] || RMR_ICONS.warning) + "</span>" + t;
+    b.onclick = () => {
+      const h = { type: t, v: [e.lngLat.lng, e.lngLat.lat], ts: Date.now() };
+      saveHazards([...getHazards(), h]);
+      hazardMarker(h);
+      closeAll();
+      try { posaljiPrijavu(h); } catch (er) {}   // sveza prijava ODMAH (red za cekanje se prazni iz voznje/online eventa - trigger pusta 1/min)
+    };
+    grid.appendChild(b);
+  }
+  const x = document.createElement("button");
+  x.className = "hzcancel";
+  x.textContent = T("planer.pmOtkazi");
+  x.onclick = closeAll;
+  pop.appendChild(x);
+  document.body.appendChild(pop);
+  /* racunar: prozor se otvara na mestu klika, pa je blizu donje ili desne ivice izlazio iz ekrana (donji red i Otkazi) - pregled 0.9.210.
+     Telefon i polozen ekran ga CSS-om (!important) drze dole/u sredini, pa ovo tamo nema dejstva. */
+  try {   // offsetWidth/Height, ne getBoundingClientRect: ulazna animacija "pop" ga u ovom trenutku jos skuplja, pa bi merenje bilo premalo
+    const w = pop.offsetWidth, h = pop.offsetHeight, t = parseFloat(pop.style.top) || 0, l = parseFloat(pop.style.left) || 0;
+    if (t + h > innerHeight - 8) pop.style.top = Math.max(8, innerHeight - 8 - h) + "px";
+    if (l + w > innerWidth - 8) pop.style.left = Math.max(8, innerWidth - 8 - w) + "px";
+  } catch (e) {}
+}
 
 /* ---------------- zajednicke prijave (Supabase, Faza 1) ----------------
    Anon/publishable kljuc je JAVNI po dizajnu - sta se sme radi u bazi cuvaju
@@ -16744,6 +16929,16 @@ function kolTikni(lo, la) {
   if (!poeniOk) RIDE.kolProslave.push(T("kol.tackeSacuvanePoeniNisu"));
   for (const id of priznanja) dodeliPriznanje(id);
 }
+/* CELINA 10 - DNEVNIK TURE: ture u etapama, dnevnik voznji, voznje na serveru, sekcije taba Zajednica, rezim prijava na mapi.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: gpsFrom, layerVis, prijaveMarkers, _gradska, editorial, editorialErr, edProbano, geocode
+   RIDE: lastSummary, movMs, kolCnt, pauzeNa, _turaPredlogTs, freeRide, kisa, maxD, route, leanChk,
+     momBrz, rel, rupaM, rupaMs, (+24)
+   Zovu je druge celine: zajModeOff, best3kmSeg, nazIzleci, nazPreCiljaSuf, preCiljaSufiks,
+     renderPreporuke, rsEtapeRender, tragSegmenti, turaAgregat, turaDodajIzSazetka, turaKandidat,
+     turaOpseg, (+4)
+   Koristi celine: 01, 02, 06, 07, 09, 14, 15, 17, 19 */
 /* ================= TURA (0.9.86): jedna fizicka tura u vise etapa =================
    TURA = JEDAN mr_voznje zapis (model c iz istrage): omotac {tura:true, dana, etapeCnt,
    agregati..., etape:[cele voznje VERBATIM]}. Jedan slot dnevnika, bez visecih referenci,
@@ -17966,6 +18161,14 @@ async function zajMapaUzivo() { await zajModeOn(); }
 })();
 /* R7: "Jos opcija" = mali sheet (kruzna, stanica, motor) - stari formular vise ne postoji na mobilnom */
 let _optsAnchors = null;
+/* CELINA 11 - GLAVNI TOK: izmena stanica, kamere na ruti, glavni tok planiranja (plan), donji list, pokretanje (init), preview mod, profil motora.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: planSeq, routes, geocode, vias, upoz, selected, _lastRelKey, famousApplied, gpsFrom,
+     _keepScroll, _stilIzLinka, engine, pendingAtlas, recommended, (+16)
+   Zovu je druge celine: plan, mojMotor, selectRoute, setSheet, lsPadLeft, initSheet, loadBikes,
+     planWarnCrtaj, previewFill, redrawWx, relKey, setPeek, (+3)
+   Koristi celine: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 13, 14, 15, 16, 18, 19, 20 */
 /* ---------------- Izmeni stanice (11.8., Boskov zahtev "kao kod Google Maps-a") ----------------
    Pun ekran sa spiskom Od / A / B / C / Do. Redosled se menja prevlacenjem hvataljke, X brise,
    "Dodaj stanicu" otvara pretragu. Prevlacenje NIJE pisano iznova - #viaChips sa svojom postojecom
@@ -18139,48 +18342,6 @@ function closeOptsSheet() {
     if (on) setTimeout(() => { try { $("panel").scrollTop = $("results").offsetTop - (isLS() ? 0 : $("peekBar").offsetHeight); } catch (e) {} }, 120);   // landscape: peekBar nije sticky
   });
 })();
-
-function hazardPopup(e, btn) {
-  const old = document.querySelector(".hz-pop"); if (old) old.remove();
-  const ob = document.querySelector(".hz-back"); if (ob) ob.remove();
-  const closeAll = () => {
-    document.querySelectorAll(".hz-pop, .hz-back").forEach((n) => n.remove());
-    state.hazardMode = false; btn.classList.remove("on");
-    window._hzGuard = Date.now() + 600;   // iOS ghost-click: tap na kartici "procuri" na Prijavi dugme ISPOD sheeta i ponovo ga otvori
-  };
-  const back = document.createElement("div");
-  back.className = "hz-back";
-  back.addEventListener("click", closeAll);
-  document.body.appendChild(back);
-  const pop = document.createElement("div");
-  pop.className = "hz-pop";
-  pop._closeAll = closeAll;
-  const mrect = map.getContainer().getBoundingClientRect();   // pop ide na body (map pravi svoj stacking context pa bi ostao ISPOD donjih traka)
-  pop.style.position = "fixed";
-  pop.style.left = (mrect.left + Math.min(e.point.x, map.getContainer().clientWidth - 220)) + "px";
-  pop.style.top = (mrect.top + e.point.y + 8) + "px";
-  // naslov je element, ne CSS ::before (3.10., pregled S3): prevodi se i NE izlazi na kartici potvrde (.zajpop)
-  const naslov = document.createElement("div"); naslov.className = "hz-naslov"; naslov.textContent = T("hz.naslov"); pop.appendChild(naslov);
-  const grid = document.createElement("div"); grid.className = "hzgrid"; pop.appendChild(grid);
-  for (const t of HAZARD_TYPES) {
-    const b = document.createElement("button");
-    b.innerHTML = '<span class="hzi">' + (RMR_ICONS[HZ2ICON[t]] || RMR_ICONS.warning) + "</span>" + t;
-    b.onclick = () => {
-      const h = { type: t, v: [e.lngLat.lng, e.lngLat.lat], ts: Date.now() };
-      saveHazards([...getHazards(), h]);
-      hazardMarker(h);
-      closeAll();
-      try { posaljiPrijavu(h); } catch (er) {}   // sveza prijava ODMAH (red za cekanje se prazni iz voznje/online eventa - trigger pusta 1/min)
-    };
-    grid.appendChild(b);
-  }
-  const x = document.createElement("button");
-  x.className = "hzcancel";
-  x.textContent = T("planer.pmOtkazi");
-  x.onclick = closeAll;
-  pop.appendChild(x);
-  document.body.appendChild(pop);
-}
 
 /* ---------------- kamere na ruti (OSM) ---------------- */
 async function renderCameras(route) {
@@ -18735,16 +18896,35 @@ function lsPadLeft(id, fb) {   // stvarna sirina prepreke levo (rail+panel/rideB
 }
 const sheet = { open: true, y: 0 };
 
-/* landscape: panel je levi stub pa se "sheet" povlaci u STRANU (ista logika, druga osa) */
+/* landscape: panel je levi stub pa se "sheet" povlaci u STRANU (ista logika, druga osa).
+   19.10.2026 (QA 17.10., nalaz 4): sklopljen stub je ostavljao 26 px, od kojih je kartica Od/Do pokrivala sve osim ~10 px, a Kreni je
+   odlazio sa panelom (na nosacu: jedan slucajan dodir i Start "nestane"). Sada ostaje LS_SKLOP_PX, kao niska traka na telefonu
+   (118 px: brojke + Kreni): sirina za prst, a Kreni (#peekGo, poravnat desno u traci) ostaje ceo na ekranu. */
+const LS_SKLOP_PX = 118;
+/* Koliko sklopljen stub ostavlja na ekranu: bar LS_SKLOP_PX, a kad je Kreni u traci - ceo Kreni (pregled 0.9.210: na uskom polozenom
+   ekranu, stub 307 px na 667x375, Kreni je stajao dalje od desne ivice i 118 px mu je secklo ~16 px). Meri se nacrtano dugme; Kreni se
+   vidi samo u sklopljenom stanju, pa applySheet u polozenom prvo skine "open", pa tek onda meri. */
+function lsSklopVidi(p) {
+  let v = LS_SKLOP_PX;
+  try {
+    const g = $("peekGo");
+    if (g && g.offsetWidth) v = Math.max(v, Math.ceil(p.getBoundingClientRect().right - g.getBoundingClientRect().left) + 8);
+  } catch (e) {}
+  return Math.min(v, p.clientWidth);
+}
 function sheetMaxY() {
   const p = $("panel");
-  return isLS() ? Math.max(0, p.clientWidth - 26) : Math.max(0, p.clientHeight - $("peekBar").offsetHeight);
+  return isLS() ? Math.max(0, p.clientWidth - lsSklopVidi(p)) : Math.max(0, p.clientHeight - $("peekBar").offsetHeight);
 }
 function sheetXform(y) { return isLS() ? `translateX(${-y}px)` : `translateY(${y}px)`; }
 function applySheet(animate = true) {
   const p = $("panel");
   if (!mqMobile.matches) { p.style.transform = ""; p.classList.remove("open"); return; }
+  if (isLS()) p.classList.toggle("open", sheet.open);   // polozen: Kreni (#peekGo) postoji samo u sklopljenom stanju, a lsSklopVidi ga meri
   sheet.y = sheet.open ? 0 : sheetMaxY();
+  /* polozen: koliko sklopljen stub ostaje na ekranu - navod izvora mape pocinje desno od toga (QA 0.9.210, N1: sira traka sa celim Kreni
+     je pokrivala "OpenFreeMap ©"). CSS ga koristi samo dok se planira (15-landscape.css). */
+  if (isLS()) { try { document.documentElement.style.setProperty("--ls-sklop", sheet.open ? "0px" : Math.max(0, p.clientWidth - sheet.y) + "px"); } catch (e) {} }
   if (!animate) p.classList.add("dragging");
   // otvoren u mirovanju = BEZ transforma (prazan string, ne translateY(0)): transformisan skroler
   // lomi sticky u WebKit-u; none→identitet se i dalje glatko animira kroz transition
@@ -18992,6 +19172,12 @@ async function loadBikes() {
   } catch { /* fallback: BIKES iz koda */ }
 }
 
+/* CELINA 12 - VERZIJA: verzija i "Sta je novo" (CHANGELOG), kraj uvodne animacije, provera verzije.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: vias, routes, novaVerzija, _stilIzLinka, famousApplied, novaLjuska, pendingFamous, selected
+   Zovu je druge celine: terenPali, bootUvodGasi, init, terenGasi, terenUpisi, terenZeljen
+   Koristi celine: 01, 02, 04, 05, 06, 07, 08, 11, 13, 15, 19 */
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
@@ -19285,8 +19471,16 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.209";
+const APP_VERSION = "0.9.210";
 const CHANGELOG = [
+  { v: "0.9.210", d: "19.10.2026.", stavke: [
+    "<b>Niš više ne vodi u Nicu.</b> Bez uključene lokacije \"Niš\" (i \"Nis\" bez kvačice) vodio je u Nicu, jer Nica u bazi mesta ima i turski naziv \"Nis\". Sada mesto koje se tačno tako zove pobeđuje strani naziv, a kvačice se poštuju. Ispravljeni su i Inđija (išla u Indiju), Ub (Mongolija), Ruma (Rim), Peć (Pečuj, kad se kuca sa ć), Žabari (selo kod Valjeva umesto opštine), Kovin, Kanjiža, Ražanj i Studenica. Provereno nad 790 pravih odgovora pretrage za mesta regiona. Poznato: brz Enter u polju pretrage, pre nego što stignu predlozi, i dalje uzima prvi red sa spiska (\"Ruma\" ume da ode na deonicu Ruma - Irig, \"Ub\" na Štubik). To ide u sledeće izdanje.",
+    "<b>Visina u vožnji.</b> Kad izabereš da brojka u vožnji pokazuje visinu, sada se osvežava dok voziš. Do sada se upisivala samo na pauzi, pa je u vožnji stajala crtica.",
+    "<b>Prijava opasnosti na računaru.</b> Prozor sa vrstama opasnosti bio je ispod zatamnjenja, pa nijedno dugme nije radilo. Sada radi kao na telefonu i ne izlazi iz ekrana.",
+    "<b>Položen telefon.</b> Kad sklopiš panel rezultata, ostaje traka sa celim dugmetom Kreni, a dodir na nju vraća panel. Do sada je ostajala traka od par milimetara i Kreni je nestajao. Navod izvora mape više nije pod levom trakom.",
+    "<b>Samo polazak.</b> Kad na telefonu izabereš odakle krećeš, odmah se otvara pretraga \"Kuda\". Do sada se otvarala prazna tabla. Red na početnom ekranu piše izabrani polazak, a krug se sa novim polaskom odmah preračuna.",
+    "Unutrašnje sređivanje: kod aplikacije je podeljen po celinama; ekran se ne menja.",
+  ] },
   { v: "0.9.209", d: "16.10.2026.", stavke: [
     "<b>\"Koje mesto?\"</b> Kad nemaš uključenu lokaciju, a ukucaš ime koje nosi više mesta (Rudnik u Srbiji, na Kosovu, u Poljskoj), aplikacija više ne bira sama. Pita te, i uz svako mesto piše opštinu i državu. Kad je jedno mesto očigledno ono pravo (grad naspram sela istog imena, Avala naspram bezimenih vrhova), ne pita, nego uzima njega.",
     "<b>Dnevnik: oznaka u drugom redu.</b> \"6 km pre cilja\" i \"završeno pre cilja\" stoje ispod naslova, pa se više ne seku kod dugih imena.",
@@ -20469,7 +20663,9 @@ async function verzijaProveri() {
   el.addEventListener("pointercancel", kraj);
   window.addEventListener("pointerup", kraj);   // ista pouka kao Atlas izlog: gest se zavrsava i van elementa
   el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); metrikaSledeca(1); } });
-  try { metrikaCrtaj(); } catch (e) {}
+  /* 18.10.2026: posle ucitavanja celog skripta. Odmah je citala RIDE pre njegove deklaracije
+     (14-planer.js) i tiho padala; celija se ionako crta na pocetku voznje (tools/pokretanje.test.mjs). */
+  setTimeout(() => { try { metrikaCrtaj(); } catch (e) {} }, 0);
 })();
 /* Shared lifecycle for modal sheets. Preserve pre-existing inert/scroll states and
    return focus to the opener. Only the active sheet handles keyboard navigation. */
@@ -20838,7 +21034,14 @@ function init() {
 
   const params = new URLSearchParams(location.search);
   state.pendingFamous = params.get("famous") || null;
-  if (params.has("preview")) { previewFill(); return; }
+  if (params.has("preview")) {
+    previewFill();
+    // ?preview=1&share=1: otvori deljenje nad primer voznjom, da se kartice vide bez voznje (Filipov indeks, 15.9.)
+    // opens the share studio over the sample ride, so the cards can be reviewed without riding
+    // 19.10.: studio se od 0.9.123 otvara sa shStudioOtvori (isto kao dugme Podeli u sazetku); Filipov stplOtvori je bio sa njegove grane
+    if (params.has("share")) setTimeout(() => { try { const s = _vozUzorak()[0]; rideSumShow(s); shStudioOtvori(s); } catch (e) { console.warn("share preview", e); } }, 1200);
+    return;
+  }
   // podeljena lokacija (9.8.): ?ll=44.78,20.44 ili ?q=<link/koordinate> - iz WhatsApp poruke, deljenja iz nase app,
   // ili bilo kog linka sa koordinatama. Ista logika koju koristi i pretraga (parseKoord).
   {
@@ -20874,6 +21077,14 @@ function init() {
     setTimeout(plan, 300); // ne zavisi od mape
   }
 }
+/* CELINA 13 - TABOVI PRETRAGA: donji meni i tabovi, ekran pretrage, Google pretraga, sacuvana i omiljena mesta, izbor na mapi.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: gpsFrom, fromOverride, vias, atlasApplied, atlasCoords, famousApplied, routes, searchTo,
+     geocode, editorial
+   Zovu je druge celine: openSearch, pickDestination, mestoIme, favCitaj, mestoCitaj, nasTabKlik,
+     otvoriPretraguSaLinkom, _imeSmisleno, closeSearch, favMigracija, favUpisi, gpCiljKartica, (+12)
+   Koristi celine: 01, 02, 05, 06, 07, 08, 11, 12, 14, 15, 16, 19, 20 */
 /* ---- app2 Faza 1a: donji meni / prebacivanje tabova ---- */
 (function(){
   const nav = document.getElementById("bottomnav");
@@ -21131,7 +21342,9 @@ async function razresiIPokazi(link) {
    u plan sa izabranim ciljem (pickDestination, Nedavno, izbor polaska) - tamo je deonica
    upravo ono sto je vozac trazio. Rok i generacija (atlasNameraVazi) cuvaju i te puteve. */
 function closeSearch(zadrziAtlas) {
-  if (!zadrziAtlas) atlasNameraGasi();
+  /* bez argumenta = vozac je izasao iz pretrage (Nazad, Sacuvano, tura...): i mod se vraca na cilj (19.10.2026, pregled 0.9.210) - zaostao
+     "from" je mesto iz lista Pumpe/Hrana ili Istrazi > Mesta (pickDestination van pretrage) pravio POLASKOM umesto ciljem. */
+  if (!zadrziAtlas) { atlasNameraGasi(); SEARCH_MODE = "to"; }
   document.body.classList.remove("searching");
 }
 /* ---- GOOGLE PRETRAGA (10.10.2026, Boskov izbor A + b: Google polje gore, nasi redovi ispod; izbor odmah crta rutu) ----
@@ -21827,6 +22040,22 @@ async function pickMapPotvrdi() {
   SEARCH_MODE = mode;
   pickDestination({ n: naziv, lat: c.lat, lon: c.lng });
 }
+/* Posle izbora POLASKA (red pretrage, Kuca i omiljena, tacka na mapi, Moja lokacija). Cip na pocetnom kaze izabran polazak (polje se puni
+   bez "change", pa je pisao "iz moje lokacije"). Sa ciljem ili krugom (krugu cilj ne treba) plan odmah, kao do sada za cilj. Bez njih na
+   telefonu odmah pretraga "Kuda" (19.10.2026, QA 17.10. nalaz 5: tabla planera pune visine bez sadrzaja, samo rucka i X; u qplan rezimu je
+   #panel prazan dok nema rute) - kao stanica bez cilja (4.10.). Racunar ima formular Od/Do i tu se nista ne menja. */
+function polazakPosleIzbora() {
+  try { homeCtxSync(); } catch (e) {}
+  const rg = document.getElementById("roundGen");
+  if (document.getElementById("to").value.trim() || (rg && rg.checked)) {
+    try { if (KP.otvoren) kartaPutaZatvori(true); } catch (e) {}   // 3.10.: i karta puta se uredno zatvori
+    document.getElementById("planBtn").click();
+    return;
+  }
+  if (!mqMobile.matches) return;
+  document.body.classList.remove("qplan"); try { if (window.qbarSync) qbarSync(); } catch (e) {}
+  try { openSearch("to"); } catch (e) {}
+}
 async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
   if (typeof SAST !== "undefined" && SAST.zaSastanak && sel && sel.lat != null) {   // 3.10.: izbor iz pretrage je MESTO SASTANKA, ne cilj voznje
     const fid = SAST.zaSastanak; SAST.zaSastanak = null;
@@ -21900,7 +22129,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
     document.getElementById("from").value = imeOd;
     if (sel.lat != null) state.fromOverride = { name: imeOd, lat: sel.lat, lon: sel.lon, izvor: sel.izvor || null };   // 10.10.: Google polazak (30 dana u Nedavno)
     SEARCH_MODE = "to";
-    if (document.getElementById("to").value.trim()) { try { if (KP.otvoren) kartaPutaZatvori(true); } catch (e) {} document.getElementById("planBtn").click(); }   // ako je cilj vec tu - odmah preracunaj (3.10.: i karta puta se uredno zatvori)
+    polazakPosleIzbora();   // cilj ili krug: plan odmah; bez njih na telefonu pretraga "Kuda"
     return;
   }
   try { if (map && map.resize) setTimeout(() => map.resize(), 80); } catch (e) {}
@@ -21988,12 +22217,17 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
           SEARCH_MODE = "to";
           return;
         }
+        /* 19.10.2026 (pregled 0.9.210): izbor je napravljen, pa polje i cip odmah kazu "Moja lokacija" (cip je ostajao "iz <mesto>"); GPS stize
+           posle. Sa ciljem ili krugom plan krece kad stigne GPS, kao do sada; bez njih na telefonu odmah pretraga "Kuda" (QA 17.10. nalaz 5). */
+        document.getElementById("from").value = "Moja lokacija";
+        const rgM = document.getElementById("roundGen"), imaCilj = !!(document.getElementById("to").value.trim() || (rgM && rgM.checked));
         if (navigator.geolocation) navigator.geolocation.getCurrentPosition((p) => {
           state.gpsFrom = { name: "Moja lokacija", lat: p.coords.latitude, lon: p.coords.longitude, ts: Date.now() };
           document.getElementById("from").value = "Moja lokacija";
-          if (document.getElementById("to").value.trim()) document.getElementById("planBtn").click();
+          if (imaCilj) document.getElementById("planBtn").click();
         });
         SEARCH_MODE = "to";
+        if (imaCilj) { try { homeCtxSync(); } catch (e2) {} } else polazakPosleIzbora();
       } else {   // kao odrediste nema smisla - samo centriraj mapu na mene
         closeSearch();
         if (navigator.geolocation) navigator.geolocation.getCurrentPosition((p) => {
@@ -22060,6 +22294,14 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
   });
 })();
 
+/* CELINA 14 - PLANER: Planer E: jedno pitanje gore, karta puta, mesto na mapi, "Blizu tebe danas"; na kraju je `RIDE`, stanje voznje.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: routes, gpsArea, gpsFrom, editorial, vias, fromOverride, atlasApplied, atlasCoords,
+     famousApplied, selected
+   Zovu je druge celine: updateQuickLabels, gpsPrefill, mestoCiljOtvori, homeCtxSync, kartaPutaOtvori,
+     kartaPutaSakrij, kartaPutaZatvori, mestoCiljIzMesta, polazakNaMojuLokaciju, sBlizuRender
+   Koristi celine: 01, 02, 06, 08, 11, 13, 19 */
 /* ======================= PLANER E (1.10.2026, Boskov izbor posle maketa A/B/C/D/E) =======================
    E1 pocetno: polje gore + red konteksta (odakle · kad · motor) - app pokazuje sta zna, ne pita.
    E2 pretraga koja nudi: skoro, sacuvano, blizu tebe, ture, krug - pre nego sto ista otkucas.
@@ -22380,6 +22622,15 @@ function polazakNaMojuLokaciju() {
   } catch (e) {}
 }
 const RIDE = { watch: null, nav: null, lock: null, lastFix: 0, offCount: 0, lastReroute: 0, lastSpeak: 0 };
+/* CELINA 15 - VOZNJA INSTRUMENTI: voznja: nagib, tablice puteva, ogranicenje brzine, etiketa puta, ziva prognoza, kisna pauza, druga ruta usred voznje, izgled navigacije, klizne brojke HUD-a.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: vias, geocode, _zones, editorial, prijave
+   RIDE: pos, route, log, kisaPauza, kpRekao, kpSat, kpZone, ahead, wxZona, _stajeOd, lastRouteI,
+     _kpCeka, _prog, cam, (+27)
+   Zovu je druge celine: navLog, speakSr, buildAhead, cyr2lat, metrikaCrtaj, navProject, altClose,
+     altOpen, arrSvg, buildNav, dijalogLog, drawRoadLabel, (+45)
+   Koristi celine: 01, 02, 03, 05, 06, 07, 09, 12, 14, 16, 19 */
 /* ---- NAGIB (lean angle) ----
    Nula se uzima na "Kreni" (telefon na nosacu, ugao nosaca = referenca), pa se na pravcima
    (brzina >25 km/h, stabilan kurs) referenca TIHO doteruje - prosek na pravcu mora biti nula.
@@ -23960,6 +24211,54 @@ function navProgress(p, totalM) {   // plavi (predjeni) deo raste
       ["step", ["line-progress"], "#cfccc9", q, "#FF7A2E"]);
   } catch (e) {}
 }
+/* KLIZNE BROJKE U VOZNJI (1.9.2026, Boskov zahtev: "taj deo brzina da se slajduje pa da bude
+   brzina, visina, i jos nesto"). Treca je TEMPERATURA - jedina od kandidata koja je i ziva i
+   bezbednosno korisna (hladnoca, poledica); domet goriva se racuna samo u planeru, ne u voznji.
+   Tap ili prevlacenje menja brojku; izbor prezivljava restart. Nedostupan podatak se NE izmislja
+   nego se pise "-" i jedinica ostaje, da vozac vidi STA gleda a ne samo prazninu. */
+const METRIKE = ["brzina", "visina", "temp"];
+const METRIKA_KEY = "rmr2_metrika";
+function metrikaIdx() {
+  try { const i = METRIKE.indexOf(localStorage.getItem(METRIKA_KEY) || "brzina"); return i < 0 ? 0 : i; }
+  catch (e) { return 0; }
+}
+function metrikaVrednost(koja) {
+  if (koja === "visina") {
+    const a = RIDE.alt;
+    return { v: (a == null || !isFinite(a)) ? "-" : String(Math.round(a)), u: "m" };
+  }
+  if (koja === "temp") {
+    const t = RIDE.wxTemp;
+    return { v: (t == null || !isFinite(t)) ? "-" : String(Math.round(t)), u: "°C" };
+  }
+  const sp = RIDE.spdKmh;
+  return { v: (sp == null || !isFinite(sp)) ? "0" : String(Math.round(sp)), u: "km/h" };
+}
+function metrikaCrtaj() {
+  try {
+    const { v, u } = metrikaVrednost(METRIKE[metrikaIdx()]);
+    const ev = document.getElementById("rideKmh"), eu = document.getElementById("rideKmhU");
+    if (ev) ev.textContent = v;
+    if (eu) eu.textContent = u;
+  } catch (e) {}
+}
+function metrikaSledeca(smer) {
+  try {
+    const i = (metrikaIdx() + (smer || 1) + METRIKE.length) % METRIKE.length;
+    localStorage.setItem(METRIKA_KEY, METRIKE[i]);
+  } catch (e) {}
+  metrikaCrtaj();
+}
+/* CELINA 16 - VOZNJA NAVIGACIJA: dugi pritisak na mapu, kamera navigacije, pauza i auto-pauza, navodjenje u pauzi, kontrolna tacka voznje.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: geocode, vias, routes, _zones, selected
+   RIDE: marker, paused, lastFixTs, trace, pauzeNa, t0, pos, trkM, pauseT0, offSt, pauseAuto, pauseMs,
+     samples, watch, (+97)
+   Zovu je druge celine: navCamPadding, leanRekalTick, leanRekalVrati, navAheadM, navDest,
+     navLongPressInit, pauzaKrece, rideNovaGeometrija, rideOdavde, rideReroute, startFreeRide,
+     startRide, (+2)
+   Koristi celine: 01, 02, 03, 04, 06, 07, 09, 10, 11, 12, 14, 15, 17, 19, 20 */
 /* ---------- dugi pritisak na mapu = "Vodi me ovde" (izlaz u nuzdi kad pretraga ne nadje; Google ga ima) ---------- */
 function navLongPressInit() {
   let lpTimer = null, lpPt = null;
@@ -24710,6 +25009,12 @@ function fixBrzina(p, lo, la, tsMs) {
   RIDE.spdKmh = spdK;
   return spdK;
 }
+/* Visina iz fiksa: broj ili null (uredjaj je ne da, ili nije broj) - celija tada pise "-", nikad izmisljenu nulu.
+   Jedno pravilo za pauzu (pauzaFixTick) i voznju (fixKorak); do 19.10.2026 ju je upisivala samo pauza (QA 17.10., P1). */
+function fixVisina(p) {
+  const a = p && p.coords ? p.coords.altitude : null;
+  return (a != null && isFinite(a)) ? a : null;
+}
 function pauzaFixTick(p, tsMs) {
   /* Fiks U TOKU pauze: kilometraza/trag/statistika MIRUJU (obecanje pauze), ali se brzina i
      svezina fiksa prate - bez toga auto-nastavak ne bi imao od cega da vidi da si krenuo. */
@@ -24718,7 +25023,7 @@ function pauzaFixTick(p, tsMs) {
      voznja je nema. Vertikalna tacnost telefona je slaba (obicno 10-30 m), pa se broj prikazuje
      zaokruzen na metar i NIKAD se ne koristi ni za jedan racun - samo za citanje na traci.
      Kad ga uredjaj ne da, ostaje null i celija pise "-" umesto izmisljene nule. */
-  RIDE.alt = (p.coords.altitude != null && isFinite(p.coords.altitude)) ? p.coords.altitude : null;
+  RIDE.alt = fixVisina(p);
   RIDE.lastFixTs = tsMs;
   const spdK = fixBrzina(p, lo, la, tsMs);
   /* 0.9.100 (QA nalaz 105, Boskova odluka (c) + nalaz 73 "rucna pauza treba automatski da se
@@ -24869,6 +25174,10 @@ function fixKorak(p, tsMs, replay) {
      liniju nagiba u sazetku (review #11/#20). */
   const la = p.coords.latitude, lo = p.coords.longitude;
   const prevFixTs = RIDE.lastFixTs; RIDE.lastFixTs = tsMs;
+  /* Visina (QA 17.10.2026, P1): svaki zivi fiks je osvezava - do 19.10. ju je upisivala samo pauza, pa je celija u voznji
+     stajala na "-". Replay je ne dira: pozadinski paket ne nosi visinu, pa bi je obrisao (celija "-") iako je telefon ima;
+     prvi zivi fiks posle povratka u aplikaciju je osvezi. */
+  if (!replay) RIDE.alt = fixVisina(p);
   const accFix = p.coords.accuracy || 0;
   const spdK = fixBrzina(p, lo, la, tsMs);
   try { rideAltBrzina(spdK, tsMs, replay); } catch (e) {}   // i slobodna voznja vodi _stajeOd (W1 parnost: auto-pauza + "Druga ruta")
@@ -25096,6 +25405,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
   RIDE.offCount = 0; RIDE.rerouting = false; RIDE.freeCamUntil = 0; RIDE.gotFix = false;
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kisaPauza = null; RIDE.kpRekao = null; RIDE.kpZone = null; RIDE.kpSat = null; RIDE._kpCekaOd = null; RIDE.kolProslave = []; RIDE.arrived = false;
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;
+  RIDE.alt = null;   // visina prethodne voznje ne sme da stoji na startu nove (pregled 0.9.210); prvi zivi fiks je upise
   RIDE._stajeOd = null;   // ostaci prethodne voznje: stari trenutak stajanja ne sme da predje u novu
   try { pauzaWxStop(); RIDE._pauzaWxRek = null; } catch (e) {}   // i nijedan tajmer pauze ne prelazi u novu vožnju
   RIDE.paused = false; RIDE.pauseMs = 0; RIDE.pauseT0 = null; RIDE.pauzeNa = null; RIDE._kretOd = 0; RIDE._kretRek = false; RIDE._pNavPrev = 0;
@@ -25158,6 +25468,7 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
     const nc = document.querySelector("#rideBar .navcard"); if (nc) nc.classList.remove("acquiring", "nosignal");
     if (RIDE.paused) {   // PAUZA: statistika miruje; brzina/svezina se prate zbog auto-nastavka (0.9.83)
       pauzaFixTick(p, nowFix);
+      try { metrikaCrtaj(); } catch (e) {}   // celija (visina/brzina) i u pauzi, kao pauzaNavTick u voznji po ruti (QA 0.9.210, N5)
       try { if (RIDE.marker && RIDE.marker._map) RIDE.marker.setLngLat([lo, la]); } catch (e) {}
       return;
     }
@@ -25287,6 +25598,7 @@ function startRide() {
   } catch (e) { RIDE.rel = null; }
   RIDE.t0 = Date.now(); RIDE.maxD = 0; RIDE.baseD = 0; RIDE.kolCnt = 0; RIDE.kisa = false; RIDE.kisaZona = null; RIDE.kisaAt = null; RIDE.wxZona = null; RIDE.kisaPauza = null; RIDE.kpRekao = null; RIDE.kpZone = null; RIDE.kpSat = null; RIDE._kpCekaOd = null; RIDE.kolProslave = []; RIDE.arrived = false;   // dnevnik voznje + kolekcije
   RIDE.maxKmh = 0; RIDE.movMs = 0; RIDE.lastFixTs = 0; RIDE.spdKmh = 0;   // statistika za summary
+  RIDE.alt = null;   // visina prethodne voznje ne sme da stoji na startu nove (pregled 0.9.210); prvi zivi fiks je upise
   RIDE._stajeOd = null;   // ostaci prethodne voznje: stari trenutak stajanja bi "Drugu rutu" upalio na startu
   try { pauzaWxStop(); RIDE._pauzaWxRek = null; } catch (e) {}   // i nijedan tajmer pauze ne prelazi u novu vožnju
   RIDE.lastRouteI = 0; RIDE.offSt = { offMs: 0 };   // 0.9.95 (nalaz 104): ruta pocinje NA vozacu, pa je hint 0; off-route masina stanja
@@ -25905,6 +26217,15 @@ function stopRide() {
   try { oceneNudi(vozIshod); } catch (e) {}   // OCENE (0.9.89): koje kurirane deonice je trag pokrio - kartica stize u svez sazetak
   try { rideSumShow(); } catch (e) {}   // sazetak voznje (nagib/krivine/brzine) - posle skidanja riding klase
 }
+/* CELINA 17 - SAZETAK: sazetak voznje, replay, izbor isecka, izvoz videa, list "Snimak voznje"; i ozicenje pocetnog ekrana (IIFE sa openPlanning, po polozaju).
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: editorial, atlasApplied, famousApplied, atlasCoords, editorialMarkers, fromOverride, homeTo,
+     markers, searchTo, vias
+   RIDE: _svezSum, route, _turaNazad, lastPos, lastSummary, _oceneKand, freeCamUntil, _turaPredlogTs,
+     cam
+   Zovu je druge celine: rideSumShow, best3km, rmrLogoCrtaj, rsPoiSet, sumTragSkini
+   Koristi celine: 01, 02, 03, 06, 07, 08, 09, 10, 11, 13, 14, 15, 16, 19 */
 /* ---- Sazetak voznje na kraju (Boskov zahtev 5.8.): sve metrike + deljenje ---- */
 function rsTracePath(pts, w, h, pad, segs) {   // normalizovan SVG path GPS traga (aspekt sacuvan, centriran); pad = broj ili {t,r,b,l}; segs = etape ture (podpath po etapi)
   if (!pts || pts.length < 2) return null;
@@ -27998,7 +28319,10 @@ function _vidBrzina(s, napredak) {
       }
     } catch (e) { alert(e && e.geo ? e.message : T("geo.neNalazimMesto")); updateQuickLabels(); }
   }));
-  updateQuickLabels();
+  /* 18.10.2026: posle ucitavanja celog skripta. Odmah je pitala offAll (19-deljenje-podesavanja.js) pre
+     njegove deklaracije i tiho padala posle Kuca/Nedavno, pa je broj sacuvanih ruta ostajao "…"
+     (taj red je skriven; tools/pokretanje.test.mjs). */
+  setTimeout(updateQuickLabels, 0);
   // sheet: prevuci dole = skupi, gore/tap = vrati
   const sheet = document.getElementById("homeSheet");
   if (sheet) {
@@ -28063,6 +28387,13 @@ window.rideRecenter = function () {
   });
 })();
 
+/* CELINA 18 - PREGLED RUTE: hero rezultata, sekcije pregleda rute sa presudama, kartica Od/Do sa stanicama.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: vias, bezAutoputa, routes, selected, fromOverride, gpsFrom, lastDeparture, searchTo, geocode,
+     homeTo, gpsArea, _meteoRedovi, _meteoRedoviSeq, _zones, (+3)
+   Zovu je druge celine: renderResultHero, rezInstCrtaj, rezKadTekst, riPresude
+   Koristi celine: 01, 02, 03, 05, 07, 08, 11, 13, 19, 20 */
 /* ---- app2 Faza 3: REZULTAT hero (kao result2 maketa) ---- */
 /* 3.10. (Boskov izbor: "gornji deo iz B, pregled iz C, bez segmenta - cip sada"): na telefonu rezultat planiranja je
    INSTRUMENT kao sazetak B - naslov + cip polaska, tri Coast broja (min, km, ocena), redovi Stizes / Vreme / Trosak / Ruta,
@@ -28485,6 +28816,14 @@ function renderResultHero(route) {
       `<span><span class="d" style="background:#ea3d57"></span>serpentine ${c.sharp}</span>`;
   }
 }
+/* CELINA 19 - DELJENJE PODESAVANJA: deljenje sazetka (slika, link), rute van mreze, tema, podesavanja u Ja, segmenti Ruta i list Slojevi.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: routes, geocode, selected, vias, _gradska, _prijaveSeq, editorialErr, editorialMarkers,
+     layerVis, prijaveMarkers, editorial, gpsFrom, lastDeparture, mapTheme, (+4)
+   Zovu je druge celine: shareToast, tihoObavestenje, listIzlazi, openLayersSheet, renderMesta,
+     deliTacka, jaPodesavanjaSync, offOpen, parseVias, stilKoren
+   Koristi celine: 01, 02, 03, 05, 06, 07, 08, 11, 12, 13, 14, 15, 16, 17 */
 /* ---- deljenje sazetka voznje: slika (canvas u brend stilu) ili link ---- */
 /* 0.9.95 (QA nalaz 64): "Moja lokacija" je KLJUCNA REC, ne ime mesta - plan() je namerno tako
    tretira od 6.8. Ali je u deljeni link isla kao ime, pa je primaocev plan prepoznavao istu
@@ -29303,6 +29642,15 @@ function openLayersSheet() {
   });
 }
 
+/* CELINA 20 - ATLAS ISTRAZI: Atlas deonica i tab Istrazi: liste, filter, Moje rute, Mesta, Blizu tebe, "Vodi me preko nje".
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: bjp, _oceneAgg, bjpKur, hazardMode, editorial, pendingAtlas, planSeq, routes, bjpKurOk,
+     bjpProbano
+   Zovu je druge celine: atlasNaslov, atlasZatvori, atlasTiho, atlasVias, atlasBaza, atlasIzlaz,
+     atlasKesPonisti, atlasNameraGasi, atlasNameraNaoruzaj, atlasNameraVazi, atlasNepotpuno,
+     atlasZemljaIme, (+3)
+   Koristi celine: 01, 02, 03, 04, 06, 07, 09, 10, 11, 13, 14, 19 */
 /* ================= ATLAS DEONICA (0.9.90) =================
    Izlozba kurirane baze po maketi V5 (docs/atlas-makete/v5-kombinovana.html, presuda 25.8.
    "dobra, idemo dalje"): rezim nad POSTOJECOM mapom (zajmap obrazac - traka gore jedini put
@@ -31053,6 +31401,10 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
   }));
 })();
 
+/* CELINA 21 - RUTE KALENDAR: ekran Rute (blizu tebe + tezina) i nas kalendar (izbor datuma i vremena).
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   Koristi celine: 01, 02, 06, 11, 12, 13, 14, 16, 19 */
 /* ---- app2 Faza 2: RUTE ekran (blizu tebe + težina, kao maketa) ---- */
 (function(){
   const L = document.getElementById("ruteList");
