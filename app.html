@@ -2059,7 +2059,7 @@
   body.atlas #homeFabs button:not([data-fab="gps"]) { display: none !important; }
   body.atlas #homeFabs button[data-fab="gps"] { display: flex !important; top: calc(84px + env(safe-area-inset-top)); bottom: auto; z-index: 26; }
   /* odricanje odgovornosti pre prve voznje; #turaSheet (0.9.86) deli isti jezik - pitanje pre starta */
-  #discSheet, #turaSheet, #atlasCilj, #mestoSheet, #vidSheet { position: fixed; inset: 0; z-index: 340; }
+  #discSheet, #turaSheet, #atlasCilj, #mestoSheet, #vidSheet, #mestoIzbor { position: fixed; inset: 0; z-index: 340; }
   /* --- Snimak voznje (0.9.116) ------------------------------------------------------------
      Merac 0-60 s ispod trajanja je pozajmljen iz makete A: kapa se tako VIDI kao slika, a ne
      samo tvrdi recenicom. Kad isecak dodirne plafon, merac je narandzast i pise MAKSIMUM. */
@@ -2130,14 +2130,14 @@
   /* Izbor izmedju jednako dobrih adresa (30.8., teren 27.8.): pet ulica Breza sa brojem 10.
      Meta 52 px jer se bira u rukavicama, i naselje je KRUPNIJE od daljine - daljina je pomocna,
      a ne presuda (Cerak 113 km, Kaludjerica 120 km od Race). */
-  #mestoSheet .mkand { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 0; }
-  #mestoSheet .mkand .mk { display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  #mestoSheet .mkand, #mestoIzbor .mkand { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 0; }
+  #mestoSheet .mkand .mk, #mestoIzbor .mkand .mk { display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
     width: 100%; min-height: 52px; padding: 8px 12px; text-align: left; cursor: pointer;
     background: var(--surface-veil); border: 1px solid var(--line-strong); border-radius: var(--r-sm);
     color: var(--fg); font: 400 14px var(--font-ui); -webkit-tap-highlight-color: transparent; }
-  #mestoSheet .mkand .mk b { font-size: 15px; color: var(--fg-strong); }
-  #mestoSheet .mkand .mk span { font-size: 12px; color: var(--fg-muted); }
-  #mestoSheet .mkand .mk:active { border-color: var(--accent); }
+  #mestoSheet .mkand .mk b, #mestoIzbor .mkand .mk b { font-size: 15px; color: var(--fg-strong); }
+  #mestoSheet .mkand .mk span, #mestoIzbor .mkand .mk span { font-size: 12px; color: var(--fg-muted); }
+  #mestoSheet .mkand .mk:active, #mestoIzbor .mkand .mk:active { border-color: var(--accent); }
   /* red "Moja mesta" u Ja tabu */
   #jaMesta .mrow { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--surface);
     border: 1px solid var(--line); border-radius: var(--r-lg); padding: 11px 13px; margin-top: 8px;
@@ -2154,19 +2154,19 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #jaMesta .mrow.prazan .mt span { color: var(--accent-label); font-weight: 600; }
   #jaMesta .mrow .mc { flex: none; width: 16px; height: 16px; color: var(--fg-decor); }
-  #discSheet .back, #turaSheet .back, #atlasCilj .back, #mestoSheet .back, #vidSheet .back { position: absolute; inset: 0; background: rgba(11,9,8,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-  #discSheet .body, #turaSheet .body, #atlasCilj .body, #mestoSheet .body, #vidSheet .body { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: min(560px, 100%);
+  #discSheet .back, #turaSheet .back, #atlasCilj .back, #mestoSheet .back, #vidSheet .back, #mestoIzbor .back { position: absolute; inset: 0; background: rgba(11,9,8,.72); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+  #discSheet .body, #turaSheet .body, #atlasCilj .body, #mestoSheet .body, #vidSheet .body, #mestoIzbor .body { position: absolute; left: 50%; transform: translateX(-50%); bottom: 0; width: min(560px, 100%);
     background: var(--bg); border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line);
     padding: 8px 18px calc(18px + env(safe-area-inset-bottom)); max-height: 84vh; overflow-y: auto; }
-  #discSheet .grab, #turaSheet .grab, #atlasCilj .grab, #mestoSheet .grab, #vidSheet .grab { width: 38px; height: 4px; border-radius: var(--r-xs); background: var(--fill-muted); margin: 4px auto 12px; }
-  #discSheet .ttl, #turaSheet .ttl, #atlasCilj .ttl, #mestoSheet .ttl, #vidSheet .ttl { font-size: 20px; font-weight: 800; color: var(--fg-strong); margin-bottom: 8px; }
-  #discSheet .lst p, #turaSheet .lst p, #atlasCilj .lst p { font-size: 13px; line-height: 1.6; color: var(--fg-soft); margin: 0 0 11px; }
+  #discSheet .grab, #turaSheet .grab, #atlasCilj .grab, #mestoSheet .grab, #vidSheet .grab, #mestoIzbor .grab { width: 38px; height: 4px; border-radius: var(--r-xs); background: var(--fill-muted); margin: 4px auto 12px; }
+  #discSheet .ttl, #turaSheet .ttl, #atlasCilj .ttl, #mestoSheet .ttl, #vidSheet .ttl, #mestoIzbor .ttl { font-size: 20px; font-weight: 800; color: var(--fg-strong); margin-bottom: 8px; }
+  #discSheet .lst p, #turaSheet .lst p, #atlasCilj .lst p, #mestoIzbor .lst p { font-size: 13px; line-height: 1.6; color: var(--fg-soft); margin: 0 0 11px; }
   #discSheet .lst p b, #turaSheet .lst p b, #atlasCilj .lst p b { color: var(--fg-strong); }
   #discSheet .lst .sub, #turaSheet .lst .sub, #atlasCilj .lst .sub { font-size: 13px; color: var(--fg-muted); }
   #discSheet .lst a { color: var(--accent-label); }
   #discSheet .ok, #turaSheet .ok, #atlasCilj .ok, #mestoSheet .ok, #vidSheet .ok { width: 100%; margin-top: 6px; background: var(--action-gradient); border: 0;
     color: var(--on-accent); border-radius: var(--r-lg); padding: 14px; font: 800 16px var(--font-ui); cursor: pointer; }
-  #turaSheet .sec, #atlasCilj .sec, #mestoSheet .sec { width: 100%; margin-top: 8px; background: transparent; border: 1px solid var(--line-strong);
+  #turaSheet .sec, #atlasCilj .sec, #mestoSheet .sec, #mestoIzbor .sec { width: 100%; margin-top: 8px; background: transparent; border: 1px solid var(--line-strong);
     color: var(--fg); border-radius: var(--r-lg); padding: 13px; font: 700 15px var(--font-ui); cursor: pointer; }
   /* sacuvane rute za offline - deli izgled sa #newsSheet */
   #offSheet { position: fixed; inset: 0; z-index: 65; }
@@ -3334,6 +3334,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
   .vrow .vl { min-width: 0; }
   .vrow .vt { font-size: 13px; font-weight: 600; color: var(--fg-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .vrow .vs { font-size: 11px; color: var(--fg-muted); font-weight: 400; margin-top: 1px; }
+  .vrow .vs .vpc { color: var(--fg-soft); font-weight: 600; }   /* 16.10.: "6 km pre cilja" u drugom redu, malo jace od datuma */
   .vrow .vr { margin-left: auto; text-align: right; flex: none; font-variant-numeric: tabular-nums; }
   .vrow .vkm { font-size: 16px; font-weight: 800; color: var(--fg-strong); }
   .vrow .vkm small { font-size: 11px; color: var(--fg-muted); font-weight: 600; }
@@ -3577,6 +3578,9 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #homeFabs { right: calc(14px + var(--sr)); top: 8px; }
     #homeFabs button[data-fab="gps"] { position: fixed; right: calc(14px + var(--sr)); bottom: calc(10px + var(--sb)); top: auto; }
     body.riding #homeFabs button[data-fab="gps"] { bottom: calc(78px + var(--sb)); }
+    /* 16.10.: u voznji je kolona bila spustena ispod kartice skretanja (--navcard-h, uspravno pravilo), a ovde kartica stoji LEVO -
+       pa je "Hrana i kafane" (271-317 px) zavrsavala ispod dugmeta lokacije (266-312) i nije mogla da se pritisne. Kolona ide od vrha. */
+    body.riding #homeFabs { top: 8px; }
     .compass-btn { right: calc(14px + var(--sr)); top: auto; bottom: calc(64px + var(--sb)); }
     body.riding .compass-btn { bottom: calc(132px + var(--sb)); }
     body.hasroute:not(.planning):not(.riding):not(.searching) #routePill,
@@ -4322,6 +4326,16 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
       </div>
       <button class="ok" id="atlasCiljDa" data-i18n="planer.atlasCiljDa">Zadrži cilj</button>
       <button class="sec" id="atlasCiljNe" data-i18n="planer.atlasCiljNe">Novi cilj</button>
+    </div>
+  </div>
+  <div id="mestoIzbor" hidden role="dialog" aria-modal="true" aria-labelledby="miNaslov">
+    <div class="back"></div>
+    <div class="body">
+      <div class="grab"></div>
+      <div class="ttl" id="miNaslov" data-i18n="mi.ttl">Koje mesto?</div>
+      <div class="lst"><p id="miTxt"></p></div>
+      <div class="mkand" id="miLista"></div>
+      <button class="sec" id="miOtkazi" type="button" data-i18n="mi.otkazi">Otkaži</button>
     </div>
   </div>
   <div id="offBadge" data-i18n="planer.offBadge">Bez mreže - vozi sačuvanu rutu</div>
@@ -5663,6 +5677,10 @@ const RECNIK_SR = {
   "dn.slobodna": "Slobodna vožnja",
   "dn.preCilja": " ({0} km pre cilja)",
   "dn.preCiljaBez": " (završeno pre cilja)",
+  "mi.ttl": "Koje mesto?",
+  "mi.txt": "Ima više mesta koja se zovu {0}. Izaberi:",
+  "mi.otkazi": "Otkaži",
+  "geo.izborOtkazan": "Mesto nije izabrano.",
   "dn.gradska": "Gradska vožnja",
   "dn.otvoreniPut": "Otvoreni put",
   "dn.turaIzNajave": "Tura iz najave nije više u dnevniku - vožnja je upisana zasebno.",
@@ -7747,6 +7765,10 @@ const RECNIK_EN = {
   "dn.slobodna": "Free ride",
   "dn.preCilja": " ({0} km short of destination)",
   "dn.preCiljaBez": " (ended before destination)",
+  "mi.ttl": "Which place?",
+  "mi.txt": "There are several places called {0}. Pick one:",
+  "mi.otkazi": "Cancel",
+  "geo.izborOtkazan": "No place was chosen.",
   "dn.gradska": "City ride",
   "dn.otvoreniPut": "Open road",
   "dn.turaIzNajave": "The announced tour is no longer in the log - the ride was saved separately.",
@@ -10085,6 +10107,64 @@ function geoName(x, q) {   // ime rezultata: POI ime > "Ulica broj" > naselje - 
   if (jeKucniBroj(parts[0] || "")) return parts[1] ? `${lat1(parts[1])} ${parts[0]}` : q;   // 0.9.82 review: i display_name delovi umeju da budu cirilicni
   return lat1(parts[0]) || q;
 }
+/* DIJALOG "KOJE MESTO?" (16.10.2026, Bosko: "Da neka me pita dijalog grad i drzava"). Bez lokacije aplikacija ne zna koje si od dva
+   ista mesta mislio (Rudnik u Srbiji, na Kosovu, u BiH), pa umesto da tiho izabere jedno - pita, sa opstinom i drzavom. Pita samo kad su
+   kandidati ISTOG imena, na razlicitim mestima (2 km+) i podjednako znacajni (do 2 boda): grad naspram zaseoka istog imena se ne pita.
+   Sa lokacijom i sa zarezom u upitu ("Rudnik, Srbija") pravilo je kao i ranije. */
+function geoKrajIDrzava(x) {   // Nominatim: "Opština Gornji Milanovac, Srbija"
+  const a = (x && x.address) || {}, ime = geoName(x, "");
+  const kraj = [a.municipality, a.city, a.town, a.county, a.state_district, a.state].find((v) => v && v !== ime) || "";
+  return [kraj, a.country].filter(Boolean).join(", ");
+}
+/* Vrsta naselja za "Koje mesto?" (pregled 0.9.209): 3 grad, 2 selo, 1 zaseok, 0 nije naselje (planina, reka, lokal), -1 upravna oblast. Sediste opstine
+   istog imena je grad i kad ga OSM vodi kao selo: Golubac ("Opština Golubac") naspram sela Golubac u Mionici se ne pita. */
+function geoVrsta(tip, ime, uprava) {
+  const v = { city: 3, town: 3, village: 2, suburb: 2, municipality: 2, city_district: 2, hamlet: 1, isolated_dwelling: 1, farm: 1, locality: 1,
+    neighbourhood: 1, quarter: 1, croft: 1, allotments: 1 }[tip] || 0;
+  if (/^(state|province|county|state_district|region)$/.test(tip || "")) return -1;   // upravna oblast (pokrajina, okrug), ne naselje
+  if (v < 1 || v === 3) return v;
+  const g = (t) => _geoFold(cyr2lat(String(t || "")).trim()), f = (t) => g(t).replace(/^(gradska opstina|opstina|opcina|grad|gmina|municipality of)\s+/, "").replace(/\s+(municipality|opstina|opcina)$/, "");
+  // polje koje je samo ime mesta nije opstina NAZVANA po njemu: ceska opstina "Úžice" u svom polju municipality nosi sebe
+  return (uprava || []).some((u) => u && g(u) !== g(ime) && f(u) === f(ime)) ? 3 : v;
+}
+async function geoIzborBezLokacije(kand, qq, inace) {   // kand: [{ name, lat, lon, sub, bod, vrsta, znacaj? }]; inace: { name, imena } onoga sto bi
+  // geocode izabrao bez ovoga. Vraca izabrano (ili jedino ocigledno) mesto, null (nema sta da se pita) ili baca geo gresku (otkazano)
+  if (geoRef() || /,/.test(qq) || !Array.isArray(kand) || kand.length < 2) return null;
+  /* Poredi se sa onim sto je vozac OTKUCAO, ne sa prvim rezultatom: pravi Nominatim za "Rudnik" stavlja na vrh "Rudnik nad Sanem" (grad u
+     Poljskoj), pa bi poredjenje sa njim proglasilo da drugih istih nema i tiho ga izabralo - bas kvar sa kog je sve krenulo (proba 16.10.).
+     Cirilica se poredi preko latinice: "Липовац" pita kao "Lipovac" (pregled 0.9.209). */
+  const ime = (t) => _geoFold(cyr2lat(String(t || "")).trim()), f = ime(qq);
+  let sv = kand.filter((c) => ime(c.name) === f && Number.isFinite(c.lat) && Number.isFinite(c.lon)).sort((x, y) => (y.bod || 0) - (x.bod || 0));
+  /* Mesto koje bi geocode ionako izabrao nosi i otkucano ime, pod drugim imenom ili na drugom jeziku ("Belgrade" je name:en Beograda,
+     "Vienna" Beca): nema sta da se pita ni menja, bira se kao u 0.9.208. Bez ovoga je "Belgrade" vodio u Montanu, "Rome" u Dzordziju, a
+     "Vienna" nudio samo americka mesta (drugi pregled 0.9.209). Uslov "i znacajnije je od istoimenih" (da Studenica ostane u Srbiji) je
+     treci pregled oborio: "Sparta" je tada nudila samo dve americke Sparte, bez grcke - zato jednostavno pravilo. */
+  if (inace && ime(inace.name) !== f && (inace.imena || []).some((n) => ime(n) === f)) return null;
+  if (sv.length < 2) return null;
+  /* PODJEDNAKO ZNACAJNA (pregled 0.9.209, 40 pravih odgovora Nominatima): bodovi su za to bili pretesni - vrh planine nosi samo znacaj x 6,
+     pa su Avala (2,69) i tri bezimena vrha (0,96) bili "do 2 boda". Nominatim daje znacaj mesta 0..1: drugo mesto mora imati bar 3/4
+     znacaja najjaceg. Gde znacaja nema (Photon) ostaje pravilo do 2 boda. */
+  const saZnacajem = sv.every((c) => Number.isFinite(c.znacaj)), najZ = saZnacajem ? Math.max(...sv.map((c) => c.znacaj)) : 0, naj = sv[0].bod || 0;
+  sv = sv.filter((c) => (saZnacajem ? c.znacaj >= 0.75 * najZ : naj - (c.bod || 0) <= 2));
+  /* ISTA VRSTA: ne nudi se naselje nize vrste od najjaceg kandidata - grad naspram sela, selo naspram zaseoka (Zabljak; Golubac kao
+     sediste opstine, geoVrsta). Planine, reke i lokali nisu naselja i ovo ih ne dira. Jedno odrediste = jedan red: na 5 km jedno od
+     drugog (selo Kopaonik i planina Kopaonik su 2,3 km - za vozaca isto odrediste), ili isti red na ekranu (dva "Cer | Grad Loznica,
+     Srbija" se ne mogu razlikovati). */
+  const vrh = sv[0].vrsta || 0, isti = [];
+  for (const c of sv) {
+    if ((c.vrsta || 0) >= 1 && (c.vrsta || 0) < vrh) continue;
+    if ((c.vrsta || 0) < 0 && vrh >= 1) continue;   // pokrajina/okrug istog imena ne takmici se sa gradom (Istanbul, Varna, Konstanca)
+    if (isti.some((y) => haversine(y.lat, y.lon, c.lat, c.lon) < 5 || ime(y.name + " " + y.sub) === ime(c.name + " " + c.sub))) continue;
+    isti.push(c);
+  }
+  /* Ime nosi vise mesta, a jedno je ocigledno pravo: uzima se ONO, a ne nesto drugog imena sto bi bodovanje izabralo - bez lokacije je
+     "Cer" vodio na aerodrom Cherbourg u Francuskoj, "Рудник" u Rusiju, "Zlatibor" u centar okruga (isto u 0.9.208; pregled 0.9.209). */
+  if (isti.length === 1 && inace && ime(inace.name) !== f && !/\d/.test(qq)) return { lat: isti[0].lat, lon: isti[0].lon, name: isti[0].name };
+  if (isti.length < 2) return null;
+  const izbor = await mestoIzborPitaj(qq, isti.slice(0, 5));
+  if (!izbor) { const err = new Error(T("geo.izborOtkazan")); err.geo = true; err.otkazano = true; throw err; }   // otkazano: pozivalac ne nastavlja tiho (izbor ture)
+  return { lat: izbor.lat, lon: izbor.lon, name: izbor.name };
+}
 const _geoCls = (x) => x.class || x.category || "";   // json format ima "class", jsonv2 "category" - uhvaceno zivim testom 6.8.
 /* TEREN 27.8.2026 (Boskovi nalazi 4-6, "Breza 10"). U Srbiji postoji PET ulica Breza sa brojem
    10. Za upit sa gradom prve dve - Kaludjerica i Cerak Vinogradi - imaju BIT-IDENTICAN
@@ -10296,6 +10376,7 @@ async function geoPhotonSugg(q, n, bezRegiona) {   // TYPEAHEAD varijanta (Faza 
       return { name: nm, lat: x.c[1], lon: x.c[0],
         sub: [lat0(x.p.city || x.p.county), lat0(x.p.country)].filter(Boolean).join(", "),
         d, bod: _phBod(x.p, q, dBod, adr),
+        tip: x.p.osm_key === "place" ? x.p.osm_value : "", uprava: [x.p.city, x.p.county, x.p.district],   // "Koje mesto?" (geoVrsta): grad naspram sela se ne pita
         // bodovi BEZ tacke regiona: po njima Enter i auto-izbor odlucuju (P1); red i dalje stoji po `bod`
         bodOdl: ref && ref.region ? _phBod(x.p, q, null, adr) : undefined };
     /* 900 km: Alpi i Grcka ostaju u predlozima, drugi kraj sveta ne (review 9.8.). Ali ADRESA
@@ -10664,6 +10745,8 @@ async function geocode(q) {
          (treci pregled 16.10.); greska "izaberi iz liste" ovde nije resenje jer geocode zovu i polja Od/Do, deljeni linkovi i Kuca/Posao. */
       const wide = await geoPhotonSugg(qq, 5, true);
       if (wide && wide.length) {
+        const izb = await geoIzborBezLokacije(wide.map((x) => ({ name: x.name, lat: x.lat, lon: x.lon, sub: x.sub, bod: x.bod, vrsta: geoVrsta(x.tip, x.name, x.uprava) })), qq, { name: wide[0].name, imena: [] });
+        if (izb) return izb;
         const naj = wide[0];
         if (naj.bod >= 2 || wide.length === 1) return { lat: naj.lat, lon: naj.lon, name: naj.name };
       }
@@ -10683,6 +10766,15 @@ async function geocode(q) {
   }
   const best = geoPick(j, qq);
   const ref = geoRef();
+  if (!ref) {   // bez lokacije: dva ista mesta se ne biraju tiho (dijalog "Koje mesto?")
+    const adrQ = /\d/.test(qq);
+    const izb = await geoIzborBezLokacije(j.map((x) => {
+      const a = x.address || {}, nm = geoName(x, qq);
+      return { name: nm, lat: +x.lat, lon: +x.lon, sub: geoKrajIDrzava(x), bod: _geoBod(x, adrQ, null), znacaj: x.importance != null ? +x.importance : NaN,
+        vrsta: geoVrsta(x.addresstype, nm, [a.city, a.municipality, a.county, a.state_district]) };
+    }), qq, best ? { name: geoName(best, qq), imena: Object.entries(best.namedetails || {}).filter(([k]) => k === "name" || k.startsWith("name:")).map(([, v]) => v) } : null);
+    if (izb) return izb;
+  }
   // POI daleko od korisnika a fuzzy varijanta postoji BLIZU? ("Moto Bike Shop": Nominatim zna samo Temisvar ~120 km,
   // Photon nadje "Motor Bike Shop" na Vracaru ~8 km - blizi pogodak pobedjuje, 6.8.)
   /* TEREN 30.8.2026 ("DOGMA BREWERY" i "dogma"): ova kapija je gledala samo cetiri klase i samo
@@ -13035,6 +13127,10 @@ function darkifyStyle() {
   for (const l of layers) {
     try {
       if (l.type === "background") map.setPaintProperty(l.id, "background-color", "#3b342e");
+      /* 16.10. (Bosko: "sloj guzvi je bled"): ova petlja je stisavala SVE rastere na 0,12 - i nas sloj guzvi (dodat pre "load") je zato
+         bio skoro nevidljiv u tamnoj temi. Stisava se samo senka reljefa osnovne mape; nasi slojevi imaju svoju jacinu. */
+      else if (l.type === "raster" && l.id === "guzve") map.setPaintProperty(l.id, "raster-opacity", GUZVA_SLOJ_TAMNO);
+      else if (l.type === "raster" && l.id === "radar") continue;
       else if (l.type === "raster") map.setPaintProperty(l.id, "raster-opacity", 0.12);   // ne2 shaded relief ne sme da bledi noc
       else if (l.type === "fill" && /water/i.test(l.id)) map.setPaintProperty(l.id, "fill-color", "#26211d");
       else if (l.type === "fill" && /building/i.test(l.id)) {
@@ -16746,6 +16842,12 @@ function nazPreCiljaSuf(naz) {   // oznaka "pre cilja" sa kraja imena (sa razmak
   if (/prekinut|interrupt/i.test(m[1])) return T("dn.preCiljaBez");
   return /pre cilja|before destination|short of destination/i.test(m[1]) ? " (" + m[1] + ")" : "";
 }
+function nazDeli(naz) {   // red dnevnika (16.10., Bosko: "da u drugi red dnevnika"): naslov bez oznake, oznaka ide u podnaslov - u jednom redu se sekla "…"
+  const suf = nazPreCiljaSuf(naz);
+  if (!suf) return { osnova: naz, oznaka: "" };
+  const m = /\s*\(([^()]*)\)\s*$/.exec(naz);
+  return { osnova: m ? naz.slice(0, m.index) : naz, oznaka: suf.trim().replace(/^\(|\)$/g, "") };
+}
 function nazIzleci(naz) {   // zatecen zapis: "(prekinuto)", "(prekinuto na 120 km)", "(interrupted ...)" -> "(završeno pre cilja)"
   if (typeof naz !== "string") return naz;
   const m = /\s*\(([^()]*)\)\s*$/.exec(naz);
@@ -17437,9 +17539,10 @@ function renderVoznje(targetId, limit) {
   const list = v.slice(0, box._sviPrikaz ? DNEVNIK_CAP : (box._limit || 10));
   box.innerHTML = list.map((r) => {
     const ec = r.etapeCnt || (r.etape || []).length || 1;   // gard: "undefined etapa" ne sme na ekran (review 0.9.86)
+    const nd = r.nazRucno ? { osnova: r.naz, oznaka: "" } : nazDeli(r.naz);   // ime koje je vozac sam ukucao se ne cepa (pregled 0.9.209; kao lecenje u _zapisRaspakuj)
     return `<div class="vrow${selMode ? " selm" : ""}${selMode && sel.has(r.ts) ? " izabrana" : ""}" data-ts="${r.ts}" role="button" tabindex="0"${selMode ? ` aria-selected="${sel.has(r.ts)}"` : ""} aria-label="${selMode ? T("dn.ariaIzaberi") : T("dn.ariaOtvoriSazetak")}: ${esc(r.naz)}">
-    ${selMode ? '<span class="vchk" aria-hidden="true"></span>' : ""}<div class="vl"><div class="vt">${esc(r.naz)}</div>
-      <div class="vs">${r.tura
+    ${selMode ? '<span class="vchk" aria-hidden="true"></span>' : ""}<div class="vl"><div class="vt">${esc(nd.osnova)}</div>
+      <div class="vs">${nd.oznaka ? '<span class="vpc">' + esc(nd.oznaka) + "</span> · " : ""}${r.tura
         ? T("dn.turaRed", { 0: ec, 1: TN(ec, "pl.etapa"), 2: r.dana > 1 ? T("dn.dana", { 0: r.dana }) : "", 3: turaOpseg(r) })
         : `${r.tip ? esc(r.tip) + " · " : ""}${new Date(r.ts).toLocaleDateString(LOKAL())}`}${r.kisa ? " · " + rIco("rain", 11) : ""}${r.kol ? T("dn.kolekcijaTag") : ""}</div></div>
     <div class="vr"><div class="vkm">${r.km}<small> km</small></div>
@@ -19182,8 +19285,16 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.208";
+const APP_VERSION = "0.9.209";
 const CHANGELOG = [
+  { v: "0.9.209", d: "16.10.2026.", stavke: [
+    "<b>\"Koje mesto?\"</b> Kad nemaš uključenu lokaciju, a ukucaš ime koje nosi više mesta (Rudnik u Srbiji, na Kosovu, u Poljskoj), aplikacija više ne bira sama. Pita te, i uz svako mesto piše opštinu i državu. Kad je jedno mesto očigledno ono pravo (grad naspram sela istog imena, Avala naspram bezimenih vrhova), ne pita, nego uzima njega.",
+    "<b>Dnevnik: oznaka u drugom redu.</b> \"6 km pre cilja\" i \"završeno pre cilja\" stoje ispod naslova, pa se više ne seku kod dugih imena.",
+    "<b>Sloj gužvi se vidi.</b> Na tamnoj mapi je bio skoro providan, jer ga je tamna tema stišavala zajedno sa senkom reljefa. Sada je jasno vidljiv, a ne preplavljuje mapu.",
+    "<b>Obilazak gužve u planeru</b> sada kreće najviše 4 km pre gužve, kao u vožnji. Ranije je menjao rutu od samog starta, pa je i deo pre gužve postajao autoput.",
+    "<b>Putarina na obilasku</b> se računa samo za deo koji stvarno voziš; deonica koja prelazi spoj više se ne broji cela ili ne ispada.",
+    "<b>Položen ekran u vožnji:</b> dugme lokacije je pokrivalo \"Hrana i kafane\". Kolona dugmadi sada ide od vrha ekrana.",
+  ] },
   { v: "0.9.208", d: "16.10.2026.", stavke: [
     "<b>Prosek i vreme u pokretu za ture.</b> Tura (spojene etape) ih do sada nije imala: zapis vožnje nije čuvao vreme u pokretu, pa je zbir bio nula (tvoje ture od 4.10, 88 i 170 km). Sada ga zapis čuva, a postojeće ture se same poprave čim otvoriš dnevnik.",
     "<b>Pretraga bez lokacije.</b> Kad telefon nema nijednu tačku (nova instalacija, isključena lokacija), \"Rudnik\" je nudio Poljsku. Sada se lista predloga ređa prema tvom kraju (po vremenskoj zoni telefona: Srbija, Crna Gora, BiH, Hrvatska, Severna Makedonija, Slovenija), a red ne piše \"~X km\", jer to nije tvoja pozicija. Kad su dve iste adrese u različitim gradovima, aplikacija i dalje pita koju, ne bira sama.",
@@ -20653,11 +20764,22 @@ function init() {
       // krećeš iz svog grada: ORIJENTIŠI rutu ka bližem kraju da ne voziš celu pa nazad
       let wps = f.wps, sName = f.startName, eName = f.endName;
       try {
-        const g = await geocode(userFrom);
+        /* Polazak iz istog izvora kao plan() (pregled 0.9.209): GPS i mesto izabrano iz pretrage se ne geokodiraju ponovo, a geokodiran
+           polazak ide u fromOverride - plan() ispod ga uzima, pa bez lokacije "Koje mesto?" ne pita dva puta. */
+        const zna = (state.gpsFrom && state.gpsFrom.lat != null && (userFrom === state.gpsFrom.name || /^moja lokacija$/i.test(userFrom))) ? state.gpsFrom
+          : (state.fromOverride && userFrom === state.fromOverride.name) ? state.fromOverride : null;
+        const g = zna || await geocode(userFrom);
+        if (!zna && !g.tacnost) state.fromOverride = { name: userFrom, lat: g.lat, lon: g.lon };   // adresa (tacnost): plan() je geokodira opet i javi "ulica, ne broj"
         const dStart = haversine(g.lat, g.lon, f.wps[0][1], f.wps[0][0]);
         const dEnd = haversine(g.lat, g.lon, f.wps[f.wps.length - 1][1], f.wps[f.wps.length - 1][0]);
         if (dEnd < dStart) { wps = [...f.wps].reverse(); sName = f.endName; eName = f.startName; }
-      } catch { /* bez geokodiranja ostaje podrazumevani smer */ }
+      } catch (e) {
+        if (e && e.otkazano) {   // vozac je odustao od izbora polaska: tura se ne planira tiho iz podrazumevanog smera
+          setStatus(e.message, true); try { tihoObavestenje(e.message); } catch (e2) {}
+          fs.value = ""; return;
+        }
+        /* bez geokodiranja ostaje podrazumevani smer */
+      }
       $("to").value = eName;
       state.vias = [{ t: "stop", v: wps[0], name: sName },
         ...wps.slice(1, -1).map((w) => ({ t: "via", v: w }))];
@@ -30635,6 +30757,36 @@ function atlasCiljZatvori(zadrzi) {
   try { if (el._fokusPre && el._fokusPre.focus) el._fokusPre.focus(); } catch (e) {}
   el._fokusPre = null;
 }
+function mestoIzborPitaj(q, kand) {   // "Koje mesto?" (16.10.): vraca izabranog kandidata, ili null na Otkazi / Escape / dodir pozadine
+  return new Promise((resolve) => {
+    const el = document.getElementById("mestoIzbor"), lista = document.getElementById("miLista");
+    if (!el || !lista) { resolve(null); return; }
+    const tx = document.getElementById("miTxt"); if (tx) tx.textContent = T("mi.txt", { 0: q });
+    lista.innerHTML = kand.map((c, i) => `<button type="button" class="mk" data-i="${i}"><b>${esc(c.name)}</b><span>${esc(c.sub || "")}</span></button>`).join("");
+    const fokusPre = document.activeElement;
+    let gotov = false;
+    const kraj = (v) => {
+      if (gotov) return; gotov = true;
+      el.hidden = true; document.removeEventListener("keydown", tast, true);
+      try { if (fokusPre && fokusPre.focus) fokusPre.focus(); } catch (e) {}
+      resolve(v);
+    };
+    const tast = (ev) => {   // Escape = odustao; Tab ostaje u dijalogu (isti obrazac kao atlasCilj)
+      if (ev.key === "Escape") { ev.preventDefault(); ev.stopImmediatePropagation(); kraj(null); return; }   // samo dijalog: list Moja mesta ispod ostaje (pregled 0.9.209)
+      if (ev.key !== "Tab") return;
+      const f = [...el.querySelectorAll("button")];
+      if (!f.length) return;
+      if (ev.shiftKey && document.activeElement === f[0]) { ev.preventDefault(); f[f.length - 1].focus(); }
+      else if (!ev.shiftKey && document.activeElement === f[f.length - 1]) { ev.preventDefault(); f[0].focus(); }
+    };
+    lista.onclick = (e) => { const b = e.target.closest("button[data-i]"); if (b) kraj(kand[+b.dataset.i] || null); };
+    const ot = document.getElementById("miOtkazi"); if (ot) ot.onclick = () => kraj(null);
+    const bk = el.querySelector(".back"); if (bk) bk.onclick = () => kraj(null);
+    document.addEventListener("keydown", tast, true);
+    el.hidden = false;
+    try { const b0 = lista.querySelector("button"); if (b0) b0.focus(); } catch (e) {}
+  });
+}
 function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi cilj ili izaberi novi
   const el = document.getElementById("atlasCilj");
   if (!el) { try { openSearch("to"); } catch (e) {} return; }
@@ -32679,6 +32831,7 @@ const GUZVA_ODSTUPANJE = 0.08;    // TomTom duzina naspram nase (isti deo rute):
 const GUZVA_TACAKA_MAX = 300;     // tacaka nase rute u jednom zahtevu
 const GUZVA_RAZMAK_M = 100;       // najmanji razmak tacaka (gusce ne treba - Valhalla tacke su na 20-50 m)
 const GUZVA_VAZI_MS = 5 * 60000;  // provera zastari: povratak na istu varijantu posle 5 min pita ponovo
+const GUZVA_SLOJ_TAMNO = 0.55;      // jacina sloja guzvi na tamnoj mapi (16.10., Bosko: "pojacaj malo"; bio 0,12 zbog darkifyStyle, svetla tema 0,85)
 const GUZVA_PRIKAZ_MS = 20 * 60000;  // posle 20 min provera se vise NIGDE ne prikazuje (ni Stizes, ni crven deo, ni redovi, ni recenica)
 const GUZVA_SALJE_MIN = 60;       // TomTom dobija tacke rute za prvih sat vremena voznje (tako pise i u politici privatnosti)
 const GUZVA_SLOJ_OSVEZI_MS = 3 * 60000;   // plocice sloja se osvezavaju: MapLibre inace drzi ucitanu plocicu i prikazuje staru guzvu kao zivu
@@ -32729,7 +32882,7 @@ function guzvaSlojPali() {
     /* ispod nase rute (seg-casing) i ispod natpisa mape - guzva ne sme da prekrije ni rutu ni imena ulica */
     const prviNatpis = ((map.getStyle().layers || []).find((l) => l.type === "symbol") || {}).id;
     const ispod = map.getLayer("radar") ? "radar" : map.getLayer("alts") ? "alts" : map.getLayer("seg-casing") ? "seg-casing" : prviNatpis;
-    map.addLayer({ id: "guzve", type: "raster", source: "guzve", minzoom: 10, paint: { "raster-opacity": 0.85 } }, ispod);
+    map.addLayer({ id: "guzve", type: "raster", source: "guzve", minzoom: 10, paint: { "raster-opacity": state.mapTheme === "dark" ? GUZVA_SLOJ_TAMNO : 0.85 } }, ispod);
   } catch (e) { try { navLog("guzva-sloj", { greska: String(e && e.message || e).slice(0, 80) }); } catch (e2) {} }
 }
 function guzvaSlojGasi() {
@@ -32859,6 +33012,17 @@ async function guzvaVremeDo(route, kraj, od) {
     return +r0.summary.travelTimeInSeconds || null;
   } catch (e) { return null; }
 }
+/** Putarine u opsegu [odKm, doKm) sa km pomerenim za `pomak`. Deonica koja PRELAZI granicu ulazi samo delom unutar opsega: na spoju
+    obilaska su se racunale cele ili ispadale cele (pregled koda 14.10., popravka 16.10.) - a cena putarine je zbir duzina. */
+function guzvaTollIsecak(segs, odKm, doKm, pomak) {
+  const out = [];
+  for (const t of segs || []) {
+    const kraj = t.km + (t.len || 0), a = Math.max(t.km, odKm), b = Math.min(kraj, doKm);
+    if (a === t.km && b === kraj) { if (kraj > a) out.push({ km: t.km + pomak, len: t.len }); }   // cela unutra: duzina netaknuta (bez greske zaokruzivanja)
+    else if (b > a + 1e-9) out.push({ km: a + pomak, len: b - a });
+  }
+  return out;
+}
 /** Prvi deo (obilazak, start -> tacka povratka) + ostatak izabrane rute od te tacke. Manevar izabrane rute koji je poceo PRE tacke
     povratka postaje "Nastavi pravo" (isto pravilo kao spojiTripove) - njegovo skretanje je na delu koji se vise ne vozi. Spoj ide po
     kumulativnim nizovima (ne po Valhalla zbiru), da kilometri na savu ne skoce. */
@@ -32877,12 +33041,13 @@ function guzvaSpoji(a, b, oR) {
     : { ...m, begin_shape_index: pom(m.begin_shape_index | 0), end_shape_index: pom(m.end_shape_index | 0) });
   const kmR = b.cumDist[oR] / 1000, kmA = dA / 1000;
   const cumDist = a.cumDist.concat(b.cumDist.slice(oR + 1).map((d) => d + offD)), cumDur = a.cumDur.concat(b.cumDur.slice(oR + 1).map((t) => t + offT));
+  const tollB = guzvaTollIsecak(b.tollSegs, kmR, Infinity, kmA - kmR);
   return {
     coords: a.coords.concat(b.coords.slice(oR + 1)), cumDist, cumDur,
     totalDist: cumDist[cumDist.length - 1], totalDur: cumDur[cumDur.length - 1],
     label: b.label, styleIdx: b.styleIdx, hasHighway: !!(a.hasHighway || b.hasHighway), hasFerry: !!(a.hasFerry || b.hasFerry),
-    tollSegs: (a.tollSegs || []).concat((b.tollSegs || []).filter((t) => t.km >= kmR).map((t) => ({ km: t.km - kmR + kmA, len: t.len }))),
-    tollKm: (a.tollKm || 0) + (b.tollSegs || []).filter((t) => t.km >= kmR).reduce((s, t) => s + (t.len || 0), 0),
+    tollSegs: (a.tollSegs || []).concat(tollB),
+    tollKm: (a.tollKm || 0) + tollB.reduce((s, t) => s + t.len, 0),
     roughAt: (a.roughAt || []).concat((b.roughAt || []).filter((k) => k >= kmR).map((k) => k - kmR + kmA)),
     roughKm: (a.roughKm || 0), maneuvers: mA.concat(mB),
   };
@@ -32901,12 +33066,12 @@ function guzvaPrefiks(route, od, i1, a) {
   const mA = (a.maneuvers || []).filter((m) => !(m.type >= 1 && m.type <= 3)).map((m) => ({ ...m,
     begin_shape_index: (m.begin_shape_index | 0) + nP - 1, end_shape_index: (m.end_shape_index | 0) + nP - 1 }));
   const cumDist = pd.concat(a.cumDist.slice(1).map((d) => d - a.cumDist[0] + dP)), cumDur = ps.concat(a.cumDur.slice(1).map((t) => t - a.cumDur[0] + sP));
-  const uDelu = (k) => k >= kmOd && k < kmDo;
+  const uDelu = (k) => k >= kmOd && k < kmDo, tollP = guzvaTollIsecak(route.tollSegs, kmOd, kmDo, -kmOd);
   return {
     coords: pc.concat(a.coords.slice(1)), cumDist, cumDur, totalDist: cumDist[cumDist.length - 1], totalDur: cumDur[cumDur.length - 1],
     maneuvers: mP.concat(mA), hasHighway: !!(route.hasHighway || a.hasHighway), hasFerry: !!(route.hasFerry || a.hasFerry),
-    tollSegs: (route.tollSegs || []).filter((t) => uDelu(t.km)).map((t) => ({ km: t.km - kmOd, len: t.len })).concat((a.tollSegs || []).map((t) => ({ km: t.km + dP / 1000, len: t.len }))),
-    tollKm: (a.tollKm || 0) + (route.tollSegs || []).filter((t) => uDelu(t.km)).reduce((s, t) => s + (t.len || 0), 0),
+    tollSegs: tollP.concat((a.tollSegs || []).map((t) => ({ km: t.km + dP / 1000, len: t.len }))),
+    tollKm: (a.tollKm || 0) + tollP.reduce((s, t) => s + t.len, 0),
     roughAt: (route.roughAt || []).filter(uDelu).map((k) => k - kmOd).concat((a.roughAt || []).map((k) => k + dP / 1000)), roughKm: a.roughKm || 0,
   };
 }
@@ -32984,12 +33149,21 @@ async function guzvaZaobidji(route) {
   const g = route._guzva, { zastoji, kasnjenje } = guzvaUProzoru(g);
   if (!zastoji.length || (kasnjenje < GUZVA_ZAOB_PRAG_SEK && !zastoji.some((x) => x.kat === "ROAD_CLOSURE"))) return null;
   const gotovo = (o) => (route._zaob = Object.assign({ za: g }, o));
-  const C = route.coords;
-  const o = await guzvaObilazak(route, zastoji, 0, { lat: C[0][1], lon: C[0][0] }, false);
+  const C = route.coords, D = route.cumDist;
+  /* Pregled 14.10. (popravka 16.10.): i u planeru obilazak krece najvise GUZVA_VOZ_PRE_M pre prvog zastoja, kao u voznji. Od starta bi
+     obilazak najbrzim stilom zamenio i tvoju rutu ispred guzve (vijugavi deo postaje autoput), a "usteda" bi merila razliku stila.
+     Teme na kom ruta skrece se preskace unazad - to skretanje bi otpalo iz sacuvanog dela. */
+  const prviZ = Math.min(...zastoji.map((z) => z.iA));
+  let odDet = 0;
+  while (odDet < prviZ && D[prviZ] - D[odDet] > GUZVA_VOZ_PRE_M) odDet++;
+  const skretanja = new Set((route.maneuvers || []).map((m) => m.begin_shape_index | 0));
+  while (odDet > 0 && skretanja.has(odDet)) odDet--;
+  const start = odDet > 0 ? { lat: C[odDet][1], lon: C[odDet][0], heading: guzvaSmer(route, odDet) } : { lat: C[0][1], lon: C[0][0] };
+  const o = await guzvaObilazak(route, zastoji, odDet, start, false);
   if (o.stanje !== "racunat") return gotovo(o);
   const { usteda, tO, tN } = o;
   if (usteda < GUZVA_ZAOB_USTEDA_SEK) return gotovo({ stanje: "nijeBrze", usteda, tO, tN });
-  const n = guzvaSpoji(o.a, route, o.oR);
+  const n = guzvaSpoji(odDet > 0 ? guzvaPrefiks(route, 0, odDet, o.a) : o.a, route, o.oR);
   n._zaobilaz = { od: route, usteda, tO, tN };
   n.label = T("guz.zaobLabel", { 0: Math.round(usteda / 60) });
   return gotovo({ stanje: "ok", usteda, tO, tN, ruta: n, kmViska: (n.totalDist - route.cumDist[route.cumDist.length - 1]) / 1000 });   // obe po kumulativnim nizovima (spoj ne koristi Valhalla zbir)
