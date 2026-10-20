@@ -2368,6 +2368,16 @@ body.kapija #bottomnav, body.kapija #homeChrome, body.kapija #homeFabs { display
 .nk-kreni:disabled { opacity: .6; }
 .nk-preskoci { margin-top: 14px; background: none; border: 0; font-size: 12px; color: var(--fg-muted); text-decoration: underline; cursor: pointer; }
 .nk-preskoci[hidden] { display: none; }
+/* 20.10.2026: prijave zatvorene - tri rezima kapije (data-rezim na #nalogKapija, postavlja ga nalogKapijaRezim). "zatvoreno": samo mejl za
+   listu cekanja + "Vec imam nalog"; "naListi": samo poruka + "Vec imam nalog"; "prijava": stari tok, a kad su prijave zatvorene i "Nemam nalog". */
+#nkZatvoreno, #nkImamNalog, #nkNemamNalog { display: none; }
+#nalogKapija[data-rezim="zatvoreno"] #nkZatvoreno { display: flex; flex-direction: column; width: 100%; }
+#nalogKapija[data-rezim="zatvoreno"] #nkImamNalog, #nalogKapija[data-rezim="naListi"] #nkImamNalog,
+#nalogKapija[data-rezim="prijava"][data-zatvoreno="1"] #nkNemamNalog { display: inline-block; }
+#nalogKapija[data-rezim="zatvoreno"] :is(.nk-av, #nkKorak1, #nkKorak2, #nkGreska, #nkKreni, #nkPreskoci),
+#nalogKapija[data-rezim="naListi"] :is(.nk-av, #nkKorak1, #nkKorak2, #nkGreska, #nkKreni, #nkPreskoci) { display: none !important; }
+.nk-oznaka { align-self: flex-start; margin: 0 0 6px 4px; font-family: var(--font-cap); font-synthesis: none; font-weight: var(--fw-cap); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+#nkListaGreska { margin-top: 10px; }
 /* slike: u redovima prijatelja i u Ja */
 .zpr-av { position: relative; overflow: hidden; }
 .zpr-av img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -2482,8 +2492,8 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
 /* 2.10.: kapija sa mejlom i kodom */
 .nk-korak1, .nk-korak2 { width: 100%; display: grid; gap: 10px; }
 .nk-korak1[hidden], .nk-korak2[hidden] { display: none; }
-#nkKorisnicko, #nkEmail, #nkTel, #nkKod { width: 100%; height: 48px; padding: 0 16px; border-radius: var(--r-lg); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg-strong); font: 400 16px var(--font-ui); text-align: center; }
-#nkKorisnicko:focus, #nkEmail:focus, #nkTel:focus, #nkKod:focus { outline: none; border-color: var(--accent); }
+#nkKorisnicko, #nkEmail, #nkTel, #nkKod, #nkListaEmail { width: 100%; height: 48px; padding: 0 16px; border-radius: var(--r-lg); border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg-strong); font: 400 16px var(--font-ui); text-align: center; }
+#nkKorisnicko:focus, #nkEmail:focus, #nkTel:focus, #nkKod:focus, #nkListaEmail:focus { outline: none; border-color: var(--accent); }
 #nkKod { font: 300 28px var(--font-num); letter-spacing: .3em; height: 56px; }
 #nkKodOpis { margin: 0 0 4px; }
 .nk-korak1 input.nk-los { border-color: var(--bad-fg); }
@@ -3913,9 +3923,19 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
       <input id="nkKod" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="one-time-code" placeholder="Kod iz mejla" data-i18n-ph="nk.kodPh">
       <button type="button" class="nk-preskoci" id="nkPonovo" data-i18n="nk.ponovo">Pošalji kod ponovo</button>
     </div>
+    <!-- 20.10.2026: prijave zatvorene (NALOG_PRIJAVE_OTVORENE = false) - upis na listu cekanja, ista Formspree lista kao landing.
+         Sta se vidi u kom rezimu (data-rezim na #nalogKapija: prijava / zatvoreno / naListi) odredjuje CSS u 10-sheets.css. -->
+    <div class="nk-zatvoreno" id="nkZatvoreno">
+      <label class="nk-oznaka" for="nkListaEmail" data-i18n="nk.listaOznaka">Mejl</label>
+      <input id="nkListaEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="tvoj@mejl.com" data-i18n-ph="nk.listaPh">
+      <div class="zpr-greska" id="nkListaGreska" hidden></div>
+      <button type="button" class="nk-kreni" id="nkListaDugme" data-i18n="nk.listaDugme">Javi mi kad otvorite</button>
+    </div>
     <div class="zpr-greska" id="nkGreska" hidden></div>
     <button type="button" class="nk-kreni" id="nkKreni" data-i18n="nk.kreni">Kreni</button>
     <button type="button" class="nk-preskoci" id="nkPreskoci" hidden data-i18n="nk.preskoci">Nastavi bez naloga (bez prijatelja, do sledećeg paljenja)</button>
+    <button type="button" class="nk-preskoci" id="nkImamNalog" data-i18n="nk.imamNalog">Već imam nalog - prijavi me</button>
+    <button type="button" class="nk-preskoci" id="nkNemamNalog" data-i18n="nk.nemamNalog">Nemam nalog</button>
   </div>
 </div>
 <input type="file" id="avatarFajl" accept="image/*" hidden>
@@ -6681,6 +6701,20 @@ const RECNIK_SR = {
   "nk.telPh": "Telefon (po želji)",
   "nk.kodPh": "Kod iz mejla",
   "nk.ponovo": "Pošalji kod ponovo",
+  "nk.zatvorenoNaslov": "Prijave su zatvorene",
+  "nk.zatvorenoOpis": "RouteMeRight je u zatvorenoj probi sa malom grupom vozača. Ostavi mejl i javljamo ti čim otvorimo.",
+  "nk.listaOznaka": "Mejl",
+  "nk.listaPh": "tvoj@mejl.com",
+  "nk.listaDugme": "Javi mi kad otvorite",
+  "nk.listaSaljem": "Šaljem...",
+  "nk.listaPala": "Upis nije prošao. Proveri internet pa probaj ponovo, ili se upiši na routemeright.app.",
+  "nk.listaTema": "Nova prijava - RouteMeRight lista",
+  "nk.imamNalog": "Već imam nalog - prijavi me",
+  "nk.nemamNalog": "Nemam nalog",
+  "nk.naListiNaslov": "Na listi si",
+  "nk.naListiOpis": "Kad otvorimo prijave, stiže ti jedna poruka na {0}. Ništa drugo ti ne šaljemo.",
+  "nk.nemaNaloga": "Za {0} nema naloga. Prijave su trenutno zatvorene, ali možeš na listu čekanja.",
+  "nk.prijaveZatvorene": "Prijave su trenutno zatvorene.",
   "nk.emailLos": "Upiši pravu mejl adresu.",
   "nk.kodLos": "Kod ima 6 cifara.",
   "nk.kodPogresan": "Kod nije tačan ili je istekao - zatraži novi.",
@@ -8762,6 +8796,20 @@ const RECNIK_EN = {
   "nk.telPh": "Phone (optional)",
   "nk.kodPh": "Code from the email",
   "nk.ponovo": "Send the code again",
+  "nk.zatvorenoNaslov": "Sign-ups are closed",
+  "nk.zatvorenoOpis": "RouteMeRight is in a closed test with a small group of riders. Leave your email and we'll let you know as soon as we open.",
+  "nk.listaOznaka": "Email",
+  "nk.listaPh": "you@email.com",
+  "nk.listaDugme": "Let me know when you open",
+  "nk.listaSaljem": "Sending...",
+  "nk.listaPala": "That didn't go through. Check your connection and try again, or sign up at routemeright.app.",
+  "nk.listaTema": "Nova prijava - RouteMeRight lista",
+  "nk.imamNalog": "I already have an account - sign me in",
+  "nk.nemamNalog": "I don't have an account",
+  "nk.naListiNaslov": "You're on the list",
+  "nk.naListiOpis": "When we open sign-ups, you'll get one message at {0}. Nothing else.",
+  "nk.nemaNaloga": "There's no account for {0}. Sign-ups are closed for now, but you can join the waitlist.",
+  "nk.prijaveZatvorene": "Sign-ups are closed for now.",
   "nk.emailLos": "Enter a real email address.",
   "nk.kodLos": "The code has 6 digits.",
   "nk.kodPogresan": "The code is wrong or expired - request a new one.",
@@ -19483,8 +19531,11 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.211";
+const APP_VERSION = "0.9.212";
 const CHANGELOG = [
+  { v: "0.9.212", d: "20.10.2026.", stavke: [
+    "<b>Prijave su zatvorene.</b> Aplikacija je u zatvorenoj probi. Ko nema nalog, vidi obaveštenje i može da ostavi mejl za listu čekanja, istu kao na routemeright.app. Postojeći nalozi se prijavljuju kao do sada: na novom telefonu ili kad prijava istekne, dugme \"Već imam nalog - prijavi me\" vodi na prijavu.",
+  ] },
   { v: "0.9.211", d: "19.10.2026.", stavke: [
     "<b>Brz Enter u pretrazi.</b> Kad ukucaš ime mesta i odmah pritisneš Enter, pre nego što stignu predlozi, aplikacija sada traži baš to mesto. \"Ruma\" vodi u Rumu, a ne na deonicu Ruma - Irig, \"Inđija\" u Inđiju, a \"Ub\" u Ub, ne u Štubik. Mesto iz Nedavno i mesto sa našeg spiska čije si ime skoro celo otkucao Enter i dalje uzima odmah.",
     "<b>Bez uključene lokacije.</b> Kad izabereš kuda ideš, odmah se otvara pretraga \"Odakle krećeš?\", na telefonu i na računaru. Do sada je telefon pokazivao praznu tablu \"Još samo polazak\", a računar je tražio polazak u polju koje se nije videlo. Ako tu dodirneš \"Moja lokacija\" a GPS ne radi, pretraga se vraća i kaže zašto. Isto važi i za \"Napravi mi krug\". Dugme \"Vodi me\" u Istraži > Mesta zajednice sada radi i bez lokacije (do sada nije radilo ništa).",
@@ -32037,6 +32088,7 @@ function nalogGreskaTekst(e) {   // jedna recenica za ekran, po uzroku
   if (/korisnici_korisnicko_jed|korisnicko.*(23505|duplicate)|(23505|duplicate).*korisnicko/i.test(m)) return T("nal.korisnickoZauzeto");
   if (/korisnici_korisnicko_oblik/i.test(m)) return T("nal.korisnickoLos");
   if (/otp_expired|Token has expired|invalid|Invalid token/i.test(m)) return T("nk.kodPogresan");
+  if (prijaveZatvoreneGreska(e)) return T("nk.prijaveZatvorene");   // 20.10.: nov mejl kad su prijave zatvorene (i prekidac u Supabase-u)
   if (/rate limit|over_email_send_rate_limit|email rate/i.test(m)) return T("nk.previseMejlova");
   if (/Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m)) return T("net.nema");
   return m;
@@ -32046,6 +32098,12 @@ function nalogGreskaTekst(e) {   // jedna recenica za ekran, po uzroku
    2) nalogPotvrdiKod(email, kod, ime, telefon) -> sesija; ako red u korisnici VEC postoji (isti covek, nov
    telefon) vraca se on sa prijateljima, inace se pravi nov. / Email OTP sign-up; same email restores the account. */
 const NALOG_POVRATAK = "https://routemeright.app/app.html";
+/* 20.10.2026 (Bosko, posle linka koji je procurio u grupu: "da više ne primamo prijave, pa da se samo prijave na onaj formspree"):
+   NOVE PRIJAVE SU ZATVORENE. Kod ide samo na mejl koji vec ima nalog (create_user: false - server za nov mejl vrati otp_disabled), a
+   kapija bez naloga pokazuje "Prijave su zatvorene" i upis na listu cekanja (ista Formspree lista kao landing). true = prijave ponovo
+   otvorene (stari tok "Ko vozi?" za svakog). Ista brava je i u Supabase-u (Authentication > "Allow new users to sign up"). */
+const NALOG_PRIJAVE_OTVORENE = false;
+const LISTA_CEKANJA_URL = "https://formspree.io/f/mlgqwbjd";   // ista lista kao landing (landing/launch.html); prijave stizu Bosku
 const NALOG_KOD_U_MEJLU = true;   // 2.10. 23:20: Resend SMTP upaljen + sabloni sa {{ .Token }} (docs/supabase-sabloni-mejla.html) -> mejl nosi KOD od 6 cifara; false = samo link   // kuda link iz mejla vraca (mora biti Site URL ili u Redirect URLs u Supabase-u)
 function korisnickoOcisti(k) { return String(k || "").trim().toLowerCase().replace(/^@/, ""); }
 function korisnickoValidan(k) { return /^[a-z0-9._]{3,20}$/.test(korisnickoOcisti(k)); }
@@ -32058,10 +32116,39 @@ function korisnickoGreska(uneto) {   // poruka za los oblik + predlog ispravnog 
   return T("nal.korisnickoLos") + (pr && korisnickoValidan(pr) ? " " + T("nal.korisnickoPredlog", { 0: pr }) : "");
 }
 function emailValidan(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(e || "").trim()); }
+/* 20.10.2026: server kaze da za taj mejl nema naloga a prijave su zatvorene (create_user: false -> otp_disabled; prekidac u Supabase-u -> signup_disabled) */
+function prijaveZatvoreneGreska(e) {
+  return !!e && (e.kod === "otp_disabled" || e.kod === "signup_disabled" || /signups? not allowed/i.test(String(e.message || "")));
+}
+/* Upis na listu cekanja: ista Formspree lista kao landing, oznaka "strana" kaze da je doslo iz aplikacije. Formspree za AJAX trazi
+   Accept: application/json; _gotcha je zamka za botove (prazno = covek). Bez odgovora za 10 s - greska, kapija nudi ponovo i landing. */
+async function listaCekanjaUpisi(email) {
+  email = String(email || "").trim().toLowerCase();
+  if (!emailValidan(email)) throw new Error(T("nk.emailLos"));
+  const fd = new FormData();
+  fd.append("email", email); fd.append("_subject", T("nk.listaTema")); fd.append("strana", "aplikacija - prijave zatvorene"); fd.append("_gotcha", "");
+  let signal; try { signal = AbortSignal.timeout(10000); } catch (e) {}
+  const r = await fetch(LISTA_CEKANJA_URL, { method: "POST", body: fd, headers: { Accept: "application/json" }, signal });
+  if (!r.ok) { const e = new Error("HTTP " + r.status); e.status = r.status; throw e; }
+  try { localStorage.setItem("rmr2_na_listi", email); } catch (e) {}
+  return email;
+}
+/* Kojim ekranom kapija pocinje (20.10.2026): "prijava" = stari tok (ime, mejl, kod) - za postojeci nalog, stari nalog bez mejla, dolazak
+   sa linka iz mejla i uredjaj na kome je kod vec trazen (rmr2_nalog_email: tester kome je prijava istekla ne trazi "Vec imam nalog");
+   "zatvoreno" = prijave zatvorene + upis na listu; "naListi" = vec upisan na listu na ovom uredjaju. */
+/* Uredjaj na kome je vec bio nalog (mejl tu trazio kod, ili nalog sa mejlom u localStorage): njemu kapija sme da ponudi izlaz "bez naloga" kad
+   server ili mreza padnu (rider na putu). Nov covek dok su prijave zatvorene taj izlaz ne dobija (pregled 0.9.212: rezim aviona + Kreni). */
+function uredjajImaoNalog() {
+  try { return !!(localStorage.getItem("rmr2_nalog_email") || (nalogCitaj() || {}).email); } catch (e) { return false; }
+}
+function kapijaPocetniRezim(n, linkGreska, naListi, ranijiMejl) {
+  if (NALOG_PRIJAVE_OTVORENE || (n && (n.kod || n.email)) || linkGreska || ranijiMejl) return "prijava";   // n.email bez koda: istekla prijava (nalogSesijaIstekla)
+  return naListi ? "naListi" : "zatvoreno";
+}
 async function nalogPosaljiKod(email) {
   email = String(email || "").trim().toLowerCase();
   if (!emailValidan(email)) throw new Error(T("nk.emailLos"));
-  await supaAuth("otp?redirect_to=" + encodeURIComponent(NALOG_POVRATAK), { email, create_user: true, gotrue_meta_security: {} });
+  await supaAuth("otp?redirect_to=" + encodeURIComponent(NALOG_POVRATAK), { email, create_user: NALOG_PRIJAVE_OTVORENE, gotrue_meta_security: {} });   // 20.10.: zatvorene prijave - nov mejl ne pravi nalog
   try { localStorage.setItem("rmr2_nalog_email", email); } catch (e) {}
   return email;
 }
@@ -32180,7 +32267,7 @@ async function nalogIzLinkaZavrsi() {   // posle hasha ili deep linka: profil, k
     nalogNativPonudi();
   } catch (e) {
     if (e && e.trebaIme) { try { nalogKapijaPrikazi(); const gr = document.getElementById("nkGreska"); gr.textContent = T("nk.upisiImeZaKraj"); gr.hidden = false; } catch (e2) {} }
-    else { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} }
+    else { try { tihoObavestenje(nalogGreskaTekst(e)); } catch (e2) {} try { nalogKapijaPrikazi(); } catch (e2) {} }   // 20.10. (pregled 0.9.212): pao zavrsetak ne ostavlja aplikaciju otvorenu bez naloga
   }
 }
 function nalogNativPonudi() {   // na iPhone webu posle prijave: dugme koje istu sesiju preda nativnoj aplikaciji
@@ -32630,11 +32717,14 @@ function prijateljSazetak(f) {   // 3.10. (Boskov izbor 4B "lista"): zaglavlje s
 }
 const PL = { f: null };
 function prijateljSazetakZatvori() { const el = document.getElementById("prijateljList"); if (el) el.hidden = true; document.body.classList.remove("mcilj"); PL.f = null; }
-/* KAPIJA: bez naloga nema aplikacije (Boskov nalog 2.10.). Izuzeci: ?preview=1 i ?demo (alati, snimci, testovi). */
+/* KAPIJA: bez naloga nema aplikacije (Boskov nalog 2.10.). Izuzeci: ?preview=1 i ?demo (alati, snimci, testovi) - od 20.10.2026 SAMO na
+   lokalnom serveru (http://localhost, http://127.0.0.1). Bosko posle linka koji je procurio: "zatvori i demo i preview" - na routemeright.app
+   i u aplikaciji na telefonu ti parametri vise ne otvaraju aplikaciju bez naloga. */
 const NK = { blob: null };
 function nalogKapijaTreba(n, upit) {
   let p; try { p = new URLSearchParams(upit == null ? location.search : upit); } catch (e) { p = new URLSearchParams(""); }
-  if (p.has("preview") || p.has("demo")) return false;
+  let lokalno = false; try { lokalno = location.protocol === "http:" && /^(localhost|127\.0\.0\.1)$/.test(location.hostname); } catch (e) {}
+  if (lokalno && (p.has("preview") || p.has("demo"))) return false;
   try { if (sessionStorage.getItem("rmr2_nalog_preskoci") === "1") return false; } catch (e) {}
   return !(n && n.kod && n.email);   // 2.10. (Bosko: "nama treba mejl"): nalog bez mejla (anonimna prijava iz 0.9.161-163) vraca kapiju u rezimu "vezi mejl"
 }
@@ -32649,6 +32739,20 @@ function nalogKapijaKorak2(opis) {   // korak 2: poruka o poslatom linku; polje 
   g("nkKreni").textContent = NALOG_KOD_U_MEJLU ? T("nk.potvrdi") : T("nk.promeniMejl");
   if (NALOG_KOD_U_MEJLU) setTimeout(() => { try { g("nkKod").focus(); } catch (e) {} }, 150);
 }
+/* Rezim kapije (20.10.2026): naslov i opis se menjaju, a CSS (data-rezim) pokazuje deo koji pripada rezimu - u "zatvoreno" i "naListi"
+   nema ni slike ni polja za ime, nov covek ne popunjava formular da bi na kraju saznao da su prijave zatvorene. */
+function nalogKapijaRezim(rezim, email) {
+  const el = document.getElementById("nalogKapija"); if (!el) return;
+  el.dataset.rezim = rezim; el.dataset.zatvoreno = NALOG_PRIJAVE_OTVORENE ? "" : "1";
+  const nas = document.getElementById("nkNaslov"), op = el.querySelector(".nk-telo > .nk-opis");
+  const tekst = { prijava: ["nk.naslov", "nk.opis"], zatvoreno: ["nk.zatvorenoNaslov", "nk.zatvorenoOpis"], naListi: ["nk.naListiNaslov", null] }[rezim] || ["nk.naslov", "nk.opis"];
+  if (nas) { nas.dataset.i18n = tekst[0]; nas.textContent = T(tekst[0]); }
+  if (op) {
+    if (tekst[1]) { op.dataset.i18n = tekst[1]; op.textContent = T(tekst[1]); }
+    else { delete op.dataset.i18n; op.textContent = T("nk.naListiOpis", { 0: email || "" }); }   // sa mejlom: bez data-i18n, prevod ga ne bi znao
+  }
+  const lg = document.getElementById("nkListaGreska"); if (lg) lg.hidden = true;
+}
 function nalogKapijaPrikazi() {
   const el = document.getElementById("nalogKapija"); if (!el) return;
   { const n0 = nalogCitaj(); if (n0 && n0.kod && !n0.email) { const em = nalogEmailIzTokena(n0); if (em) nalogUpisi({ ...n0, email: em }); } }
@@ -32656,9 +32760,11 @@ function nalogKapijaPrikazi() {
   const n = nalogCitaj();
   NK.vezi = !!(n && n.kod && n.refresh && !n.email);   // postojeci nalog bez mejla: mejl se VEZUJE za isti nalog (kod i prijatelji ostaju)
   { const v = document.getElementById("nkVezi"); if (v) v.hidden = !NK.vezi; }
+  let naListi = "", ranijiMejl = ""; try { naListi = localStorage.getItem("rmr2_na_listi") || ""; ranijiMejl = localStorage.getItem("rmr2_nalog_email") || ""; } catch (e) {}
+  nalogKapijaRezim(kapijaPocetniRezim(n, NK.linkGreska, naListi, ranijiMejl), naListi);   // 20.10.: prijave zatvorene - bez naloga prvo obavestenje
   NK.korak = 1; document.getElementById("nkKorak1").hidden = false; document.getElementById("nkKorak2").hidden = true;
   document.getElementById("nkKreni").querySelector("span, b") || (document.getElementById("nkKreni").textContent = T("nk.kreni"));
-  try { document.getElementById("nkEmail").value = localStorage.getItem("rmr2_nalog_email") || ""; } catch (e) {}
+  try { document.getElementById("nkEmail").value = localStorage.getItem("rmr2_nalog_email") || (n && n.email) || ""; } catch (e) {}
   document.getElementById("nkIme").value = (n && n.ime) || "";
   NK.korRucno = false; document.getElementById("nkKorisnicko").value = (n && n.korisnicko) || korisnickoPredlog((n && n.ime) || "");
   const mm = (typeof mojMotor === "function") ? mojMotor() : null;
@@ -32707,14 +32813,40 @@ function nalogKapijaPrikazi() {
       try { renderJaNalog(); renderPrijatelji(); prijateljIzLinka(); sastanciPokreni(); lokacijePokreni(); pushRegistruj(); } catch (e) {}
       try { voznjePoslePrijave(); } catch (e) {}   // 3.10.: dnevnik sa servera; B8: posle smene naloga pita cije su lokalne voznje
     } catch (e) {
+      if (!NALOG_PRIJAVE_OTVORENE && NK.korak !== 2 && prijaveZatvoreneGreska(e)) {   // 20.10.: za taj mejl nema naloga - nazad na listu cekanja
+        const em = String(g("nkEmail").value || "").trim();
+        nalogKapijaRezim("zatvoreno"); g("nkListaEmail").value = em;
+        const lg = g("nkListaGreska"); lg.textContent = T("nk.nemaNaloga", { 0: em }); lg.hidden = false;
+        b.disabled = false; return;
+      }
       gr.textContent = nalogGreskaTekst(e); gr.hidden = false; b.disabled = false;
       if (NK.vezi && e && e.kod === "email_exists") { NK.veziZauzet = String(g("nkEmail").value || "").trim().toLowerCase(); gr.textContent = T("nk.emailZauzet"); }
       /* server pao ili nema mreze: aplikacija ne sme da ostane zakljucana na putu - izlaz vazi do sledeceg paljenja */
       const m = String(e && e.message || "");
-      if (/nije podešen|not set up|Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m) || (e && e.status >= 500)) g("nkPreskoci").hidden = false;
+      if ((/nije podešen|not set up|Failed to fetch|NetworkError|timeout|aborted|Load failed/i.test(m) || (e && e.status >= 500)) && (NALOG_PRIJAVE_OTVORENE || uredjajImaoNalog())) g("nkPreskoci").hidden = false;   // 20.10. (pregled 0.9.212): dok su prijave zatvorene, izlaz bez naloga samo za uredjaj koji je imao nalog
     }
   });
   ["nkIme", "nkEmail", "nkTel", "nkKod", "nkKorisnicko"].forEach((id) => g(id).addEventListener("keydown", (e) => { if (e.key === "Enter") g("nkKreni").click(); }));
+  /* 20.10.2026: lista cekanja (prijave zatvorene). Dugme pokazuje da salje, uspeh vodi na "Na listi si", greska ostaje na ekranu uz landing. */
+  g("nkListaDugme").addEventListener("click", async () => {
+    const b = g("nkListaDugme"), lg = g("nkListaGreska"); lg.hidden = true;
+    const em = String(g("nkListaEmail").value || "").trim();
+    if (!emailValidan(em)) { lg.textContent = T("nk.emailLos"); lg.hidden = false; return; }
+    b.disabled = true; b.textContent = T("nk.listaSaljem");
+    try { const upisan = await listaCekanjaUpisi(em); nalogKapijaRezim("naListi", upisan); }
+    catch (e) { lg.textContent = T("nk.listaPala"); lg.hidden = false; }
+    finally { b.disabled = false; b.textContent = T("nk.listaDugme"); }
+  });
+  g("nkListaEmail").addEventListener("keydown", (e) => { if (e.key === "Enter") g("nkListaDugme").click(); });
+  g("nkImamNalog").addEventListener("click", () => {   // postojeci nalog (tvoji testeri, nov telefon): stari tok, mejl ide sa ekrana obavestenja
+    const em = String(g("nkListaEmail").value || "").trim(); if (em && !g("nkEmail").value) g("nkEmail").value = em;
+    nalogKapijaRezim("prijava");
+    setTimeout(() => { try { g("nkIme").focus(); } catch (e) {} }, 60);
+  });
+  g("nkNemamNalog").addEventListener("click", () => {
+    const em = String(g("nkEmail").value || "").trim(); if (em && !g("nkListaEmail").value) g("nkListaEmail").value = em;
+    nalogKapijaRezim("zatvoreno");
+  });
   g("nkIme").addEventListener("input", () => { if (!NK.korRucno) g("nkKorisnicko").value = korisnickoPredlog(g("nkIme").value); });   // predlog prati ime dok ga covek ne dirne
   g("nkKorisnicko").addEventListener("input", () => {   // uzivo: mala slova, bez @; los oblik se vidi odmah (crven okvir + poruka sa predlogom), ne tek na Kreni
     NK.korRucno = !!g("nkKorisnicko").value; g("nkKorisnicko").value = String(g("nkKorisnicko").value).toLowerCase().replace(/^@/, "");
