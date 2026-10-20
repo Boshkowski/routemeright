@@ -5744,7 +5744,7 @@ const RECNIK_SR = {
   "q.josOpcija": "<div class=\"lsback\"></div><div class=\"lsbody\"><div class=\"grab\"></div><div class=\"lst\">Još opcija</div><div id=\"optsHost\"></div><button class=\"apply\" id=\"optsApply\">Primeni</button></div>",
   "q.idesU": "<span style=\"display:block;font-size:12px;font-weight:600;color:#a1978e;margin-bottom:3px\">Ideš u: <b style=\"color:#e5dfd8\">{0}</b></span>",
   "q.josSamoPolazak": "Još samo polazak, pa računamo rutu do {0}.",
-  "q.reciOdakle": "Reci nam odakle krećeš - dodirni narandžasto polje iznad.",
+  "q.reciOdakle": "Reci nam odakle krećeš.",
   "cam.nijeMoguce": "{0} Kamere: provera trenutno nije moguća (izvor zauzet) - pokušaćemo opet pri sledećem planiranju.",
   "cam.nemaUOsm": "{0} Fiksne kamere na ruti: nema u OSM bazi.",
   "cam.broj": "{0} Fiksne kamere: <b>{1}</b> (km ",
@@ -7832,7 +7832,7 @@ const RECNIK_EN = {
   "q.josOpcija": "<div class=\"lsback\"></div><div class=\"lsbody\"><div class=\"grab\"></div><div class=\"lst\">More options</div><div id=\"optsHost\"></div><button class=\"apply\" id=\"optsApply\">Apply</button></div>",
   "q.idesU": "<span style=\"display:block;font-size:12px;font-weight:600;color:#a1978e;margin-bottom:3px\">Going to: <b style=\"color:#e5dfd8\">{0}</b></span>",
   "q.josSamoPolazak": "Just the start now, then we calculate the route to {0}.",
-  "q.reciOdakle": "Tell us where you start - tap the orange field above.",
+  "q.reciOdakle": "Tell us where you start.",
   "cam.nijeMoguce": "{0} Cameras: check not possible right now (source busy) - we'll try again at the next plan.",
   "cam.nemaUOsm": "{0} Fixed cameras on the route: none in the OSM database.",
   "cam.broj": "{0} Fixed cameras: <b>{1}</b> (km ",
@@ -18320,20 +18320,6 @@ function closeOptsSheet() {
   qa.addEventListener("click", () => { try { kartaPutaOtvori(); } catch (e) { openOptsSheet(); } });   // 1.10.: karta puta (E3) umesto lista "Jos opcija"
   const qf = document.getElementById("qFrom");
   if (qf) qf.addEventListener("click", () => { try { openSearch("from"); } catch (e) {} });
-  window.qplanNeedFrom = () => {   // GPS odbijen/nedostupan: NIKAD nemi corsokak
-    if (!document.body.classList.contains("qplan")) return;
-    const fv = $("from").value.trim();
-    if (fv && !/^moja lokacija$/i.test(fv)) return;   // "Moja lokacija" bez fiksa = i dalje treba izlaz
-    try { if (typeof setSheet === "function") setSheet(true); } catch (e) {}   // skupljen sheet bi sakrio i poruku i polje
-    /* Odrediste mora da OSTANE na ekranu (11.8.). Ranije je covek izabrao Zlatibor, GPS je bio
-       odbijen, i dobijao je crveni tekst na praznom ekranu - Zlatibora nigde, ni u pristupacnom
-       stablu. Izgledalo je kao da je nesto pokvario i da mu je izbor propao. */
-    const tv = ($("to").value || "").trim();
-    if (qf) qf.innerHTML = (tv ? T("q.idesU", { 0: esc(tv) }) : "") +
-      T("planer.qFrom");
-    if (qf) qf.classList.add("show");
-    setStatus(tv ? T("q.josSamoPolazak", { 0: tv }) : T("q.reciOdakle"), true);
-  };
   window.qplanFromOk = () => { if (qf) qf.classList.remove("show"); };
   const qd = document.getElementById("qDet");
   if (qd) qd.addEventListener("click", () => {
@@ -18885,6 +18871,32 @@ async function plan() {
   }
 }
 
+/* POLAZAK FALI (GPS odbijen/nedostupan): NIKAD nemi corsokak. Zove ga plan() kad padne na geo gresci i gpsPrefill kad GPS ne da fiks.
+   Odrediste mora da OSTANE na ekranu (11.8.): ranije je covek izabrao Zlatibor, GPS je bio odbijen, i dobijao je crveni tekst na
+   praznom ekranu - izgledalo je kao da mu je izbor propao. Zato poruka "Još samo polazak, pa računamo rutu do X".
+   19.10.2026 (QA 0.9.210 N4; Bosko: "slazem se"): ovde se palilo dugme #qFrom ("Odakle krećeš?"), a ono stoji u #qbar koji se od 3.10.
+   ne vidi ni u jednom stanju - na telefonu tabla bez ijednog polja, na racunaru "upiši polazak ručno" a polje Od sakriveno. Sada se
+   odmah otvara pretraga polaska (kao "samo polazak" -> "Kuda", 0.9.210), na telefonu i na racunaru. Ne dira se kad polazak postoji
+   (upisan, ili "Moja lokacija" sa fiksom), kad je pretraga vec otvorena (ne menja joj se mod usred kucanja) i kad se ne planira.
+   Proba 0.9.211: i krug bez lokacije je isti corsokak (krugu cilj ne treba, a zaostalo "Do" iz ranije rute nije njegov cilj). Status stoji
+   ISPOD pretrage, pa poruka sa ciljem - ili `razlog` (GPS odbijen posle dodira "Moja lokacija") - ide i kao tiho obavestenje preko nje. */
+function qplanNeedFrom(razlog) {
+  const b = document.body.classList;
+  if (!b.contains("planning") || b.contains("searching")) return;
+  const fv = $("from").value.trim();
+  if (fv && !/^moja lokacija$/i.test(fv)) return;
+  if (fv && state.gpsFrom && state.gpsFrom.lat != null) return;   // "Moja lokacija" sa fiksom: polazak postoji
+  try { if (b.contains("qplan") && typeof setSheet === "function") setSheet(true); } catch (e) {}   // skupljen sheet bi sakrio poruku
+  const tv = ($("to").value || "").trim(), krug = !!($("roundGen") && $("roundGen").checked);
+  const msg = tv && !krug ? T("q.josSamoPolazak", { 0: tv }) : T("q.reciOdakle");
+  setStatus(msg, true);
+  /* Pregled 0.9.211: plan() javi pad GPS-a do 9 s posle izbora; ako je vozac u medjuvremenu na tabu Ja ili Zajednica (.tabscreen.on - donja
+     traka ne skida "planning"), pretraga ne iskace preko tog ekrana; poruka ceka na planeru. Atlas (Istrazi) NIJE izuzetak: Mesta zajednice >
+     "Vodi me" bira cilj a da Atlas ostaje na telu do kraja plana, pa bi uslov "atlas" vratio corsokak (drugi pregled 0.9.211). */
+  if (document.querySelector(".tabscreen.on")) return;
+  if (tv || krug) { try { openSearch("from"); } catch (e) {} }
+  if (tv || krug || razlog) { try { tihoObavestenje(razlog || msg); } catch (e) {} }
+}
 /* ---------------- mobilni bottom sheet (apple-design: 1:1 drag, projekcija momenta, rubber-band) ---------------- */
 const mqMobile = window.matchMedia("(max-width: 900px), (max-height: 520px)");   // "mobilni mod" = i landscape telefon (Pro Max je 956px sirok!)
 const mqLS = window.matchMedia("(orientation: landscape) and (max-height: 520px)");
@@ -19471,8 +19483,12 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.210";
+const APP_VERSION = "0.9.211";
 const CHANGELOG = [
+  { v: "0.9.211", d: "19.10.2026.", stavke: [
+    "<b>Brz Enter u pretrazi.</b> Kad ukucaš ime mesta i odmah pritisneš Enter, pre nego što stignu predlozi, aplikacija sada traži baš to mesto. \"Ruma\" vodi u Rumu, a ne na deonicu Ruma - Irig, \"Inđija\" u Inđiju, a \"Ub\" u Ub, ne u Štubik. Mesto iz Nedavno i mesto sa našeg spiska čije si ime skoro celo otkucao Enter i dalje uzima odmah.",
+    "<b>Bez uključene lokacije.</b> Kad izabereš kuda ideš, odmah se otvara pretraga \"Odakle krećeš?\", na telefonu i na računaru. Do sada je telefon pokazivao praznu tablu \"Još samo polazak\", a računar je tražio polazak u polju koje se nije videlo. Ako tu dodirneš \"Moja lokacija\" a GPS ne radi, pretraga se vraća i kaže zašto. Isto važi i za \"Napravi mi krug\". Dugme \"Vodi me\" u Istraži > Mesta zajednice sada radi i bez lokacije (do sada nije radilo ništa).",
+  ] },
   { v: "0.9.210", d: "19.10.2026.", stavke: [
     "<b>Niš više ne vodi u Nicu.</b> Bez uključene lokacije \"Niš\" (i \"Nis\" bez kvačice) vodio je u Nicu, jer Nica u bazi mesta ima i turski naziv \"Nis\". Sada mesto koje se tačno tako zove pobeđuje strani naziv, a kvačice se poštuju. Ispravljeni su i Inđija (išla u Indiju), Ub (Mongolija), Ruma (Rim), Peć (Pečuj, kad se kuca sa ć), Žabari (selo kod Valjeva umesto opštine), Kovin, Kanjiža, Ražanj i Studenica. Provereno nad 790 pravih odgovora pretrage za mesta regiona. Poznato: brz Enter u polju pretrage, pre nego što stignu predlozi, i dalje uzima prvi red sa spiska (\"Ruma\" ume da ode na deonicu Ruma - Irig, \"Ub\" na Štubik). To ide u sledeće izdanje.",
     "<b>Visina u vožnji.</b> Kad izabereš da brojka u vožnji pokazuje visinu, sada se osvežava dok voziš. Do sada se upisivala samo na pauzi, pa je u vožnji stajala crtica.",
@@ -21567,7 +21583,7 @@ function scheduleNetSugg(q) {   // FAZA 1 typeahead (9.8., Google princip "biras
       const net0 = (ph || []).map((p) => ({ n: p.name, lat: p.lat, lon: p.lon, bod: p.bod, bodOdl: p.bodOdl,
           sub: (p.d != null ? "~" + (p.d < 1 ? T("fmt.manjeOd1") : Math.round(p.d)) + " km" + _odKoga + (p.sub ? " · " : "") : "") + (p.sub || "") }));
       const net = netBezDuplikata(net0, sugg._hits || []).slice(0, 6);
-      sugg._net = net;
+      sugg._net = net; sugg._netGotov = true;
       const html = net.map((h, i) =>
         `<div class="srow" role="button" tabindex="0" data-net="${i}"><span class="sic">${rIco("pin", 18)}</span><div class="st"><b>${esc(h.n)}</b><span>${esc(h.sub)}</span></div></div>`).join("");
       /* Stalno mesto u listi (11.8.): renderSugg je vec ostavio prazan #sNet tamo gde ovi redovi
@@ -21580,8 +21596,32 @@ function scheduleNetSugg(q) {   // FAZA 1 typeahead (9.8., Google princip "biras
       const geoRow = sugg.querySelector("[data-geo]");
       if (geoRow) geoRow.insertAdjacentHTML("beforebegin", html);
       else sugg.insertAdjacentHTML("beforeend", html);
-    } catch (e) {}
+    } catch (e) {   // mreza pala: odgovora nece ni biti, pa Enter sme nas red (enterOdluka) - kao do sada
+      try { const s2 = document.getElementById("sSugg"); if (seq === _netSuggSeq && s2 && s2._q === q) s2._netGotov = true; } catch (e2) {}
+    }
   }, 280);
+}
+/* STA ENTER U PRETRAZI BIRA. Vraca red za pickDestination, "neresen" (pita se tap) ili "geo" (trazi se otkucano kroz geocode, isto
+   sto radi red "Traži").
+   - Enter uzima PRVI red onako kako ga korisnik vidi (11.8.). Dok je lista bila rangirana po adresi, Enter na "Beograd" je vodio u
+     kafanu kod Paracina jer je ona bila hits[0].
+   - ADRESA ide kroz pun geokoder, ne kroz prvi Photon red (19.8., Boskov nalaz sa Murtera): na "Svetog kriza 3 Sibenik" je prvi
+     predlog bila CRKVA.
+   - TEREN 30.8. ("dogma"): kad su prva dva reda izjednacena, Enter je birao prvi - a prvi je bio bravar. Neresen vrh se NE
+     razresava cutke, nego se trazi tap.
+   - BRZ ENTER (19.10.2026, QA 0.9.210 N2/N3; Bosko: "slazem se"): dok mrezni predlozi ne stignu (ili za upit kraci od 3 slova, kad
+     se mreza i ne pita), prvi red na ekranu je NAS red koji samo pocinje ili sadrzi otkucano - deonica "Ruma - Irig" (cilj Irig),
+     "Inđija - Jarkovci", "Štubik" za "ub" - pa je Enter vodio tamo. Nas red sada ide samo kad je TACNO to ime (jak), kad otkucano
+     pokriva vecinu imena prvog reda (_prviJak: isto merilo kao rang liste, bod >= 80 - "Zlatib" za Zlatibor, "Kafana Br" za Nedavno
+     "Kafana Breza"; pregled 0.9.211), kad je mreza vec odgovorila (_netGotov, i kad je prazna ili pala) ili kad mreze nema (bez nje ni
+     geocode ne radi); inace "geo". */
+function enterOdluka(sg, q) {
+  const hits = (sg && sg._hits) || [];
+  if (_geoAdresa(q)) return "geo";
+  if (!sg._jak && suggNeresen(sg._net || [])) return "neresen";
+  if (!sg._jak && (sg._net || []).length) { const nh0 = sg._net[0]; return { n: nh0.n, lat: nh0.lat, lon: nh0.lon, sub: nh0.sub, q }; }
+  if (hits.length && (sg._jak || sg._prviJak || sg._netGotov || !navigator.onLine)) return { ...hits[0], q };
+  return "geo";
 }
 function renderSugg(q) {
   const sugg = document.getElementById("sSugg");
@@ -21592,7 +21632,7 @@ function renderSugg(q) {
     r.style.display = isTyping ? "none" : (r.id === "sMyLoc" && SEARCH_MODE !== "from" ? "none" : "flex"); });
   if (!isTyping) {   // review 9.8.: odgovor u letu je znao da ubaci redove u ponovo otvorenu pretragu
     try { clearTimeout(_netSuggT); } catch (e) {}
-    _netSuggSeq++; sugg._q = ""; sugg._hits = []; sugg._net = [];
+    _netSuggSeq++; sugg._q = ""; sugg._hits = []; sugg._net = []; sugg._netGotov = false; sugg._prviJak = false;
     sugg.innerHTML = ""; updateSearchStatic(); return;
   }
   const kk = parseKoord(q);   // nalepljene koordinate ili link (WhatsApp/Google/Apple) - prvi red, bez mreze (9.8.)
@@ -21657,7 +21697,11 @@ function renderSugg(q) {
   sugg.innerHTML = kratakRed + red.slice(0, gde).join("") + `<div id="sNet"></div>` + red.slice(gde).join("") +
     T("srch.traziRow", { 0: rIco("route", 18), 1: esc(q.trim()) }) +
     T("srch.naMapiRow", { 0: rIco("pin", 18) });   // nikad corsokak (6.8.)
-  sugg._hits = hits; sugg._q = q.trim(); sugg._net = []; sugg._jak = jak;
+  sugg._hits = hits; sugg._q = q.trim(); sugg._net = []; sugg._jak = jak; sugg._netGotov = false;   // _netGotov: mreza je odgovorila za OVAJ upit (enterOdluka)
+  /* Nedavno iz Google izbora pise "Objekat, Mesto" (gpNasaImena), a i nasa mesta imaju zarez - meri se i deo pre zareza. Osim kod DEONICE:
+     ona se zove "Mesto, put" ("Avala, Avalski put"), pa bi deo pre zareza bio bas otkucano mesto i Enter bi opet vodio na deonicu (N2). */
+  const n0 = SFOLD((hits[0] && hits[0].n) || ""), deo0 = !!(hits[0] && hits[0].t === "deonica");
+  sugg._prviJak = hits.length > 0 && Math.max(bod(n0), deo0 ? 0 : bod(n0.split(",")[0].trim())) >= 80;   // prvi red (i Nedavno) otkucan skoro ceo - Enter ga sme pre mreze (enterOdluka)
   /* Kratak link se NE salje geokoderu (7.9.). Photon na "https://maps.app.goo.gl/..." ionako
      nema sta da odgovori, a usput bi tudjem servisu otisla lokacija koju je neko podelio
      licno tebi - to nije nasa da je prosledjujemo. */
@@ -22040,6 +22084,18 @@ async function pickMapPotvrdi() {
   SEARCH_MODE = mode;
   pickDestination({ n: naziv, lat: c.lat, lon: c.lng });
 }
+/* "Moja lokacija" izabrana kao POLAZAK: fiks, pa plan (sa ciljem ili krugom). Proba 0.9.211 (tel-4-myloc): bez greske i bez roka odbijen GPS
+   nije radio nista, i ostajala je bas tabla N4 ("Još samo polazak..." bez polja) - a "Moja lokacija" je prvi red pretrage polaska koja se sada
+   sama otvara. Sad: GPS odbijen ili bez odgovora (rok kao gpsPrefill) -> nazad pretraga polaska, uz razlog preko nje. */
+function mojaLokacijaPolazak(imaCilj) {
+  const pao = () => { try { qplanNeedFrom(T("plan.gpsNeMogu")); } catch (e) {} };
+  if (!navigator.geolocation) { setTimeout(pao, 0); return; }   // posle pozivaoca, kao pravi GPS: on tek vraca SEARCH_MODE na "to" (pregled 0.9.211)
+  navigator.geolocation.getCurrentPosition((p) => {
+    state.gpsFrom = { name: "Moja lokacija", lat: p.coords.latitude, lon: p.coords.longitude, ts: Date.now() };
+    document.getElementById("from").value = "Moja lokacija";
+    if (imaCilj) document.getElementById("planBtn").click();
+  }, pao, { maximumAge: 60000, timeout: 8000 });
+}
 /* Posle izbora POLASKA (red pretrage, Kuca i omiljena, tacka na mapi, Moja lokacija). Cip na pocetnom kaze izabran polazak (polje se puni
    bez "change", pa je pisao "iz moje lokacije"). Sa ciljem ili krugom (krugu cilj ne treba) plan odmah, kao do sada za cilj. Bez njih na
    telefonu odmah pretraga "Kuda" (19.10.2026, QA 17.10. nalaz 5: tabla planera pune visine bez sadrzaja, samo rucka i X; u qplan rezimu je
@@ -22165,24 +22221,9 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
   si.addEventListener("keydown", async (e) => {
     if (e.key !== "Enter" || !si.value.trim()) return;
     const sg = document.getElementById("sSugg");
-    const hits = sg._hits || [];
-    /* Enter uzima PRVI red onako kako ga korisnik vidi (11.8.). Dok je lista bila rangirana po
-       adresi, Enter na "Beograd" je vodio u kafanu kod Paracina jer je ona bila hits[0]. */
-    /* ADRESA ide kroz pun geokoder, ne kroz prvi Photon red (19.8., Boskov nalaz sa Murtera):
-       na "Svetog kriza 3 Sibenik" je prvi predlog bila CRKVA, pa bi Enter odveo u crkvu i kad
-       adresni lanac zna pravu ulicu. Sve ostalo i dalje uzima prvi red onako kako ga oko vidi. */
-    const adr = !!_geoAdresa(si.value.trim());
-    if (!adr) {
-      /* TEREN 30.8. ("dogma"): kad su prva dva reda izjednacena, Enter je birao prvi - a prvi je
-         bio bravar. Isto pravilo koje je istog dana resilo "Breza 10": neresen vrh se NE
-         razresava cutke, nego se trazi tap. Lista je vec na ekranu, samo se kaze zasto. */
-      if (!sg._jak && suggNeresen(sg._net || [])) {
-        try { tihoObavestenje(T("geo.viseJednakoDobrih")); } catch (e2) {}
-        return;
-      }
-      if (!sg._jak && (sg._net || []).length) { const nh0 = sg._net[0]; pickDestination({ n: nh0.n, lat: nh0.lat, lon: nh0.lon, sub: nh0.sub, q: si.value.trim() }); return; }
-      if (hits.length) { pickDestination({ ...hits[0], q: si.value.trim() }); return; }
-    }
+    const od = enterOdluka(sg, si.value.trim());
+    if (od === "neresen") { try { tihoObavestenje(T("geo.viseJednakoDobrih")); } catch (e2) {} return; }
+    if (od !== "geo") { pickDestination(od); return; }
     /* Adresni lanac ume da traje par sekundi (strukturirani upiti idu kroz red od 1,1 s, pa
        Overpass). Bez ovoga Enter izgleda kao da je aplikacija stala - isti natpis koji vec nosi
        red "Trazi ..." kad se na njega klikne. */
@@ -22221,11 +22262,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
            posle. Sa ciljem ili krugom plan krece kad stigne GPS, kao do sada; bez njih na telefonu odmah pretraga "Kuda" (QA 17.10. nalaz 5). */
         document.getElementById("from").value = "Moja lokacija";
         const rgM = document.getElementById("roundGen"), imaCilj = !!(document.getElementById("to").value.trim() || (rgM && rgM.checked));
-        if (navigator.geolocation) navigator.geolocation.getCurrentPosition((p) => {
-          state.gpsFrom = { name: "Moja lokacija", lat: p.coords.latitude, lon: p.coords.longitude, ts: Date.now() };
-          document.getElementById("from").value = "Moja lokacija";
-          if (imaCilj) document.getElementById("planBtn").click();
-        });
+        mojaLokacijaPolazak(imaCilj);   // GPS pao: nazad pretraga polaska uz razlog (proba 0.9.211)
         SEARCH_MODE = "to";
         if (imaCilj) { try { homeCtxSync(); } catch (e2) {} } else polazakPosleIzbora();
       } else {   // kao odrediste nema smisla - samo centriraj mapu na mene
@@ -22588,7 +22625,7 @@ function updateQuickLabels() {
     else if (sb) sb.textContent = "—";
   } catch (e) {}
 }
-function gpsPrefill(force) {   // polazak = trenutna lokacija: KOORDINATE ODMAH (bez cekanja imena), ime stigne naknadno
+function gpsPrefill(force, tiho) {   // polazak = trenutna lokacija: KOORDINATE ODMAH (bez cekanja imena), ime stigne naknadno; tiho = bez ponude polaska kad GPS padne
   const f = document.getElementById("from");
   if (!f || (!force && f.value.trim()) || !navigator.geolocation) return;
   const pre = f.value.trim();   // 3.10. (pregled V6): fiks stize do 8 s kasnije - ne sme da pregazi polazak koji je vozac u medjuvremenu izabrao
@@ -22604,7 +22641,13 @@ function gpsPrefill(force) {   // polazak = trenutna lokacija: KOORDINATE ODMAH 
       if (nm && state.gpsFrom) { const old = state.gpsFrom.name; state.gpsFrom.name = nm; if (f.value === old) f.value = nm; }
     } catch (e) {}
     try { if (window.qplanFromOk) qplanFromOk(); } catch (e) {}
-  }, () => { try { if (window.qplanNeedFrom) qplanNeedFrom(); } catch (e) {} }, { maximumAge: 60000, timeout: 8000 });
+  }, () => {
+    /* Pregled 0.9.211: plan u toku (dugme zakljucano) sam javlja svoj pad GPS-a iz catch-a. Spor prvi fiks: ovaj zahtev (rok 8 s, npr. iz
+       openSearch) istekne dok plan() jos ceka svoj (9 s) i ume da uspe - ponuda polaska bi otvorila pretragu preko plana koji se racuna. */
+    const pb = document.getElementById("planBtn");
+    if (tiho || (pb && pb.disabled)) return;
+    try { if (window.qplanNeedFrom) qplanNeedFrom(); } catch (e) {}
+  }, { maximumAge: 60000, timeout: 8000 });
 }
 function polazakNaMojuLokaciju() {
   /* TEREN 1.9.2026 (Boskov nalaz, i to ne prvi put): "voziš Cerak - NBGD, pa hoćeš sledeću
@@ -22613,12 +22656,14 @@ function polazakNaMojuLokaciju() {
      a posle voznje u njemu stoji polazak PROSLE voznje. Google svaku novu pretragu pravca pocinje
      od tvoje lokacije; mi smo pocinjali od mesta sa kog si krenuo pre sat vremena.
      Zato: kraj voznje BRISE polje i trazi svez fiks. Ono sto vozac posle sam upise ostaje - ovo
-     se zove samo na kraju voznje, ne dok planira. */
+     se zove samo na kraju voznje, ne dok planira.
+     Tiho (pregled 0.9.211): planer se posle voznje vraca na rezultate, a GPS koji tad ne odgovori (garaza, tunel) ne sme da otvori
+     pretragu polaska preko rezultata zavrsene voznje - niko je nije trazio. Nov cilj posle toga ponudi polazak kroz plan(). */
   try {
     const f = document.getElementById("from");
     if (f) f.value = "";
     state.fromOverride = null;   // stara tacna koordinata prosle voznje ne sme da prezivi
-    gpsPrefill(true);
+    gpsPrefill(true, true);
   } catch (e) {}
 }
 const RIDE = { watch: null, nav: null, lock: null, lastFix: 0, offCount: 0, lastReroute: 0, lastSpeak: 0 };
@@ -30603,9 +30648,13 @@ function mestaCrtaj() {
   let html = seg("mpolu", MESTA_KM.map((r) => ({ v: r, tx: String(r), jed: "km" })), MESTA.r, "data-r");
   html += seg("mvrste", vrste, MESTA.vrsta, "data-v");
   if (!geo) {
+    const bez = mestaLista(null, 1e9, MESTA.vrsta ? MESTA.vrsta : null).slice(0, 60);
     el.innerHTML = html + T("bl.ukljuciLok1") +
       T("bl.ukljuciLok2") +
-      mestaRedovi(mestaLista(null, 1e9, MESTA.vrsta ? MESTA.vrsta : null).slice(0, 60), false);
+      mestaRedovi(bez, false);
+    /* 19.10.2026 (proba 0.9.211): grana bez lokacije je izlazila pre upisa _items, pa "Vodi me" (slusalac .go cita L._items[mi]) nije radio
+       nista - mrtvo dugme i uzivo. Svaki nacrtan red ima svoje mesto, kao i sa lokacijom. */
+    const L0 = el.querySelector(".mlist"); if (L0) L0._items = bez.map((x) => x.e);
     prstenSlojSkini();
     return;
   }
