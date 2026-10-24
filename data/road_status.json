@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-24T18:05+00:00",
+ "updated": "2026-10-24T20:44+00:00",
  "countries": {
   "SI": {
    "name": "Slovenija",
@@ -1260,14 +1260,6 @@
     },
     {
      "type": "radovi (Radovi)",
-     "title": "D55-2 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "D55-2",
-     "lat": 45.26604,
-     "lon": 18.80904
-    },
-    {
-     "type": "radovi (Radovi)",
      "title": "D512-1 - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
      "region": "D512-1",
@@ -1490,14 +1482,6 @@
     },
     {
      "type": "radovi (Radovi)",
-     "title": "D55-1 - Radovi",
-     "detail": "radovi - privremena prometna signalizacija",
-     "region": "D55-1",
-     "lat": 45.33255,
-     "lon": 18.84172
-    },
-    {
-     "type": "radovi (Radovi)",
      "title": "D429-1 - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
      "region": "D429-1",
@@ -1520,11 +1504,11 @@
     },
     {
      "type": "radovi (Radovi)",
-     "title": "D58-2 - Radovi",
+     "title": "D55-1 - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
-     "region": "D58-2",
-     "lat": 43.55196,
-     "lon": 16.27539
+     "region": "D55-1",
+     "lat": 45.33255,
+     "lon": 18.84172
     },
     {
      "type": "radovi (Radovi)",
@@ -1536,14 +1520,6 @@
     },
     {
      "type": "radovi (Radovi)",
-     "title": "D34-1 - Radovi",
-     "detail": "zbog radova se vozi jednim trakom",
-     "region": "D34-1",
-     "lat": 45.75992,
-     "lon": 18.13342
-    },
-    {
-     "type": "radovi (Radovi)",
      "title": "D53-1 - Radovi",
      "detail": "radovi - privremena prometna signalizacija",
      "region": "D53-1",
@@ -1552,11 +1528,27 @@
     },
     {
      "type": "radovi (Radovi)",
+     "title": "D34-1 - Radovi",
+     "detail": "zbog radova se vozi jednim trakom",
+     "region": "D34-1",
+     "lat": 45.75992,
+     "lon": 18.13342
+    },
+    {
+     "type": "radovi (Radovi)",
      "title": "D2-10 - Radovi",
      "detail": "zbog radova održavanja vozi se uz ograničenje brzine",
      "region": "D2-10",
      "lat": 45.58521,
      "lon": 18.55739
+    },
+    {
+     "type": "radovi (Radovi)",
+     "title": "D58-2 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D58-2",
+     "lat": 43.55196,
+     "lon": 16.27539
     },
     {
      "type": "radovi (Radovi)",
@@ -1587,6 +1579,14 @@
        43.54399
       ]
      ]
+    },
+    {
+     "type": "radovi (Radovi)",
+     "title": "D55-2 - Radovi",
+     "detail": "radovi - privremena prometna signalizacija",
+     "region": "D55-2",
+     "lat": 45.26604,
+     "lon": 18.80904
     },
     {
      "type": "radovi (Radovi)",
@@ -5819,11 +5819,10 @@
      ]
     }
    ],
-   "odseceno": 62,
-   "fetched": "2026-10-24T18:05+00:00",
+   "odseceno": 63,
+   "fetched": "2026-10-24T20:44+00:00",
    "nepotpuno": [
-    "stanje-na-autocestama",
-    "granicni-prijelazi-stanje"
+    "stanje-na-autocestama"
    ]
   },
   "RS": {
@@ -5973,6 +5972,15 @@
      "region": "Knjaževac - Soko Banja",
      "lat": 43.60676,
      "lon": 22.19346,
+     "tacnost_km": 3.5
+    },
+    {
+     "type": "roadworks",
+     "title": "24.10.2026.Izmena režima saobraćaja I A reda broj 1, čeona naplatna stanica Stara Pazova - petlja Nova Pazova",
+     "detail": "Od 26.10.2026. od 12 časova do 26.11.2026.godine, izvodiće se radovi na rehabilitaciji kolovoza uz zatvaranje preticajne i vozne saobraćajne trake za saobraćaj na desnoj strani (smer Novi Sad - Beograd) od km 159+860 do km 164+200. Saobraćaj u smeru za Beograd odvijaće se preticajnom saobraćajnom tr",
+     "region": "Srbija",
+     "lat": 44.96877,
+     "lon": 20.22626,
      "tacnost_km": 3.5
     },
     {
@@ -6721,19 +6729,10 @@
      "lat": 43.875,
      "lon": 20.36231,
      "tacnost_km": 3.5
-    },
-    {
-     "type": "roadworks",
-     "title": "30.9.2025. Izmena režima saobraćaja na državnom putu II B reda broj 408, deonica Pakovraće - Markovica",
-     "detail": "Na snazi je izmena režima saobraćaja na državnom putu II B reda broj 408, na deonici Pakovraće - Markovica (km 0+416.23), zbog radova na izgradnji auto-puta E-763, Pakovraće - Požega. Saobraćaj je preusmeren na devijaciju i odvijaće se naizmeničnim propuštanjem vozila pomoću svetlosne signalizacije.",
-     "region": "Pakovraće - Markovica",
-     "lat": 43.8801,
-     "lon": 20.225,
-     "tacnost_km": 3.5
     }
    ],
-   "odseceno": 28,
-   "fetched": "2026-10-24T18:05+00:00"
+   "odseceno": 29,
+   "fetched": "2026-10-24T20:44+00:00"
   },
   "BA": {
    "name": "BiH",
@@ -7299,7 +7298,7 @@
      "region": "Gradske ceste"
     }
    ],
-   "fetched": "2026-10-24T18:05+00:00"
+   "fetched": "2026-10-24T20:44+00:00"
   },
   "ME": {
    "name": "Crna Gora",
@@ -7467,7 +7466,7 @@
      "region": "Кичево – Охрид"
     }
    ],
-   "fetched": "2026-10-24T18:05+00:00"
+   "fetched": "2026-10-24T20:44+00:00"
   },
   "AL": {
    "name": "Albanija",
@@ -7535,7 +7534,7 @@
      "region": "Ksamil"
     }
    ],
-   "fetched": "2026-10-24T18:05+00:00"
+   "fetched": "2026-10-24T20:44+00:00"
   },
   "BG": {
    "name": "Bugarska",
@@ -8208,7 +8207,7 @@
     }
    ],
    "odseceno": 317,
-   "fetched": "2026-10-24T18:05+00:00"
+   "fetched": "2026-10-24T20:44+00:00"
   },
   "GR": {
    "name": "Grčka",
@@ -8396,7 +8395,7 @@
      "region": "A2 Egnatia (severna Grcka)"
     }
    ],
-   "fetched": "2026-10-24T18:05+00:00"
+   "fetched": "2026-10-24T20:44+00:00"
   }
  },
  "meteo": {
@@ -8449,18 +8448,6 @@
     "title": "Yellow Thunderstorm Warning issued for Croatia - Dubrovačko-neretvanska",
     "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-24T15:00Z do 2026-10-25T00:59Z",
     "region": "Dubrovačko-neretvanska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Splitsko-dalmatinska",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-24T11:05Z do 2026-10-24T18:59Z",
-    "region": "Splitsko-dalmatinska"
-   },
-   {
-    "type": "meteo-upozorenje",
-    "title": "Yellow Thunderstorm Warning issued for Croatia - Splitsko-dalmatinska",
-    "detail": "nivo: zuto | pojava: thunderstorm | vazi: 2026-10-24T11:05Z do 2026-10-24T18:59Z",
-    "region": "Splitsko-dalmatinska"
    },
    {
     "type": "meteo-upozorenje",
@@ -8696,7 +8683,73 @@
    }
   ]
  },
- "borders": [],
+ "borders": [
+  {
+   "prelaz": "Županja",
+   "zemlja": "HR",
+   "ulaz_auto": "-",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "1 h",
+   "izlaz_teretno": "-",
+   "ocitano": "24.10.2026 19:44:04",
+   "lat": 45.046352,
+   "lon": 18.70347,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Slavonski Brod",
+   "zemlja": "HR",
+   "ulaz_auto": "-",
+   "izlaz_auto": "do 30 min.",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "do 30 min.",
+   "ocitano": "24.10.2026. 19:28:06",
+   "lat": 45.156888,
+   "lon": 18.002278,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Bajakovo",
+   "zemlja": "HR",
+   "ulaz_auto": "do 30 min.",
+   "izlaz_auto": "do 30 min.",
+   "ulaz_teretno": "Višesatna čekanja",
+   "izlaz_teretno": "3 h",
+   "ocitano": "24.10.2026. 19:20:49",
+   "lat": 45.05,
+   "lon": 19.1,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Tovarnik",
+   "zemlja": "HR",
+   "ulaz_auto": "-",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "4 h",
+   "ocitano": "24.10.2026. 19:16:59",
+   "lat": 45.157234,
+   "lon": 19.170414,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  },
+  {
+   "prelaz": "Batina",
+   "zemlja": "HR",
+   "ulaz_auto": "-",
+   "izlaz_auto": "-",
+   "ulaz_teretno": "-",
+   "izlaz_teretno": "2 h",
+   "ocitano": "24.10.2026 20:38:52",
+   "lat": 45.84,
+   "lon": 18.85,
+   "izvor": "HAK/MUP-HR",
+   "za": "putnicka vozila"
+  }
+ ],
  "_mesta": {
   "Orlovat Od": [
    [
