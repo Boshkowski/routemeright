@@ -297,7 +297,14 @@
     --dur-fast:150ms; --dur-slow:300ms;
     /* Slojevi kretanja (28.10.2026, ARCHITECTURE-SPINE AD-4): jedan red po vrsti unosa u kret.
        Navigation layers, one step per entry kind. */
-    --z-ekran:20; --z-mapa-hrom:25; --z-list:60; --z-modal:320; --z-spoljni:340; --z-dijalog:1200; --z-kapija:8000;
+    --z-mapa:10; --z-ekran:20; --z-mapa-hrom:25; --z-traka:30; --z-hud:40; --z-plutajuci:45; --z-pretraga:50; --z-list:60;
+    --z-oblacic:240; --z-toast:300; --z-modal:320; --z-spoljni:340; --z-vuci:999; --z-kapija:8000; --z-dijalog:8500; --z-uvod:9000;
+    /* 29.10.2026 (pregled arhitekture, tacka 2): svaki sloj iznad mape stoji na ovoj skali - brojevi su ostali isti, sada imaju ime:
+       mapa 10 (list Planera, kontrole), ekran 20, hrom mape 25, traka tabova 30, voznja 40, plutajuce kartice 45, pretraga 50,
+       listovi 60, oblacic opasnosti 240, poruka 300, modal 320, spoljni slojevi 340, vucenje 999, kapija 8000, pitanje 8500, uvod 9000.
+       Pitanje je IZNAD kapije (pregled 29.10.): pitanje pri pokretanju (nezavrsena voznja, "Prijaviti se kao") ume da stigne dok je kapija
+       gore - ispod nje se nije videlo, a dodir je padao na nevidljivo dugme.
+       Jednocifreni z-index je redosled UNUTAR komponente i ostaje broj. */
   }
   @media (prefers-reduced-motion: reduce) {
     :root { --dur-fast:0ms; --dur-slow:0ms; }
@@ -386,7 +393,7 @@
   input.rmr-dt::-webkit-calendar-picker-indicator { display: none; }
   input.rmr-dt { cursor: pointer; }
 
-  #dtWrap { position: fixed; inset: 0; z-index: 1200; display: none; }
+  #dtWrap { position: fixed; inset: 0; z-index: var(--z-dijalog); display: none; }
   #dtWrap.on { display: block; }
   #dtWrap .dt-scrim { position: absolute; inset: 0; background: var(--scrim); }
   #dtSheet {
@@ -475,7 +482,7 @@
      posle builda 0.9.142; nisam uspeo da ponovim kvar ni u Chromiumu ni u WebKit-u (ni sa fajlom iz
      njegovog builda), pa ovo uklanja celu klasu uzroka umesto da pogadjam koji je. JS uz to izbacuje
      sloj IZ DOKUMENTA kad zavrsi, ne samo sto ga sakrije. */
-  #bootUvod { position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center;
+  #bootUvod { position: fixed; inset: 0; z-index: var(--z-uvod); display: grid; place-items: center;
     pointer-events: none;
     background: var(--graphite-1000, #0e0c0b); transition: opacity 320ms ease;
     animation: bootUvodSam 4s steps(1, end) forwards; }   /* mreza: i bez JS-a sloj nestane */
@@ -744,7 +751,7 @@
   .stop-item.drag-over { border-color: var(--c-primary); }
   .stop-item.drop-above { box-shadow: 0 -3px 0 0 var(--c-primary); }
   .stop-item.drop-below { box-shadow: 0 3px 0 0 var(--c-primary); }
-  .drag-ghost { position: fixed; z-index: 999; pointer-events: none; opacity: .9; margin: 0;
+  .drag-ghost { position: fixed; z-index: var(--z-vuci); pointer-events: none; opacity: .9; margin: 0;
     box-shadow: var(--shadow-lg); background: var(--c-card); }
   #from.drop-target, #to.drop-target { border-color: var(--c-primary); box-shadow: var(--ring); }
   .endpoint-wrap { position: relative; }
@@ -823,7 +830,7 @@
   /* z-index 240 i na racunaru (19.10.2026, QA 17.10. nalaz 2): bilo je 9, a zatamnjenje .hz-back je 238 - lezalo je PREKO
      prozora i nijedno dugme nije primalo klik; na telefonu je prozor vec bio 240. Prozor uvek iznad svog zatamnjenja. */
   .hz-pop {
-    position: absolute; z-index: 240; background: var(--bg); border: 1px solid rgba(255,122,46,.4);
+    position: absolute; z-index: var(--z-oblacic); background: var(--bg); border: 1px solid rgba(255,122,46,.4);
     border-radius: var(--r-lg); box-shadow: var(--shadow-lg); padding: 13px; width: 252px;
     animation: pop 160ms var(--ease) backwards;
   }
@@ -847,11 +854,11 @@
   .bjb-row { cursor: pointer; padding: 4px 0; -webkit-tap-highlight-color: transparent; }
   .bjb-row:active { opacity: .65; }
   .bjb-more { background: none; border: none; color: var(--c-muted-fg, var(--fg-muted)); text-decoration: underline; cursor: pointer; font: inherit; font-size: .92em; padding: 4px 0 0; display: block; }
-  .hz-back { position: fixed; inset: 0; z-index: 238; background: rgba(11,9,8,.45); }
-  @media (max-width: 900px), (max-height: 520px) {
+  .hz-back { position: fixed; inset: 0; z-index: calc(var(--z-oblacic) - 2); background: rgba(11,9,8,.45); }
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     .hz-pop { position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important;
       bottom: 0 !important; width: 100% !important; border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-left: none; border-right: none; border-bottom: none;
-      padding: 16px 18px calc(26px + env(safe-area-inset-bottom)); z-index: 240;
+      padding: 16px 18px calc(26px + env(safe-area-inset-bottom)); z-index: var(--z-oblacic);
       background: var(--bg); }   /* QA 28.10.2026 (Zajednica Z16): puna podloga - kroz staklo su se videli cipovi lista i pinovi iza "Zatvori" */
   }
   @keyframes pop { from { opacity: 0; transform: scale(.95); } }
@@ -918,11 +925,11 @@
      trazili smanjeno kretanje. */
   /* == mobilni "app mode": mapa fullscreen + bottom sheet (Kurviger obrazac, apple-design mehanika) == */
   #peekBar { display: none; }
-  @media (max-width: 900px), (max-height: 520px) {
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     #app { display: block; }
     #map { position: fixed; inset: 0; height: 100vh; height: 100dvh; }
     #panel {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-mapa);
       width: auto; min-width: 0; height: 84vh; height: 84dvh;
       padding: 0 16px calc(24px + env(safe-area-inset-bottom));
       border-right: none; border-top: 1px solid var(--line);
@@ -973,15 +980,15 @@
     body.riding .maplibregl-ctrl-bottom-right { right: auto; left: 6px; bottom: calc(78px + env(safe-area-inset-bottom)); opacity: .5; }
     body.riding .maplibregl-ctrl-bottom-left { bottom: calc(78px + env(safe-area-inset-bottom)); opacity: .5; }
     .lay-pop { top: calc(54px + env(safe-area-inset-top)); }
-    .compass-btn { top: calc(178px + env(safe-area-inset-top)); right: 14px; left: auto; width: 46px; height: 46px; border-radius: var(--r-lg); background: var(--bg-veil); border: 1px solid var(--line); z-index: 12; box-shadow: var(--shadow-md); }
+    .compass-btn { top: calc(178px + env(safe-area-inset-top)); right: 14px; left: auto; width: 46px; height: 46px; border-radius: var(--r-lg); background: var(--bg-veil); border: 1px solid var(--line); z-index: calc(var(--z-mapa) + 2); box-shadow: var(--shadow-md); }
     body.riding .compass-btn { top: auto; bottom: calc(142px + env(safe-area-inset-bottom)); }
   }
   /* ===== app2 Faza 1a: donji meni (Planer/Rute/Zajednica/Ja) + tab ekrani ===== */
   #bottomnav { display: none; }
   .tabscreen { display: none; }
-  @media (max-width: 900px), (max-height: 520px) {
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     #bottomnav {
-      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-traka);
       height: calc(58px + max(env(safe-area-inset-bottom), 8px)); padding-bottom: max(env(safe-area-inset-bottom), 8px);
       background: var(--bg-sunken); border-top: 1px solid var(--line);
     }
@@ -996,7 +1003,7 @@
     #panel { bottom: calc(56px + env(safe-area-inset-bottom)); height: 78dvh; }
     /* tab ekrani preko mape, iznad menija */
     .tabscreen {
-      position: fixed; left: 0; right: 0; top: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 20;
+      position: fixed; left: 0; right: 0; top: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: var(--z-ekran);
       background: var(--bg); overflow-y: auto; padding: calc(20px + env(safe-area-inset-top)) 16px 20px;
     }
     .tabscreen.on { display: block; }
@@ -1176,12 +1183,12 @@
 #jaNalog .jrow .jlink { margin-left: 8px; }
   /* ===== app2 Faza 1b: HOME kao maketa (pretraga + chipovi + FAB + čist sheet) ===== */
   #homeChrome, #homeFabs, #homeSheet, #plannerClose { display: none; }
-  @media (max-width: 900px), (max-height: 520px) {
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     /* stare top kontrole zamenjuje home chrome */
     .map-tools { display: none !important; }
     .maplibregl-ctrl-top-right { display: none; }
 
-    #homeChrome { display: block; position: fixed; left: 0; right: 0; top: 0; z-index: 12; padding: calc(12px + env(safe-area-inset-top)) 14px 0; pointer-events: none; }
+    #homeChrome { display: block; position: fixed; left: 0; right: 0; top: 0; z-index: calc(var(--z-mapa) + 2); padding: calc(12px + env(safe-area-inset-top)) 14px 0; pointer-events: none; }
     /* 11.8.: list se VRACA. R5 ga je sakrio zarad "cistog pocetnog", R7 je umesto njega stavio
        cipove, a cipovi su danas izbaceni jer se red sekao uz ivicu - pa je ekran ostao prazan.
        Stara .quick dugmad i CTA ostaju ugaseni: bile su tri precice na ono sto je jedan tap dalje,
@@ -1230,7 +1237,7 @@
        je preko njega - izmereno: elementFromPoint nad sredinom kompasa vraca #homeFabs, ne dugme.
        Razmaci izmedju dugmadi i prazan prostor kontejnera vise ne hvataju dodir; hvataju ga samo
        sama dugmad. Vizuelno se nista ne menja. */
-    #homeFabs { display: flex; position: fixed; right: 14px; top: calc(122px + env(safe-area-inset-top)); z-index: 12; flex-direction: column; gap: 12px; pointer-events: none; }
+    #homeFabs { display: flex; position: fixed; right: 14px; top: calc(122px + env(safe-area-inset-top)); z-index: calc(var(--z-mapa) + 2); flex-direction: column; gap: 12px; pointer-events: none; }
     #homeFabs > * { pointer-events: auto; }
     /* U voznji zelena kartica menja visinu (ima "Zatim", najavu, upozorenje o vremenu), pa je
        dugme Slojevi znalo da se pribije uz nju (Boskov nalaz sa puta). Visinu kartice meri JS
@@ -1251,7 +1258,7 @@
     /* moja lokacija: donji desni ugao (kao Google) */
     /* 11.8.: sve troje se dize iznad donjeg lista. Atribucija NIJE ukras nego uslov licence
        OpenFreeMap/OSM - izmereno je da bi je list pokrio 100%. Visina lista je ~200 px. */
-    #homeFabs button[data-fab="gps"] { position: fixed; right: 14px; top: auto; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 12; }
+    #homeFabs button[data-fab="gps"] { position: fixed; right: 14px; top: auto; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: calc(var(--z-mapa) + 2); }
     /* 4.10. 08:40 (Bosko: "dugme za lokaciju nestaje kad krenemo negde, ne mogu da nadjem nasu lokaciju"): u planiranju dugme ne nestaje,
        nego se iz donjeg desnog ugla (gde bi ga pokrila traka) seli u stub sa ostalim dugmadima */
     body.planning:not(.riding) #homeFabs button[data-fab="gps"] { position: static; display: flex; bottom: auto; }
@@ -1267,7 +1274,7 @@
        prstenom na dugmetu pauze. U slobodnoj voznji nema manevara, pa zamucenje ostaje. */
     body.freeride.ridepaused #rideBar .navcard, body.freeride.ridepaused #rideBar .then { opacity: .65; }
 
-    #homeSheet { display: block; position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 11; background: var(--bg-veil); border-top: 1px solid var(--line); border-radius: var(--r-sheet) var(--r-sheet) 0 0; padding: 8px 16px 18px; box-shadow: var(--shadow-up); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+    #homeSheet { display: block; position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: calc(var(--z-mapa) + 1); background: var(--bg-veil); border-top: 1px solid var(--line); border-radius: var(--r-sheet) var(--r-sheet) 0 0; padding: 8px 16px 18px; box-shadow: var(--shadow-up); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
     #homeSheet .grab { width: 40px; height: 4.5px; border-radius: 999px; background: var(--fill-muted); margin: 0 auto 12px; }
     /* min-height: obe varijante gornjeg reda (prognoza i sinocnji plan) moraju biti ISTE visine,
        inace list skace izmedju dva otvaranja - a istrazivanje kaznjava bas promenu gustine (11.8.). */
@@ -1292,7 +1299,7 @@
 /* ===== 1.10.2026 PLANER E1 (Boskov izbor posle maketa A/B/C/D/E): polje gore kao Google/Waze +
    red konteksta "iz moje lokacije · sada · motor". Filipov jezik: grafit, papir, jedan akcenat,
    Coast caps za sitne natpise. / Planner E1: top field + quiet context row. ===== */
-@media (max-width: 900px), (max-height: 520px) {
+@media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
   #homeSearch { gap: 12px; padding: 0 10px 0 10px; height: 56px; background: var(--bg-veil); border: 1px solid var(--line-strong);
     border-radius: var(--r-lg); box-shadow: 0 8px 28px rgba(0,0,0,.45); }
   #homeSearch .lg { width: 28px; height: 28px; border-radius: 7px; }
@@ -1311,7 +1318,7 @@
   #homeChips .chip.rec { background: var(--bg-veil); border: 1px solid var(--line-strong); box-shadow: 0 4px 14px rgba(0,0,0,.35); font-weight: 500; }
 }
   /* ===== app2 Faza 4.1: reskin naprednog planera (mobilno) ===== */
-  @media (max-width: 900px), (max-height: 520px) {
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     body.planning #panel h1, body.planning #panel > .sub { display: none; }   /* logo+marketing ne pripadaju alatu; > da NE sakrije hero .sub razloge */
     body.planning #panel label:not(.chk) { font-family: var(--font-cap); font-synthesis: none; font-size: 11px; font-weight: var(--fw-cap); color: var(--fg-muted); text-transform: uppercase; letter-spacing: var(--tr-cap); margin: 14px 2px 7px; display: block; }
     body.planning #panel .chk { text-transform: none; letter-spacing: 0; }
@@ -1331,10 +1338,6 @@
     body.planning #motoWrap.open { display: block; }
     body.planning #planBtn { margin-top: 16px; }
   }
-  @media (min-width: 901px) {
-    #motoHead, body.planning #motoHead { display: none !important; }   /* mobilna sklopljena kartica; desktop ima prave selecte */
-    #motoWrap, body.planning #motoWrap { display: block !important; }
-  }
   /* ===== R11: Ja tab - tema toggle + Moj motor ===== */
   .jsw { appearance: none; -webkit-appearance: none; width: 46px; height: 27px; border-radius: 999px; background: var(--fill-subtle); position: relative; transition: background 150ms; margin: 0; cursor: pointer; flex: none; vertical-align: middle; }
   .jsw::after { content: ""; position: absolute; top: 50%; transform: translateY(-50%); left: 3px; width: 21px; height: 21px; border-radius: 50%; background: var(--fg-muted); transition: transform 150ms, background 150ms; }
@@ -1350,7 +1353,7 @@
   #jaMotorHost input, #jaMotorHost select { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 11px 13px; color: var(--fg-strong); font-size: 16px; font-weight: 600; font-family: inherit; width: 100%; margin-top: 8px; }
   #jaMotorHost label { font-family: var(--font-cap); font-synthesis: none; display: block; font-size: 11px; font-weight: var(--fw-cap); color: var(--fg-muted); text-transform: uppercase; letter-spacing: var(--tr-cap); margin: 12px 2px 2px; }
   /* ===== R7: "Jos opcija" sheet ===== */
-  #optsSheet { position: fixed; inset: 0; z-index: 62; }
+  #optsSheet { position: fixed; inset: 0; z-index: calc(var(--z-list) + 2); }
   #optsSheet .lsback { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
   #optsSheet .lsbody { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bg); border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line); padding: 8px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow: var(--shadow-up); max-height: 80vh; overflow-y: auto; }
   #optsSheet .grab { width: 38px; height: 4px; border-radius: var(--r-xs); background: var(--fill-muted); margin: 4px auto 12px; }
@@ -1367,12 +1370,12 @@
   #optsSheet .row2 > div { flex: 1; }
   #optsSheet .apply { width: 100%; margin-top: 14px; border: none; cursor: pointer; font-family: inherit; background: var(--action-gradient); color: var(--on-accent); font-size: 16px; font-weight: 800; padding: 14px; border-radius: var(--r-lg); }
   #optsSheet label:not(.chk) { font-family: var(--font-cap); font-synthesis: none; display: block; font-size: 11px; font-weight: var(--fw-cap); color: var(--fg-muted); text-transform: uppercase; letter-spacing: var(--tr-cap); margin: 14px 2px 7px; }
-  @media (max-width: 900px), (max-height: 520px) {
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     label[for="famous"], #famous { display: none !important; }   /* legendarne zive u Rute tabu */
   }
   /* ===== R6: brzi planer - destinacija iz pretrage vodi PRAVO na rezultat ===== */
   #qbar { display: none; }
-  @media (max-width: 900px), (max-height: 520px) {
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     body.qplan.planning #panel > *:not(#peekBar):not(#plannerClose):not(#qbar):not(#status):not(#results):not(#resCta) { display: none !important; }
     /* 4.10. 01:10 (Bosko: "kad se skroluje do gore ide do pola, to nam ne igra - ili odmah kreni ili ceo prozor"): list ima DVA
        polozaja - traka (skupljen) ili ceo ekran (otvoren). Visina je uvek puna; polozaj "do pola" (54dvh) ne postoji vise. */
@@ -1420,7 +1423,7 @@
        stay in the markup as hidden state driven by #rezInst. */
   }
   /* ===== R5: varijante rute = horizontalne kartice (kao Google Directions red) ===== */
-  @media (max-width: 900px), (max-height: 520px) {
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     body.planning #routeTabs { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding: 2px 0 6px; scroll-snap-type: x proximity;
       -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent); mask-image: linear-gradient(90deg, #000 92%, transparent); }
     body.planning #routeTabs::-webkit-scrollbar { display: none; }
@@ -1430,7 +1433,7 @@
       border-color: var(--accent); background: rgba(255,122,46,.12); color: var(--accent-text); }
   }
   /* ===== P2: Slojevi sheet ===== */
-  #layersSheet { position: fixed; inset: 0; z-index: 60; }
+  #layersSheet { position: fixed; inset: 0; z-index: var(--z-list); }
   #layersSheet .lsback { position: absolute; inset: 0; background: rgba(0,0,0,.45); }
   #layersSheet .lsbody { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bg); border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line); padding: 8px 18px calc(20px + env(safe-area-inset-bottom)); box-shadow: var(--shadow-up); max-height: calc(84vh - env(safe-area-inset-top)); overflow-y: auto; }
   /* 28.10.2026 (AD-17): listovi Planera (Polazak, Duzina kruga) izgledaju kao Slojevi */
@@ -1464,8 +1467,8 @@
   #layersSheet .lsleg i { display: inline-block; width: 14px; height: 5px; border-radius: var(--r-xs); vertical-align: middle; margin: 0 2px; }
   /* ===== P2: pilula aktivne rute ===== */
   #routePill { display: none; }
-  @media (max-width: 900px), (max-height: 520px) {
-    body.hasroute:not(.planning):not(.riding):not(.searching) #routePill { display: flex; align-items: center; gap: 12px; position: fixed; left: 50%; transform: translateX(-50%); top: calc(74px + env(safe-area-inset-top)); z-index: 13; background: var(--bg-veil); border: 1.5px solid rgba(255,122,46,.5); border-radius: 999px; padding: 8px 16px; cursor: pointer; box-shadow: var(--shadow-md); max-width: 78%; }
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
+    body.hasroute:not(.planning):not(.riding):not(.searching) #routePill { display: flex; align-items: center; gap: 12px; position: fixed; left: 50%; transform: translateX(-50%); top: calc(74px + env(safe-area-inset-top)); z-index: calc(var(--z-mapa) + 3); background: var(--bg-veil); border: 1.5px solid rgba(255,122,46,.5); border-radius: 999px; padding: 8px 16px; cursor: pointer; box-shadow: var(--shadow-md); max-width: 78%; }
     #routePill .rpin { display: flex; flex-direction: column; min-width: 0; }
     #routePill b { color: var(--fg-strong); font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #routePill span { color: var(--accent-label); font-size: 11px; font-weight: 600; }
@@ -1473,8 +1476,8 @@
   }
   /* ===== app2 Faza 4: cist ekran pretrage ===== */
   #searchOverlay { display: none; }
-  @media (max-width: 900px), (max-height: 520px) {
-    body.searching #searchOverlay { display: flex; flex-direction: column; position: fixed; inset: 0; z-index: 50; background: var(--bg); }
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
+    body.searching #searchOverlay { display: flex; flex-direction: column; position: fixed; inset: 0; z-index: var(--z-pretraga); background: var(--bg); }
     #searchOverlay .shead { display: flex; align-items: center; gap: 12px; padding: calc(12px + env(safe-area-inset-top)) 14px 12px; }
     #searchOverlay .sback { width: 42px; height: 42px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; flex: none; }
     #searchOverlay .sback svg { width: 20px; height: 20px; stroke: var(--fg); fill: none; }
@@ -1514,7 +1517,7 @@
 
 /* ===== 1.10.2026 PLANER E2: pretraga koja NUDI (polje ostaje gore, sekcije sa Coast caps naslovima,
    redovi bez obojenih plocica - ikonica tusem). / Search that offers before you type. ===== */
-@media (max-width: 900px), (max-height: 520px) {
+@media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
   body.searching #searchOverlay { background: var(--bg); }
   #searchOverlay .shead { padding: calc(10px + env(safe-area-inset-top)) 16px 6px; gap: 10px; }
   #searchOverlay .sback { width: 44px; height: 44px; border-radius: 50%; background: none; border: 1px solid var(--line-strong); }
@@ -1550,7 +1553,7 @@
   body.qplan.planning:has(#rezInst:not([hidden])) #resCta { display: none !important; }
 }
 #rezInst, #riOdDo { display: none; }
-@media (max-width: 900px), (max-height: 520px) {
+@media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
   body.qplan.planning #rezInst:not([hidden]) { display: block; margin: 4px 0 10px; }
   body.qplan.planning #qbar, body.qplan.planning #resHero { display: none !important; }   /* stari hero i traka: zamenjeni instrumentom */
   /* 13.10. (Boskov izbor B): "+ Dodaj stanicu" i u otvorenom listu, ispod naslova; naslov sa stanicama sme u dva reda */
@@ -1632,7 +1635,7 @@
   #rezInst .ri-ruta .ri-cip { height: 30px; padding: 0 10px; font-size: 12px; }
   .ri-cipovi { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
   /* od/do kartica gore na mapi dok je rezultat otvoren (sheet .planning); kad je sheet skupljen stoji #routePill */
-  body.qplan.planning.hasroute #riOdDo { display: block; position: fixed; left: 12px; right: 12px; top: calc(10px + var(--sat)); z-index: 41; background: var(--bg-veil); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--line-strong); border-radius: var(--r-lg); padding: 2px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+  body.qplan.planning.hasroute #riOdDo { display: block; position: fixed; left: 12px; right: 12px; top: calc(10px + var(--sat)); z-index: calc(var(--z-hud) + 1); background: var(--bg-veil); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--line-strong); border-radius: var(--r-lg); padding: 2px 12px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
   body.qplan.planning.hasroute.searching #riOdDo, body.qplan.planning.hasroute.riding #riOdDo { display: none; }
   /* 28.10.2026 (AD-17, maketa aplikacija-28-10): "‹ Planer" (ili odakle si dosao) je prvi red kartice - ruta je korak u kretanju */
   #riOdDo .ri-nazad { display: flex; width: 100%; min-height: 40px; margin: 0 0 0 -6px; border-bottom: 1px solid var(--line); font-size: 15px; }
@@ -1686,7 +1689,7 @@
      vraca sloj u stanje pre ulaska. Mete su velike jer se ovo koristi u rukavicama. */
   #zajBar { display: none; }
   body.zajmap #zajBar { display: flex; position: fixed; left: 12px; right: 12px;
-    top: calc(74px + env(safe-area-inset-top)); z-index: 26; align-items: center; gap: 12px;
+    top: calc(74px + env(safe-area-inset-top)); z-index: calc(var(--z-mapa-hrom) + 1); align-items: center; gap: 12px;
     background: var(--bg-veil); border: 1.5px solid rgba(234,61,87,.55); border-radius: var(--r-lg);
     padding: 10px 8px 10px 12px; box-shadow: var(--shadow-md); }
   #zajBar .nazad { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
@@ -1696,7 +1699,7 @@
   #zajBar .zx { flex: none; width: 48px; height: 48px; border-radius: 50%; background: var(--fill-wash);
     border: 1px solid var(--line-strong); color: var(--fg-strong); font-size: 20px; font-weight: 800; cursor: pointer; }
   #zajSheet { display: none; }
-  body.zajmap #zajSheet { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+  body.zajmap #zajSheet { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-mapa-hrom);
     background: var(--bg); border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line);
     box-shadow: var(--shadow-up); max-height: 52dvh; display: flex; flex-direction: column;
     transition: transform 300ms cubic-bezier(.23,1,.32,1); padding-bottom: env(safe-area-inset-bottom); }
@@ -1733,7 +1736,7 @@
   /* ---- IZABERI NA MAPI (0.9.91): nisan u centru + traka potvrde. Overlay ne hvata dodir
      (pointer-events: none) osim same trake - inace bi pojeo pomeranje mape ispod nisana. */
   #pickMap { display: none; }
-  body.pickmap #pickMap { display: block; position: fixed; inset: 0; z-index: 45; pointer-events: none; }
+  body.pickmap #pickMap { display: block; position: fixed; inset: 0; z-index: var(--z-plutajuci); pointer-events: none; }
   body.pickmap #homeSheet, body.pickmap #homeChrome, body.pickmap #homeFabs, body.pickmap #routePill,
   body.pickmap .map-tools, body.pickmap .compass-btn, body.pickmap #verBadge { display: none !important; }
   /* traka je puna (15.9.: kroz providnu se video natpis mape), pa natpis mape ide iznad nje */
@@ -1763,7 +1766,7 @@
   #atlasSheet { display: none; }
   /* Uvoz GPX-a u traci Atlasa (31.8.): meta 44 px kao i svuda gde se dira rukavicom. Samo ikonica -
      traka vec nosi naslov i broj deonica, pa bi tekst na 390 px gurnuo broj u drugi red. */
-  body.atlas #atlasSheet { display: flex; flex-direction: column; position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+  body.atlas #atlasSheet { display: flex; flex-direction: column; position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-mapa-hrom);
     background: var(--bg); border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line-strong);
     box-shadow: var(--shadow-up);
     /* 0.9.133 (Boskova zamerka 2): visina je JEDINI izvor istine i stize iskljucivo iz JS-a
@@ -1920,7 +1923,7 @@
     color: var(--fg-strong); font-size: 14px; font-weight: 600; }
 
   /* ---- donji list "Filter" (0.9.134, izgled cipova B: segmentirana traka, bez pilula) ---- */
-  #istraziFilter { position: fixed; inset: 0; z-index: 330; display: flex; align-items: flex-end; }
+  #istraziFilter { position: fixed; inset: 0; z-index: calc(var(--z-modal) + 10); display: flex; align-items: flex-end; }
   #istraziFilter[hidden] { display: none; }
   #istraziFilter .back { position: absolute; inset: 0; background: var(--surface-veil); }
   #istraziFilter .body { position: relative; width: 100%; max-height: 82dvh; overflow-y: auto; overscroll-behavior: contain;
@@ -2120,7 +2123,7 @@
      skrivena traka znacila da iz pocetnog ekrana nema izlaza. Traka gore vodi u LISTU ruta,
      donja traka u ostale tabove; oba puta gase rezim (vidi slusaoca u atlas IIFE). */
   body.atlas #atlasSheet { bottom: 0; }
-  @media (max-width: 900px), (max-height: 520px) {
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     body.atlas #atlasSheet { bottom: calc(58px + max(env(safe-area-inset-bottom), 8px)); padding-bottom: 0; }
     /* odstup od dna zbog donje navigacije se ne ponavlja u racunici: istVisine ga MERI iz polozaja
        samog lista, pa ne moze da se raziđe sa ovim pravilom. */
@@ -2142,9 +2145,9 @@
   /* 3.10. (pregled S8): u "izaberi na mapi" (pickmap) stub dugmadi ne sme preko nisana - ranije je ovo !important pobedjivalo pravilo iz 08. */
   body.atlas:not(.pickmap) #homeFabs { display: flex !important; }
   body.atlas #homeFabs button:not([data-fab="gps"]) { display: none !important; }
-  body.atlas #homeFabs button[data-fab="gps"] { display: flex !important; top: calc(84px + env(safe-area-inset-top)); bottom: auto; z-index: 26; }
+  body.atlas #homeFabs button[data-fab="gps"] { display: flex !important; top: calc(84px + env(safe-area-inset-top)); bottom: auto; z-index: calc(var(--z-mapa-hrom) + 1); }
   /* odricanje odgovornosti pre prve voznje; #turaSheet (0.9.86) deli isti jezik - pitanje pre starta */
-  #discSheet, #turaSheet, #atlasCilj, #mestoSheet, #vidSheet, #mestoIzbor { position: fixed; inset: 0; z-index: 340; }
+  #discSheet, #turaSheet, #atlasCilj, #mestoSheet, #vidSheet, #mestoIzbor { position: fixed; inset: 0; z-index: var(--z-spoljni); }
   /* --- Snimak voznje (0.9.116) ------------------------------------------------------------
      Merac 0-60 s ispod trajanja je pozajmljen iz makete A: kapa se tako VIDI kao slika, a ne
      samo tvrdi recenicom. Kad isecak dodirne plafon, merac je narandzast i pise MAKSIMUM. */
@@ -2254,7 +2257,7 @@
   #turaSheet .sec, #atlasCilj .sec, #mestoSheet .sec, #mestoIzbor .sec { width: 100%; margin-top: 8px; background: transparent; border: 1px solid var(--line-strong);
     color: var(--fg); border-radius: var(--r-lg); padding: 13px; font: 700 15px var(--font-ui); cursor: pointer; }
   /* sacuvane rute za offline - deli izgled sa #newsSheet */
-  #offSheet { position: fixed; inset: 0; z-index: 65; }
+  #offSheet { position: fixed; inset: 0; z-index: calc(var(--z-list) + 5); }
   #offSheet .back { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
   #offSheet .body { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bg);
   border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line);
@@ -2272,7 +2275,7 @@
   #offSheet .cancel { width: 100%; margin-top: 12px; background: var(--surface); border: 1px solid var(--line);
   color: var(--fg-soft); border-radius: var(--r-lg); padding: 12px; font-weight: 600; }
   #offBadge { position: fixed; left: 50%; transform: translateX(-50%); top: calc(8px + env(safe-area-inset-top));
-  z-index: 70; background: var(--orange-800); color: var(--orange-200); border: 1px solid var(--orange-700); border-radius: 999px;
+  z-index: calc(var(--z-list) + 10); background: var(--orange-800); color: var(--orange-200); border: 1px solid var(--orange-700); border-radius: 999px;
   padding: 5px 12px; font-size: 13px; font-weight: 600; display: none; }
   body.offline #offBadge { display: block; }
   /* QA 28.10.2026 (mreza M3): gore (8 px) je znacka lezala preko polja "Kuda ces danas?" i gutala dodir u sredini. Sada stoji dole iznad
@@ -2287,11 +2290,11 @@
    Oba koriste iste klase kp-*: grafit podloga, tanka linija, Coast caps natpisi, jedno narandzasto
    dugme, crveni X (Boskov zahtev). / Route card and place sheet: bottom sheets, one accent, red close. ===== */
 #kartaPuta, #mestoCilj { display: none; }
-#kartaPuta:not([hidden]), #mestoCilj:not([hidden]) { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 46;
+#kartaPuta:not([hidden]), #mestoCilj:not([hidden]) { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: calc(var(--z-plutajuci) + 1);
   background: var(--bg-veil); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
   border-top: 1px solid var(--line-strong); border-radius: 28px 28px 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom));
   box-shadow: 0 -16px 40px rgba(0,0,0,.5); max-height: 86dvh; overflow-y: auto; overscroll-behavior: contain; }
-#mestoCilj:not([hidden]) { z-index: 47; }
+#mestoCilj:not([hidden]) { z-index: calc(var(--z-plutajuci) + 2); }
 .kp-grab { width: 36px; height: 4px; border-radius: 2px; background: var(--fill-muted); margin: 0 auto 14px; }
 .rmr-cap { font-family: var(--font-cap); font-synthesis: none; font-weight: var(--fw-cap); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
 .rmr-cap.akc { color: var(--accent-text); }
@@ -2366,77 +2369,14 @@ body.kplan #homeFabs button[data-fab="gps"], body.mcilj #homeFabs button[data-fa
 body.kplan #bottomnav, body.mcilj #bottomnav { display: none; }
 /* SIROKI EKRAN (Boskov nalaz na desktopu 1.10.): isti tok, polje i listovi u panelu LEVO, mapa desno.
    Stari formular u #panel se ne prikazuje; #panel sluzi samo pregledu rute. */
-@media (min-width: 901px) and (min-height: 521px) {
-  #homeChrome { display: block; position: fixed; left: 24px; top: 24px; width: 400px; z-index: 12; pointer-events: none; }
-  #homeChrome > * { pointer-events: auto; }
-  #homeSearch { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 10px; background: var(--bg-veil); border: 1px solid var(--line-strong); border-radius: var(--r-lg); box-shadow: 0 8px 28px rgba(0,0,0,.45); cursor: text; }
-  #homeSearch .lg { width: 28px; height: 28px; border-radius: 7px; overflow: hidden; flex: none; }
-  #homeSearch .lg svg { width: 100%; height: 100%; display: block; }
-  #homeSearch .q { flex: 1; font-size: 17px; color: var(--fg-muted); }
-  #homeSearch .pf { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--fg-decor); background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex: none; padding: 0; }
-  #homeSearch .pf svg { width: 16px; height: 16px; stroke: var(--fg-soft); fill: none; }
-  #homeCtx { display: flex; flex-wrap: wrap; align-items: center; margin: 10px 4px 0; }
-  #homeCtx button { background: none; border: 0; padding: 6px 0; font: var(--fw-cap) 11px var(--font-cap); font-synthesis: none; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-soft); text-shadow: 0 1px 6px rgba(0,0,0,.9); cursor: pointer; }
-  #homeCtx button b { font-weight: var(--fw-cap); color: var(--fg-strong); }
-  #homeCtx button b.prazno { color: var(--accent-text); }
-  #homeCtx i { font-style: normal; color: var(--fg-decor); margin: 0 8px; }
-  #homeChips { display: flex; gap: 8px; margin-top: 10px; }
-  #homeChips .chip { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 999px; background: var(--bg-veil); border: 1px solid var(--line-strong); color: var(--fg); font: 500 13px var(--font-ui); cursor: pointer; }
-  #homeChips .chip svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; }
-  body.planning #homeChrome, body.searching #homeChrome, body.kplan #homeChrome, body.riding #homeChrome { display: none; }
-  body:not(.planning) #panel { display: none; }
-  body.planning #panel > *:not(#results):not(#status):not(#resCta):not(#plannerClose):not(#applog) { display: none !important; }
-  body.planning #panel { padding-top: 48px; }
-  #plannerClose { display: flex; position: absolute; top: 12px; right: 12px; z-index: 6; width: 34px; height: 34px; border-radius: 50%; background: none; border: 1px solid var(--danger-400); color: var(--danger-400); font-size: 16px; align-items: center; justify-content: center; cursor: pointer; }
-  body.searching #searchOverlay { display: flex; flex-direction: column; position: fixed; left: 24px; top: 24px; width: 400px; max-height: calc(100vh - 48px); z-index: 50; background: var(--bg-veil); border: 1px solid var(--line-strong); border-radius: 20px; box-shadow: 0 16px 48px rgba(0,0,0,.5); overflow: hidden; }
-  #searchOverlay .shead { display: flex; align-items: center; gap: 10px; padding: 12px 16px 6px; }
-  /* 10.10.: Google polje (UI Kit) na mestu naseg; njegov ekran sa listom je Google-ov i ne prefarbava se */
-  #searchOverlay #gPolje { flex: 1; min-width: 0; border: 1px solid var(--line-strong); border-radius: var(--r-lg); overflow: hidden; }   /* okvir kao nase polje - inace je na tamnoj podlozi prazan crn pravougaonik */
-  #searchOverlay #gPolje:focus-within { border-color: var(--accent); }
-  #searchOverlay #gPolje::part(focus-ring) { display: none; }   /* 13.10.: Google-ov plavi okvir fokusa -> nas narandzast rub */
-  #gpUcitava { margin: 6px 0 10px; }
-  #gpUcitava .gp-tekst { font-size: 13px; color: var(--fg-muted); margin: 0 2px 6px; }
-  #gpCilj { margin: 6px 0 12px; }
-  #gpCilj gmp-place-details-compact, #gpUcitava gmp-place-details-compact { display: block; width: 100%; }
-  #searchOverlay .sback { width: 40px; height: 40px; border-radius: 50%; background: none; border: 1px solid var(--line-strong); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  #searchOverlay .sback svg { width: 18px; height: 18px; stroke: var(--fg); fill: none; }
-  #searchOverlay #sInput { flex: 1; height: 48px; padding: 0 14px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line-strong); color: var(--fg-strong); font-size: 16px; outline: none; }
-  #searchOverlay .sbody { flex: 1; overflow-y: auto; padding: 4px 16px 16px; }
-  #searchOverlay .ssect { font-family: var(--font-cap); font-synthesis: none; font-weight: var(--fw-cap); font-size: 11px; letter-spacing: .1em; color: var(--fg-muted); margin: 18px 2px 2px; }
-  #searchOverlay .snet-pao { padding: 10px 2px; font-size: 13px; color: var(--fg-muted); border-bottom: 1px solid var(--line-hairline); }   /* QA mreza L7 */
-  #searchOverlay .srow { display: flex; align-items: center; gap: 12px; padding: 10px 2px; min-height: 50px; border-bottom: 1px solid var(--line-hairline); cursor: pointer; }
-  #searchOverlay .sic { width: 20px; height: 20px; flex: none; display: flex; align-items: center; justify-content: center; }
-  #searchOverlay .sic svg { width: 19px; height: 19px; stroke: var(--fg-muted); fill: none; }
-  #searchOverlay .sic .ri { width: 19px !important; height: 19px !important; display: flex; }
-  #searchOverlay .st { flex: 1; min-width: 0; }
-  #searchOverlay .st b { display: block; color: var(--fg-strong); font-size: 15px; font-weight: 500; }
-  #searchOverlay .st span { display: block; color: var(--fg-muted); font-size: 12px; margin-top: 2px; }
-  #searchOverlay .sfrom { display: none; }
-  #searchOverlay .schips { display: flex; gap: 8px; overflow-x: auto; padding: 12px 2px 4px; }
-  #searchOverlay .schip { flex: none; display: flex; align-items: center; gap: 8px; min-height: 44px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line-strong); padding: 0 14px 0 6px; cursor: pointer; font: inherit; color: var(--fg); }
-  #searchOverlay .schip .ci { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
-  #searchOverlay .schip .ci svg { width: 17px; height: 17px; stroke: var(--fg-muted); fill: none; }
-  #searchOverlay .schip .ct { display: flex; flex-direction: column; align-items: flex-start; }
-  #searchOverlay .schip .ct b { font-weight: 500; font-size: 13px; color: var(--fg-strong); }
-  #searchOverlay .schip .ct span { font-size: 11px; color: var(--fg-muted); }
-  #kartaPuta:not([hidden]), #mestoCilj:not([hidden]) { left: 24px; right: auto; bottom: 24px; width: 400px; border: 1px solid var(--line-strong); border-radius: 20px; max-height: calc(100vh - 48px); }
-}
 #kpViaHost #viaChips > div:last-child:not(.stop-item) { display: none; }   /* obrni/ocisti zive ispod kartice (#kpAlat) */
 .kp-alat { display: flex; align-items: center; gap: 0; margin: 8px 2px 0; }
 .kp-alat[hidden] { display: none; }
 .kp-alat button { background: none; border: 0; padding: 4px 0; color: var(--fg-soft); cursor: pointer; }
 .kp-alat i { font-style: normal; color: var(--fg-decor); margin: 0 10px; }
-/* siroki ekran: gornje kontrole mape (vreme, Slojevi, Prijavi) ostaju gore levo - polje ide ISPOD njih */
-@media (min-width: 901px) and (min-height: 521px) {
-  #homeChrome { top: 64px; }
-  body.searching #searchOverlay, #kartaPuta:not([hidden]), #mestoCilj:not([hidden]) { top: auto; }
-  body.searching #searchOverlay { top: 64px; max-height: calc(100vh - 88px); }
-  body.planning #panel { position: relative; }
-  body.planning #plannerClose { display: flex !important; }
-}
 /* ===== 2.10.2026: KAPIJA (obavezna prijava), slika korisnika, sazetak prijatelja ===== */
 #nalogKapija { display: none; }
-#nalogKapija:not([hidden]) { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; z-index: 8000; background: var(--bg); padding: 24px; }
+#nalogKapija:not([hidden]) { display: flex; align-items: center; justify-content: center; position: fixed; inset: 0; z-index: var(--z-kapija); background: var(--bg); padding: 24px; }
 body.kapija #bottomnav, body.kapija #homeChrome, body.kapija #homeFabs { display: none !important; }
 .nk-telo { width: 100%; max-width: 360px; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .nk-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; font-weight: 600; font-size: 18px; letter-spacing: -0.01em; color: var(--fg-strong); }
@@ -2477,7 +2417,7 @@ body.kapija #bottomnav, body.kapija #homeChrome, body.kapija #homeFabs { display
 #jaNalog .jopasno { display: block; margin-top: 10px; color: var(--bad-fg); }
 /* sazetak prijatelja - isti list kao mesto na mapi */
 #prijateljList { display: none; }
-#prijateljList:not([hidden]) { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 47; background: var(--bg-veil); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+#prijateljList:not([hidden]) { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: calc(var(--z-plutajuci) + 2); background: var(--bg-veil); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
   border-top: 1px solid var(--line-strong); border-radius: 28px 28px 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -16px 40px rgba(0,0,0,.5); }
 .pl-glava { display: flex; align-items: center; gap: 14px; }
 .pl-nazad { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 10px; padding: 8px 12px 8px 6px; border: 0; border-radius: 999px; background: none; color: var(--fg); font: 500 14px var(--font-ui); cursor: pointer; }
@@ -2510,7 +2450,6 @@ body.kapija #bottomnav, body.kapija #homeChrome, body.kapija #homeFabs { display
 #prijateljList .kp-cta .kp-plan[hidden] { display: none; }
 #prijateljList .kp-cta:has(.kp-plan[hidden]) .kp-x { flex: 1; }
 #prijateljList .kp-x { border-color: var(--line-strong); background: var(--surface); color: var(--fg); }   /* 3.10. (QA ISSUE-004): X samo zatvara, pa ne sme da bude crven iznad "Ukloni prijatelja" */
-@media (min-width: 901px) and (min-height: 521px) { #prijateljList:not([hidden]) { left: 24px; right: auto; bottom: 24px; width: 400px; border: 1px solid var(--line-strong); border-radius: 20px; } }
 /* ===== 2.10.2026 "NADJEMO SE TAMO" (faza 2): traka na pocetnom, kartice u Zajednici, listovi ===== */
 #sastanakTraka { display: none; }
 /* 2.10. (Boskov nalaz "layer preko mape"): traka je NASTAVAK polja - ista podloga i ivica, bez narandzastog
@@ -2530,7 +2469,7 @@ body.kplan #sastanakTraka, body.hasroute #sastanakTraka, body.riding #sastanakTr
 .zs-kart .zs-t b { display: block; font-size: 15px; font-weight: 500; color: var(--fg-strong); }
 .zs-kart .zs-t small { display: block; font-size: 12px; color: var(--fg-muted); margin-top: 1px; }
 #sastanakNovi, #sastanakList { display: none; }
-#sastanakNovi:not([hidden]), #sastanakList:not([hidden]) { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 48; background: var(--bg-veil); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+#sastanakNovi:not([hidden]), #sastanakList:not([hidden]) { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: calc(var(--z-plutajuci) + 3); background: var(--bg-veil); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
   border-top: 1px solid var(--line-strong); border-radius: 28px 28px 0 0; padding: 10px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -16px 40px rgba(0,0,0,.5); max-height: 86dvh; overflow-y: auto; }
 /* 3.10. (pregled): listovi prijatelja i sastanka su lezali preko donje navigacije bez skrivanja (z 47/48 nad z 30),
    kao sto to vec rade #kartaPuta i #mestoCilj (body.kplan/.mcilj). Ovi listovi nemaju klasu na body, pa :has().
@@ -2563,7 +2502,6 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
 .sl-ne.on { border-color: var(--accent); color: var(--accent-text); }
 #sastanakList .kp-cta { margin-top: 16px; }
 #sastanakList .mc-samo { display: block; margin: 12px auto 0; }
-@media (min-width: 901px) and (min-height: 521px) { #sastanakNovi:not([hidden]), #sastanakList:not([hidden]) { left: 24px; right: auto; bottom: 24px; width: 400px; border: 1px solid var(--line-strong); border-radius: 20px; max-height: calc(100vh - 48px); } }
 /* lista "Koga zoves": <label> nasledjuje globalni stil natpisa (caps) - vrati obican tekst */
 .sn-red, .sn-red .zpr-t b, .sn-red .zpr-t small { font-family: var(--font-ui); text-transform: none; letter-spacing: 0; }
 .sn-red .zpr-t b { font-size: 15px; font-weight: 500; color: var(--fg-strong); }
@@ -2593,7 +2531,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
 .nk-korak2 .nk-preskoci { margin-top: 2px; text-decoration: none; color: var(--accent-text); }
 #jaNalog .jmail { font-size: 13px; word-break: break-all; }
 /* 2.10.: posle prijave linkom na webu (iPhone/Android) - dugme koje sesiju preda nativnoj aplikaciji */
-.nk-nativ { position: fixed; left: 16px; right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 60; display: block; padding: 14px; border-radius: var(--r-lg); background: var(--action-gradient); color: var(--on-accent); font: 600 15px var(--font-ui); text-align: center; text-decoration: none; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.nk-nativ { position: fixed; left: 16px; right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: var(--z-list); display: block; padding: 14px; border-radius: var(--r-lg); background: var(--action-gradient); color: var(--on-accent); font: 600 15px var(--font-ui); text-align: center; text-decoration: none; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
 
 /* 3.10.2026 (spec tacka 7): obavestenja u Moj nalog - podnaslov i objasnjenje ispod natpisa prekidaca */
 #jaNalog .jn-sub { margin: 12px 0 2px; }
@@ -2601,7 +2539,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     /* Oznaka test verzije: uvek se vidi u kojoj si aplikaciji i sta je u njoj novo.
        Nestaje u voznji da ne smeta. */
     #verBadge { position: fixed; left: 10px; bottom: calc(92px + env(safe-area-inset-bottom));
-      z-index: 41; background: var(--bg-veil); border: 1px solid rgba(255,122,46,.55);
+      z-index: calc(var(--z-hud) + 1); background: var(--bg-veil); border: 1px solid rgba(255,122,46,.55);
       color: var(--accent-label); font-family: inherit; font-size: 11px; font-weight: 600; letter-spacing: 0;
       padding: 5px 9px; border-radius: 999px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     body.riding #verBadge, body.searching #verBadge { display: none; }
@@ -2618,7 +2556,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     /* teren 27.8.: bedz koji zna da vozi stariji build to i pokazuje (v0.9.99 -> 0.9.102).
        Bez treptanja i bez crvenog - ovo nije opasnost, nego cinjenica koju treba videti. */
     #verBadge.stara { border-color: rgba(255,255,255,.55); color: var(--fg-strong); }
-    #newsSheet { position: fixed; inset: 0; z-index: 65; }
+    #newsSheet { position: fixed; inset: 0; z-index: calc(var(--z-list) + 5); }
     #newsSheet .back { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
     #newsSheet .body { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bg);
       border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line);
@@ -2638,15 +2576,8 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
       font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
     #newsSheet .cancel:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
 
-  /* Desktop uses the same version control and a bounded, centered update dialog. */
-  @media (min-width: 901px) and (min-height: 521px) {
-    #verBadge { left: auto; right: 12px; bottom: 34px; min-height: 44px; }
-    #newsSheet .body { left: 50%; right: auto; bottom: auto; top: 50%; transform: translate(-50%, -50%);
-      width: min(560px, calc(100vw - 48px)); border: 1px solid var(--line); border-radius: var(--r-lg); }
-    #newsSheet .grab { display: none; }
-  }
-  @media (max-width: 900px), (max-height: 520px) {
-    body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: max(calc(4px + env(safe-area-inset-top)), 14px); z-index: 40; }
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
+    body.riding #rideBar { display: block; position: fixed; left: 12px; right: 12px; top: max(calc(4px + env(safe-area-inset-top)), 14px); z-index: var(--z-hud); }
     /* Traka voznje je ZAKUCANO tamna u obe teme (zelena kartica, crvena u slobodnoj voznji),
        pa mastilo na njoj mora biti literal a ne temski token: u svetloj temi --fg-strong
        postane skoro crn i natpis "za 300 m levo" se na zelenom ne vidi. Ovo je ekran koji se
@@ -2751,7 +2682,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #rideBarBottom .alt.off { opacity: .5; box-shadow: none; }
     /* Etiketa puta na kome si (kao "Route 26" kod Google-a). Zakacena na body, ne u mapu -
        #map je position:fixed pa pravi svoj stacking context i z-index unutra ne vazi. */
-    #rideRoad { display: none; position: fixed; z-index: 39; transform: translate(-50%, 0);
+    #rideRoad { display: none; position: fixed; z-index: calc(var(--z-hud) - 1); transform: translate(-50%, 0);
       background: var(--bg-veil); border: 1px solid var(--line); border-radius: 999px;
       padding: 4px 10px; align-items: center; gap: 8px; pointer-events: none;
       box-shadow: var(--shadow-md); white-space: nowrap;
@@ -2765,7 +2696,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #rideRoad i.e, #rideRoad i.a { background: var(--sign); color: var(--sign-ink); }
     #rideRoad i.n { background: var(--sign-nat); color: var(--sign-nat-ink); }
     /* Izmena rute usred voznje: pola ekrana, tap van zatvara, Otkazi uvek vidljiv */
-    #altSheet { position: fixed; inset: 0; z-index: 64; }
+    #altSheet { position: fixed; inset: 0; z-index: calc(var(--z-list) + 4); }
     #altSheet .back { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
     #altSheet .body { position: absolute; left: 0; right: 0; bottom: 0; background: var(--bg);
       border-radius: var(--r-sheet) var(--r-sheet) 0 0; border-top: 1px solid var(--line);
@@ -2844,7 +2775,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #rideBar .wx .l2 b { color: #fff; font-weight: 800; }
     #rideBar .wx .nw { white-space: nowrap; }   /* "čekaj do ~19 h" se ne lomi: dug naziv mesta prelama red PRE njega */
     #rideBarBottom { display: none; }
-    body.riding #rideBarBottom { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 40; align-items: stretch; gap: 12px; }
+    body.riding #rideBarBottom { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); z-index: var(--z-hud); align-items: stretch; gap: 12px; }
     #rideBarBottom .pill { background: var(--bg-veil); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 9px 13px; display: flex; align-items: center; }
     /* Brzina i nagib su dve iste kolone: broj pa oznaka, oba centrirana i iste visine.
        Ranije je nagib imao manji broj i drugu osnovnu liniju pa je "visio" u piluli
@@ -2888,7 +2819,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     /* ETA red: sopstveni red iznad dugmadi, levo (desno je GPS dugme). U donjoj traci je na
        390 px ostajalo 33 px za oba podatka, pa ih vozac prakticno nije video. */
     #rideEtaRow { display: none; }
-    body.riding #rideEtaRow { display: block; position: fixed; left: 12px; z-index: 40;
+    body.riding #rideEtaRow { display: block; position: fixed; left: 12px; z-index: var(--z-hud);
       bottom: calc(84px + env(safe-area-inset-bottom)); max-width: calc(100% - 92px); }
     /* Razmaci su stegnuti 31.8. da tri broja stanu na 390 px: najgori slucaj sa minutima
        ("4 h 59 min · 388 km · 22:30") trazio je 305 px, a red ima 298. Izmereno, ne procenjeno. */
@@ -2932,7 +2863,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
 #rideBar .plates .juri.on::before { content: "⟶ "; color: var(--orange-400); }
   /* ===== app2 Faza 3: REZULTAT ekran (kao result2 maketa: hero + metrike + krivine) ===== */
   #resHero, #resCta { display: none; }
-  @media (max-width: 900px), (max-height: 520px) {
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     #resHero { display: flex; overflow-x: auto; gap: 12px; scroll-snap-type: x mandatory; scrollbar-width: none;
       margin: 0 -16px 12px; padding: 2px 16px 6px;
       -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent); mask-image: linear-gradient(90deg, #000 94%, transparent); }
@@ -3003,7 +2934,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #resCta .b2.p { flex: 1.5; background: var(--action-gradient); color: var(--on-accent); border: none; box-shadow: var(--glow-accent); }
   }
   /* ===== app2 Faza 2: RUTE ekran (kao rute2 maketa: blizu tebe + težina) ===== */
-  @media (max-width: 900px), (max-height: 520px) {
+  @media (max-width: 900px), (max-height: 520px), (min-width: 901px) {
     #screen-rute, #istraziPane { padding: 0; }
     #screen-rute .rhd, #istraziPane .rhd { padding: calc(14px + env(safe-area-inset-top)) 16px 6px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     /* #gpxBtn stilovi uklonjeni 3.10. (pregled): dugme vise ne postoji u markupu (GPX uvoz je u listu "Moje rute", 0.9.138) */
@@ -3105,7 +3036,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
   /* Summary voznje: pun ekran preko svega na kraju, flow layout (bez sticky - lekcija 660px).
      TOP LEVEL namerno (review 5.8.): stilovi ne zavise od sirine ekrana, a bez baznog
      display:none markup bi na desktopu ispao vidljiv u toku dokumenta. */
-  #rideSum { display: none; position: fixed; inset: 0; z-index: 320; pointer-events: none; }
+  #rideSum { display: none; position: fixed; inset: 0; z-index: var(--z-modal); pointer-events: none; }
   #rideSum.on { display: block; }
   /* Dok stoji sazetak odvozene voznje, planer NE SME da bude ispod njega: Bosko je spustio
      sazetak i dobio traku "Kreni" kao da tek krece, a podignuta kartica je izgledala kao
@@ -3167,11 +3098,11 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
   /* 232 umesto 196 (1.9.): traka replaya je od dva reda i sa natpisom trenutka visoka 189 px;
      sa 196 joj je kraj bio odsecen. Izmereno, ne procenjeno. */
   #rideSum.peek.replaying .card { transform: translate(-50%, calc(100% - 244px)); }
-  @media (max-height: 520px) { #rideSum.peek.replaying .card { transform: translateY(calc(100% - 244px)); } }
+  @media (max-height: 520px), (min-width: 901px) { #rideSum.peek.replaying .card { transform: translateY(calc(100% - 244px)); } }
   #rideSum.peek { pointer-events: none; }
   #rideSum.peek .card { transform: translate(-50%, calc(100% - 74px)); pointer-events: auto;
     transition: transform 300ms cubic-bezier(.23,1,.32,1); cursor: pointer; }
-  @media (max-height: 520px) { #rideSum.peek .card { transform: translateY(calc(100% - 74px)); } }
+  @media (max-height: 520px), (min-width: 901px) { #rideSum.peek .card { transform: translateY(calc(100% - 74px)); } }
   #rideSum.peek .card > *:not(.grab):not(#rsKick):not(.rshead) { display: none !important; }
   /* replay traka prezivljava peek SAMO u replay rezimu; stoji POSLE none-pravila i nosi 2 ID-a
      da tie po specificnosti (2,4,0) resi redosled (13.8. - u QA je gubila bitku i bila nevidljiva) */
@@ -3292,7 +3223,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
   #rideSum .rspark .gl { font-family: var(--font-cap); font-synthesis: none; font-size: 11px; font-weight: var(--fw-cap); letter-spacing: var(--tr-cap); text-transform: uppercase; color: var(--fg-muted); margin-top: 4px; text-align: center; }
   /* .rsrek uklonjen 13.8. - licni rekord je trenutak u traci trenutaka */
   /* List prognoze za tacku (13.8.) */
-  #wxSheet { position: fixed; inset: 0; z-index: 340; }
+  #wxSheet { position: fixed; inset: 0; z-index: var(--z-spoljni); }
   #wxSheet .wxback { position: absolute; inset: 0; background: rgba(11,9,8,.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
   #wxSheet .wxbody { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
     border-radius: var(--r-sheet) var(--r-sheet) 0 0; padding: 4px 18px calc(18px + env(safe-area-inset-bottom)); }
@@ -3316,7 +3247,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
   #wxSheet .wxcta { width: 100%; height: 46px; margin-top: 12px; border-radius: var(--r-lg); border: 0; cursor: pointer;
     background: var(--action-gradient); color: var(--on-accent); font: 600 13px var(--font-ui); }
   /* List "nadji pumpu/hranu" (13.8.) - isti okvir kao list vremena, krupni redovi za rukavice */
-  #poiSheet { position: fixed; inset: 0; z-index: 340; }
+  #poiSheet { position: fixed; inset: 0; z-index: var(--z-spoljni); }
   #poiSheet .wxback { position: absolute; inset: 0; background: rgba(11,9,8,.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
   #poiSheet .wxbody { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
     border-radius: var(--r-sheet) var(--r-sheet) 0 0; padding: 4px 18px calc(18px + env(safe-area-inset-bottom)); }
@@ -3374,7 +3305,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
   #rideSum .rsetape .reta .rn .rlab, #rideSum .rsetape .reta .rn .rnaz { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #rideSum .rsetape .reta b { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--fg-strong); flex: none; }
   /* ===== Izmeni stanice (11.8.) ===== */
-  #stopsEdit { position: fixed; inset: 0; z-index: 60; background: var(--bg-sunken); display: flex; flex-direction: column;
+  #stopsEdit { position: fixed; inset: 0; z-index: var(--z-list); background: var(--bg-sunken); display: flex; flex-direction: column;
     padding-top: env(safe-area-inset-top); }
   #stopsEdit[hidden] { display: none; }
   #stopsEdit .sehd { display: flex; align-items: center; gap: 8px; padding: 8px 10px; flex: none;
@@ -3451,7 +3382,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
   .vakcije .vakc.glavna { background: var(--action-gradient); color: var(--on-accent); border: 0; }
   .vakcije .vakc:disabled { opacity: .45; cursor: default; }
   /* niski ekran (landscape telefon): sheet postaje desna kolona, mapa sa tragom ostaje levo */
-  @media (max-height: 520px) { #rideSum .card { left: auto; right: 10px; transform: none; bottom: 10px; top: 10px;
+  @media (max-height: 520px), (min-width: 901px) { #rideSum .card { left: auto; right: 10px; transform: none; bottom: 10px; top: 10px;
     width: min(46vw, 400px); max-height: none; border-radius: var(--r-lg); border-bottom: 1px solid var(--line-strong);
     animation-name: sumInLs; } }   /* landscape nema translateX(-50%) - vidi komentar uz sumIn */
 
@@ -3576,7 +3507,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
   #rideSum .rsmom b small { font: 500 11px var(--font-num); color: var(--fg-muted); margin-left: 2px; }
   #rideSum .rsmom span { display: block; margin-top: 4px; font: 500 9px var(--font-cap); font-synthesis: none; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #rideSum .rsmom button.akc span { color: var(--accent-text); }
-  @media (max-height: 520px) { #rideSum .rsmom { display: none; } }   /* pejzaz: kartica je desna kolona, traka bi legla preko nje - ceka svoj raspored */
+  @media (max-height: 520px), (min-width: 901px) { #rideSum .rsmom { display: none; } }   /* pejzaz: kartica je desna kolona, traka bi legla preko nje - ceka svoj raspored */
   /* zbijanje da sve do Podeli stane bez skrola na 390x844 (izmereno 1.10.: 766 px -> cilj ispod 590) */
   #rideSum .card { max-height: 72dvh; }   /* Podeli ceo u kadru na 844 px */
   #rideSum h3 { padding-top: 12px; }
@@ -3713,12 +3644,14 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #rideSum .rsn-ceka:not([hidden]) ~ .rsn-caps { display: none; }
   }
   /* polozen ekran: C je crtan za uspravan telefon - tamo ostaje danasnji list (JS je i ne pali, ovo je osigurac za okretanje) */
-  @media (max-height: 520px) { #rideSum .rsnasl { display: none !important; } #rideSum.nasl .card { display: block !important; } }
-  /* ===== LANDSCAPE telefon (npr. 844x390): mapa desno, alat u levom stubu (Google Maps obrazac).
+  @media (max-height: 520px), (min-width: 901px) { #rideSum .rsnasl { display: none !important; } #rideSum.nasl .card { display: block !important; } }
+  /* ===== LANDSCAPE telefon (npr. 844x390) I RACUNAR: mapa desno, alat u levom stubu (Google Maps obrazac).
      Ceo blok zatvoren u orientation+max-height pa portret CSS ostaje netaknut. Mobilni mod
      na landscape sirinama drze ", (max-height: 520px)" dodaci na 900px blokovima iznad.
+     29.10.2026 (Bosko: "DA"): racunar (sire od 900 px) dobija isti izgled - ", (min-width: 901px)" na istim blokovima. Ranije je imao
+     svoj izgled bez donje trake, pa Istrazi, Zajednica i Ja na njemu nisu postojali.
      Notch je u landscape-u SA STRANE: env(safe-area-inset-left/right) je ovde obavezan. ===== */
-  @media (orientation: landscape) and (max-height: 520px) {
+  @media (orientation: landscape) and (max-height: 520px), (min-width: 901px) {
     :root { --sl: env(safe-area-inset-left); --sr: env(safe-area-inset-right); --sb: env(safe-area-inset-bottom);
             --rail: 64px; --col: min(46vw, 380px); }
 
@@ -3831,7 +3764,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #rideBarBottom .lim { width: 40px; height: 40px; border-width: 4px; margin-left: 8px; }
     #rideEtaRow .eta .t { font-size: 20px; }
     #rideBarBottom .rep { position: fixed; right: calc(14px + var(--sr)); bottom: calc(10px + var(--sb));
-      width: 54px; height: 54px; margin: 0; z-index: 41; border-radius: 50%;
+      width: 54px; height: 54px; margin: 0; z-index: calc(var(--z-hud) + 1); border-radius: 50%;
       font-size: 0; gap: 0; justify-content: center; }   /* samo ikonica: palac desne ruke */
     #rideBarBottom .rep svg { margin: 0; }
     #rideBarBottom .alt { width: 40px; height: 40px; }
@@ -3859,6 +3792,18 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     #shareStudio .shs-telo { padding-left: calc(20px + var(--sl)); padding-right: calc(20px + var(--sr)); }
     #shareStudio .shs-akcije { padding-left: calc(20px + var(--sl)); padding-right: calc(20px + var(--sr)); }
   }
+  /* racunar (29.10.2026): sadrzaj ekrana tabova u koloni do 720 px, na sredini slobodnog dela - inace redovi idu preko celog ekrana */
+  @media (min-width: 901px) {
+    .tabscreen > * { max-width: 720px; margin-left: auto; margin-right: auto; }
+    /* listovi koji su na starom racunaru bili kartice od 400 px levo: kartica odmah do trake, ne preko celog ekrana (pregled 29.10.) */
+    #kartaPuta:not([hidden]), #mestoCilj:not([hidden]), #prijateljList:not([hidden]), #sastanakNovi:not([hidden]), #sastanakList:not([hidden]) {
+      left: calc(var(--rail) + var(--sl) + 12px); right: auto; width: min(440px, calc(100vw - var(--rail) - 24px)); }
+    /* listovi Planera (Polazak, Jos) i filter Istrazi: kartica od 440 px uz traku, ne red od 1.244 px (QA 29.10.) */
+    .planer-list .lsbody { left: calc(var(--rail) + var(--sl) + 12px); right: auto; width: min(440px, calc(100vw - var(--rail) - 24px));
+      border: 1px solid var(--line); border-radius: var(--r-sheet) var(--r-sheet) 0 0; }
+    #istraziFilter { justify-content: flex-start; }
+    #istraziFilter .body { margin-left: calc(var(--rail) + var(--sl) + 12px); width: min(440px, calc(100vw - var(--rail) - 24px)); }
+  }
 /* rezervne cene troska: sklopljeno po defaultu - polja su zbunjivala (Boskov nalaz 6.8.: "zasto putarina 0,06 kad dole pise 0 €") */
 .costAdv { margin-top: 10px; }
 .costAdv summary { font-size: 13px; font-weight: 600; color: var(--muted, var(--fg-muted)); cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -3873,7 +3818,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
    karticu manevra ni pilule brojeva. Zato sedi dole, a u voznji tacno iznad donje vozacke trake.
    Jedna komponenta za sva tri mesta koja je koriste: dodata stanica, kisa u pauzi, ruta koja vise
    nije kombinovana. `pointer-events:none` - poruka nikad ne otima tap kontroli ispod sebe. */
-#quietToast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));z-index:300;
+#quietToast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));z-index:var(--z-toast);
   max-width:min(86%,420px);background:var(--c-card);border:1px solid var(--c-border-strong);border-radius: var(--r-lg);padding:11px 15px;
   font-family:inherit;font-size: 13px;line-height: 1.4;font-weight: 400;color:var(--c-fg);
   box-shadow: var(--shadow-lg);text-align:center;pointer-events:none;opacity:0;transition: opacity 300ms var(--ease)}
@@ -3882,7 +3827,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
    (#rideEtaRow, bottom 84, ~40 px visok, dakle do ~124 px). Sa 92 px je poruka lezala preko tog reda
    (pregled S2, 3.10.); 134 px je stavlja iznad njega sa 10 px vazduha. Isti red kao #offBadge u voznji. */
 body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
-@media (orientation: landscape) and (max-height: 520px){
+@media (orientation: landscape) and (max-height: 520px), (min-width: 901px){
   /* polozeno: levi stub nosi i karticu manevra i brojke - toast ide desno od njega, nad mapu */
   body.riding #quietToast{left:auto;right:12px;transform:none;bottom:calc(12px + env(safe-area-inset-bottom));max-width:min(52vw,380px)}
 }
@@ -5721,6 +5666,8 @@ const RECNIK_SR = {
   "when.nevremeNa": "{0} nevreme na {1} {2}",
   "when.oprezNa": "{0} oprez na {1} {2}",
   "when.suvoCelim": "✓ suvo celim putem",
+  "when.poMraku": "po mraku",
+  "when.deloPoMraku": "deo puta po mraku",
   "pl.deonicaLok.1": "deonici",
   "pl.deonicaLok.2": "deonice",
   "pl.deonicaLok.5": "deonica",
@@ -6313,7 +6260,9 @@ const RECNIK_SR = {
   "nav.vratiSeNaTragM": "Vrati se na trag ({0})",
   "nav.zaKm": " za ~{0} km",
   "nav.zaM": " za ~{0} m",
-  "opor.nezavrsena": "Imaš nezavršenu vožnju ({0} km, {1}) - aplikacija je bila prekinuta u toku snimanja.\n\nOK = sačuvaj u dnevnik · Otkaži = odbaci",
+  "opor.nezavrsena": "Imaš nezavršenu vožnju ({0} km, {1}) - aplikacija je bila prekinuta u toku snimanja. Da je sačuvam u dnevnik?",
+  "opor.sacuvaj": "Sačuvaj",
+  "opor.odbaci": "Odbaci",
   "opor.sacuvana": "Vožnja je sačuvana u dnevnik ({0} km).",
   "rek.nagib": "Novi lični rekord: nagib {0}°",
   "rek.najduza": "Najduža vožnja do sada: {0} km",
@@ -6864,7 +6813,7 @@ const RECNIK_SR = {
   "hc.ariaProfil": "Profil",
   "hc.aria": "Polazak, vreme i motor",
   "hc.iz": "iz",
-  "hc.polazak": "polazak:",
+  "hc.polazakOd": "polazak:",
   "hc.mojeLokacije": "moje lokacije",
   "hc.mojeLokacijeIme": "moje lokacije · {0}",
   "hc.mojaLokacija": "Moja lokacija",
@@ -7145,9 +7094,12 @@ const RECNIK_SR = {
   "nk.otvoriUApp": "Otvori u aplikaciji RouteMeRight",
   "nk.tudjLink": "Ovaj link za prijavu nije tražen sa ovog uređaja, pa ga ne prihvatam. Upiši svoj mejl i zatraži kod.",
   "nk.prijaviKao": "Prijaviti se kao {0}?",
+  "nk.prijaviMe": "Prijavi me",
   "nal.dodajIzLinkaPitanje": "Dodati vozača sa kodom {0} u prijatelje? Šalje mu se zahtev; prihvaćen prijatelj vidi tvoju lokaciju.",
   "nal.zahtevCekaTebe": "Taj vozač ti je već poslao zahtev - prihvati ga u spisku prijatelja.",
   "nal.prenesiVoznje": "Na ovom telefonu je {0} vožnji bez naloga. Preneti ih u nalog koji se sad prijavio? „Ne“ ih ostavlja samo na telefonu.",
+  "nal.prenesiDa": "Prenesi",
+  "nal.prenesiNe": "Ne",
 
   // ---- 3.10.2026: V16 (literali iz app.js 1-7000 i share/studio.js), V2 razlozi, K1 ----
   "lay.fuel": "Pumpe",
@@ -7968,6 +7920,8 @@ const RECNIK_EN = {
   "when.nevremeNa": "{0} storms on {1} {2}",
   "when.oprezNa": "{0} caution on {1} {2}",
   "when.suvoCelim": "✓ dry the whole way",
+  "when.poMraku": "after dark",
+  "when.deloPoMraku": "partly after dark",
   "pl.deonicaLok.1": "section",
   "pl.deonicaLok.n": "sections",
   "wx.uzJos": ", plus {0} more {1}",
@@ -8555,7 +8509,9 @@ const RECNIK_EN = {
   "nav.vratiSeNaTragM": "Get back on track ({0})",
   "nav.zaKm": " in ~{0} km",
   "nav.zaM": " in ~{0} m",
-  "opor.nezavrsena": "You have an unfinished ride ({0} km, {1}) - the app was interrupted while recording.\n\nOK = save to the log · Cancel = discard",
+  "opor.nezavrsena": "You have an unfinished ride ({0} km, {1}) - the app was interrupted while recording. Save it to the log?",
+  "opor.sacuvaj": "Save",
+  "opor.odbaci": "Discard",
   "opor.sacuvana": "The ride was saved to the log ({0} km).",
   "rek.nagib": "New personal record: lean {0}°",
   "rek.najduza": "Longest ride so far: {0} km",
@@ -9104,7 +9060,7 @@ const RECNIK_EN = {
   "hc.ariaProfil": "Profile",
   "hc.aria": "Start, time and bike",
   "hc.iz": "from",
-  "hc.polazak": "from",
+  "hc.polazakOd": "from",
   "hc.mojeLokacije": "my location",
   "hc.mojeLokacijeIme": "my location · {0}",
   "hc.mojaLokacija": "My location",
@@ -9382,9 +9338,12 @@ const RECNIK_EN = {
   "nk.otvoriUApp": "Open in the RouteMeRight app",
   "nk.tudjLink": "This sign-in link was not requested from this device, so it is not accepted. Enter your email and request a code.",
   "nk.prijaviKao": "Sign in as {0}?",
+  "nk.prijaviMe": "Sign me in",
   "nal.dodajIzLinkaPitanje": "Add the rider with code {0} as a friend? A request is sent; an accepted friend sees your location.",
   "nal.zahtevCekaTebe": "That rider already sent you a request - accept it in your friends list.",
   "nal.prenesiVoznje": "This phone holds {0} rides with no account. Move them into the account that just signed in? \"No\" keeps them on the phone only.",
+  "nal.prenesiDa": "Move them",
+  "nal.prenesiNe": "No",
 
   // ---- 3.10.2026: V16 (literals from app.js 1-7000 and share/studio.js), V2 reasons, K1 ----
   "lay.fuel": "Fuel stations",
@@ -9842,6 +9801,10 @@ function kretJezgro(env) {
     const v = vidljivi(st);
     v.forEach((k, i) => { if (i === 0 && k._cuvano !== undefined) { hook(k, "vrati", k._cuvano); } hook(k, "prikazi"); });
   }
+  /* pitanje koje se skida bez dugmeta dobija null - i kad ga ne skida nazad nego odsecanje steka (AD-5, ukloni, zameni) ili promena
+     taba; inace bi ostalo bez odgovora, a red pitanja bi stao (treci pregled 29.10.2026) */
+  const razresi = (k) => { if (k && k._res && !k._gotov) { k._gotov = true; try { k._res(null); } catch (e) {} } };
+  const pitanjeCeka = (k) => !!(k && k._res && !k._gotov && vrsta(k) === "dijalog");   // kret.pitaj koje jos nema odgovor
   function skiniVrh(st) {   // sakrij + zatvori vrh; ako je pokrivao, otkrij ono ispod
     const k = st.pop();
     hook(k, "sakrij"); hook(k, "zatvori");
@@ -9851,17 +9814,23 @@ function kretJezgro(env) {
   }
   function gurni(k) {
     const st = s();
+    /* cetvrti pregled 29.10.2026: pitanje ostaje na vrhu dok se ne odgovori - ono sto kod otvori u medjuvremenu (kratak Google link,
+       skok u rutu) ide ISPOD njega; inace bi pitanje ostalo sakriveno, a Kreni bi cutke stajao */
+    const q = vrsta(k) !== "dijalog" && pitanjeCeka(st[st.length - 1]) ? st.pop() : null;
     if (POKRIVA[vrsta(k)] && st.length) sakrijVidljive(st);
     st.push(k);
     hook(k, "prikazi");
+    if (q) st.push(q);
   }
   function promeniTab(t) {
     if (t === tab) return;
+    const nosi = []; while (s().length > 1 && pitanjeCeka(vrh())) nosi.unshift(s().pop());   // pitanje bez odgovora ide sa vozacem u nov tab
     /* prolazan unos (svez sazetak posle voznje) ne ceka na tabu: zatvara se kad se tab napusti, kao pre kret-a */
     while (s().length > 1 && typeof d(vrh()).prolazan === "function" && d(vrh()).prolazan(vrh().args)) skiniVrh(s());
     sakrijVidljive(s());
     tab = t;
     prikaziVidljive(s());
+    nosi.forEach((q) => s().push(q));
   }
   const isti = (a, b) => a.id === b.id && JSON.stringify(a.args || null) === JSON.stringify(b.args || null);
 
@@ -9873,7 +9842,7 @@ function kretJezgro(env) {
     if (zi >= 0 && !(opc && opc.izPreko) && !USRED[vrsta(k)]) return false;   // AD-8: dok traje voznja ili kapija, ostalo ceka
     if (zi >= 0 && TABOVI.includes(df.vlasnik) && df.vlasnik !== tab) return false;
     /* AD-5: unos "jedna" postoji u najvise jednom stogu */
-    if (df.jedna) TABOVI.forEach((t) => { if (t === tab) return; const i = stog[t].findIndex((x) => x.id === id); if (i > 0) stog[t].length = i; });
+    if (df.jedna) TABOVI.forEach((t) => { if (t === tab) return; const i = stog[t].findIndex((x) => x.id === id); if (i > 0) stog[t].splice(i).forEach(razresi); });
     /* AD-6: ekran koji pripada drugom tabu = primopredaja, ‹ vodi nazad odakle si dosao */
     if (TABOVI.includes(df.vlasnik) && df.vlasnik !== tab) {
       k.poreklo = { tab, naslov: naslov(vrh()) };
@@ -9897,7 +9866,7 @@ function kretJezgro(env) {
   /* AD-8: voznja zatvara svaki list i pitanje u svim stogovima; na aktivnom kroz hook (pitanje dobija null), na ostalima tiho */
   function ocistiZaVoznju() {
     const skida = (k) => ({ list: 1, dijalog: 1 })[vrsta(k)];
-    const razresi = (k) => { if (k._res && !k._gotov) { k._gotov = true; try { k._res(null); } catch (e) {} } };
+    while (redPitanja.length) { const x = redPitanja.shift(); try { x.res(null); } catch (e) {} }   // i pitanja koja cekaju u redu (treci pregled)
     TABOVI.forEach((t) => { if (t === tab) return; stog[t] = stog[t].filter((k, i) => { if (i === 0 || !skida(k)) return true; razresi(k); return false; }); });
     for (let i = s().length - 1; i > 0; i--) {
       if (!skida(s()[i])) continue;
@@ -9915,21 +9884,45 @@ function kretJezgro(env) {
     if (izIstorije) naoruzaj = s().length > 1; else uskladi();
     return true;
   }
+  /* pregled 29.10.2026: pitanja idu u RED - drugo pitanje (npr. "Prijaviti se kao" uz nezavrsenu voznju pri pokretanju) ceka dok se
+     prvo ne zatvori. Ranije je drugo legalo preko prvog u isti sloj, a posle odgovora se prvo vise nije videlo i obecanje je visilo. */
+  const redPitanja = [], bezPitanja = []; let pitanjeTece = false;
+  /* posle reda pitanja: van reda kret-a (setTimeout), da kret pozivi u f (start voznje) rade odmah, a ne kasnije (cetvrti pregled) */
+  function proveriBez() {
+    if (pitanjeTece || redPitanja.length) return;
+    while (bezPitanja.length) { const f = bezPitanja.shift(); setTimeout(() => { if (pitanjeTece || redPitanja.length) { bezPitanja.push(f); return; } try { f(); } catch (e) {} }, 0); }
+  }
+  function pitajSledece() {
+    if (pitanjeTece) return;
+    const x = redPitanja.shift(); if (!x) { proveriBez(); return; }
+    pitanjeTece = true;
+    let resen = false;
+    const gotovo = (v) => { if (resen) return; resen = true; pitanjeTece = false; try { x.res(v); } catch (e) {} uRed(() => { pitajSledece(); }); };
+    uRed(() => { try { if (!_idi("dijalog", x.o || {}, { dodatno: { _res: gotovo }, izPreko: true })) gotovo(null); } catch (e) { gotovo(null); } });
+  }
   const api = {
     registruj(def) { if (def && def.id) defs[def.id] = def; },
     /* AD-14: pitanje u aplikaciji umesto alert/confirm/prompt. Razresava se vrednoscu dugmeta (odgovori) ili null na svaki
        drugi izlaz (nazad, Escape, Android, pozadina). */
-    pitaj: (o) => new Promise((res) => { uRed(() => { if (!_idi("dijalog", o || {}, { dodatno: { _res: res }, izPreko: true })) res(null); }); }),
-    odgovori: (v) => uRed(() => { const k = vrh(); if (!k || !k._res || k._gotov) return false; k._gotov = true; try { k._res(v); } catch (e) {} return _nazad(false); }),
+    pitaj: (o) => new Promise((res) => { redPitanja.push({ o, res }); pitajSledece(); }),
+    /* posle svih pitanja (i onih u redu): start voznje posle pitanja pri pokretanju ne preskace sledece pitanje (treci pregled) */
+    kadBezPitanja: (f) => { bezPitanja.push(f); uRed(() => proveriBez()); },
+    odgovori: (v) => uRed(() => {   // odgovor ide pitanju koje ceka (ono je na vrhu; ako ga je ipak nesto prekrilo, gadja se ono, ne sloj iznad)
+      const st = s(); let i = st.length - 1; while (i > 0 && !pitanjeCeka(st[i])) i--;
+      if (i < 1) return false;
+      const k = st[i]; k._gotov = true; try { k._res(v); } catch (e) {}
+      if (i === st.length - 1) return _nazad(false);
+      st.splice(i, 1); hook(k, "sakrij"); hook(k, "zatvori"); uredi(); uskladi(); return true;
+    }),
     idi: (id, args, opc) => uRed(() => _idi(id, args, opc && opc.poreklo ? { poreklo: opc.poreklo } : undefined)),
-    zameni: (id, args) => uRed(() => { if (s().length > 1) { const k = s().pop(); hook(k, "sakrij"); hook(k, "zatvori"); } return _idi(id, args, { izPreko: true }); }),
+    zameni: (id, args) => uRed(() => { if (s().length > 1) { const k = s().pop(); hook(k, "sakrij"); hook(k, "zatvori"); razresi(k); } return _idi(id, args, { izPreko: true }); }),
     nazad: () => uRed(() => _nazad(false)),
     unutra: () => uRed(() => unutra()),
     zatvori: (id) => uRed(() => { const i = s().findIndex((x) => x.id === id); if (i < 1 || i <= zamrznut()) return false; while (s().length > i) skiniVrh(s()); uredi(); uskladi(); return true; }),
     /* unos nestaje iz svih stogova (stari put zatvaranja, npr. pocetak voznje): na skrivenim tabovima tiho, jer je vec sakriven */
     ukloni: (id) => uRed(() => {
       let bilo = false;
-      TABOVI.forEach((t) => { if (t === tab) return; const i = stog[t].findIndex((x) => x.id === id); if (i > 0) { stog[t].length = i; bilo = true; } });
+      TABOVI.forEach((t) => { if (t === tab) return; const i = stog[t].findIndex((x) => x.id === id); if (i > 0) { stog[t].splice(i).forEach(razresi); bilo = true; } });
       const i = s().findIndex((x) => x.id === id);
       if (i > 0 && i > zamrznut()) { while (s().length > i) skiniVrh(s()); bilo = true; }
       if (bilo) { uredi(); uskladi(); }
@@ -9967,7 +9960,8 @@ function kretJezgro(env) {
       const v = vrsta({ id });
       if (v === "voznja") ocistiZaVoznju();
       else if (v === "list" && vrsta(vrh()) === "list") skiniVrh(s());   // AD-4: jedan list u isto vreme, i kad stari kod zaboravi roditelja
-      s().push({ id, args: args === undefined ? null : args }); uredi(); uskladi(); return true;
+      const q = v !== "dijalog" && pitanjeCeka(vrh()) ? s().pop() : null;   // pitanje bez odgovora ostaje na vrhu (cetvrti pregled)
+      s().push({ id, args: args === undefined ? null : args }); if (q) s().push(q); uredi(); uskladi(); return true;
     }),
     spoljniZatvoren: (id) => uRed(() => {
       const i = s().findIndex((x) => x.id === id);
@@ -10001,6 +9995,9 @@ function kretJezgro(env) {
 }
 
 /* AD-14: obavestenje u aplikaciji iz koda koji se testira izvucen (alat testova ne vuce ceo kret za njim) */
+/* AD-16 (29.10.2026, pregled arhitekture): JEDINI programski skok na tab. Klik iz koda na link donje trake - kret ga prepoznaje
+   (!isTrusted) i pamti poreklo za "‹ <odakle>", a stari slusaoci taba rade isto kao na dodir. Ovaj red je ranije stajao na 10 mesta u 5 fajlova. */
+function tabSkok(tab) { const a = document.querySelector('#bottomnav a[data-tab="' + tab + '"]'); if (a) a.click(); return !!a; }
 function kretObavesti(tekst) { try { return kret.obavesti(tekst); } catch (e) { return null; } }
 /* Android nazad (AD-12): jedan slusalac kroz @capacitor/app, samo na Androidu. Na korenu Planera aplikacija ide u
    pozadinu (minimizeApp), nikad exit - exit je activity.finish() i gasi sistemsku animaciju povratka na pocetni ekran. */
@@ -10018,14 +10015,15 @@ function kretNazadDugme(naslov) {
 }
 const kret = (function kretDom() {
   const TAB_NASLOV = { planer: "nav.planer", rute: "nav.istrazi", zajednica: "nav.zajednica", ja: "nav.ja" };
-  const fokus = [];   // AD-10: ko je imao fokus kad se ekran otvorio - tamo se vraca na nazad
+  /* AD-10: ko je imao fokus kad se ekran otvorio - tamo se vraca na nazad. Pamti se NA unosu (k.idi), ne u posebnom spisku: pitanje
+     (kret.pitaj) i posmatran sloj (kret.prati) ne prolaze kroz k.idi, pa je njihov nazad uzimao fokus ekrana ispod (pregled 29.10.2026). */
   let samKlik = false, uDodiruTaba = false;   // kret sam menja tab kroz stari tok donje trake (Atlas, Zajednica i Ja slusaju taj klik)
   const navLink = (t) => document.querySelector('#bottomnav a[data-tab="' + t + '"]');
   const aktivanTab = () => { const a = document.querySelector("#bottomnav a.on"); return a ? a.dataset.tab : "planer"; };
   /* QA L15: kad ekran drugog taba (Ja, Zajednica) pokriva sve, kontrole Planera i mapa ispod nisu dohvatljive tastaturom ni citacem.
-     Samo u uskom rasporedu (isti upit kao donja traka i ekrani tabova u 05-app-shell.css): na racunaru ekrana tabova nema, pa bi skok
-     (link poziva, Moj motor) zakljucao vidljiv Planer (pregled 29.10.); okret tableta preracunava. */
-  const mqUsko = window.matchMedia("(max-width: 900px), (max-height: 520px)");
+     Samo kad ekrani tabova postoje (isti upit kao donja traka i ekrani tabova u 05-app-shell.css). Od 0.9.215 ih ima i racunar, pa
+     uslov vazi svuda osim u procepu izmedju 900 i 901 px (uvecan pregledac), gde ni ekrana tabova nema; okret tableta preracunava. */
+  const mqUsko = window.matchMedia("(max-width: 900px), (max-height: 520px), (min-width: 901px)");
   let poslednje = null;
   const zakljucajPlaner = (st) => {
     poslednje = st;
@@ -10092,11 +10090,22 @@ const kret = (function kretDom() {
       else k.predaja = null;
     }
     k.predajaKroz = false;   // samo skok koji SAM kaze da ide preko pretrage (atlasVodiMe) zadrzava poreklo; obican skok pa pretraga ne (faza 2)
-    const r = idi0(id, args, o); if (r) fokus.push(f); return r;
+    const r = idi0(id, args, o);
+    if (r) { const v = k.vrh(); if (v && v.id === id && !v._izIdi) { v._izIdi = true; v._fokus = f; } }   // povratak na vec otvoren ekran cuva prvog otvaraca
+    return r;
   };
   const tab0 = k.tab;
   k.tab = (t) => { k.predaja = null; return tab0(t); };
-  k.nazad = () => { k.predaja = null; const r = nazad0(); if (r) { const f = fokus.pop(); try { if (f && f.isConnected && f.focus) f.focus({ preventScroll: true }); } catch (e) {} } return r; };
+  /* nazad brise zapamceno poreklo (AD-16), osim kad zatvara PITANJE (dijalog: Escape, Otkazi) - pitanje usred puta ("Koje mesto?" posle
+     "Vodi me preko nje") ne prekida put, pa ruta posle izbora i dalje nosi "‹ Deonica". Fokus vraca samo ekran iz k.idi; pitanje i
+     posmatran sloj vracaju ga sami (pregled 29.10.2026) */
+  k.nazad = () => {
+    const v = k.vrh(), ekran = !!(v && v._izIdi);
+    if (k.vrstaVrha() !== "dijalog") k.predaja = null;
+    const r = nazad0();
+    if (r && ekran) { const f = v._fokus; try { if (f && f.isConnected && f.focus) f.focus({ preventScroll: true }); } catch (e) {} }
+    return r;
+  };
   /* dodir na strelicu nazad: dva brza dodira (drhtaj prsta, dupli dodir) su jedan korak */
   let zadnjiNazad = 0;
   k.nazadDodir = () => { const t = Date.now(); if (t - zadnjiNazad < 350) return false; zadnjiNazad = t; return k.nazad(); };
@@ -10147,7 +10156,15 @@ const kret = (function kretDom() {
     dlg.setAttribute("role", "dialog"); dlg.setAttribute("aria-modal", "true");
     dlg.addEventListener("click", (e) => {
       const b = e.target.closest("[data-kd]");
-      if (b) { const v = b.dataset.kd === "da" ? (dlg.querySelector("input") ? dlg.querySelector("input").value : true) : null; if (v === null) k.nazadDodir(); else k.odgovori(v); return; }
+      if (b) {
+        const v = b.dataset.kd === "da" ? (dlg.querySelector("input") ? dlg.querySelector("input").value : true) : null;
+        /* 29.10.2026: pitanje sa tri ishoda (nezavrsena voznja: Sacuvaj / Odbaci / zatvoreno) - dugme Otkazi daje svoju vrednost, a
+           zatvaranje (nazad, Escape, pozadina) i dalje null */
+        const a = (k.vrh() || {}).args;
+        if (v === null && a && a.otkaziVrednost !== undefined) k.odgovori(a.otkaziVrednost);
+        else if (v === null) k.nazadDodir(); else k.odgovori(v);
+        return;
+      }
       if (e.target === dlg) k.nazadDodir();
     });
     dlg.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); k.odgovori(e.target.value); } });
@@ -10763,7 +10780,8 @@ function famousVariant(f, A, B) {
   return seg.slice(1, -1); // međutačke; start/cilj ostaju korisnikovi
 }
 
-/* CELINA 02 - POMOCNE GEOKOD: male pomocne funkcije (format, mnozina, status), prsten "Blizu tebe", geokodiranje, adrese sa kucnim brojem.
+/* CELINA 02 - POMOCNE: male pomocne funkcije (format, mnozina, status) i prsten "Blizu tebe". Od 29.10.2026 geokodiranje je u 02b,
+   adresa sa kucnim brojem u 02c. Spiskovi ispod su za ceo nekadasnji fajl 02-pomocne-geokod.js (18.10.2026).
    Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
    redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
    state: gpsFrom, geocode, revCache, gpsArea, routes, editorial, planSeq, selected
@@ -10993,6 +11011,9 @@ async function fetchJSON(url, opts = {}) {   // R13: nijedan mrezni poziv vise n
     }
   }
 }
+/* CELINA 02b - GEOKOD: red cekanja za Nominatim (geoNet), geokodiranje, "Koje mesto?", bodovanje predloga, kratki Google linkovi.
+   Izdvojeno 29.10.2026 iz 02-pomocne-geokod.js (pregled arhitekture, tacka 3: deo je bio "sve pomalo", 1.242 reda). Delovi stoje
+   jedan za drugim u istom redu kao pre (web/app.html), pa se skript izvrsava isto; funkcije su i dalje globalne. */
 /* --- geoNet (6.8.): SVI Nominatim pozivi kroz jedan red cekanja - policy je 1 req/s po IP,
    a mobilne mreze dele IP (CGNAT) pa je salva = 429 "zagusenje". Kes + razmak 1.1s + JEDAN tihi
    retry posle 1.2s: korisnik vise ne vidi jednokratne stucaje. Posle 429: razmak raste na 2.5s. --- */
@@ -11728,6 +11749,9 @@ window.rmrOtvoriURL = function (sirovURL) {
   return false;
 };
 window.handleOpenURL = function (u) { try { window.rmrOtvoriURL(u); } catch (e) {} };   // Cordova oblik, za svaki slučaj
+/* CELINA 02c - ADRESA: adresa sa kucnim brojem.
+   Izdvojeno 29.10.2026 iz 02-pomocne-geokod.js (pregled arhitekture, tacka 3: deo je bio "sve pomalo", 1.242 reda). Delovi stoje
+   jedan za drugim u istom redu kao pre (web/app.html), pa se skript izvrsava isto; funkcije su i dalje globalne. */
 /* ---- ADRESA SA KUCNIM BROJEM (19.8., Boskov nalaz sa Murtera) ------------------------------
    Kucao je "Svetog kriza 3 Sibenik" i dobio crkve i ulicu u Rovinju (209 km), a ulica postoji u
    Sibeniku. Izmereno na zivom Nominatimu, pre bilo kakve izmene koda:
@@ -16319,6 +16343,25 @@ function scoreAssess(assess) {
   for (const a of assess) s += a.level === 2 ? 100 : a.level === 1 ? 1 : 0;
   return s;
 }
+/* 29.10.2026 (Bosko: "suvo nocu vredi manje od suvog danju" - mrak, divljac): visina sunca nad tackom u trenutku prolaska, u stepenima.
+   Niska tacnost (oko 1°, obrazac NOAA) je dovoljna - pitanje je samo da li je dan ili mrak. */
+function sunceVisina(lat, lon, d) {
+  const r = Math.PI / 180, n = d.getTime() / 864e5 - 10957.5;   // dani od J2000 (1.1.2000. u 12:00 UTC)
+  const g = (357.529 + 0.98560028 * n) * r, q = 280.459 + 0.98564736 * n;
+  const L = (q + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g)) * r, e = (23.439 - 0.00000036 * n) * r;
+  const ra = Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L)), dek = Math.asin(Math.sin(e) * Math.sin(L));
+  const H = ((18.697374558 + 24.06570982441908 * n) * 15 + lon) * r - ra;
+  return Math.asin(Math.sin(lat * r) * Math.sin(dek) + Math.cos(lat * r) * Math.cos(dek) * Math.cos(H)) / r;
+}
+/* ocena polaska za "Kad krenuti": kisa (scoreAssess) + pola boda za svaku tacku koju prolazis po mraku (sunce ispod horizonta).
+   Po tacki: suvo danju < suvo nocu < oprez (1 bod) < nevreme (100) - ceo put po mraku ume da izgubi od dana sa oprezom na par
+   deonica, a nevreme uvek odlucuje pre mraka. Samo prozor polaska: kod "Stigni do" vreme dolaska je izabrao vozac, pa se mrak ne
+   racuna (inace bi ga poslala 6 h ranije - pregled 29.10.2026). Tacka bez sata ili polozaja ne broji mrak. */
+function polazakOcena(a) {
+  let noc = 0;
+  for (const x of a) if (!x.outOfRange && x.eta && isFinite(x.lat) && isFinite(x.lon) && sunceVisina(x.lat, x.lon, x.eta) < 0) noc++;
+  return { score: scoreAssess(a) + noc * 0.5, noc, znanih: a.filter((x) => !x.outOfRange).length };
+}
 function applyDeparture(dep) {
   const pad = (n) => String(n).padStart(2, "0");
   if ($("timeMode").value !== "arrive")
@@ -16419,7 +16462,8 @@ function renderWhen(route, departure) {
     const oor = !wxCover(a).puna;   // R13v2: van horizonta prognoze != suvo (isti predikat kao presuda)
     // najgora tacka tog polaska nosi razloge i zastavice - ikonica u redu je po NJOJ, ne prazna
     const naj = a.filter((x) => !x.outOfRange && x.level > 0).reduce((b, x) => (!b || x.level > b.level ? x : b), null);
-    return { dep, oor, score: oor ? 1e9 : scoreAssess(a), worst: wxCover(a).worst,
+    const po = polazakOcena(a);   // 29.10.2026: mrak se racuna (suvo nocu < suvo danju)
+    return { dep, oor, score: oor ? 1e9 : arrive ? scoreAssess(a) : po.score, noc: po.noc, ceoMrak: po.noc > 0 && po.noc === po.znanih, worst: wxCover(a).worst,
       n1: a.filter((x) => x.level === 1).length, n2: a.filter((x) => x.level === 2).length,
       reasons: naj ? naj.reasons : [], flags: naj ? naj.flags : null };
   });
@@ -16434,8 +16478,9 @@ function renderWhen(route, departure) {
     const sum = c.oor ? T("wx.rVanHorizonta") :
       c.n2 ? T("when.nevremeNa", { 0: rIco("storm", 14), 1: c.n2, 2: TN(c.n2, "pl.deonicaLok") }) :
       c.n1 ? T("when.oprezNa", { 0: wxIcoZa({ level: 1, flags: c.flags, reasons: c.reasons }, 15), 1: c.n1, 2: TN(c.n1, "pl.deonicaLok") }) : T("when.suvoCelim");
+    const mrak = !c.oor && c.noc ? " · " + T(c.ceoMrak ? "when.poMraku" : "when.deloPoMraku") : "";   // zasto zvezdica nije na nocnom suvom polasku
     b.innerHTML = `<span class="dot ${c.oor ? "na" : "l" + c.worst}"></span><span class="wr-time">${fmtDanSat(c.dep)} → ${fmtDanSat(arr)}</span>` +
-      `<span class="wr-sum">${sum}</span>` + (c === best ? "<b>★</b>" : "");
+      `<span class="wr-sum">${sum}${mrak}</span>` + (c === best ? "<b>★</b>" : "");
     b.onclick = () => applyDeparture(c.dep);
     box.appendChild(b);
   }
@@ -17932,7 +17977,7 @@ async function renderFeed() {
       '<button type="button" id="zPraznoMapa">Otvori mapu</button></div>';
     const bm = document.getElementById("zPraznoMapa");
     if (bm) bm.onclick = () => {   // izlaz je mapa - isto odredište kao dugme "Na mapi" u redovima feeda
-      const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
+      tabSkok("planer");
     };
     return;
   }
@@ -17971,7 +18016,7 @@ async function renderFeed() {
     if (!a) return;
     if (a === "mapa" && typeof kret !== "undefined") { kret.idi("zajednica.mapa", { r: row.dataset.id }); return; }   // 28.10. (faza 4): ista kartica kao red na mapi
     if (a === "mapa") {   // prikazi prijavu na mapi (planer tab)
-      const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
+      tabSkok("planer");
       try { map.flyTo({ center: [+row.dataset.lon, +row.dataset.lat], zoom: 13.5, duration: 900 }); } catch (er) {}
       /* 0.9.95 (QA nalaz 22): privremeni pin su dobijale SAMO istekle prijave, uz pretpostavku
          "aktivna prijava vec ima pin". A pinove crta jedino loadPrijave, koji se zove tek pri
@@ -18549,6 +18594,7 @@ async function voznjeNaServer(lista) {   // upsert: isti (korisnik, ts) se prepi
   /* Pregled 3.10. (B8, deljeni telefon): idu SAMO zapisi bez vlasnika (_uid) ili sa MOJIM _uid - zapisi prethodnog naloga na ovom
      telefonu ostaju na njemu. Posle upisa zapis dobija _uid. Svih 13 kolona ide eksplicitno (null gde nema) da upsert sa raznorodnim
      kljucevima ne ostavi stare vrednosti na serveru. / Only unowned or my own records; stamp owner after upload; all columns explicit. */
+  try { if (NK.prenosCeka) return false; } catch (e) {}   // 29.10.2026: dok "Preneti voznje u nalog?" stoji, nista se ne salje
   const izvor = Array.isArray(lista) ? lista : _zajCitaj("mr_voznje", []);
   /* Pregled 0.9.208 (P3): red koji je STIGAO sa servera (_server) se ne vraca gore - drugi telefon bi svojim starim redom
      (npr. prosek ture 0) pregazio ono sto je vlasnik u medjuvremenu izlecio. Rucno preimenovanje skida oznaku. */
@@ -19149,7 +19195,7 @@ function renderPreporuke() {
       if (typeof kret !== "undefined" && typeof mestoCiljOtvori === "function") {
         mestoCiljOtvori({ ime: c.dataset.ime, pod: c.dataset.pod, lat: +c.dataset.lat, lon: +c.dataset.lon, tip: c.dataset.tip }); return;
       }
-      const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
+      tabSkok("planer");
       try { map.flyTo({ center: [+c.dataset.lon, +c.dataset.lat], zoom: 12, duration: 900 }); } catch (er) {}
     });
   }
@@ -19443,7 +19489,7 @@ async function zajModeOn() {
   document.body.classList.add("zajmap");
   /* 28.10.2026 (faza 4, AD-18): u kret-u je mapa prijava korak Zajednice (zajednica.mapa) - Planer se ne "klikce", pa ni njegova
      kartica rute ne stoji preko "‹ Zajednica" (snimak Zajednice 1) */
-  if (typeof kret === "undefined") { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); }
+  if (typeof kret === "undefined") tabSkok("planer");
   try { state.layerVis.hazard = true; applyLayerVis(); } catch (e) {}
   try { mestaSlojCrtaj(); } catch (e) {}   // izvor mora da dobije SVE kategorije (van rezima nosi podskup po cipovima)
   const sh = document.getElementById("zajSheet"); if (sh) sh.classList.remove("peek");
@@ -19462,7 +19508,7 @@ function zajModeOff(kuda) {
   ZAJ.greska = null;   // stara greska ne sme da doceka sledeci ulazak u rezim
   try { mestaSlojCrtaj(); } catch (e) {}   // nazad na podskup po cipovima (van Zajednice tepih je podrazumevano ugasen)
   if (kuda === "zajednica") {
-    const za = document.querySelector('#bottomnav a[data-tab="zajednica"]'); if (za) za.click();
+    tabSkok("zajednica");
     const sc = document.getElementById("screen-zajednica");
     if (sc) requestAnimationFrame(() => { sc.scrollTop = ZAJ.prevScroll; });
   }
@@ -20290,7 +20336,7 @@ async function plan() {
         let bestDep = null, bestSc = Infinity, steps = 0;
         for (let t = latest; t >= Date.now() && steps < 12; t -= 3600e3, steps++) {
           const dep = new Date(t);
-          const sc = scoreAssess(assessRoute(r0, dep));
+          const sc = scoreAssess(assessRoute(r0, dep));   // mrak se ovde NE racuna: dolazak je izabrao vozac (pregled 29.10.2026)
           if (sc < bestSc) { bestSc = sc; bestDep = dep; }
         }
         departure = bestDep || new Date(latest);
@@ -20395,8 +20441,8 @@ function qplanNeedFrom(razlog) {
   if (tv || krug || razlog) { try { tihoObavestenje(razlog || msg); } catch (e) {} }
 }
 /* ---------------- mobilni bottom sheet (apple-design: 1:1 drag, projekcija momenta, rubber-band) ---------------- */
-const mqMobile = window.matchMedia("(max-width: 900px), (max-height: 520px)");   // "mobilni mod" = i landscape telefon (Pro Max je 956px sirok!)
-const mqLS = window.matchMedia("(orientation: landscape) and (max-height: 520px)");
+const mqMobile = window.matchMedia("(max-width: 900px), (max-height: 520px), (min-width: 901px)");   // "mobilni mod" = i landscape telefon (Pro Max je 956px sirok!)
+const mqLS = window.matchMedia("(orientation: landscape) and (max-height: 520px), (min-width: 901px)");
 const isLS = () => mqLS.matches;   // landscape telefon: panel je levi stub, drag ide u stranu
 function lsPadLeft(id, fb) {   // stvarna sirina prepreke levo (rail+panel/rideBar) umesto konstante - notch i mali ekrani je menjaju
   let x = fb;
@@ -20691,15 +20737,11 @@ async function loadBikes() {
   } catch { /* fallback: BIKES iz koda */ }
 }
 
-/* CELINA 12 - VERZIJA: verzija i "Sta je novo" (CHANGELOG), kraj uvodne animacije, provera verzije.
+/* CELINA 11b - POKRETANJE: uvodna animacija i njeno gasenje, merni panel dodira, 3D teren, cuvar iscrtavanja mape, init().
    Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
-   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
-   state: vias, routes, novaVerzija, _stilIzLinka, famousApplied, novaLjuska, pendingFamous, selected
-   Zovu je druge celine: terenPali, bootUvodGasi, init, terenGasi, terenUpisi, terenZeljen
-   Koristi celine: 01, 02, 04, 05, 06, 07, 08, 11, 13, 15, 19 */
-/* ---------- verzija i "sta je novo" ----------
-   Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
-   Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
+   redosled fajlova je redosled ucitavanja. Izdvojeno 29.10.2026 iz 12-verzija.js (pregled arhitekture): pokretanje
+   aplikacije je stajalo iza 1.200 redova spiska "Sta je novo". Redosled izvrsavanja je isti kao pre - ovaj deo je i
+   ranije bio na pocetku fajla 12, a init() je deklaracija funkcije koju zove 21-rute-kalendar.js (pre nalozi.js i guzve.js). */
 /* ===== UVODNA ANIMACIJA: gasenje ====================================================================
    Sloj se NE ceka - aplikacija se dize ispod njega. Gasi se cim je mapa spremna, ali ne pre 900 ms
    (da pokret ne trepne) i najkasnije posle 2500 ms (da se nikad ne zaglavi ako mapa ne stigne). */
@@ -20733,10 +20775,19 @@ try {
   kadSeVidi();
   setTimeout(bootUvodKreni, 600);   // ako rAF nikad ne stigne, pokret ipak krece
 } catch (e) { try { bootUvodKreni(); } catch (e2) {} }
+/* AD-9 (29.10.2026): pitanja pri pokretanju (nezavrsena voznja, "Prijaviti se kao", prenos voznji) cekaju da se uvodni sloj skloni -
+   pitanje ispod njega (z 9000) se ne vidi. Do tada su bila sistemski prozori, koje iOS crta preko svega. */
+const POSLE_UVODA = [];
+function posleUvodaPusti() { while (POSLE_UVODA.length) { const f = POSLE_UVODA.shift(); try { f(); } catch (e) {} } }
+function posleUvoda(f) { if (BOOT_UVOD.gotov && !document.getElementById("bootUvod")) { try { f(); } catch (e) {} } else POSLE_UVODA.push(f); }
+/* pitanje u aplikaciji posle uvoda; null kad pitanja nema ili je zatvoreno bez odgovora */
+function pitajPosleUvoda(o) {
+  return new Promise((res) => posleUvoda(() => { try { kret.pitaj(o).then(res, () => res(null)); } catch (e) { res(null); } }));
+}
 function bootUvodGasi(razlog) {
   if (BOOT_UVOD.gotov) return;
   const el = document.getElementById("bootUvod");
-  if (!el) { BOOT_UVOD.gotov = true; return; }
+  if (!el) { BOOT_UVOD.gotov = true; setTimeout(posleUvodaPusti, 0); return; }
   /* Raspored (0.9.142). Ranije je "rok" gasio sloj bez obzira na pokret, pa je na sporom paljenju
      animacija presecana na pola - izmereno 17.9.: pokret krenuo u 2183. ms, sloj ugasen u 2949. dok
      je animacija jos trajala (750 od 900 ms). Sada vazi ovim redom:
@@ -20754,6 +20805,7 @@ function bootUvodGasi(razlog) {
   setTimeout(() => {
     try { el.hidden = true; } catch (e) {}
     try { el.remove(); } catch (e) {}   // 0.9.144: van dokumenta, da ne moze da zaklanja ni greskom
+    try { posleUvodaPusti(); } catch (e) {}   // AD-9: pitanja koja su cekala uvod
   }, 400);
   /* Dnevnik uvoda: bez njega je svaka sledeca prijava "nema animacije" opet nagadjanje. Cita se
      na dnu spiska novosti (tap na oznaku verzije). Pise se samo poslednje paljenje. */
@@ -20990,8 +21042,324 @@ try {
   else bootUvodGasi("ljuska");
   window.addEventListener("load", () => bootUvodGasi("load"));
 } catch (e) {}
-const APP_VERSION = "0.9.214";
+function init() {
+  try { primeniJezik(); } catch (e) {}   // 0.9.159: natpisi na izabranom jeziku PRE svega sto cita DOM
+  loadLayerVis();
+  try { wxPostaviMax(); } catch (e) {}   // nalaz 96: polje odbija datum koji prognoza ne pokriva
+  initVerBadge();
+  $("roundTrip").onchange = () => { if (state.routes.length) plan(); };
+  $("roundGen").onchange = () => {
+    const on = $("roundGen").checked;
+    $("loopKmWrap").classList.toggle("hidden", !on);
+    $("toBlock").classList.toggle("hidden", on);       // kružna tura ne treba "Do"
+    if (on) $("roundTrip").checked = false;            // međusobno isključivi
+    if ($("fromLabel")) $("fromLabel").textContent = on ? "Polazak (i cilj)" : "Od";
+  };
+  $("loopKm").addEventListener("change", () => { if ($("roundGen").checked && state.routes.length) plan(); });
+  $("timeMode").onchange = () => { if (state.routes.length) plan(); };
+  // prevlačenje stanice direktno na Od/Do polje: ona postaje polazak/cilj, a stara vrednost ulazi u listu
+  for (const [inpId, isFrom] of [["from", true], ["to", false]]) {
+    const inp = $(inpId);
+    inp.addEventListener("dragover", (e) => { e.preventDefault(); inp.classList.add("drop-target"); });
+    inp.addEventListener("dragleave", () => inp.classList.remove("drop-target"));
+    inp.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      inp.classList.remove("drop-target");
+      const i = +e.dataTransfer.getData("text/plain");
+      const it = state.vias[i];
+      if (!it || it.t !== "stop" || !it.name) return;
+      const old = inp.value.trim();
+      inp.value = it.name;
+      state.vias.splice(i, 1);
+      if (old) {
+        try {
+          const g = await geocode(old);
+          if (isFrom) state.vias.unshift({ t: "stop", v: [g.lon, g.lat], name: g.name });
+          else state.vias.push({ t: "stop", v: [g.lon, g.lat], name: g.name });
+        } catch { }
+      }
+      renderViaChips();
+      if (state.routes.length) plan();
+    });
+  }
+  /* -- Moj motor: proizvođač → model → godište, fabričke specifikacije + profil u localStorage -- */
+  const brandSel = $("bikeBrand"), modelSel = $("bikeModel"), yearSel = $("bikeYear");
+  const CUSTOM = BIKE_CUSTOM;
+  ubaciMojeMotore();   // 0.9.95: jedan ubacivac za oba mesta gde se BIKES gradi (nalaz 59)
+  const brands = [...new Set(BIKES.map((b) => b[0]))];
+  const fillSel = (sel, items, vals) => {
+    sel.innerHTML = "";
+    items.forEach((t, i) => {
+      const o = document.createElement("option");
+      o.value = vals ? vals[i] : t; o.textContent = t;
+      sel.appendChild(o);
+    });
+  };
+  const saveBike = () => {
+    localStorage.setItem("mr_bike", JSON.stringify(
+      { b: brandSel.value, m: modelSel.value, y: yearSel.value, tank: $("tank").value, cons: $("cons").value }));
+    /* 0.9.92: sazetak se osvezava ODAVDE, ne preko svog "change" slusaoca. Blok sa selektima se
+       izvrsava iz init(), a blok koji crta sazetak je IIFE koji je odradio ranije - zato je
+       njegov slusalac dolazio PRE ovog upisa i pisao PRETHODNO stanje (izmereno 26.8.: posle
+       prvog izbora je i dalje stajalo "nije izabran"). Upis je jedini trenutak istine. */
+    try { if (typeof window.motoSumRefresh === "function") window.motoSumRefresh(); } catch (e) {}
+    /* QA 28.10. (Ja M3): postojeca ruta prati izabran motor - trosak je ostajao od prethodnog (13 € BMW uz domet Honde) */
+    try {
+      const r = state.routes && state.routes[state.selected];
+      if (r) renderCost(r).then(() => { try { rezInstCrtaj(r); } catch (e2) {} }).catch(() => {});
+    } catch (e) {}
+  };
+  const applySpecs = () => {
+    const v = BIKES.find((b) => b[0] === brandSel.value && b[1] === modelSel.value && b[2] === yearSel.value);
+    if (v) { $("tank").value = v[3]; $("cons").value = v[4]; }
+    updateRangeNote();
+  };
+  const fillYears = () => {
+    const gens = BIKES.filter((b) => b[0] === brandSel.value && b[1] === modelSel.value);
+    fillSel(yearSel, gens.length ? gens.map((g) => g[2]) : ["-"]);
+  };
+  const fillModels = () => {
+    if (brandSel.value === CUSTOM) { fillSel(modelSel, [T("bike.rucnoModel")]); fillSel(yearSel, ["-"]); return; }
+    fillSel(modelSel, [...new Set(BIKES.filter((b) => b[0] === brandSel.value).map((b) => b[1]))]);
+    fillYears();
+  };
+  window.refreshBikeSelects = () => {   // R13v2: kad bikes.json stigne, SACUVAN profil (mr_bike) ima prednost nad trenutnom selekcijom
+    const br2 = [...new Set(BIKES.map((b) => b[0]))];
+    let want = null;
+    try { want = JSON.parse(localStorage.getItem("mr_bike") || "null"); } catch (e) {}
+    const cur = want && want.b ? { b: want.b, m: want.m, y: want.y } : { b: brandSel.value, m: modelSel.value, y: yearSel.value };
+    fillSel(brandSel, [...br2, T("bike.drugi")], [...br2, CUSTOM]);
+    if ([...brandSel.options].some((o) => o.value === cur.b)) { brandSel.value = cur.b; fillModels();
+      if ([...modelSel.options].some((o) => o.value === cur.m)) { modelSel.value = cur.m; fillYears();
+        if ([...yearSel.options].some((o) => o.value === cur.y)) yearSel.value = cur.y; }
+      if (want && want.tank) $("tank").value = want.tank;
+      if (want && want.cons) $("cons").value = want.cons;
+      updateRangeNote();
+    } else {
+      /* 0.9.95 (nalaz 59, drugi rez): sacuvan proizvodjac NIJE medju opcijama (red obrisan iz
+         bikes.json, ili baza jos nije stigla). Do sada je ovde tiho ostajao izabran PRVI fabricki
+         motor, dok su polja tank/cons jos drzala vozaceve brojke - kartica je tvrdila motor koga
+         u spisku nema, a prvi dodir spiska bi prepisao rezervoar i potrosnju tudjim brojkama. */
+      fillModels();
+      try {
+        const el = document.getElementById("motoSum");
+        if (el && want && want.b) { el.textContent = T("bike.nijeUBazi"); el.classList.add("prazno"); }
+      } catch (e) {}
+      return;   // motoSumRefresh bi pregazio postenu recenicu imenom iz padajuceg spiska
+    }
+    try { if (typeof window.motoSumRefresh === "function") motoSumRefresh(); } catch (e) {}
+  };
+  fillSel(brandSel, [...brands, T("bike.drugi")], [...brands, CUSTOM]);
+  let bikeProf = null;
+  try { bikeProf = JSON.parse(localStorage.getItem("mr_bike") || "null"); } catch { }
+  if (bikeProf && [...brands, CUSTOM].includes(bikeProf.b)) {
+    brandSel.value = bikeProf.b;
+    fillModels();
+    if ([...modelSel.options].some((o) => o.value === bikeProf.m)) { modelSel.value = bikeProf.m; fillYears(); }
+    if ([...yearSel.options].some((o) => o.value === bikeProf.y)) yearSel.value = bikeProf.y;
+    if (bikeProf.tank) $("tank").value = bikeProf.tank;
+    if (bikeProf.cons) $("cons").value = bikeProf.cons;
+    updateRangeNote();
+  } else {
+    fillModels();
+    applySpecs();
+  }
+  brandSel.onchange = () => { fillModels(); if (brandSel.value !== CUSTOM) applySpecs(); saveBike(); };
+  modelSel.onchange = () => { fillYears(); applySpecs(); saveBike(); };
+  yearSel.onchange = () => { applySpecs(); saveBike(); };
+  $("tank").oninput = () => { updateRangeNote(); saveBike(); };
+  $("cons").oninput = () => { updateRangeNote(); saveBike(); };
+  $("addBikeBtn").onclick = () => $("addBikeForm").classList.toggle("hidden");
+  $("nbSave").onclick = () => {
+    const b = $("nbBrand").value.trim(), m = $("nbModel").value.trim(), y = $("nbYear").value.trim() || "-";
+    const t = +$("nbTank").value, c = +$("nbCons").value;
+    if (!b || !m || !(t > 0) || !(c > 0)) { setStatus(T("bike.popuni"), true); return; }
+    const entry = [b, m, y, t, c];
+    BIKES.push(entry);
+    let mine = [];
+    try { mine = JSON.parse(localStorage.getItem("mr_myBikes") || "[]"); } catch { }
+    mine.push(entry);
+    localStorage.setItem("mr_myBikes", JSON.stringify(mine));
+    const allBrands = [...new Set(BIKES.map((x) => x[0]))];
+    fillSel(brandSel, [...allBrands, T("bike.drugi")], [...allBrands, CUSTOM]);
+    brandSel.value = b; fillModels(); modelSel.value = m; fillYears(); yearSel.value = y;
+    applySpecs(); saveBike();
+    $("addBikeForm").classList.add("hidden");
+    ["nbBrand", "nbModel", "nbYear", "nbTank", "nbCons"].forEach((id) => { $(id).value = ""; });
+    setStatus(T("bike.sacuvan"));
+  };
+
+  for (const [id, key] of [["fuelPrice", "mr_fuelPrice"], ["tollRate", "mr_tollRate"]]) {
+    const saved = localStorage.getItem(key);
+    if (saved) $(id).value = saved;
+    $(id).oninput = () => {
+      localStorage.setItem(key, $(id).value);
+      if (state.routes.length) renderCost(state.routes[state.selected]);
+    };
+  }
+
+  const fs = $("famous");
+  FAMOUS_ROUTES.forEach((f) => {
+    const o = document.createElement("option");
+    o.value = f.id; o.textContent = `${f.name} (${f.startName} → ${f.endName})`;
+    fs.appendChild(o);
+  });
+  fs.onchange = async () => {
+    const f = FAMOUS_ROUTES.find((x) => x.id === fs.value);
+    if (!f) return;
+    /* 0.9.158: zatvoren prevoj se ne planira. Ovo je jedina tacka kroz koju tura ulazi u planer
+       (i kartica iz Ture zove bas nju), pa je dovoljno zaustaviti ovde - ali kartica svejedno
+       nosi svoj natpis, da vozac vidi razlog PRE nego sto tapne. */
+    try { await loadPrelazi(); } catch (e) {}
+    /* Merilo je DAN VOZNJE (polje "Kreni u"), ne danasnji datum - covek u maju planira
+       julsku turu. `?sezona=` ima prednost jer je to test hook za oba mesta odjednom. */
+    const _sz = turaSezona(f.id, SEZONA_TEST || (($("depart") && $("depart").value) ? new Date($("depart").value) : new Date()));
+    if (_sz.stanje === "zatvoren") {
+      fs.value = "";
+      try { tihoObavestenje(sezonaRazlog(_sz)); } catch (e) { try { shareToast(sezonaRazlog(_sz)); } catch (e2) {} }
+      return;
+    }
+    const isLoop = f.startName.toLowerCase() === f.endName.toLowerCase();
+    const userFrom = $("from").value.trim();
+    if (!isLoop && userFrom && userFrom.toLowerCase() !== f.startName.toLowerCase()) {
+      // krećeš iz svog grada: ORIJENTIŠI rutu ka bližem kraju da ne voziš celu pa nazad
+      let wps = f.wps, sName = f.startName, eName = f.endName;
+      try {
+        /* Polazak iz istog izvora kao plan() (pregled 0.9.209): GPS i mesto izabrano iz pretrage se ne geokodiraju ponovo, a geokodiran
+           polazak ide u fromOverride - plan() ispod ga uzima, pa bez lokacije "Koje mesto?" ne pita dva puta. */
+        const zna = (state.gpsFrom && state.gpsFrom.lat != null && (userFrom === state.gpsFrom.name || /^moja lokacija$/i.test(userFrom))) ? state.gpsFrom
+          : (state.fromOverride && userFrom === state.fromOverride.name) ? state.fromOverride : null;
+        const g = zna || await geocode(userFrom);
+        if (!zna && !g.tacnost) state.fromOverride = { name: userFrom, lat: g.lat, lon: g.lon };   // adresa (tacnost): plan() je geokodira opet i javi "ulica, ne broj"
+        const dStart = haversine(g.lat, g.lon, f.wps[0][1], f.wps[0][0]);
+        const dEnd = haversine(g.lat, g.lon, f.wps[f.wps.length - 1][1], f.wps[f.wps.length - 1][0]);
+        if (dEnd < dStart) { wps = [...f.wps].reverse(); sName = f.endName; eName = f.startName; }
+      } catch (e) {
+        if (e && e.otkazano) {   // vozac je odustao od izbora polaska: tura se ne planira tiho iz podrazumevanog smera
+          setStatus(e.message, true); try { tihoObavestenje(e.message); } catch (e2) {}
+          fs.value = ""; return;
+        }
+        /* bez geokodiranja ostaje podrazumevani smer */
+      }
+      $("to").value = eName;
+      state.vias = [{ t: "stop", v: wps[0], name: sName },
+        ...wps.slice(1, -1).map((w) => ({ t: "via", v: w }))];
+    } else {
+      // ista ruta u punom obimu (ili kružna: polazak = cilj)
+      $("from").value = f.startName; $("to").value = f.endName;
+      state.vias = f.wps.slice(1, -1).map((w) => ({ t: "via", v: w }));
+      if (isLoop) $("roundTrip") && ($("roundTrip").checked = false); // kružna već ima ceo krug u wps
+    }
+    state.famousApplied = f.id;
+    renderViaChips();
+    plan();
+    fs.value = ""; // reset - da ponovni izbor iste rute uvek okine change
+  };
+
+  $("addStopBtn").onclick = async () => {
+    const q = $("stopInput").value.trim();
+    if (!q) return;
+    try {
+      const g = await geocode(q);
+      state.vias.push({ t: "stop", v: [g.lon, g.lat], name: g.name });
+      $("stopInput").value = "";
+      renderViaChips();
+      try { tihoObavestenje(T("gen.dodato", { 0: g.name })); } catch (e) {}   // potvrda PRE preracunavanja (obrazac .lp-add)
+      if (state.routes.length) plan();
+    } catch (err) {
+      /* 30.8. (teren 27.8.): greska je isla u #status, a on stoji u #panel sa z-index 10 dok je
+         list "Jos opcija" na 62 - poruka je bila dokazivo iza lista i vozac je nikad nije video.
+         Toast ide iznad svega, pa "nije se dodalo" prestaje da bude cutanje. */
+      setStatus(err.message, true);
+      try { tihoObavestenje(err.message); } catch (e) {}
+    }
+  };
+  $("stopInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("addStopBtn").onclick(); });
+
+  const d = new Date(Date.now() + 45 * 60000);
+  d.setMinutes(Math.round(d.getMinutes() / 15) * 15, 0, 0);
+  const pad = (n) => String(n).padStart(2, "0");
+  $("depart").value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+  $("planBtn").onclick = plan;
+  for (const id of ["from", "to"]) {
+    $(id).addEventListener("keydown", (e) => { if (e.key === "Enter") plan(); });
+  }
+  initMap();
+  initSheet();
+  loadEditorial();
+  // radar uvek aktivan (Boskova odluka); iskljucenje pamti rmr2_radar=0 (prekidac u Slojevima)
+  setTimeout(() => {
+    try {
+      if (localStorage.getItem("rmr2_radar") !== "0" && !radar.on) {
+        const rb = document.querySelector(".map-tools .radar-btn"); if (rb) rb.click();
+      }
+    } catch (e) {}
+  }, 2500);
+
+  const params = new URLSearchParams(location.search);
+  state.pendingFamous = params.get("famous") || null;
+  if (params.has("preview")) {
+    previewFill();
+    // ?preview=1&share=1: otvori deljenje nad primer voznjom, da se kartice vide bez voznje (Filipov indeks, 15.9.)
+    // opens the share studio over the sample ride, so the cards can be reviewed without riding
+    // 19.10.: studio se od 0.9.123 otvara sa shStudioOtvori (isto kao dugme Podeli u sazetku); Filipov stplOtvori je bio sa njegove grane
+    if (params.has("share")) setTimeout(() => { try { const s = _vozUzorak()[0]; rideSumShow(s); shStudioOtvori(s); } catch (e) { console.warn("share preview", e); } }, 1200);
+    return;
+  }
+  // podeljena lokacija (9.8.): ?ll=44.78,20.44 ili ?q=<link/koordinate> - iz WhatsApp poruke, deljenja iz nase app,
+  // ili bilo kog linka sa koordinatama. Ista logika koju koristi i pretraga (parseKoord).
+  {
+    const sirovo = params.get("ll") || params.get("q") || params.get("geo");
+    const ime = params.get("naziv") || params.get("name") || "";
+    // rezerva se daje SAMO kad je koordinatni parametar zaista tu, da ?demo= link ne padne ovde
+    /* 7.9.: kratak link u ?q= je do sada tiho padao na ovom mestu isto kao u pretrazi.
+       Sinhrona provera prva (nista se ne usporava), pa tek onda skok. */
+    if (primiDeljenuLokaciju(sirovo, ime, sirovo ? location.search : null)) return;
+    if (sirovo && jeKratakLink(String(sirovo))) {
+      primiDeljenuLokacijuAsync(sirovo, ime, null).then((ok) => {
+        if (!ok) { try { otvoriPretraguSaLinkom(String(sirovo)); } catch (e) {} }
+      });
+      return;
+    }
+  }
+  if (params.has("demo")) {
+    $("from").value = params.get("from") || "Beograd";
+    $("to").value = params.get("to") || "Zlatibor";
+    const dp = params.get("depart");   // podeljeni link nosi i polazak; istekao (prošlost) -> sutra 09:00
+    if (dp && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(dp) && new Date(dp) > new Date()) $("depart").value = dp.slice(0, 16);
+    else {
+      const t = new Date(Date.now() + 24 * 3600e3);
+      $("depart").value = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}T09:00`;
+    }
+    // Stanice iz podeljenog linka - pravila (sirova tilda, +, koordinatne kapije) zive u parseVias,
+    // odmah uz graditelja shareLinkIz: parser i graditelj su PAR i menjaju se zajedno.
+    state.vias = parseVias(location.search);
+    if (state.vias.length) { try { if (typeof renderViaChips === "function") renderViaChips(); } catch (e) {} }
+    // stil iz deljenog linka (0.9.88, "Vozi i ti"): posle plana se unapred bira kartica tog
+    // stila (vidi plan()); nepoznat/izostavljen stil = ponasanje kao do sada, tiho
+    state._stilIzLinka = params.get("stil") || null;
+    setTimeout(plan, 300); // ne zavisi od mape
+  }
+}
+/* CELINA 12 - VERZIJA: verzija i "Sta je novo" (CHANGELOG), provera verzije, list "Sta je novo". Uvodna animacija i init() su od 29.10.2026 u 11b-pokretanje.js.
+   Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
+   redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
+   state: vias, routes, novaVerzija, _stilIzLinka, famousApplied, novaLjuska, pendingFamous, selected
+   Zovu je druge celine (29.10.2026): APP_VERSION, initVerBadge
+   Koristi celine: 00, 01, 02, 06, 11, 11b */
+/* ---------- verzija i "sta je novo" ----------
+   Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
+   Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
+const APP_VERSION = "0.9.215";
 const CHANGELOG = [
+  { v: "0.9.215", d: "29.10.2026.", stavke: [
+    "<b>Aplikacija na računaru.</b> Na širokom ekranu tabovi stoje uspravno uz levu ivicu, kao kad telefon položiš. Istraži, Zajednica i Ja sada rade i na računaru (ranije se videla samo mapa); Ja i Zajednica su u koloni na sredini ekrana, Planer i Istraži preko mape.",
+    "<b>Kad krenuti računa i mrak.</b> Suvo danju je bolje od suvog noću: kad je ujutru takođe suvo, zvezdica više ne ide na ponoć. Red kaže \"po mraku\" ili \"deo puta po mraku\". Nevreme i dalje odlučuje pre mraka. Kod \"Stigni do\" vreme dolaska biraš ti, pa se mrak tamo ne računa.",
+    "<b>Pitanja pri pokretanju u aplikaciji.</b> Pitanje o nezavršenoj vožnji više nije sistemski prozor: stiže posle uvodne animacije, iznad svega, sa dugmadima Sačuvaj i Odbaci. Ako ga zatvoriš bez odgovora, vožnja ostaje i aplikacija te pita ponovo. Kad dodirneš Kreni dok to pitanje čeka, vožnja kreće posle odgovora. Isto važi za \"Prijaviti se kao\" iz mejla i za prenos vožnji u nalog koji se upravo prijavio (dok to pitanje stoji, ništa se ne šalje).",
+    "<b>Nazad i Escape.</b> Android nazad na pitanju \"Koje mesto?\" zatvara samo pitanje (ranije je zatvarao i ekran Moja mesta ispod njega), a Otkaži više ne otvara drugu poruku. Izvoz dnevnika navigacije javlja poruku u izgledu aplikacije, ne sistemskim prozorom.",
+    "<b>Sitnice.</b> Čip na početnom ekranu više ne piše \"polazak {0}\" uz mesto polaska.",
+  ] },
   { v: "0.9.214", d: "28.10.2026.", stavke: [
     "<b>Ja je sada početna tvog profila.</b> Gore si ti: ime, motor i tri broja (vožnje, kilometri, poeni). Ispod su poslednje tri vožnje i \"Sve vožnje\", kolekcije, pa Moj motor i Moja mesta. Podešavanja su iza zupčanika gore desno. Prijatelji su u Zajednici.",
     "<b>Vožnja iz spiska ostaje u Ja.</b> Kad otvoriš vožnju iz Vožnji, aplikacija te više ne prebacuje na Planer. Zatvoriš je i vratiš se tačno na red na kom si bio. Isto važi za turu i njene etape: nazad sa etape vraća na turu.",
@@ -22203,25 +22571,6 @@ async function verzijaProveri() {
     return ziva;
   } catch (e) { return null; }   // pad mreze nije poruka
 }
-(function () {   // klizne brojke: tap menja sledecu, vodoravno prevlacenje bira smer (1.9.2026)
-  const el = document.getElementById("rideMetrika");
-  if (!el) return;
-  let x0 = null, y0 = null, vukao = false;
-  el.addEventListener("pointerdown", (e) => { x0 = e.clientX; y0 = e.clientY; vukao = false; });
-  el.addEventListener("pointermove", (e) => {
-    if (x0 == null) return;
-    const dx = e.clientX - x0, dy = e.clientY - y0;
-    if (!vukao && Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy)) { vukao = true; metrikaSledeca(dx < 0 ? 1 : -1); }
-  });
-  const kraj = () => { x0 = null; y0 = null; };
-  el.addEventListener("pointerup", (e) => { if (x0 != null && !vukao) metrikaSledeca(1); kraj(); });
-  el.addEventListener("pointercancel", kraj);
-  window.addEventListener("pointerup", kraj);   // ista pouka kao Atlas izlog: gest se zavrsava i van elementa
-  el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); metrikaSledeca(1); } });
-  /* 18.10.2026: posle ucitavanja celog skripta. Odmah je citala RIDE pre njegove deklaracije
-     (14-planer.js) i tiho padala; celija se ionako crta na pocetku voznje (tools/pokretanje.test.mjs). */
-  setTimeout(() => { try { metrikaCrtaj(); } catch (e) {} }, 0);
-})();
 /* Shared lifecycle for modal sheets. Preserve pre-existing inert/scroll states and
    return focus to the opener. Only the active sheet handles keyboard navigation. */
 function modalSheet(sheet, firstFocus) {
@@ -22238,8 +22587,7 @@ function modalSheet(sheet, firstFocus) {
     if (opener?.isConnected) opener.focus({ preventScroll: true });
   };
   const keydown = e => {
-    if (e.key === "Escape") { e.preventDefault(); e.stopImmediatePropagation(); close(); }
-    if (e.key !== "Tab") return;
+    if (e.key !== "Tab") return;   // Escape ide kroz kret (list.novo, AD-15) i zatvara samo ovaj list
     const items = focusable(), first = items[0] || sheet, last = items.at(-1) || sheet;
     if (!sheet.contains(document.activeElement) || (e.shiftKey ? document.activeElement === first : document.activeElement === last) || !items.length) {
       e.preventDefault(); (e.shiftKey ? last : first).focus();
@@ -22317,7 +22665,7 @@ function initVerBadge() {
   setTimeout(() => { verzijaProveri(); }, 4000);   // posle mape i podataka - provera verzije nikad ne kasni vozaca
   const sheet = document.getElementById("newsSheet"), lst = document.getElementById("newsList");
   const dialog = modalSheet(sheet, document.getElementById("newsCancel"));
-  if (typeof kret !== "undefined" && kret.prati) kret.prati(sheet, "list.novo", { vrsta: "list", zatvori: dialog.close });   // AD-15: Android i nazad pregledaca (Escape ima modalSheet)
+  if (typeof kret !== "undefined" && kret.prati) kret.prati(sheet, "list.novo", { vrsta: "list", zatvori: dialog.close });   // AD-15: Escape, Android i nazad pregledaca
   b.onclick = () => {
     /* Kad je uzivo novija verzija, to stoji PRE spiska - inace vozac cita "sta je novo" o
        izdanju koje uopste ne vozi. Spisak ispod je i dalje njegov, ne onaj sa sajta. */
@@ -22339,306 +22687,6 @@ function initVerBadge() {
   const jn = document.getElementById("jaStaJeNovo"); if (jn) jn.onclick = () => b.onclick();
   document.getElementById("newsBack").onclick = dialog.close;
   document.getElementById("newsCancel").onclick = dialog.close;
-}
-function init() {
-  try { primeniJezik(); } catch (e) {}   // 0.9.159: natpisi na izabranom jeziku PRE svega sto cita DOM
-  loadLayerVis();
-  try { wxPostaviMax(); } catch (e) {}   // nalaz 96: polje odbija datum koji prognoza ne pokriva
-  initVerBadge();
-  $("roundTrip").onchange = () => { if (state.routes.length) plan(); };
-  $("roundGen").onchange = () => {
-    const on = $("roundGen").checked;
-    $("loopKmWrap").classList.toggle("hidden", !on);
-    $("toBlock").classList.toggle("hidden", on);       // kružna tura ne treba "Do"
-    if (on) $("roundTrip").checked = false;            // međusobno isključivi
-    if ($("fromLabel")) $("fromLabel").textContent = on ? "Polazak (i cilj)" : "Od";
-  };
-  $("loopKm").addEventListener("change", () => { if ($("roundGen").checked && state.routes.length) plan(); });
-  $("timeMode").onchange = () => { if (state.routes.length) plan(); };
-  // prevlačenje stanice direktno na Od/Do polje: ona postaje polazak/cilj, a stara vrednost ulazi u listu
-  for (const [inpId, isFrom] of [["from", true], ["to", false]]) {
-    const inp = $(inpId);
-    inp.addEventListener("dragover", (e) => { e.preventDefault(); inp.classList.add("drop-target"); });
-    inp.addEventListener("dragleave", () => inp.classList.remove("drop-target"));
-    inp.addEventListener("drop", async (e) => {
-      e.preventDefault();
-      inp.classList.remove("drop-target");
-      const i = +e.dataTransfer.getData("text/plain");
-      const it = state.vias[i];
-      if (!it || it.t !== "stop" || !it.name) return;
-      const old = inp.value.trim();
-      inp.value = it.name;
-      state.vias.splice(i, 1);
-      if (old) {
-        try {
-          const g = await geocode(old);
-          if (isFrom) state.vias.unshift({ t: "stop", v: [g.lon, g.lat], name: g.name });
-          else state.vias.push({ t: "stop", v: [g.lon, g.lat], name: g.name });
-        } catch { }
-      }
-      renderViaChips();
-      if (state.routes.length) plan();
-    });
-  }
-  /* -- Moj motor: proizvođač → model → godište, fabričke specifikacije + profil u localStorage -- */
-  const brandSel = $("bikeBrand"), modelSel = $("bikeModel"), yearSel = $("bikeYear");
-  const CUSTOM = BIKE_CUSTOM;
-  ubaciMojeMotore();   // 0.9.95: jedan ubacivac za oba mesta gde se BIKES gradi (nalaz 59)
-  const brands = [...new Set(BIKES.map((b) => b[0]))];
-  const fillSel = (sel, items, vals) => {
-    sel.innerHTML = "";
-    items.forEach((t, i) => {
-      const o = document.createElement("option");
-      o.value = vals ? vals[i] : t; o.textContent = t;
-      sel.appendChild(o);
-    });
-  };
-  const saveBike = () => {
-    localStorage.setItem("mr_bike", JSON.stringify(
-      { b: brandSel.value, m: modelSel.value, y: yearSel.value, tank: $("tank").value, cons: $("cons").value }));
-    /* 0.9.92: sazetak se osvezava ODAVDE, ne preko svog "change" slusaoca. Blok sa selektima se
-       izvrsava iz init(), a blok koji crta sazetak je IIFE koji je odradio ranije - zato je
-       njegov slusalac dolazio PRE ovog upisa i pisao PRETHODNO stanje (izmereno 26.8.: posle
-       prvog izbora je i dalje stajalo "nije izabran"). Upis je jedini trenutak istine. */
-    try { if (typeof window.motoSumRefresh === "function") window.motoSumRefresh(); } catch (e) {}
-    /* QA 28.10. (Ja M3): postojeca ruta prati izabran motor - trosak je ostajao od prethodnog (13 € BMW uz domet Honde) */
-    try {
-      const r = state.routes && state.routes[state.selected];
-      if (r) renderCost(r).then(() => { try { rezInstCrtaj(r); } catch (e2) {} }).catch(() => {});
-    } catch (e) {}
-  };
-  const applySpecs = () => {
-    const v = BIKES.find((b) => b[0] === brandSel.value && b[1] === modelSel.value && b[2] === yearSel.value);
-    if (v) { $("tank").value = v[3]; $("cons").value = v[4]; }
-    updateRangeNote();
-  };
-  const fillYears = () => {
-    const gens = BIKES.filter((b) => b[0] === brandSel.value && b[1] === modelSel.value);
-    fillSel(yearSel, gens.length ? gens.map((g) => g[2]) : ["-"]);
-  };
-  const fillModels = () => {
-    if (brandSel.value === CUSTOM) { fillSel(modelSel, [T("bike.rucnoModel")]); fillSel(yearSel, ["-"]); return; }
-    fillSel(modelSel, [...new Set(BIKES.filter((b) => b[0] === brandSel.value).map((b) => b[1]))]);
-    fillYears();
-  };
-  window.refreshBikeSelects = () => {   // R13v2: kad bikes.json stigne, SACUVAN profil (mr_bike) ima prednost nad trenutnom selekcijom
-    const br2 = [...new Set(BIKES.map((b) => b[0]))];
-    let want = null;
-    try { want = JSON.parse(localStorage.getItem("mr_bike") || "null"); } catch (e) {}
-    const cur = want && want.b ? { b: want.b, m: want.m, y: want.y } : { b: brandSel.value, m: modelSel.value, y: yearSel.value };
-    fillSel(brandSel, [...br2, T("bike.drugi")], [...br2, CUSTOM]);
-    if ([...brandSel.options].some((o) => o.value === cur.b)) { brandSel.value = cur.b; fillModels();
-      if ([...modelSel.options].some((o) => o.value === cur.m)) { modelSel.value = cur.m; fillYears();
-        if ([...yearSel.options].some((o) => o.value === cur.y)) yearSel.value = cur.y; }
-      if (want && want.tank) $("tank").value = want.tank;
-      if (want && want.cons) $("cons").value = want.cons;
-      updateRangeNote();
-    } else {
-      /* 0.9.95 (nalaz 59, drugi rez): sacuvan proizvodjac NIJE medju opcijama (red obrisan iz
-         bikes.json, ili baza jos nije stigla). Do sada je ovde tiho ostajao izabran PRVI fabricki
-         motor, dok su polja tank/cons jos drzala vozaceve brojke - kartica je tvrdila motor koga
-         u spisku nema, a prvi dodir spiska bi prepisao rezervoar i potrosnju tudjim brojkama. */
-      fillModels();
-      try {
-        const el = document.getElementById("motoSum");
-        if (el && want && want.b) { el.textContent = T("bike.nijeUBazi"); el.classList.add("prazno"); }
-      } catch (e) {}
-      return;   // motoSumRefresh bi pregazio postenu recenicu imenom iz padajuceg spiska
-    }
-    try { if (typeof window.motoSumRefresh === "function") motoSumRefresh(); } catch (e) {}
-  };
-  fillSel(brandSel, [...brands, T("bike.drugi")], [...brands, CUSTOM]);
-  let bikeProf = null;
-  try { bikeProf = JSON.parse(localStorage.getItem("mr_bike") || "null"); } catch { }
-  if (bikeProf && [...brands, CUSTOM].includes(bikeProf.b)) {
-    brandSel.value = bikeProf.b;
-    fillModels();
-    if ([...modelSel.options].some((o) => o.value === bikeProf.m)) { modelSel.value = bikeProf.m; fillYears(); }
-    if ([...yearSel.options].some((o) => o.value === bikeProf.y)) yearSel.value = bikeProf.y;
-    if (bikeProf.tank) $("tank").value = bikeProf.tank;
-    if (bikeProf.cons) $("cons").value = bikeProf.cons;
-    updateRangeNote();
-  } else {
-    fillModels();
-    applySpecs();
-  }
-  brandSel.onchange = () => { fillModels(); if (brandSel.value !== CUSTOM) applySpecs(); saveBike(); };
-  modelSel.onchange = () => { fillYears(); applySpecs(); saveBike(); };
-  yearSel.onchange = () => { applySpecs(); saveBike(); };
-  $("tank").oninput = () => { updateRangeNote(); saveBike(); };
-  $("cons").oninput = () => { updateRangeNote(); saveBike(); };
-  $("addBikeBtn").onclick = () => $("addBikeForm").classList.toggle("hidden");
-  $("nbSave").onclick = () => {
-    const b = $("nbBrand").value.trim(), m = $("nbModel").value.trim(), y = $("nbYear").value.trim() || "-";
-    const t = +$("nbTank").value, c = +$("nbCons").value;
-    if (!b || !m || !(t > 0) || !(c > 0)) { setStatus(T("bike.popuni"), true); return; }
-    const entry = [b, m, y, t, c];
-    BIKES.push(entry);
-    let mine = [];
-    try { mine = JSON.parse(localStorage.getItem("mr_myBikes") || "[]"); } catch { }
-    mine.push(entry);
-    localStorage.setItem("mr_myBikes", JSON.stringify(mine));
-    const allBrands = [...new Set(BIKES.map((x) => x[0]))];
-    fillSel(brandSel, [...allBrands, T("bike.drugi")], [...allBrands, CUSTOM]);
-    brandSel.value = b; fillModels(); modelSel.value = m; fillYears(); yearSel.value = y;
-    applySpecs(); saveBike();
-    $("addBikeForm").classList.add("hidden");
-    ["nbBrand", "nbModel", "nbYear", "nbTank", "nbCons"].forEach((id) => { $(id).value = ""; });
-    setStatus(T("bike.sacuvan"));
-  };
-
-  for (const [id, key] of [["fuelPrice", "mr_fuelPrice"], ["tollRate", "mr_tollRate"]]) {
-    const saved = localStorage.getItem(key);
-    if (saved) $(id).value = saved;
-    $(id).oninput = () => {
-      localStorage.setItem(key, $(id).value);
-      if (state.routes.length) renderCost(state.routes[state.selected]);
-    };
-  }
-
-  const fs = $("famous");
-  FAMOUS_ROUTES.forEach((f) => {
-    const o = document.createElement("option");
-    o.value = f.id; o.textContent = `${f.name} (${f.startName} → ${f.endName})`;
-    fs.appendChild(o);
-  });
-  fs.onchange = async () => {
-    const f = FAMOUS_ROUTES.find((x) => x.id === fs.value);
-    if (!f) return;
-    /* 0.9.158: zatvoren prevoj se ne planira. Ovo je jedina tacka kroz koju tura ulazi u planer
-       (i kartica iz Ture zove bas nju), pa je dovoljno zaustaviti ovde - ali kartica svejedno
-       nosi svoj natpis, da vozac vidi razlog PRE nego sto tapne. */
-    try { await loadPrelazi(); } catch (e) {}
-    /* Merilo je DAN VOZNJE (polje "Kreni u"), ne danasnji datum - covek u maju planira
-       julsku turu. `?sezona=` ima prednost jer je to test hook za oba mesta odjednom. */
-    const _sz = turaSezona(f.id, SEZONA_TEST || (($("depart") && $("depart").value) ? new Date($("depart").value) : new Date()));
-    if (_sz.stanje === "zatvoren") {
-      fs.value = "";
-      try { tihoObavestenje(sezonaRazlog(_sz)); } catch (e) { try { shareToast(sezonaRazlog(_sz)); } catch (e2) {} }
-      return;
-    }
-    const isLoop = f.startName.toLowerCase() === f.endName.toLowerCase();
-    const userFrom = $("from").value.trim();
-    if (!isLoop && userFrom && userFrom.toLowerCase() !== f.startName.toLowerCase()) {
-      // krećeš iz svog grada: ORIJENTIŠI rutu ka bližem kraju da ne voziš celu pa nazad
-      let wps = f.wps, sName = f.startName, eName = f.endName;
-      try {
-        /* Polazak iz istog izvora kao plan() (pregled 0.9.209): GPS i mesto izabrano iz pretrage se ne geokodiraju ponovo, a geokodiran
-           polazak ide u fromOverride - plan() ispod ga uzima, pa bez lokacije "Koje mesto?" ne pita dva puta. */
-        const zna = (state.gpsFrom && state.gpsFrom.lat != null && (userFrom === state.gpsFrom.name || /^moja lokacija$/i.test(userFrom))) ? state.gpsFrom
-          : (state.fromOverride && userFrom === state.fromOverride.name) ? state.fromOverride : null;
-        const g = zna || await geocode(userFrom);
-        if (!zna && !g.tacnost) state.fromOverride = { name: userFrom, lat: g.lat, lon: g.lon };   // adresa (tacnost): plan() je geokodira opet i javi "ulica, ne broj"
-        const dStart = haversine(g.lat, g.lon, f.wps[0][1], f.wps[0][0]);
-        const dEnd = haversine(g.lat, g.lon, f.wps[f.wps.length - 1][1], f.wps[f.wps.length - 1][0]);
-        if (dEnd < dStart) { wps = [...f.wps].reverse(); sName = f.endName; eName = f.startName; }
-      } catch (e) {
-        if (e && e.otkazano) {   // vozac je odustao od izbora polaska: tura se ne planira tiho iz podrazumevanog smera
-          setStatus(e.message, true); try { tihoObavestenje(e.message); } catch (e2) {}
-          fs.value = ""; return;
-        }
-        /* bez geokodiranja ostaje podrazumevani smer */
-      }
-      $("to").value = eName;
-      state.vias = [{ t: "stop", v: wps[0], name: sName },
-        ...wps.slice(1, -1).map((w) => ({ t: "via", v: w }))];
-    } else {
-      // ista ruta u punom obimu (ili kružna: polazak = cilj)
-      $("from").value = f.startName; $("to").value = f.endName;
-      state.vias = f.wps.slice(1, -1).map((w) => ({ t: "via", v: w }));
-      if (isLoop) $("roundTrip") && ($("roundTrip").checked = false); // kružna već ima ceo krug u wps
-    }
-    state.famousApplied = f.id;
-    renderViaChips();
-    plan();
-    fs.value = ""; // reset - da ponovni izbor iste rute uvek okine change
-  };
-
-  $("addStopBtn").onclick = async () => {
-    const q = $("stopInput").value.trim();
-    if (!q) return;
-    try {
-      const g = await geocode(q);
-      state.vias.push({ t: "stop", v: [g.lon, g.lat], name: g.name });
-      $("stopInput").value = "";
-      renderViaChips();
-      try { tihoObavestenje(T("gen.dodato", { 0: g.name })); } catch (e) {}   // potvrda PRE preracunavanja (obrazac .lp-add)
-      if (state.routes.length) plan();
-    } catch (err) {
-      /* 30.8. (teren 27.8.): greska je isla u #status, a on stoji u #panel sa z-index 10 dok je
-         list "Jos opcija" na 62 - poruka je bila dokazivo iza lista i vozac je nikad nije video.
-         Toast ide iznad svega, pa "nije se dodalo" prestaje da bude cutanje. */
-      setStatus(err.message, true);
-      try { tihoObavestenje(err.message); } catch (e) {}
-    }
-  };
-  $("stopInput").addEventListener("keydown", (e) => { if (e.key === "Enter") $("addStopBtn").onclick(); });
-
-  const d = new Date(Date.now() + 45 * 60000);
-  d.setMinutes(Math.round(d.getMinutes() / 15) * 15, 0, 0);
-  const pad = (n) => String(n).padStart(2, "0");
-  $("depart").value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-
-  $("planBtn").onclick = plan;
-  for (const id of ["from", "to"]) {
-    $(id).addEventListener("keydown", (e) => { if (e.key === "Enter") plan(); });
-  }
-  initMap();
-  initSheet();
-  loadEditorial();
-  // radar uvek aktivan (Boskova odluka); iskljucenje pamti rmr2_radar=0 (prekidac u Slojevima)
-  setTimeout(() => {
-    try {
-      if (localStorage.getItem("rmr2_radar") !== "0" && !radar.on) {
-        const rb = document.querySelector(".map-tools .radar-btn"); if (rb) rb.click();
-      }
-    } catch (e) {}
-  }, 2500);
-
-  const params = new URLSearchParams(location.search);
-  state.pendingFamous = params.get("famous") || null;
-  if (params.has("preview")) {
-    previewFill();
-    // ?preview=1&share=1: otvori deljenje nad primer voznjom, da se kartice vide bez voznje (Filipov indeks, 15.9.)
-    // opens the share studio over the sample ride, so the cards can be reviewed without riding
-    // 19.10.: studio se od 0.9.123 otvara sa shStudioOtvori (isto kao dugme Podeli u sazetku); Filipov stplOtvori je bio sa njegove grane
-    if (params.has("share")) setTimeout(() => { try { const s = _vozUzorak()[0]; rideSumShow(s); shStudioOtvori(s); } catch (e) { console.warn("share preview", e); } }, 1200);
-    return;
-  }
-  // podeljena lokacija (9.8.): ?ll=44.78,20.44 ili ?q=<link/koordinate> - iz WhatsApp poruke, deljenja iz nase app,
-  // ili bilo kog linka sa koordinatama. Ista logika koju koristi i pretraga (parseKoord).
-  {
-    const sirovo = params.get("ll") || params.get("q") || params.get("geo");
-    const ime = params.get("naziv") || params.get("name") || "";
-    // rezerva se daje SAMO kad je koordinatni parametar zaista tu, da ?demo= link ne padne ovde
-    /* 7.9.: kratak link u ?q= je do sada tiho padao na ovom mestu isto kao u pretrazi.
-       Sinhrona provera prva (nista se ne usporava), pa tek onda skok. */
-    if (primiDeljenuLokaciju(sirovo, ime, sirovo ? location.search : null)) return;
-    if (sirovo && jeKratakLink(String(sirovo))) {
-      primiDeljenuLokacijuAsync(sirovo, ime, null).then((ok) => {
-        if (!ok) { try { otvoriPretraguSaLinkom(String(sirovo)); } catch (e) {} }
-      });
-      return;
-    }
-  }
-  if (params.has("demo")) {
-    $("from").value = params.get("from") || "Beograd";
-    $("to").value = params.get("to") || "Zlatibor";
-    const dp = params.get("depart");   // podeljeni link nosi i polazak; istekao (prošlost) -> sutra 09:00
-    if (dp && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(dp) && new Date(dp) > new Date()) $("depart").value = dp.slice(0, 16);
-    else {
-      const t = new Date(Date.now() + 24 * 3600e3);
-      $("depart").value = `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}T09:00`;
-    }
-    // Stanice iz podeljenog linka - pravila (sirova tilda, +, koordinatne kapije) zive u parseVias,
-    // odmah uz graditelja shareLinkIz: parser i graditelj su PAR i menjaju se zajedno.
-    state.vias = parseVias(location.search);
-    if (state.vias.length) { try { if (typeof renderViaChips === "function") renderViaChips(); } catch (e) {} }
-    // stil iz deljenog linka (0.9.88, "Vozi i ti"): posle plana se unapred bira kartica tog
-    // stila (vidi plan()); nepoznat/izostavljen stil = ponasanje kao do sada, tiho
-    state._stilIzLinka = params.get("stil") || null;
-    setTimeout(plan, 300); // ne zavisi od mape
-  }
 }
 /* CELINA 13 - TABOVI PRETRAGA: donji meni i tabovi, ekran pretrage, Google pretraga, sacuvana i omiljena mesta, izbor na mapi.
    Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
@@ -23456,7 +23504,7 @@ async function mestoIzaberi(k) {   // Kuća i omiljena poštuju SEARCH_MODE - is
   let m = mestoCitaj(k);
   if (!m) {
     try { m = await mestoPostavi(k); }
-    catch (er) { kret.obavesti(er && er.geo ? er.message : T("geo.neNalazimAdresu")); return; }
+    catch (er) { if (!(er && er.otkazano)) kret.obavesti(er && er.geo ? er.message : T("geo.neNalazimAdresu")); return; }   // QA 29.10.: Otkazi u "Koje mesto?" nije greska
     if (!m) return;
   }
   pickDestination({ n: mestoIme(m, MESTO_REC[k]), lat: m.lat, lon: m.lon });
@@ -23469,7 +23517,7 @@ async function mestoIzaberi(k) {   // Kuća i omiljena poštuju SEARCH_MODE - is
 function nasTabKlik(tab) {
   let pre = false;
   try { pre = !!ATLAS._prebacuje; ATLAS._prebacuje = true; } catch (e) {}
-  try { const a = document.querySelector('#bottomnav a[data-tab="' + tab + '"]'); if (a) a.click(); }
+  try { tabSkok(tab); }
   finally { try { ATLAS._prebacuje = pre; } catch (e) {} }
 }
 /* ---- MOJA MESTA: Kuca + tri omiljena (0.9.92) -----------------------------
@@ -23678,7 +23726,7 @@ async function pickMapPotvrdi() {
     mestoSacuvaj(kljucMesto, { name: privremeno, lat: c.lat, lon: c.lng, mesto: "" });
     const ukretu = typeof kret !== "undefined" && kret.vrh() && kret.vrh().id === "planer.izbor";
     pickMapKraj();
-    if (!ukretu) { const ja = document.querySelector('#bottomnav a[data-tab="ja"]'); if (ja) ja.click(); }   // u kret-u je vec u Ja (Moja mesta)
+    if (!ukretu) tabSkok("ja");   // u kret-u je vec u Ja (Moja mesta)
     try { shareToast(T("geo.sacuvanoTrazim")); } catch (e) {}
     /* Ime i naselje stizu naknadno i dopisuju se NAD vec upisanom tackom. Ako mreza padne,
        ostaje posteno "Tačka 44.7470, 20.4218" - a to je i dalje TACNA kuca, sto je bila poenta. */
@@ -23846,7 +23894,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
        red "Trazi ..." kad se na njega klikne. */
     try { const gr = sg.querySelector("[data-geo] b"); if (gr) gr.textContent = T("geo.trazim"); } catch (e2) {}
     try { const g = await geocode(si.value.trim()); pickDestination({ n: g.name, lat: g.lat, lon: g.lon, q: si.value.trim() }); }
-    catch (er) { kret.obavesti(er && er.geo ? er.message : T("geo.neNalazimMesto")); renderSugg(si.value); }   // posle greske: Trazi ponovo + Izaberi na mapi ostaju na ekranu
+    catch (er) { if (!(er && er.otkazano)) kret.obavesti(er && er.geo ? er.message : T("geo.neNalazimMesto")); renderSugg(si.value); }   // posle greske: Trazi ponovo + Izaberi na mapi ostaju na ekranu
   });
   so.addEventListener("keydown", e => {
     if (!e.target.matches('.srow[role="button"]') || (e.key !== "Enter" && e.key !== " ")) return;
@@ -23950,7 +23998,7 @@ async function pickDestination(sel) {   // sel = {n, lat?, lon?, fid?, sub?, q?}
       const q = document.getElementById("sSugg")._q;
       row.querySelector("b").textContent = T("geo.trazim");
       try { const g = await geocode(q); pickDestination({ n: g.name, lat: g.lat, lon: g.lon, q }); }
-      catch (er) { kret.obavesti(er && er.geo ? er.message : T("geo.neNalazimMesto")); renderSugg(q); }
+      catch (er) { if (!(er && er.otkazano)) kret.obavesti(er && er.geo ? er.message : T("geo.neNalazimMesto")); renderSugg(q); }
     }
   });
 })();
@@ -23992,7 +24040,7 @@ function homeCtxSync() {
   const imenovan = !!(f && !/^moja lokacija$/i.test(f));
   od.textContent = imenovan ? f : (state.gpsArea ? T("hc.mojeLokacijeIme", { 0: state.gpsArea }) : T("hc.mojeLokacije"));
   /* QA 28.10. (Planer F10): "iz" ide samo uz "moje lokacije" - uz ime mesta je bilo "iz Novi Sad" (padez); tada "polazak:" */
-  try { const pre = od.parentElement && od.parentElement.querySelector('[data-i18n="hc.iz"], .hc-pre'); if (pre) { pre.classList.add("hc-pre"); pre.removeAttribute("data-i18n"); pre.textContent = T(imenovan ? "hc.polazak" : "hc.iz"); } } catch (e) {}
+  try { const pre = od.parentElement && od.parentElement.querySelector('[data-i18n="hc.iz"], .hc-pre'); if (pre) { pre.classList.add("hc-pre"); pre.removeAttribute("data-i18n"); pre.textContent = T(imenovan ? "hc.polazakOd" : "hc.iz"); } } catch (e) {}
   kad.textContent = kpVremeTekst();
   const mm = (typeof mojMotor === "function") ? mojMotor() : null;
   mo.textContent = mm ? mm.ime : T("hc.bezMotora");
@@ -25981,13 +26029,14 @@ function navExportLog() {   // dnevnik navigacije u clipboard (nalepi se u poruk
        sada padao na ovu kapiju i vozac bi dobio "prazno je". */
     let _dijSirovo = "";
     try { const dr = localStorage.getItem(DIJALOG_KEY); if (dr && dr !== "[]") _dijSirovo = dr; } catch (e) {}
-    if ((!payload || !zapisa) && !_dijSirovo) { alert(T("nl.prazan")); return; }
+    /* 29.10.2026 (AD-14): poruke i rucno kopiranje su pitanja u aplikaciji, ne sistemski prozori - isti obrazac kao nalogPodeliKod */
+    const rucno = (t) => kret.pitaj({ tekst: T("nal.kopirajRucno"), polje: { vrednost: t.slice(0, 2000) }, potvrdi: T("kret.uRedu") });
+    if ((!payload || !zapisa) && !_dijSirovo) { kretObavesti(T("nl.prazan")); return; }
     if (!payload || !zapisa) {   // nema voznje, ali IMA dijaloga - to se salje
       const t2 = "RMR-NAVLOG v" + APP_VERSION + "\n(bez zapisa vožnje)\nRMR-DIJALOZI\n" + _dijSirovo;
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(t2).then(() => alert(T("nl.samoDijalozi")),
-          () => prompt("Kopiraj rucno:", t2.slice(0, 2000)));
-      } else prompt("Kopiraj rucno:", t2.slice(0, 2000));
+        navigator.clipboard.writeText(t2).then(() => kretObavesti(T("nl.samoDijalozi")), () => rucno(t2));
+      } else rucno(t2);
       return;
     }
     /* Dijalozi idu UZ dnevnik (30.8.): oni se desavaju pre voznje, pa ih RIDE.log ne zadrzi.
@@ -25997,10 +26046,9 @@ function navExportLog() {   // dnevnik navigacije u clipboard (nalepi se u poruk
     const txt = "RMR-NAVLOG v" + APP_VERSION + "\n" + payload + dij;
     const poruka = T("nl.kopiran", { 0: izvor, 1: zapisa, 2: TN(zapisa, "pl.zapis"), 3: dij ? T("nl.iDijalozi") : "" });
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(txt).then(() => alert(poruka),
-        () => prompt("Kopiraj rucno:", txt.slice(0, 2000)));
-    } else prompt("Kopiraj rucno:", txt.slice(0, 2000));
-  } catch (e) { alert(T("nl.nemaZaIzvoz")); }
+      navigator.clipboard.writeText(txt).then(() => kretObavesti(poruka), () => rucno(txt));
+    } else rucno(txt);
+  } catch (e) { kretObavesti(T("nl.nemaZaIzvoz")); }
 }
 function navPaintRoute(route) {   // osvezi liniju rute na mapi iz (nove) geometrije (reroute/alt ruta)
   try {
@@ -26103,6 +26151,27 @@ function metrikaSledeca(smer) {
   } catch (e) {}
   metrikaCrtaj();
 }
+/* 29.10.2026 (pregled arhitekture): klizne brojke su stajale u 12-verzija.js; ovde su uz metrikaCrtaj/metrikaSledeca. Samo kace slusaoce
+   i zakazuju prvo crtanje, pa raniji ili kasniji trenutak u ucitavanju skripta ne menja nista. */
+(function () {   // klizne brojke: tap menja sledecu, vodoravno prevlacenje bira smer (1.9.2026)
+  const el = document.getElementById("rideMetrika");
+  if (!el) return;
+  let x0 = null, y0 = null, vukao = false;
+  el.addEventListener("pointerdown", (e) => { x0 = e.clientX; y0 = e.clientY; vukao = false; });
+  el.addEventListener("pointermove", (e) => {
+    if (x0 == null) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    if (!vukao && Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy)) { vukao = true; metrikaSledeca(dx < 0 ? 1 : -1); }
+  });
+  const kraj = () => { x0 = null; y0 = null; };
+  el.addEventListener("pointerup", (e) => { if (x0 != null && !vukao) metrikaSledeca(1); kraj(); });
+  el.addEventListener("pointercancel", kraj);
+  window.addEventListener("pointerup", kraj);   // ista pouka kao Atlas izlog: gest se zavrsava i van elementa
+  el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); metrikaSledeca(1); } });
+  /* 18.10.2026: posle ucitavanja celog skripta. Odmah je citala RIDE pre njegove deklaracije
+     (14-planer.js) i tiho padala; celija se ionako crta na pocetku voznje (tools/pokretanje.test.mjs). */
+  setTimeout(() => { try { metrikaCrtaj(); } catch (e) {} }, 0);
+})();
 /* CELINA 16 - VOZNJA NAVIGACIJA: dugi pritisak na mapu, kamera navigacije, pauza i auto-pauza, navodjenje u pauzi, kontrolna tacka voznje.
    Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
    redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
@@ -27271,10 +27340,10 @@ function startFreeRide() {   // "Snimi i kreni" (Boskov zahtev 6.8.): voznja BEZ
      nove voznje je pregazio tu istu kontrolnu tacku - stara voznja nestane bez pitanja. Pita se
      OVDE, pre nego sto se ista prepise. Kad tacke nema, ovo je jedno citanje iz localStorage.
      Ispred turaPitaj, ne iza: voznjaOporavak na kraju zove turaPredlog, pa bi se dva tura-toka sudarila. */
-  try { voznjaOporavak(); } catch (e) {}
+  try { if (!voznjaPreStarta(startFreeRide)) return; } catch (e) {}
   if (!turaPitaj(startFreeRide)) return;   // TURA ulaz 1 (0.9.86): "Nastavljas turu?" - dugmad zovu start ponovo
   try { homeLocHide(); } catch (e) {}
-  try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
+  try { tabSkok("planer"); } catch (e) {}
   rideSensorsInit();
   document.body.classList.remove("planning"); document.body.classList.add("riding", "freeride");
   voznjaUKretu(true);   // AD-8: voznja je unos; nazad je ne prekida
@@ -27443,10 +27512,10 @@ function startRide() {
   try { if (typeof zajModeOff === "function") zajModeOff("mapa"); } catch (e) {}   // u voznji nema bottomnav-a, pa ni izlaza iz rezima
   try { if (typeof atlasZatvori === "function") atlasZatvori("mapa"); } catch (e) {}   // C3: isto vazi i za Atlas
   if (!navigator.geolocation) { turaPromptPonisti(); kretObavesti(T("gps.nedostupnaUredjaj")); return; }
-  try { voznjaOporavak(); } catch (e) {}   // 0.9.95 (nalaz 74): nepreuzeta kontrolna tacka se ne pregazi cutke - vidi startFreeRide
+  try { if (!voznjaPreStarta(startRide)) return; } catch (e) {}   // 0.9.95 (nalaz 74): nepreuzeta kontrolna tacka se ne pregazi cutke - vidi voznjaPreStarta
   if (!turaPitaj(startRide)) return;   // TURA ulaz 1 (0.9.86): i navigaciona voznja ume da bude etapa ture
   try { homeLocHide(); } catch (e) {}   // u voznji navigacioni marker preuzima; kucni puck + watch se gase
-  try { const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click(); } catch (e) {}
+  try { tabSkok("planer"); } catch (e) {}
   rideSensorsInit();
   document.body.classList.remove("planning"); document.body.classList.add("riding");
   voznjaUKretu(true);   // AD-8: voznja je unos; nazad je ne prekida
@@ -27984,13 +28053,16 @@ function voznjaOporavakRep(snap) {
   }
   try { navLog("gps-rep-oporavak", { n: batch.length, repMs: rep }); } catch (e) {}
 }
-function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne tacke -> Sacuvaj / Odbaci
-  if (document.body.classList.contains("riding")) return;   // voznja vec tece - njena kontrolna tacka se ne dira (0.9.82 review)
-  const obrisi = () => { try { localStorage.removeItem(CKP_KEY); localStorage.removeItem(GPS_REP_KEY); } catch (e) {} };   // rep bez snimka je siroce - ide zajedno
-  /* 0.9.95: hidratacija se desava PRE korisnikove odluke (drugacije se rep ne moze izmeriti),
-     pa oporavljeno stanje mora da se ocisti na SVAKOM izlazu. Spisak je ogledalo onoga sto
-     voznjaCkpHidrat i voznjaOporavakRep upisu - inace tudja voznja procuri u sledecu pravu. */
-  const ocisti = () => {
+/* AD-9 + AD-14 (29.10.2026): pitanje o nezavrsenoj voznji je pitanje u aplikaciji (kret.pitaj) posle uvodne animacije, ne sistemski
+   prozor. Odgovor stize kasnije, pa oporavljena voznja NE stoji u RIDE dok pitanje ceka (inace bi procurela u sve sto RIDE cita): snimak
+   se izmeri (sa repom), RIDE se ocisti, a na "Sacuvaj" se isti snimak ponovo hidrira iz localStorage-a (dok voznja ne tece, snimak i rep
+   se ne menjaju). Tri ishoda: Sacuvaj -> dnevnik; Odbaci -> brisanje; zatvoreno bez odgovora (nazad, Escape, pozadina) -> snimak ostaje
+   i pita se ponovo, jer voznja nikad ne sme da nestane bez pitanja. */
+const VOZ_OPOR = { ceka: false, preskoci: false };
+function voznjaOporavakObrisi() { try { localStorage.removeItem(CKP_KEY); localStorage.removeItem(GPS_REP_KEY); } catch (e) {} }   // rep bez snimka je siroce - ide zajedno
+/* 0.9.95: hidratacija se desava PRE korisnikove odluke (drugacije se rep ne moze izmeriti), pa oporavljeno stanje mora da se ocisti na
+   SVAKOM izlazu. Spisak je ogledalo onoga sto voznjaCkpHidrat i voznjaOporavakRep upisu - inace tudja voznja procuri u sledecu pravu. */
+function voznjaOporavakOcisti() {
     RIDE.t0 = null; RIDE.freeRide = false; RIDE.freeNaz = null; RIDE.route = null; RIDE.total = 0;
     RIDE.trace = []; RIDE.samples = []; RIDE.trkM = 0; RIDE.maxKmh = 0; RIDE._maxNiz = []; RIDE.movMs = 0; RIDE.rupaM = 0; RIDE.rupaMs = 0; RIDE.rupaN = 0;
     RIDE.maxD = 0; RIDE.baseD = 0; RIDE.arrived = false;
@@ -27999,16 +28071,18 @@ function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne 
     RIDE.leanChk = null; RIDE.turaTs = null; RIDE.rel = null;
     RIDE.lastFixTs = 0; RIDE.lastFixObj = null; RIDE.lastTrk = null; RIDE._smpT = 0;   // rep se replay-uje i kad se voznja odbaci
     try { leanReset(); } catch (e) {}
-  };
+}
+function voznjaOporavakProceni() {   // validacije, rep i prag; { snap, km, traj, trajMs, trkM } za pitanje ili null (reseno bez pitanja). RIDE ostaje cist.
+  if (document.body.classList.contains("riding")) return null;   // voznja vec tece - njena kontrolna tacka se ne dira (0.9.82 review)
   let raw = null;
   try { raw = localStorage.getItem(CKP_KEY); } catch (e) {}
-  if (raw == null) return;
+  if (raw == null) return null;
   let snap = null;
   try { snap = JSON.parse(raw); } catch (e) {}
-  if (!snap || typeof snap !== "object") { obrisi(); return; }   // pokvaren JSON se brise, ne parsira se ponovo na svakom startu
+  if (!snap || typeof snap !== "object") { voznjaOporavakObrisi(); return null; }   // pokvaren JSON se brise, ne parsira se ponovo na svakom startu
   /* Validacije koje NE zavise od repa. Prozor je 7 dana (0.9.82 review): "6 h" je nemo brisao
      validnu voznju otvorenu sutradan, a Boskov zakon je da voznja nikad ne sme da nestane bez pitanja. */
-  if (!snap.t0 || !snap.ts || Date.now() - snap.ts > 7 * 864e5) { obrisi(); return; }
+  if (!snap.t0 || !snap.ts || Date.now() - snap.ts > 7 * 864e5) { voznjaOporavakObrisi(); return null; }
   /* 0.9.95 (QA 26.8., nalazi 71 i 72 - jedna izmena): rep se lepi PRE nego sto se ista izmeri ili
      odluci. Ranije su i prag "ispod 2 km je proba" i broj u pitanju merili SAMO kontrolnu tacku,
      a ona u pozadini ne raste (JS tamo ne radi). Posledica: voznja od 135,9 km se predstavljala
@@ -28017,7 +28091,7 @@ function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne 
   try { voznjaCkpHidrat(snap); }
   catch (e) {
     try { navLog("oporavak-hidrat-pao", { msg: String(e).slice(0, 80) }); } catch (e2) {}
-    ocisti(); return;   // snimak OSTAJE - sledece pokretanje pita ponovo
+    voznjaOporavakOcisti(); return null;   // snimak OSTAJE - sledece pokretanje pita ponovo
   }
   try { voznjaOporavakRep(snap); } catch (e) {}   // pozadinski rep (GPS_REP_KEY): kilometri POSLE poslednje kontrolne tacke (review #14)
   const trajMs = Date.now() - RIDE.t0;
@@ -28028,31 +28102,66 @@ function voznjaOporavak() {   // pri pokretanju: nezavrsena voznja iz kontrolne 
     try { navLog("oporavak-odbacen", { snap: Math.round(snap.trkM || 0), ukupno: Math.round(RIDE.trkM || 0) }); } catch (e) {}
     /* QA voznja L4: nezavrsena voznja kraca od 2 km se ne upisuje - ali se to KAZE (ispod 300 m je proba, tisina je u redu) */
     if (RIDE.trkM > 300) { const kmK = km; setTimeout(() => { try { tihoObavestenje(T("voz.oporavakKratka", { 0: kmK })); } catch (e) {} }, 1500); }
-    obrisi(); ocisti(); return;
+    voznjaOporavakObrisi(); voznjaOporavakOcisti(); return null;
   }
-  /* 30.8. (Boskov nalaz "delovalo je da nisam mogao da kliknem"): ovo je JEDINI dijalog u ovom
-     toku koji nije nas - nativni confirm crta iOS, mi ga ne kontrolisemo, a zove se iz tajmera
-     900 ms po pokretanju, dakle dok splash jos ume da bude gore. Do sada nije ostavljao nijedan
-     trag, pa se nije moglo znati ni da li je uopste prikazan. Sada se belezi kad je postavljen,
-     sta je odgovoreno i koliko je stajao - ako se ponovi, izvoz dnevnika navigacije to kaze. */
-  try { dijalogLog("oporavak-pitanje", { km: Math.round(RIDE.trkM || 0), trajMin: Math.round(trajMs / 60000) }); } catch (e) {}
-  const _pitT = Date.now();
-  const hoce = confirm(T("opor.nezavrsena", { 0: km, 1: traj }));
-  try { dijalogLog("oporavak-odgovor", { odg: hoce ? "sacuvaj" : "odbaci", ms: Date.now() - _pitT }); } catch (e) {}
-  if (!hoce) { obrisi(); ocisti(); return; }
-  RIDE.t0 = Date.now() - trajMs;   // dijalog je stajao otvoren - to vreme ne sme u dnevnik (zabeleziVoznju racuna min iz Date.now() - RIDE.t0)
+  const trkM = RIDE.trkM;
+  voznjaOporavakOcisti();   // pitanje ceka bez oporavljene voznje u RIDE
+  return { snap, km, traj, trajMs, trkM };
+}
+function voznjaOporavakSacuvaj(o) {   // "Sacuvaj": isti snimak ponovo u RIDE, upis u dnevnik, pa cisto
   let sacuvano = false;
   try {
+    voznjaCkpHidrat(o.snap);
+    try { voznjaOporavakRep(o.snap); } catch (e) {}
+    RIDE.t0 = Date.now() - o.trajMs;   // pitanje je stajalo otvoreno - to vreme ne sme u dnevnik (zabeleziVoznju racuna min iz Date.now() - RIDE.t0)
     sacuvano = zabeleziVoznju() === "upisano";
     RIDE.lastSummary = null;   // sazetak se ne otvara sam pri startu - zapis je u dnevniku (Vožnje)
   } catch (e) {}
-  /* Kontrolna tacka se brise SAMO posle potvrdjenog upisa (0.9.82 review). Kad upis padne
-     (puna kvota/izuzetak), snimak ostaje pa sledece pokretanje pita ponovo - uz postenu poruku,
-     ne laznu potvrdu. */
-  if (sacuvano) { obrisi(); shareToast(T("opor.sacuvana", { 0: km })); }
+  /* Kontrolna tacka se brise SAMO posle potvrdjenog upisa (0.9.82 review). Kad upis padne (puna kvota/izuzetak), snimak ostaje pa
+     sledece pokretanje pita ponovo - uz postenu poruku, ne laznu potvrdu. */
+  if (sacuvano) { voznjaOporavakObrisi(); shareToast(T("opor.sacuvana", { 0: o.km })); }
   else shareToast(T("opor.upisNijeUspeo"));
   try { turaPredlog(sacuvano ? "upisano" : "nista", true); } catch (e) {}   // TURA ulaz 3 (0.9.86): tihi predlog i posle oporavka - poruka obecava SAMO dnevnik (sazetka ovde nema)
-  ocisti();   // hidrirano stanje ne sme da procuri u sledecu pravu voznju
+  voznjaOporavakOcisti();   // hidrirano stanje ne sme da procuri u sledecu pravu voznju
+  return sacuvano;
+}
+function voznjaOporavak(o) {   // pri pokretanju (21-rute-kalendar.js) i pre nove voznje (voznjaPreStarta); Promise: true / false / null, undefined = bez pitanja
+  if (VOZ_OPOR.ceka) return Promise.resolve(null);   // pitanje vec stoji
+  if (o === undefined) o = voznjaOporavakProceni();
+  if (!o) return Promise.resolve(undefined);
+  VOZ_OPOR.ceka = true;
+  return new Promise((res) => posleUvoda(() => {
+    /* 30.8. (Boskov nalaz "delovalo je da nisam mogao da kliknem"): belezi se kad je pitanje postavljeno, sta je odgovoreno i koliko je
+       stajalo - ako se ponovi, izvoz dnevnika navigacije to kaze. */
+    try { dijalogLog("oporavak-pitanje", { km: Math.round(o.trkM || 0), trajMin: Math.round(o.trajMs / 60000) }); } catch (e) {}
+    const t = Date.now();
+    const kraj = (odg) => {
+      VOZ_OPOR.ceka = false;
+      try { dijalogLog("oporavak-odgovor", { odg: odg === true ? "sacuvaj" : odg === false ? "odbaci" : "kasnije", ms: Date.now() - t }); } catch (e) {}
+      if (odg === true) voznjaOporavakSacuvaj(o);
+      else if (odg === false) voznjaOporavakObrisi();
+      res(odg);
+    };
+    try { kret.pitaj({ tekst: T("opor.nezavrsena", { 0: o.km, 1: o.traj }), potvrdi: T("opor.sacuvaj"), otkazi: T("opor.odbaci"), otkaziVrednost: false }).then(kraj, () => kraj(null)); }
+    catch (e) { kraj(null); }
+  }));
+}
+/* 0.9.95 (QA nalaz 74): nepreuzeta kontrolna tacka se ne pregazi cutke na pocetku nove voznje. 29.10.2026: pitanje je u aplikaciji, pa
+   voznja krece tek posle odgovora (Sacuvaj ili Odbaci zovu start ponovo, kao turaPitaj); zatvoreno pitanje = voznja ne krece, snimak ostaje. */
+function voznjaPreStarta(nastavi) {
+  if (VOZ_OPOR.preskoci && Date.now() - VOZ_OPOR.preskoci < 2000) { VOZ_OPOR.preskoci = false; return true; }   // jednokratno, odmah posle odgovora
+  VOZ_OPOR.preskoci = false;
+  if (VOZ_OPOR.ceka) return false;
+  const o = voznjaOporavakProceni();
+  if (!o) return true;
+  /* pregled 29.10.2026: krece se tek kad stare kontrolne tacke vise nema (upisana ili odbacena). Kad upis padne, tacka ostaje i voznja ne
+     krece - inace bi je prvi snimak nove voznje pregazio, a poruka obecava "pitacu te ponovo"; sledeci dodir na Kreni pita opet (Odbaci). */
+  voznjaOporavak(o).then(() => kret.kadBezPitanja(() => {   // i tek kad nijedno drugo pitanje ne stoji (pocetak voznje bi ga zatvorio)
+    let ostala = true; try { ostala = localStorage.getItem(CKP_KEY) != null; } catch (e) {}
+    if (document.body.classList.contains("riding")) return;   // voznja je u medjuvremenu krenula drugim putem - ne pokrece se druga
+    if (!ostala) { VOZ_OPOR.preskoci = Date.now(); try { nastavi(); } catch (e) {} }
+  }));
+  return false;
 }
 function stopRide() {
   try { clearTimeout(RIDE.arrTo); } catch (e) {} RIDE.arrTo = null;
@@ -28109,7 +28218,8 @@ function stopRide() {
   else if ((vozIshod === "kratka" || vozIshod === "nista") && !RIDE._gpsOdbijen) { try { tihoObavestenje(T("voz.prekratka")); } catch (e) {} }
   RIDE._gpsOdbijen = false;
 }
-/* CELINA 17 - SAZETAK: sazetak voznje, replay, izbor isecka, izvoz videa, list "Snimak voznje"; i ozicenje pocetnog ekrana (IIFE sa openPlanning, po polozaju).
+/* CELINA 17 - SAZETAK: sazetak voznje (metrike, maketa B). Od 29.10.2026 replay je u 17b, naslovna u 17c, video, "Snimak voznje" i
+   ozicenje pocetnog ekrana u 17d. Spiskovi ispod su za ceo nekadasnji fajl 17 (18.10.2026).
    Deo glavnog skripta (web/src/app/, docs/ARHITEKTURA-PLAN.md): jedan <script>, funkcije su globalne,
    redosled fajlova je redosled ucitavanja. Spiskovi su stanje od 18.10.2026 (node tools/celine-mapa.mjs).
    state: editorial, atlasApplied, famousApplied, atlasCoords, editorialMarkers, fromOverride, homeTo,
@@ -28416,7 +28526,7 @@ function sumTragNaMapi(s) {   // v3: trag voznje na GLAVNOJ mapi (heroj iza shee
   } catch (e) { return false; }
 }
 function sumListKadar(b) {   // kadar za list sazetka; zove ga i "Pogledaj voznju" sa naslovne
-  const ls = window.matchMedia && window.matchMedia("(max-height: 520px)").matches;
+  const ls = window.matchMedia && window.matchMedia("(max-height: 520px), (min-width: 901px)").matches;
   map.fitBounds(b, { padding: ls ? { top: 40, left: 40, right: Math.round(window.innerWidth * 0.5), bottom: 40 }
                                  : { top: 84, left: 36, right: 36, bottom: Math.max(Math.round(window.innerHeight * 0.55), window.innerHeight - 230) },   // 2B: trag u gornju traku od ~230 px
     duration: 600, maxZoom: 16 });
@@ -28731,6 +28841,9 @@ async function sumMaketa(s, pts, svez, uDnev) {
     });
   }
 }
+/* CELINA 17b - SAZETAK REPLAY: replay voznje u sazetku i izbor isecka na traci.
+   Izdvojeno 29.10.2026 iz 17-sazetak.js (pregled arhitekture, tacka 3): taj deo je imao 2.465 redova. Delovi stoje jedan za drugim
+   u istom redu kao pre (web/app.html), pa se skript izvrsava isto; funkcije su i dalje globalne. */
 /* ---------------- REPLAY VOZNJE u sazetku (13.8., Boskov zahtev "kao u demou") ----------------
    Marker putuje tragom po VREMENU voznje: iz uzoraka brzine (smp: t sekunde, v km/h) integrali se
    predjeni put, normalizuje na duzinu traga, pa se za svaki trenutak zna tacka na tragu, brzina i
@@ -29247,6 +29360,9 @@ function rsPoiSet(naz, nazPoi) {
   el.textContent = im ? "cilj: " + im : "";
   el.hidden = !im;
 }
+/* CELINA 17c - SAZETAK NASLOVNA: C2 naslovna sazetka (Story kartica, Boskov izbor 23.10.).
+   Izdvojeno 29.10.2026 iz 17-sazetak.js (pregled arhitekture, tacka 3): taj deo je imao 2.465 redova. Delovi stoje jedan za drugim
+   u istom redu kao pre (web/app.html), pa se skript izvrsava isto; funkcije su i dalje globalne. */
 /* ===== C2 NASLOVNA (Boskov izbor 23.10.2026, maketa/sazetak-F.html) =====
    Posle voznje prvo stoji naslovna u izgledu Story kartice: vrsta voznje krupno, sest brojki u istom bloku
    (predjeno, trajanje, prosek / max brzina, max levo, max desno), mesto i logo, PODELI kao "PODELI SLIKU".
@@ -29274,7 +29390,7 @@ function rsnTreba(sIn, s) {
   rsnTreba.zasto = "da";
   if (RIDE._bezNaslovne) { RIDE._bezNaslovne = false; rsnTreba.zasto = "nazad-na-turu"; return false; }   // "Nazad na turu": povratak sa etape ide na list
   if (sIn && !s.tura && RIDE._turaNazad) { rsnTreba.zasto = "etapa-iz-ture"; return false; }   // etapa otvorena iz spiska ture: listanje ide pravo na list
-  try { if (window.matchMedia && window.matchMedia("(max-height: 520px)").matches) { rsnTreba.zasto = "polozen"; return false; } } catch (e) {}   // polozen ekran
+  try { if (window.matchMedia && window.matchMedia("(max-height: 520px), (min-width: 901px)").matches) { rsnTreba.zasto = "polozen"; return false; } } catch (e) {}   // polozen ekran
   return true;
 }
 function rsnCrtaj(s, svez, uDnevniku) {
@@ -29678,6 +29794,9 @@ function stplDarkify(m) {   // recept sa finalne makete (dublje taman od app tem
     } catch (e) {}
   }
 }
+/* CELINA 17d - SAZETAK VIDEO: izvoz replaya kao video, list "Snimak voznje", predlozi isecaka i ozicenje pocetnog ekrana na kraju.
+   Izdvojeno 29.10.2026 iz 17-sazetak.js (pregled arhitekture, tacka 3): taj deo je imao 2.465 redova. Delovi stoje jedan za drugim
+   u istom redu kao pre (web/app.html), pa se skript izvrsava isto; funkcije su i dalje globalne. */
 /* ================= IZVOZ REPLAYA KAO VIDEO (1.9.2026, Boskov zahtev) =================
    "Cak i da moze taj video da se izveze i sacuva."
    Izmereno na Boskovom iPhone 14 / iOS 18.7 PRE nego sto je pisano: MediaRecorder postoji,
@@ -30346,7 +30465,7 @@ function _vidBrzina(s, napredak) {
     let dg = null;
     // 9.8. review: kartica je centrirana sa translateX(-50%) - inline translateY je to BRISAO i kartica bi
     // skocila na pola ekrana udesno tokom prevlacenja. Landscape varijanta ima transform:none, pa tamo ide cist Y.
-    const bezX = () => window.matchMedia && window.matchMedia("(max-height: 520px)").matches;
+    const bezX = () => window.matchMedia && window.matchMedia("(max-height: 520px), (min-width: 901px)").matches;
     const xform = (dy) => !dy ? "" : (bezX() ? "translateY(" + dy + "px)" : "translate(-50%, " + dy + "px)");
     /* 1.9.2026 (Boskov nalaz): "kad se svuce dole summary, jedini nacin da se podigne opet gore
        je ako se klikne, a intuitivno je da se ako se skrolovalo dole, skroluje i gore."
@@ -30427,7 +30546,7 @@ function _vidBrzina(s, napredak) {
   };
   nsl("rsnPogledaj", () => doLista(null, "pogledaj"));
   try {   // okretanje telefona dok stoji naslovna: polozen ekran je nema, pa ide pravo na list (i vraca slojeve i kadar)
-    const mqL = window.matchMedia("(max-height: 520px)"), uLezece = (e) => { if (e.matches) rsnSkini(true, "okret-u-polozen"); };
+    const mqL = window.matchMedia("(max-height: 520px), (min-width: 901px)"), uLezece = (e) => { if (e.matches) rsnSkini(true, "okret-u-polozen"); };
     if (mqL.addEventListener) mqL.addEventListener("change", uLezece); else if (mqL.addListener) mqL.addListener(uLezece);
   } catch (e) {}
   nsl("rsnDetalji", () => {
@@ -30504,7 +30623,7 @@ function _vidBrzina(s, napredak) {
         if (sv[0].to) document.getElementById("to").value = sv[0].to;
         openPlanning();
       }
-    } catch (e) { kret.obavesti(e && e.geo ? e.message : T("geo.neNalazimMesto")); updateQuickLabels(); }
+    } catch (e) { if (!(e && e.otkazano)) kret.obavesti(e && e.geo ? e.message : T("geo.neNalazimMesto")); updateQuickLabels(); }   // QA 29.10.: Otkazi nije greska
   }));
   /* 18.10.2026: posle ucitavanja celog skripta. Odmah je pitala offAll (19-deljenje-podesavanja.js) pre
      njegove deklaracije i tiho padala posle Kuca/Nedavno, pa je broj sacuvanih ruta ostajao "…"
@@ -31742,7 +31861,7 @@ function renderMesta(ftype) {
   if (gf) gf.addEventListener("change", () => {
     const f = gf.files && gf.files[0];
     if (!f) return;
-    const pa = document.querySelector('#bottomnav a[data-tab="planer"]'); if (pa) pa.click();
+    tabSkok("planer");
     planerRutaPokazi();
     importGpx(f);
   });
@@ -33522,12 +33641,12 @@ function mestoIzborPitaj(q, kand) {   // "Koje mesto?" (16.10.): vraca izabranog
     let gotov = false;
     const kraj = (v) => {
       if (gotov) return; gotov = true;
-      el.hidden = true; document.removeEventListener("keydown", tast, true);
+      el.hidden = true; document.removeEventListener("keydown", tast, true); el._kraj = null;
+      try { if (typeof kret !== "undefined" && kret.spoljniZatvoren) kret.spoljniZatvoren("dijalog.mestoIzbor"); } catch (e) {}   // odmah, kao atlasCilj: posmatrac stize tek posle
       try { if (fokusPre && fokusPre.focus) fokusPre.focus(); } catch (e) {}
       resolve(v);
     };
-    const tast = (ev) => {   // Escape = odustao; Tab ostaje u dijalogu (isti obrazac kao atlasCilj)
-      if (ev.key === "Escape") { ev.preventDefault(); ev.stopImmediatePropagation(); kraj(null); return; }   // samo dijalog: list Moja mesta ispod ostaje (pregled 0.9.209)
+    const tast = (ev) => {   // Tab ostaje u dijalogu (isti obrazac kao atlasCilj); Escape = odustao ide kroz kret i zatvara samo dijalog (pregled 0.9.209)
       if (ev.key !== "Tab") return;
       const f = [...el.querySelectorAll("button")];
       if (!f.length) return;
@@ -33538,10 +33657,15 @@ function mestoIzborPitaj(q, kand) {   // "Koje mesto?" (16.10.): vraca izabranog
     const ot = document.getElementById("miOtkazi"); if (ot) ot.onclick = () => kraj(null);
     const bk = el.querySelector(".back"); if (bk) bk.onclick = () => kraj(null);
     document.addEventListener("keydown", tast, true);
+    el._kraj = kraj;
     el.hidden = false;
     try { const b0 = lista.querySelector("button"); if (b0) b0.focus(); } catch (e) {}
   });
 }
+(function () {   // AD-15 (29.10.2026): "Koje mesto?" je dijalog u kret-u - Escape, Android i nazad zatvaraju samo njega, list ispod ostaje
+  const el = document.getElementById("mestoIzbor");
+  if (el && typeof kret !== "undefined" && kret.prati) kret.prati(el, "dijalog.mestoIzbor", { vrsta: "dijalog", zatvori: () => { if (el._kraj) el._kraj(null); } });
+})();
 function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi cilj ili izaberi novi
   const el = document.getElementById("atlasCilj");
   if (!el) { try { openSearch("to"); } catch (e) {} return; }
@@ -33564,7 +33688,6 @@ function atlasCiljPitaj(ciljIme) {   // tihi dijalog (turaSheet obrazac): zadrzi
   el.hidden = false;
   const fokusni = () => [...el.querySelectorAll("button")].filter((b) => b.offsetParent !== null || b.getClientRects().length);
   el._trap = (ev) => {
-    if (ev.key === "Escape") { ev.preventDefault(); atlasCiljZatvori(false); return; }
     if (ev.key !== "Tab") return;
     const f = fokusni();
     if (!f.length) return;
@@ -34547,14 +34670,24 @@ function nalogIzHasha() {   // web: #access_token=...&refresh_token=...&expires_
     const pr = nalogLinkProvera(tvrd, trazen, stari);
     try { history.replaceState(history.state, "", location.pathname + location.search); } catch (e) {}
     if (!pr.ok) { NK.linkGreska = pr.razlog; try { tihoObavestenje(T("nk.tudjLink")); } catch (e) {} return false; }   // kapija (ako se otvori) kaze isto
-    if (pr.smena && !confirm(T("nk.prijaviKao", { 0: tvrd.email }))) return false;   // postojeca sesija ostaje
-    const drugi = !!(stari.uid && stari.uid !== tvrd.sub);   // i mrtva sesija drugog naloga: njegov kod/ime se ne prenose, kesevi se ciste
-    if (drugi) nalogSmenaUid(stari.uid, tvrd.sub);
-    const n = { ...(drugi ? {} : stari), ...nalogIzSesije({ access_token: at, refresh_token: rt, expires_in: +p.get("expires_in") || 3600 }), uid: tvrd.sub, email: tvrd.email };
-    nalogUpisi(n);
-    NK.izLinka = true;
-    return true;
+    const primeni = () => {
+      const drugi = !!(stari.uid && stari.uid !== tvrd.sub);   // i mrtva sesija drugog naloga: njegov kod/ime se ne prenose, kesevi se ciste
+      if (drugi) nalogSmenaUid(stari.uid, tvrd.sub);
+      const n = { ...(drugi ? {} : stari), ...nalogIzSesije({ access_token: at, refresh_token: rt, expires_in: +p.get("expires_in") || 3600 }), uid: tvrd.sub, email: tvrd.email };
+      nalogUpisi(n);
+      NK.izLinka = true;
+      return true;
+    };
+    /* AD-9 + AD-14 (29.10.2026): smena naloga pita u aplikaciji, posle uvodne animacije - tada vraca Promise (true = prijavljen,
+       inace postojeca sesija ostaje); bez smene odgovor je odmah, kao do sada (redosled pokretanja i kapije se ne menja) */
+    if (pr.smena) return pitajPosleUvoda({ tekst: T("nk.prijaviKao", { 0: tvrd.email }), potvrdi: T("nk.prijaviMe") }).then((da) => (da === true ? primeni() : false));
+    return primeni();
   } catch (e) { return false; }
+}
+/* posle linka iz mejla: odmah (true), posle pitanja (Promise) ili nista (false) */
+function nalogIzHashaPosle(r, posle, inace) {
+  if (r && typeof r.then === "function") r.then((da) => { try { (da ? posle : inace)(); } catch (e) {} }, () => { try { inace(); } catch (e) {} });
+  else if (r) posle(); else inace();
 }
 function jwtTvrdnje(tok) {   // payload JWT-a (sub, email) ili {} - bez provere potpisa (to radi server pri svakom zahtevu)
   try { const b = JSON.parse(atob(String(tok || "").split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); return { sub: b.sub || "", email: String(b.email || "").trim().toLowerCase() }; } catch (e) { return {}; }
@@ -34604,7 +34737,7 @@ async function nalogIzDeepLinka(rt) {   // nativna app: routemeright://prijava?r
     const email = tvrd.email || (j.user && j.user.email) || "";
     /* B1: nativna app nema rmr2_nalog_email (kod je trazen u Safariju), pa je jedina brana covek: "Prijaviti se kao X?"
        - link koji je neko drugi poslao se tako vidi i odbija. / Native deep link: the person confirms the email. */
-    if (!email || !confirm(T("nk.prijaviKao", { 0: email }))) return false;
+    if (!email || (await pitajPosleUvoda({ tekst: T("nk.prijaviKao", { 0: email }), potvrdi: T("nk.prijaviMe") })) !== true) return false;   // 29.10.: u aplikaciji
     const uid = tvrd.sub || svez.uid;
     const drugi = !!(stari.uid && uid && stari.uid !== uid);
     if (drugi) nalogSmenaUid(stari.uid, uid);   // B8: kesevi prethodnog dole, pitanje o voznjama posle
@@ -34622,12 +34755,36 @@ async function voznjePoslePrijave() {
   if (sm && sm.novi === n.uid) {
     const sve = _zajCitaj("mr_voznje", []);
     const bezVlasnika = sve.filter((r) => r && r.ts && !r._uid && !r._server);
-    if (bezVlasnika.length && !confirm(T("nal.prenesiVoznje", { 0: bezVlasnika.length }))) {
-      for (const r of bezVlasnika) r._uid = sm.stari || "tudje";
-      try { _zajPisi("mr_voznje", sve); } catch (e) {}
+    if (bezVlasnika.length) {
+      /* 29.10.2026: pitanje je u aplikaciji i ne blokira, pa dok stoji voznje nose privremenu oznaku - sinhronizacija salje samo svoje i
+         nicije, pa ih ni tajmer na 9 s ni upis nove voznje ne posalju pre odgovora. Samo izricito "Prenesi" ih vraca u nicije (i one idu
+         u nov nalog); "Ne" i zatvoreno pitanje ih ostavljaju na telefonu. Spisak se cita PONOVO posle odgovora - u medjuvremenu je mogla
+         da se upise nova voznja (pregled 29.10.). Ako se aplikacija ugasi dok pitanje stoji, oznaka ostaje = isto kao "Ne". */
+      const zig = "ceka:" + (sm.stari || "tudje");
+      for (const r of bezVlasnika) r._uid = zig;
+      NK.prenosCeka = true;   // treci pregled: slanje stoji dok pitanje stoji - i kad upis oznake ne uspe (puna kvota)
+      let da = false;
+      try {
+        try { _zajPisi("mr_voznje", sve); } catch (e) {}
+        da = (await pitajPosleUvoda({ tekst: T("nal.prenesiVoznje", { 0: bezVlasnika.length }), potvrdi: T("nal.prenesiDa"), otkazi: T("nal.prenesiNe") })) === true;
+      } finally { NK.prenosCeka = false; }
+      const sad = _zajCitaj("mr_voznje", []);
+      /* odgovor vazi i za voznju upisanu DOK je pitanje stajalo (Sacuvaj na pitanju o nezavrsenoj voznji) - ona je sa ovog telefona od pre
+         prijave, pa "Ne" i nju ostavlja prethodnom (cetvrti pregled 29.10.) */
+      for (const r of sad) if (r && (r._uid === zig || !r._uid) && !r._server) { if (da) delete r._uid; else r._uid = sm.stari || "tudje"; }
+      try { _zajPisi("mr_voznje", sad); } catch (e) {}
     }
   }
   try { await voznjeSinhronizuj(); } catch (e) {}
+}
+/* treci pregled 29.10.2026: aplikacija ugasena dok je "Preneti voznje?" stajalo - privremena oznaka "ceka:<stari>" pri sledecem
+   pokretanju postaje zig prethodnog vlasnika, isto kao "Ne" (bez izricitog da se nista ne salje u nov nalog). */
+function voznjeCekaZavrsi() {
+  try {
+    const sve = _zajCitaj("mr_voznje", []); let bilo = false;
+    for (const r of sve) if (r && typeof r._uid === "string" && r._uid.startsWith("ceka:")) { r._uid = r._uid.slice(5) || "tudje"; bilo = true; }
+    if (bilo) _zajPisi("mr_voznje", sve);
+  } catch (e) {}
 }
 async function nalogPromeniKorisnicko(k) {
   if (!korisnickoValidan(k)) throw new Error(korisnickoGreska(k)); k = korisnickoOcisti(k);
@@ -35243,11 +35400,12 @@ function nalogKapijaPrikazi() {
     const f = PL.f; if (!f || !(await kret.pitaj({ tekst: T("nal.ukloniPitanje", { 0: f.ime || "" }), potvrdi: T("nal.ukloni"), opasno: true }))) return;   // 28.10.: u aplikaciji
     try { await prijateljUkloni(f.id); prijateljZatvoriKret(); renderPrijatelji(true); } catch (e) { kret.obavesti(nalogGreskaTekst(e)); }
   });
-  if (nalogIzHasha()) setTimeout(() => { nalogIzLinkaZavrsi(); }, 400);   // link iz mejla (web)
-  else setTimeout(() => { try { nalogKapijaPrikazi(); } catch (e) {} }, 350);   // posle uvodne animacije; sloj je iznad nje po z-indexu (i "tudj_link" poruka)
+  nalogIzHashaPosle(nalogIzHasha(), () => setTimeout(() => { nalogIzLinkaZavrsi(); }, 400),   // link iz mejla (web)
+    () => setTimeout(() => { try { nalogKapijaPrikazi(); } catch (e) {} }, 350));   // posle uvodne animacije; sloj je iznad nje po z-indexu (i "tudj_link" poruka)
   window.addEventListener("hashchange", () => {   // 3.10. (QA ISSUE-005): link stigao u VEC otvorenu aplikaciju (isti tab, bez ucitavanja)
-    if (nalogIzHasha()) nalogIzLinkaZavrsi(); else if (NK.linkGreska) { try { nalogKapijaPrikazi(); } catch (e) {} }
+    nalogIzHashaPosle(nalogIzHasha(), () => nalogIzLinkaZavrsi(), () => { if (NK.linkGreska) { try { nalogKapijaPrikazi(); } catch (e) {} } });
   });
+  try { voznjeCekaZavrsi(); } catch (e) {}   // zaostala oznaka prenosa (ugasena aplikacija) = "Ne", pre svake sinhronizacije
   setTimeout(() => { try { nalogProveriNaServeru(); } catch (e) {} }, 1500);   // nalog obrisan na serveru -> kapija, ne sat vremena laznog "prijavljen"
   setTimeout(() => { try { nalogPing(); } catch (e) {} }, 6000);
   setTimeout(() => { try { voznjeSinhronizuj(); } catch (e) {} }, 9000);   // 3.10.: voznje gore/dole, najvise na 6 h
