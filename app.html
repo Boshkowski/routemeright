@@ -1525,7 +1525,10 @@
   #searchOverlay #sInput:focus { border-color: var(--accent); }
   /* 13.10.: Google polje (UI Kit) na telefonu = isto kao nase polje. Pravilo je do sada postojalo samo za siroki ekran (10-sheets.css),
      pa je na telefonu (WebKit) polje bilo 398 px od x=70 - 78 px van ekrana - sa Google-ovim plavim okvirom fokusa (Boskov snimak). */
-  #searchOverlay #gPolje { flex: 1; min-width: 0; height: 56px; border: 1px solid var(--line-strong); border-radius: var(--r-lg); background-color: var(--surface); overflow: hidden; font-size: 17px; }
+  /* QA 29.10.2026: BEZ overflow: hidden - na sirem ekranu (racunar, polozen telefon) Google otvara spisak predloga ISPOD polja, unutar
+     svog elementa, pa ga je odsecanje sakrivalo (otkucas "Rudnik", Google vrati predloge, a na ekranu nista). Na uskom ekranu spisak je
+     preko celog ekrana, zato se tamo videlo. Ivice ostaju zaobljene i bez odsecanja. */
+  #searchOverlay #gPolje { flex: 1; min-width: 0; height: 56px; border: 1px solid var(--line-strong); border-radius: var(--r-lg); background-color: var(--surface); font-size: 17px; }
   #searchOverlay #gPolje:focus-within { border-color: var(--accent); }
   #searchOverlay #gPolje::part(focus-ring) { display: none; }   /* Google-ov plavi okvir; fokus pokazuje nas narandzast rub, kao na nasem polju */
   #searchOverlay .sbody { padding: 4px 16px calc(20px + env(safe-area-inset-bottom)); }
@@ -3710,6 +3713,8 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     .tabscreen h2 { font-size: 20px; }
     #screen-rute .rlist, #zFeed, #zPreporuke, #mestaList, #jaVoznje, #jaKolekcije {
       display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; align-items: start; }
+    #jaVoznje .vakcije, #jaVoznje > :not(.vrow):not(a) { grid-column: 1 / -1; }
+    #zFeed > :only-child { grid-column: 1 / -1; }   /* QA 29.10.: prazna Zajednica - poruka i "Otvori mapu" preko cele sirine, ne u levoj polovini */   /* QA 29.10.: "Povezi voznje u turu" preko obe kolone, ne preko voznje desno */
 
     /* --- pocetni ekran: chrome u levu kolonu, FAB-ovi uz desnu ivicu --- */
     #homeChrome { left: calc(var(--rail) + var(--sl)); right: auto; width: min(52vw, 420px); padding: 8px 12px 0 10px; }   /* levo od raila, ne ispod njega */
@@ -3731,7 +3736,7 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
     body:not(.riding) .maplibregl-ctrl-bottom-left { left: calc(var(--rail) + var(--sl)); }
     /* QA 28.10.2026 (Ja M1): list Istrazi je pocinjao ispod levog raila - "‹ Deonice" se moglo dodirnuti samo na desnih 15%, naslov
        i brojke su bili odseceni levo. List pocinje desno od raila, kao ekrani tabova. */
-    body.atlas #atlasSheet { left: calc(var(--rail) + var(--sl)); right: var(--sr); }
+    body.atlas #atlasSheet { left: calc(var(--rail) + var(--sl)); right: var(--sr); bottom: var(--sb); }   /* QA 29.10.: nema donje trake, pa ni rupe od 66 px ispod lista */
     /* dok se planira, navod pocinje i desno od SKLOPLJENOG stuba (--ls-sklop pise applySheet; otvoren = 0px, pa je navod pod panelom kao u 0.9.209).
        QA 0.9.210 (N1): traka sa celim Kreni je inace pokrivala "OpenFreeMap ©". */
     body.qplan.planning:not(.riding) .maplibregl-ctrl-bottom-left { left: calc(var(--rail) + var(--sl) + var(--ls-sklop, 0px)); }
@@ -3803,6 +3808,18 @@ body:has(#prijateljList:not([hidden])) #bottomnav, body:has(#sastanakList:not([h
       border: 1px solid var(--line); border-radius: var(--r-sheet) var(--r-sheet) 0 0; }
     #istraziFilter { justify-content: flex-start; }
     #istraziFilter .body { margin-left: calc(var(--rail) + var(--sl) + 12px); width: min(440px, calc(100vw - var(--rail) - 24px)); }
+    /* pretraga na racunaru: jedna kolona do 760 px na sredini (dve kolone iz polozenog telefona su na visokom ekranu isle cik-cak, a uz Google
+       spisak desna polovina je bila prazna - QA 29.10.) */
+    #searchOverlay .shead, #searchOverlay .sbody { width: 100%; max-width: 760px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+    #searchOverlay .sbody { display: block; }
+  }
+  /* QA 29.10.2026: "‹ Ja" u sazetku voznje je imao stil samo na uspravnom telefonu - u polozenom i na racunaru bio je golo dugme na ivici */
+  @media (orientation: landscape) and (max-height: 520px), (min-width: 901px) {
+    #rideSum .rskick { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    #rideSum .rsnazad { width: 40px; height: 40px; flex: none; border: 0; background: none; color: var(--fg-strong); font: 400 22px/1 var(--font-ui); cursor: pointer; }
+    #rideSum .rsnazad.ime { width: auto; min-height: 44px; padding: 0 8px 0 0; font: 500 15px/1 var(--font-ui); color: var(--accent-text); white-space: nowrap; }
+    #rideSum .rsnazad { margin-left: 14px; }   /* poravnato sa sadrzajem kartice, ne na samoj ivici */
+    #rideSum .rskick:has(.rsnazad.ime) h3 { flex-basis: 100%; }
   }
 /* rezervne cene troska: sklopljeno po defaultu - polja su zbunjivala (Boskov nalaz 6.8.: "zasto putarina 0,06 kad dole pise 0 €") */
 .costAdv { margin-top: 10px; }
@@ -5135,7 +5152,7 @@ body.riding #quietToast{bottom:calc(134px + env(safe-area-inset-bottom))}
          jedno od tri (postojeci "Posao" se seli automatski, vidi favMigracija). -->
     <div class="stub"><b data-i18n="ja.mojaMesta">Moja mesta</b>
       <div id="jaMesta" class="jset"></div>
-      <div class="jnote" data-i18n="ja.mojaMestaNapomena">Sve stoji samo na ovom telefonu. Ova mesta ti se nude u pretrazi, jednim tapom.</div>
+      <div class="jnote" data-i18n="ja.mojaMestaNapomena">Sve stoji samo na ovom uređaju. Ova mesta ti se nude u pretrazi, na jedan dodir ili klik.</div>
     </div>
     </section>
   </div>
@@ -5200,7 +5217,7 @@ const RECNIK_SR = {
   "ja.navlog": "izvezi dnevnik navigacije (za prijavu problema)",
   "ja.temaNapomena": "Promena teme se primenjuje odmah (app se osveži).",
   "ja.mojaMesta": "Moja mesta",
-  "ja.mojaMestaNapomena": "Sve stoji samo na ovom telefonu. Ova mesta ti se nude u pretrazi, jednim tapom.",
+  "ja.mojaMestaNapomena": "Sve stoji samo na ovom uređaju. Ova mesta ti se nude u pretrazi, na jedan dodir ili klik.",
   "ja.mojMotor": "Moj motor",
   "ja.mojMotorNapomena": "Iz izabranog modela se vuku rezervoar i potrošnja - njih koristi računica troška puta.",
   "ja.profil": "Moj profil",
@@ -5931,8 +5948,8 @@ const RECNIK_SR = {
   "oc.utisakGrp": "<div class=\"ogrp\" data-p=\"utisak\" role=\"radiogroup\" aria-label=\"Utisak 1 do 5\">",
   "oc.beleskaInput": "<input class=\"obel\" type=\"text\" maxlength=\"{0}\" placeholder=\"Beleška - vidiš je samo ti\">",
   "oc.dugmad": "<div class=\"obtns\"><button type=\"button\" id=\"rsOceneSacuvaj\">Sačuvaj</button><button type=\"button\" id=\"rsOceneSkip\">Preskoči</button></div>",
-  "oc.uzBelesku": "Uz belešku tapni i ocenu.",
-  "oc.tapniBar": "Tapni bar jednu ocenu, ili Preskoči.",
+  "oc.uzBelesku": "Uz belešku izaberi i ocenu.",
+  "oc.tapniBar": "Izaberi bar jednu ocenu, ili Preskoči.",
   "oc.sacuvana": "Ocena sačuvana - šalje se čim bude mreže.",
   "oc.sacuvane": "Ocene sačuvane - šalju se čim bude mreže.",
   "oc.lokalniUpisNije": "Lokalni upis nije uspeo - ocena se ipak šalje zajednici.",
@@ -6195,11 +6212,11 @@ const RECNIK_SR = {
   "geo.pocetak": "Početak: {0}",
   "geo.polazakPocetakRute": "Polazak: početak rute {0}.",
   "fmt.manjeOd1km": "manje od 1 km",
-  "bike.nijeIzabran": "nije izabran - tapni",
+  "bike.nijeIzabran": "nije izabran - izaberi ga",
   // ---- JS: pretraga, motor, kucna prognoza, alternativa, dnevnik navigacije (komad 3) ----
   "bike.rucnoModel": "- (rezervoar/potrošnju upiši ručno)",
   "bike.drugi": "Drugi proizvođač (ručno)",
-  "bike.nijeUBazi": "motor iz profila nije u bazi - tapni i izaberi",
+  "bike.nijeUBazi": "motor iz profila nije u bazi - izaberi ga ponovo",
   "bike.popuni": "Popuni proizvođača, model, rezervoar i potrošnju.",
   "bike.sacuvan": "Model sačuvan u tvoju bazu i postavljen kao profil.",
   "hw.suvo12": "Suvo narednih 12h",
@@ -6422,7 +6439,7 @@ const RECNIK_SR = {
   "vid.prekratka": "Vožnja je prekratka za snimak.",
   "vid.ili": "<div class=\"vlab\">Ili</div>",
   "vid.graniceDugmad": "<span>granice postavljaš dugmadima [ i ] u traci replaya</span></span><span class=\"s\">›</span></button>",
-  "vid.deljenjeIzPozadine": "Telefon nije dozvolio deljenje iz pozadine. Tapni Podeli još jednom.",
+  "vid.deljenjeIzPozadine": "Telefon nije dozvolio deljenje iz pozadine. Pritisni Podeli još jednom.",
   "vid.neUmeDaPodeli": "Ovaj uređaj ne ume da podeli video fajl. Snimak je napravljen, probaj preko Fotografija.",
   "vid.nijeNapravljen": "Snimak nije napravljen na ovom uređaju.",
   "vid.ekranUpaljen": "<div class=\"vupoz\"><span>⚠</span><span>Ekran mora ostati upaljen. Ako se telefon zaključa, izrada staje tu gde je.</span></div>",
@@ -6481,7 +6498,7 @@ const RECNIK_SR = {
   "off.satPreracunat": " Sat prolaska je preračunat za novi polazak.</div>",
   "off.red": "{0} km · {1}{2} min · {3} · sačuvano {4}",
   "off.neMoguProcitati": "<div class=\"sub\">Ne mogu da pročitam sačuvane rute sa telefona. Ovo NE znači da ih nemaš - baza se nije otvorila. Zatvori i otvori aplikaciju, pa probaj ponovo pre polaska.</div>",
-  "off.josNema": "<div class=\"sub\">Još nema sačuvanih ruta. Isplaniraj rutu pa tapni <b>Čuvaj</b> - tada se snima cela ruta sa prognozom i radi bez signala.</div>",
+  "off.josNema": "<div class=\"sub\">Još nema sačuvanih ruta. Isplaniraj rutu pa izaberi <b>Čuvaj</b> - tada se snima cela ruta sa prognozom i radi bez signala.</div>",
   "off.obrisiBtn": "<button class=\"del\" aria-label=\"Obriši\">✕</button>",
   "off.otvaram": "Otvaram sačuvanu rutu...",
   "off.neMoguOtvoriti": "Ne mogu da otvorim sačuvanu rutu.",
@@ -7474,7 +7491,7 @@ const RECNIK_EN = {
   "ja.navlog": "export the navigation log (to report a problem)",
   "ja.temaNapomena": "A theme change applies immediately (the app reloads).",
   "ja.mojaMesta": "My places",
-  "ja.mojaMestaNapomena": "Everything stays on this phone only. These places are offered in search, one tap away.",
+  "ja.mojaMestaNapomena": "Everything stays on this device only. These places are offered in search, one tap or click away.",
   "ja.mojMotor": "My bike",
   "ja.mojMotorNapomena": "Tank size and fuel consumption come from the chosen model - the trip cost estimate uses them.",
   "ja.profil": "My profile",
@@ -8183,8 +8200,8 @@ const RECNIK_EN = {
   "oc.utisakGrp": "<div class=\"ogrp\" data-p=\"utisak\" role=\"radiogroup\" aria-label=\"Impression 1 to 5\">",
   "oc.beleskaInput": "<input class=\"obel\" type=\"text\" maxlength=\"{0}\" placeholder=\"Note - only you can see it\">",
   "oc.dugmad": "<div class=\"obtns\"><button type=\"button\" id=\"rsOceneSacuvaj\">Save</button><button type=\"button\" id=\"rsOceneSkip\">Skip</button></div>",
-  "oc.uzBelesku": "Along with the note, tap a rating too.",
-  "oc.tapniBar": "Tap at least one rating, or Skip.",
+  "oc.uzBelesku": "Along with the note, pick a rating too.",
+  "oc.tapniBar": "Pick at least one rating, or Skip.",
   "oc.sacuvana": "Rating saved - it is sent as soon as there is network.",
   "oc.sacuvane": "Ratings saved - they are sent as soon as there is network.",
   "oc.lokalniUpisNije": "Local save failed - the rating is still being sent to the community.",
@@ -8444,11 +8461,11 @@ const RECNIK_EN = {
   "geo.pocetak": "Start: {0}",
   "geo.polazakPocetakRute": "Start: beginning of route {0}.",
   "fmt.manjeOd1km": "less than 1 km",
-  "bike.nijeIzabran": "not chosen - tap",
+  "bike.nijeIzabran": "not chosen - choose one",
   // ---- JS: pretraga, motor, kucna prognoza, alternativa, dnevnik navigacije (komad 3) ----
   "bike.rucnoModel": "- (enter tank/consumption manually)",
   "bike.drugi": "Other manufacturer (manual)",
-  "bike.nijeUBazi": "the bike from your profile is not in the database - tap and choose",
+  "bike.nijeUBazi": "the bike from your profile is not in the database - choose it again",
   "bike.popuni": "Fill in the manufacturer, model, tank and consumption.",
   "bike.sacuvan": "Model saved to your database and set as your profile.",
   "hw.suvo12": "Dry for the next 12h",
@@ -8669,7 +8686,7 @@ const RECNIK_EN = {
   "vid.prekratka": "The ride is too short for a clip.",
   "vid.ili": "<div class=\"vlab\">Or</div>",
   "vid.graniceDugmad": "<span>set the bounds with the [ and ] buttons in the replay bar</span></span><span class=\"s\">›</span></button>",
-  "vid.deljenjeIzPozadine": "The phone did not allow sharing from the background. Tap Share once more.",
+  "vid.deljenjeIzPozadine": "The phone did not allow sharing from the background. Press Share once more.",
   "vid.neUmeDaPodeli": "This device cannot share a video file. The clip was made - try via Photos.",
   "vid.nijeNapravljen": "The clip was not made on this device.",
   "vid.ekranUpaljen": "<div class=\"vupoz\"><span>⚠</span><span>The screen must stay on. If the phone locks, rendering stops where it is.</span></div>",
@@ -8728,7 +8745,7 @@ const RECNIK_EN = {
   "off.satPreracunat": " The passing hour was recalculated for the new departure.</div>",
   "off.red": "{0} km · {1}{2} min · {3} · saved {4}",
   "off.neMoguProcitati": "<div class=\"sub\">Cannot read the saved routes from the phone. This does NOT mean you have none - the database did not open. Close and reopen the app, then try again before leaving.</div>",
-  "off.josNema": "<div class=\"sub\">No saved routes yet. Plan a route and tap <b>Save</b> - the whole route with its forecast is then stored and works without signal.</div>",
+  "off.josNema": "<div class=\"sub\">No saved routes yet. Plan a route and choose <b>Save</b> - the whole route with its forecast is then stored and works without signal.</div>",
   "off.obrisiBtn": "<button class=\"del\" aria-label=\"Delete\">✕</button>",
   "off.otvaram": "Opening the saved route...",
   "off.neMoguOtvoriti": "Cannot open the saved route.",
@@ -9770,9 +9787,13 @@ function kretJezgro(env) {
     const v = vrh();
     try { env.uredi({ tab, vrh: v, vrsta: vrsta(v), osnova: vrsta(vidljivi(s())[0]), dubina: s().length - 1, bezTrake: !!PREKO[vrsta(v)] || vrsta(v) === "modal" || vrsta(v) === "spoljni", ...(dod || {}) }); } catch (e) {}
   }
-  function uskladi() {   // jedan strazar dok aktivni tab ima dubinu, nijedan na korenu
+  /* 29.10.2026 (QA F11): kuda vodi nazad sa KORENA taba - u tab iz kog je kod skocio (Zajednica > "Otvori mapu"), inace sa korena
+     drugog taba na Planer (kao Android nazad); sa korena Planera nigde (izlaz iz aplikacije / pozadina) */
+  let povratak = null;
+  const korenNazad = () => (povratak && povratak !== tab ? povratak : tab !== "planer" ? "planer" : null);
+  function uskladi() {   // jedan strazar dok ima kuda nazad (dubina ili koren koji vodi u drugi tab), nijedan na korenu Planera
     naoruzaj = false;
-    const dubina = s().length > 1;
+    const dubina = s().length > 1 || !!korenNazad();
     if (dubina && !strazar) {
       /* nazad pregledaca je jos u letu (strazar se trosi): novi strazar tek kad ono stigne, inace pregledac ostane na bazi
          dok kret misli da ima strazara, pa sledece nazad izadje iz aplikacije (faza 2, nov plan preko rute) */
@@ -9829,6 +9850,7 @@ function kretJezgro(env) {
     while (s().length > 1 && typeof d(vrh()).prolazan === "function" && d(vrh()).prolazan(vrh().args)) skiniVrh(s());
     sakrijVidljive(s());
     tab = t;
+    if (povratak === t) povratak = null;   // stigao si tamo odakle je skok krenuo
     prikaziVidljive(s());
     nosi.forEach((q) => s().push(q));
   }
@@ -9943,7 +9965,8 @@ function kretJezgro(env) {
       if (PREKO[vrsta(v)]) { try { env.minimize(); } catch (e) {} return false; }
       if (s().length > 1) return _nazad(false);
       if (unutra()) return true;
-      if (tab !== "planer") { promeniTab("planer"); uredi(); uskladi(); return true; }
+      const kuda = korenNazad();
+      if (kuda) { povratak = null; promeniTab(kuda); uredi(); uskladi(); return true; }
       try { env.minimize(); } catch (e) {}
       return false;
     }),
@@ -9953,8 +9976,13 @@ function kretJezgro(env) {
       strazar = false;
       if (PREKO[vrsta(vrh())]) { naoruzaj = true; return false; }
       if (s().length > 1) return _nazad(true);
+      if (unutra()) { naoruzaj = true; return true; }
+      const kuda = korenNazad();   // koren drugog taba ili posle skoka iz koda: nazad pregledaca vodi tamo, ne izlazi iz aplikacije
+      if (kuda) { povratak = null; promeniTab(kuda); uredi(); naoruzaj = !!korenNazad(); return true; }
       return false;
     }),
+    povratakPostavi: (t) => { if (TABOVI.includes(t)) povratak = t; },   // skok iz koda u drugi tab (kretDom, AD-16)
+    povratakBrisi: () => { povratak = null; },   // dodir prstom na tab
     spoljniOtvoren: (id, args) => uRed(() => {
       if (vrh().id === id) return false;
       const v = vrsta({ id });
@@ -10121,8 +10149,8 @@ const kret = (function kretDom() {
     const a = e.target.closest && e.target.closest("a[data-tab]"); if (!a) return;
     const t = a.dataset.tab, st = k.stanje();
     k.ponovniDodir = st.tab === t;   // stari slusaoci taba (Atlas) razlikuju ponovni dodir od ulaska u tab
-    if (!e.isTrusted && !tasterNaTabu) { if (t !== st.tab) k.predaja = { tab: st.tab, naslov: k.naslovVrha() }; }   // AD-16: programski skok u drugi tab
-    else k.predaja = null;   // prst na tabu brise zapamceno poreklo
+    if (!e.isTrusted && !tasterNaTabu) { if (t !== st.tab) { k.predaja = { tab: st.tab, naslov: k.naslovVrha() }; k.povratakPostavi(st.tab); } }   // AD-16: programski skok u drugi tab; nazad sa korena vraca odakle si dosao
+    else { k.predaja = null; k.povratakBrisi(); }   // prst na tabu brise zapamceno poreklo
     if (st.tab === t && !e.isTrusted && !tasterNaTabu) return;   // stari kod "klikne" tab na kom je vec (nasTabKlik): nije ponovni dodir, ruta ostaje (i ne zakljucava sledeci skok)
     uDodiruTaba = true; setTimeout(() => { uDodiruTaba = false; }, 0);
     if (st.tab === t && st.stog[t].length > 1) { e.preventDefault(); e.stopImmediatePropagation(); tab0(t); return; }
@@ -16487,6 +16515,8 @@ function renderWhen(route, departure) {
   $("whenNote").textContent = arrive
     ? T("when.legendCilj")
     : T("when.legendProzor");
+  /* QA 29.10.2026: naslov sekcije "Kad krenuti" cita ★ iz ovih redova - klizac ih crta ponovo, pa se i naslov osvezava (inace pise staro vreme) */
+  try { if (typeof riPresude === "function") riPresude(route); } catch (e) {}
 }
 function renderGear(assess, route) {
   const ul = $("gearList"); ul.innerHTML = "";
@@ -21351,8 +21381,15 @@ function init() {
 /* ---------- verzija i "sta je novo" ----------
    Bosko testira ovu aplikaciju, pa mora da vidi u kojoj je verziji i sta u njoj treba probati.
    Prosirena verzija istog spiska (iste verzije, detaljnija proza) stoji u docs/CHANGELOG.md. */
-const APP_VERSION = "0.9.215";
+const APP_VERSION = "0.9.216";
 const CHANGELOG = [
+  { v: "0.9.216", d: "29.10.2026.", stavke: [
+    "<b>Google predlozi na računaru i položenom telefonu.</b> Kad otkucaš mesto, Google-ov spisak predloga se sada vidi i ispod polja - ranije ga je aplikacija sama sakrivala, pa se otkucano mesto nije moglo izabrati mišem.",
+    "<b>Kad krenuti.</b> Naslov sekcije uvek pokazuje isto vreme kao zvezdica, i posle pomeranja klizača.",
+    "<b>Računar i položen telefon.</b> Pretraga na računaru je jedna kolona na sredini. \"Poveži vožnje u turu\" ide preko obe kolone i više ne pokriva vožnju. Strelica nazad u sažetku vožnje ima pravi izgled. List Istraži ide do dna ekrana. Prazna Zajednica je na sredini.",
+    "<b>Nazad u pregledaču.</b> Sa početka Ja, Istraži ili Zajednice nazad vodi na Planer (kao Android nazad), a posle skoka iz drugog taba - npr. \"Otvori mapu\" iz Zajednice - vraća tamo odakle si došao. Ranije je izlazio iz aplikacije.",
+    "<b>Tekstovi.</b> Gde je pisalo \"tapni\", sada piše \"izaberi\" ili \"dodir ili klik\", pa važi i za računar.",
+  ] },
   { v: "0.9.215", d: "29.10.2026.", stavke: [
     "<b>Aplikacija na računaru.</b> Na širokom ekranu tabovi stoje uspravno uz levu ivicu, kao kad telefon položiš. Istraži, Zajednica i Ja sada rade i na računaru (ranije se videla samo mapa); Ja i Zajednica su u koloni na sredini ekrana, Planer i Istraži preko mape.",
     "<b>Kad krenuti računa i mrak.</b> Suvo danju je bolje od suvog noću: kad je ujutru takođe suvo, zvezdica više ne ide na ponoć. Red kaže \"po mraku\" ili \"deo puta po mraku\". Nevreme i dalje odlučuje pre mraka. Kod \"Stigni do\" vreme dolaska biraš ti, pa se mrak tamo ne računa.",
