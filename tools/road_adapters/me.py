@@ -1,11 +1,21 @@
 import json, re, urllib.request
 
-URL = "https://amscg.org/wp-json/wp/v2/pages/24"  # "Stanje na putevima" (AMSCG)
+# 11.11.2026: AMSCG je presao sa WordPress-a na nov sajt (Next.js na Vercel-u); stari
+# wp-json/wp/v2/pages/24 od 14.10. vraca 403. Izvestaj Informativnog centra je sada u samoj
+# strani, u <div class="w-full rich-text">, isti <p> blokovi kao ranije.
+URL = "https://amscg.org/informacije/stanje-na-putevima"  # "Stanje na putevima" (AMSCG)
+UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 
 def fetch_items():
-    req = urllib.request.Request(URL, headers={"User-Agent": "Mozilla/5.0 (RouteMeRight)"})
-    data = json.loads(urllib.request.urlopen(req, timeout=30).read().decode("utf-8"))
-    html = data["content"]["rendered"]
+    req = urllib.request.Request(URL, headers={"User-Agent": UA})
+    strana = urllib.request.urlopen(req, timeout=30).read().decode("utf-8", "replace")
+    i = strana.find('class="w-full rich-text"')
+    if i < 0:
+        raise RuntimeError("AMSCG: nema bloka izvestaja (rich-text) - strana promenjena")
+    html = strana[i:]
+    kraj = re.search(r"</div>\s*</div>", html)   # izvestaj je jedan div sa <p> blokovima
+    if kraj:
+        html = html[:kraj.start()]
     blocks = re.findall(r"(?s)<(?:p|li)[^>]*>(.*?)</(?:p|li)>", html)
     items = []
     for b in blocks:
@@ -20,7 +30,7 @@ def fetch_items():
         low = t.lower()
         if "frekvencija" in low or "uslovi za vo" in low:
             typ = "stanje"
-        elif "obustava saobra" in low or "obustavlja" in low:
+        elif "obustav" in low:   # 11.11.: "potpune obustave saobracaja" je ispadalo
             typ = "zatvaranje"
         elif "zabranjuje" in low or "zabrana" in low:
             typ = "zabrana"

@@ -67,6 +67,10 @@ def izdvoj_granice(items, cc):
             "ulaz_auto": b.get("ulaz_auto"), "izlaz_auto": b.get("izlaz_auto"),
             "ulaz_teretno": b.get("ulaz_teretno"), "izlaz_teretno": b.get("izlaz_teretno"),
             "ocitano": b.get("ocitano"),          # vreme merenja PO CELIJI, ne po feedu
+            # 11.11.2026: vreme po smeru (ulaz i izlaz umeju da se razlikuju satima), duzina kolone
+            # i susedni prelaz - za prikaz prelaza na ruti; app ih cita samo ako postoje
+            **{k: b.get(k) for k in ("ocitano_ulaz_auto", "ocitano_izlaz_auto",
+                                     "kolona_ulaz_km", "kolona_izlaz_km", "susedni") if b.get(k) is not None},
             "lat": b.get("lat"), "lon": b.get("lon"),
             "izvor": b.get("izvor"), "za": b.get("za", "putnicka vozila"),
         })
