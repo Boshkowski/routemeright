@@ -103,6 +103,30 @@ def _redosled(obicni):
     return sorted(obicni, key=lambda it: (0 if _ZATV_RE.search(str(it.get("type", "")) + " " + str(it.get("title", ""))[:60]) else 1,
                                          -_datum_zapisa(it)))
 
+# fx-h (18.11.2026): urednici Puteva Srbije mesaju cirilicna slova u latinicni tekst ("Obustаvа" sa cirilicnim "а", "Кruševica", "nа") -
+# na ekranu se ne vidi, ali pretraga, citac ekrana i poredjenje teksta ("obustava", "kod mesta") ih ne nalaze. Menjaju se SAMO slova koja
+# izgledaju isto i isto se citaju (cirilicno а = latinicno a ...; ne р/с/у/х/в/н, koja liče na drugo latinicno slovo), i samo u reci koja
+# ima oba pisma i pretežno je latinicna (izjednaceno: odlucuje ceo tekst). Cela cirilicna rec i cirilicni tekst ostaju kakvi jesu.
+_CIR_ISTO_LAT = str.maketrans({"а": "a", "е": "e", "о": "o", "к": "k", "м": "m", "т": "t", "ј": "j",
+                               "А": "A", "Е": "E", "О": "O", "К": "K", "М": "M", "Т": "T", "Ј": "J"})
+_JE_CIR = re.compile(r"[\u0400-\u04FF]")
+_JE_LAT = re.compile(r"[A-Za-z\u00C0-\u024F]")
+
+def latinica_u_recima(tekst):
+    s = str(tekst or "")
+    if not _JE_CIR.search(s):
+        return s
+    lat_ukupno, cir_ukupno = len(_JE_LAT.findall(s)), len(_JE_CIR.findall(s))
+    def rec(m):
+        w = m.group(0)
+        cir, lat = len(_JE_CIR.findall(w)), len(_JE_LAT.findall(w))
+        if not cir or not lat:
+            return w
+        if lat > cir or (lat == cir and lat_ukupno > cir_ukupno):
+            return w.translate(_CIR_ISTO_LAT)
+        return w
+    return re.sub(r"\w+", rec, s)
+
 def norm(items):
     """Vrati (stavke, koliko_je_odseceno).
 
@@ -121,9 +145,9 @@ def norm(items):
             continue
         zap = {
             "type": str(it.get("type", "info"))[:40],
-            "title": str(it.get("title", ""))[:160],
-            "detail": str(it.get("detail", ""))[:300],
-            "region": str(it.get("region", ""))[:80],
+            "title": latinica_u_recima(it.get("title", ""))[:160],
+            "detail": latinica_u_recima(it.get("detail", ""))[:300],
+            "region": latinica_u_recima(it.get("region", ""))[:80],
         }
         # GEOGRAFIJA (19.8.): do sada je norm() spljostavao svaku stavku na 4 stringa, pa je
         # aplikacija radove mogla da poredi SAMO po oznaci puta - a D8 je cela jadranska
